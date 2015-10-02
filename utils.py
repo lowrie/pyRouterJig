@@ -138,7 +138,7 @@ class Units:
     def inches_to_intervals(self, inches_):
         '''Converts the input inches to intervals'''
         return my_round(self.intervals_per_inch * inches_)
-    def intervals_to_string(self, intervals):
+    def intervals_to_string(self, intervals, with_units=False):
         '''A string representation of the value intervals'''
         if self.metric:
             return '%d' % intervals
@@ -146,6 +146,7 @@ class Units:
         numer = intervals - self.intervals_per_inch * whole
         denom = self.intervals_per_inch
         r = My_Fraction(whole, numer, denom).to_string()
+        if with_units: r += self.units_string()
         return r
     def units_string(self):
         '''Returns a string that represents the units for intervals_to_string'''
@@ -206,7 +207,7 @@ class Options:
     min_finger_width: avoid a finger smaller than dimension
     '''
     def __init__(self):
-        self.debug      = True
+        self.debug      = False
         self.units      = Units(32)
         self.margins    = Margins(self.units.inches_to_intervals(0.25))
         self.dpi_screen = 110
@@ -220,5 +221,7 @@ def inches_to_intervals(inches):
     return options.units.inches_to_intervals(inches)
 def string_to_intervals(s):
     return options.units.string_to_intervals(s)
-def intervals_to_string(i):
-    return options.units.intervals_to_string(i)
+def intervals_to_string(i, with_units=False):
+    return options.units.intervals_to_string(i, with_units)
+def intervals_to_inches(i):
+    return options.units.intervals_to_inches(i)

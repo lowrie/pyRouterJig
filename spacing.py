@@ -24,6 +24,7 @@ Contains the classes that define the finger width and spacing.
 
 import math
 from operator import attrgetter
+import utils
 from utils import options, my_round
 import router
 
@@ -102,7 +103,11 @@ class Equally_Spaced(Base_Spacing):
             centered = values[2]
         elif width is None:
             width = self.bit.width
-        self.description = 'Equally spaced (B-spacing=%d, width=%d)' % (b_spacing, width)
+        self.description = 'Equally spaced (B-spacing=' +\
+                           utils.intervals_to_string(b_spacing, True) +\
+                           ', width=' +\
+                            utils.intervals_to_string(width, True) +\
+                            ')'
         self.cuts = [] # return value
         neck_width = my_round(self.bit.neck + width - self.bit.width + b_spacing)
         if neck_width < 1:

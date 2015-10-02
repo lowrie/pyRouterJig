@@ -27,6 +27,7 @@ import matplotlib.pylab as pylab
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib import widgets
+import utils
 from utils import options
 import router
 
@@ -60,14 +61,14 @@ class MPL_Plotter:
                         margins.bottom + margins.top
 
         min_width = 10
-        wwl = options.units.intervals_to_inches(window_width)
+        wwl = utils.intervals_to_inches(window_width)
         if wwl < min_width:
             wwl = min_width
-            window_width = options.units.inches_to_intervals(wwl)
+            window_width = utils.inches_to_intervals(wwl)
             margins.left = (window_width - self.template.length) / 2
             margins.right = margins.left
             window_width  = self.template.length + margins.left + margins.right
-        wwh = options.units.intervals_to_inches(window_height)
+        wwh = utils.intervals_to_inches(window_height)
         
         # Set the final figure width and height, and determine whether to draw
         # a blank screen to erase the old figure.  Draw a blank screen only if
@@ -154,19 +155,16 @@ class MPL_Plotter:
         if title is None:
             title = self.spacing.description
             title += '    Board width: '
-            title += options.units.intervals_to_string(self.board.width)
-            title += options.units.units_string()
+            title += utils.intervals_to_string(self.board.width, True)
             title += '    Bit: '
             if self.bit.angle > 0:
                 title += '%.1f deg. dovetail' % self.bit.angle
             else:
                 title += 'straight'
             title += ', width: '
-            title += options.units.intervals_to_string(self.bit.width)
-            title += options.units.units_string()
+            title += utils.intervals_to_string(self.bit.width, True)
             title += ', depth: '
-            title += options.units.intervals_to_string(self.bit.depth)
-            title += options.units.units_string()
+            title += utils.intervals_to_string(self.bit.depth, True)
         self.axes.annotate(title, (board_T.xMid(), 0), va='bottom', ha='center',
                            textcoords='offset points', xytext=(0,2))
 
