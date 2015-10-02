@@ -1,0 +1,284 @@
+\documentclass[12pt,final]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\begin{document}
+
+\title{Determining Box-Joint Finger Widths of Variable Size}
+\date{September 10, 2015}
+\author{Robert B. Lowrie}
+\maketitle
+
+\section{Introduction}
+
+In this document, we outline methods for computing box-joint finger widths
+with the following properties:
+\begin{enumerate}
+\item The center finger is the widest and is centered on the midpoint
+of the joint.
+\item Each finger away from the center finger is a width-$d$ less than
+  its adjoining finger towards the centerline.
+\end{enumerate}
+Note that the finger widths are such that the pattern is symmetric
+about the centerline of the joint.  Figure [] shows the example
+pattern.
+
+Be warned, this document is written using a lot of mathematics notation and
+contains a lot of algebra.  I've tried to simplify the notation as much as I
+can.  If you're uncomfortable with the math, that's fine.  You're probably
+also a much better woodworker than I am.
+
+The nomenclature used in this document is as follows:
+\begin{itemize}
+  \item $B$ = The router bit (or dado) width.  This may also be viewed as the
+    minimum width of a interior cut.  I should note here that this document
+    can be used regardless of your preferred unit of measure; it holds for the
+    English system just as well as for metric.
+  \item $W$ = total width of the joint.  We assume in this document that $W$
+    is an exact multiple of $B$.
+  \item $N$ = total number of fingers, both on one board and the
+    adjoining board.  Because of the joint symmetry about the center,
+    we know that $N$ is an odd number, with $(N-1)/2$
+    fingers on each side of the center finger.
+  \item $M = (N-1)/2$.  On the edge with the centered cut, this is the number
+    of cuts to one side.
+  \item $d$ = the change in width from a finger to its adjoining finger,
+    from the adjoining board.  $d =
+    0$ gives a traditional equally-spaced, box joint (with a caveat to be
+    explained below).
+  \item $f_i$ = width of finger $i$, where $i = 0, 1, 2, \ldots, M$.
+    The indexing is defined so that the center finger has width $f_0$,
+    it has two adjoining fingers of width $f_1$, and we strive to have $d = f_{i} -
+    f_{i+1}$.
+\end{itemize}
+
+\section{Equally-spaced case}
+
+As a special case, we want to be able to handle the equally-spaced case; that
+is, when $d = 0$.  Let
+\begin{equation}
+  W_b = \frac{W}{B}\,.
+\end{equation}
+Note that with the assumptions above, $W_b$ is an exact integer.  There then are
+two cases:
+\begin{enumerate}
+\item $W_b$ is odd.  Then $N = W_b$ and all fingers are width $B$.
+\item $W_b$ is even.  Then $N = W_b+1$ and all fingers are width $B$, except for
+  two fingers at the edge of the joint, which are width $B / 2$.  See Fig. []
+  for an example.
+\end{enumerate}
+For the second case, another possibility is to offset the joints over by $B/2$.
+Then the pattern would no longer be symmetric about the center of the edge.
+It would be anti-symmetric.  That's fine for standard box joints, 
+but when we consider $d > 0$, we feel we need to maintain symmetry about the
+centerline. We'll discuss this issue more in the next below.
+
+\section{Derivation of Finger Widths for the General Case}
+
+The sum of the finger widths must equal the total width of the joint, so that
+\begin{align}
+  W &= f_0 + 2 (f_1 + f_2 + \ldots + f_M)\,,\\
+    &= f_0 + 2 \sum_{i = 1}^{M} f_i\,.
+\end{align}
+To within the resolution of our measuring (say 1/32 inch or 1 mm), we want $d =
+f_i - f_{i+1}$, which gives
+\begin{equation}
+  \label{eq:fi}
+  f_i = f_0 - i d\,.
+\end{equation}
+The only exception is for even-$W_b$, in which case for $i = M$ (the fingers at
+the edge) we set $f_{M} = (f_{M-1} - d)/ 2$, which can be written as
+\begin{equation}
+  f_M = \frac{f_0 - M d}{2}\,.
+\end{equation}
+For $W_b$ either even or odd, we can write
+\begin{equation}
+  \label{eq:fm}
+  f_M = \frac{f_0 - M d}{1 + \alpha}\,,
+\end{equation}
+where $\alpha = 0$ for odd-$W_b$, and $\alpha = 1$ when even-$W_b$, so
+\begin{equation}
+     \alpha = \text{mod}(W_b+ 1, 2)\,.
+\end{equation}
+
+The width may then be written as
+\begin{equation}
+  W = f_0 + 2 \sum_{i = 1}^{M} (f_0 - i d) - \alpha (f_0 - M d)\,.
+\end{equation}
+Next use the relations
+\begin{equation}
+   2 \sum_{i = 1}^{M} 1 = N - 1, \qquad
+   2 \sum_{i = 1}^{M} i = M (M+1),
+\end{equation}
+so that we have
+\begin{equation}
+ \label{eq:form1}
+  W = N f_0 - d M (M+1) - \alpha (f_0 - M d)\,.
+\end{equation}
+Note that if $d = 0$, then the finger widths are all the same and we
+get back the familiar relationship $W = W_b f_0$.
+
+Alternative forms for (\ref{eq:form1}) are also useful.  Let
+\begin{itemize}
+\item $C = f_0$, the center finger width.
+\item $E = (\alpha + 1) f_M$, the finger width at the edge of the joint for
+  odd-$W_b$, or twice that for even-$W_b$.
+\end{itemize}
+We can solve eq. (\ref{eq:fm}) for $d$ to obtain
+\begin{equation}
+  d = \frac{C - E}{M}\,.
+\end{equation}
+Eq. (\ref{eq:form1}) may then be written as
+\begin{equation}
+  \label{eq:dimformE}
+  W = M C + (M + 1 - \alpha) E\,.
+\end{equation}
+Therefore,
+\begin{equation}
+  \label{eq:dimE}
+  E = \frac{W - M C}{M + 1 - \alpha}\,.
+\end{equation}
+
+Another option is to ensure that the minimum interior finger, $f_{M-1}$, is
+the bit (or dado) width $B$.  Then (\ref{eq:fi}) gives
+\begin{equation}
+  d = \frac{C - B}{M-1}\,,
+\end{equation}
+and
+\begin{equation}
+  \label{eq:dimformB}
+  W = \frac{1}{M-1} \left[C(M^2 - 2 M -1) + B M (1+M) + \alpha (C - B M)\right]
+\end{equation}
+There are several alternative forms of these relations, discussed below.
+
+\subsection{Normalized by $C$}
+
+We can divide eq. (\ref{eq:dimformE}) by $C$ to give
+\begin{equation}
+  \label{eq:wc}
+  W_c = M + (M + 1) E_c\,,
+\end{equation}
+where $W_c = W/C$ and $E_c = E / C$.  We require that $0 < E_c \le 1$,
+which gives
+\begin{equation}
+  M < W_c \le N\,.
+\end{equation}
+A typical case is to specify $E_c$ and $N$ and compute $W_c$. The
+normalized eq. (\ref{eq:fi}) becomes
+\begin{equation}
+  \label{eq:fic}
+  \frac{f_i}{C} = 1 - i \frac{1 - E_c}{M}\,.
+\end{equation}
+
+A choice I used for a project is $N = 11$ ($M=5$) and $E_c = 0.25$, so that
+(\ref{eq:wc},\ref{eq:fic}) reduce to
+\begin{equation}
+  W_c = 6.5\, \qquad
+  \frac{f_i}{C} = 1 - 0.15 i\,.
+\end{equation}
+\begin{center}
+\begin{tabular}{l|l}
+  $i$ & $f_i/C$ \\
+  \hline
+  1 & 0.85 \\
+  2 & 0.70 \\
+  3 & 0.55 \\
+  4 & 0.40 \\
+  5 & 0.25 \\
+  \hline
+\end{tabular}
+\end{center}
+
+\subsection{Constrained by the bit width}
+
+In this section, we consider the case where we want to ensure that the
+narrowest slot is the bit width, $B$.
+Let $C_b = C / B$ and $E_b = E / B$.  Equations
+(\ref{eq:dimformB},\ref{eq:fi},\ref{eq:fm}) become
+\begin{equation}
+  \label{eq:wb}
+  W_b = \frac{1}{M-1} \left[C_b(M^2 - 2 M -1) + M (1+M) + 
+    \alpha (C_b - B)\right]\,,
+\end{equation}
+\begin{equation}
+  \label{eq:fib}
+  \frac{f_i}{B} =  \beta_i \left(C_b - i \frac{C_b - 1}{M-1}\right)\,,
+\end{equation}
+where
+\begin{equation}
+  \beta_i = 
+  \begin{cases}
+      1 & 0 \le i < M\,,\\
+      \frac{1}{1 + \alpha} & i = M\,.
+  \end{cases}
+\end{equation}
+In addition, (\ref{eq:dimE}) becomes
+\begin{equation}
+  \label{eq:eb}
+  E_b = \frac{W_b - M C_b}{M + 1 - \alpha}\,.
+\end{equation}
+
+Now, the cut $i=M$ is at the edge of the board, which is allowed to be less
+than the bit width, because we allow the bit to extend over the ends of the
+joint.  But the $i=M$ cut must be non-negative, which requires
+\begin{equation}
+  C_b - M \frac{C_b - 1}{M-1} \ge 0\,,
+\end{equation}
+or
+\begin{equation}
+  C_b \le M\,.
+\end{equation}
+
+Next, we may solve (\ref{eq:wb}) for $C_b$ to obtain
+\begin{equation}
+  \label{eq:cb}
+  C_b = \frac{(M-1)W_b - (M+1-\alpha)M}{M^2 - 2M - 1 + \alpha}\,.
+\end{equation}
+Now if we substitute this relation into (\ref{eq:eb}), we obtain
+\begin{equation}
+  E_b = \frac{M^2 - W_b}{(1 + \alpha)(M^2 - 2M - 1 + \alpha)}\,.
+\end{equation}
+We must have $E_b > 0$, which is satisfied if
+\begin{equation}
+  M > \max(3 - \alpha, \sqrt{W_b})\,.
+\end{equation}
+Equally-spaced fingers are when $W_b = N = 2M + 1 - \alpha$, so combined with
+the constraint above, we require that
+\begin{gather}
+  M_{\min} \le M \le M_{\max}\,\\
+\intertext{where}
+M_{\min} = \max(3 - \alpha, \sqrt{W_b})\,, \qquad
+  M_{\max} = \frac{W_b - 1 + \alpha}{2}\,.
+\end{gather}
+Smaller values of $M$ (but no smaller than $M_{\min}$) will increase 
+the difference in width of the fingers.  Of coarse $M$ must be an integer, so
+we compute the constraints as
+\begin{equation}
+\label{eq:mConstraints}
+M_{\min} = \max\left(3-\alpha, \text{ceil}\left(\sqrt{W_b}\right)\right)\,, \quad
+  M_{\max} = \text{floor}\left(\frac{W_b - 1 + \alpha}{2}\right)\,.
+\end{equation}
+
+\section{Summary}
+
+So let's summarize how we can generate variable-width fingers:
+\begin{enumerate}
+\item Say you're given an overall joint-width $W$ and bit (or dado) width $B$.
+\item Compute $W_b = W / B$.
+\item Set $\alpha = 1$ for even-$W_b$ and $\alpha = 0$ for odd-$W_b$.
+\item Compute $M_{\min}$ and $M_{\max}$ from eq. (\ref{eq:mConstraints}).
+\item Vary $M$ (must be an integer) between $M_{\min}$ and $M_{\max}$
+  to generate different finger patterns.  When $M=M_{\max}$, we get a standard
+  box joint, with each finger the same width.  When $M=M_{\min}$, we get the
+  widest variation in finger sizes.
+\item For a given choice of $M$, we can compute $C_b$ from (\ref{eq:cb})
+\item Then $C = f_0 = B C_b$.  This is the finger width at the center of the
+  joint.
+\item For each $i$, $i = 1$ to $i = M$, the finger-widths $f_i$ away from the
+  center of the joint can be computed from (\ref{eq:fib}).  
+\item One issue is accuracy.  You often get a number such as $f_2 = 1.0438475$
+  inches.  You obviously can't measure to that sort of accuracy.
+\end{enumerate}
+
+\end{document}
