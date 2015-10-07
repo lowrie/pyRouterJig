@@ -82,7 +82,7 @@ class Driver(QtGui.QMainWindow):
 
         self.menubar = self.menuBar()
 
-        # Uncomment if you want the menu on the application, for Mac OSX
+        # Uncomment if you want the menu on the application window, for Mac OSX
 #        if sys.platform=="darwin": 
 #            self.menubar.setNativeMenuBar(False)1
 
@@ -156,6 +156,11 @@ class Driver(QtGui.QMainWindow):
         tip = '<b>Bit Angle</b> is the angle (in degrees) of the router bit for dovetail bits.  Set to zero for straight bits.'
         self.tb_bit_angle.setToolTip(tip)
         self.tb_bit_angle.editingFinished.connect(self.on_bit_angle)
+
+        # Save button
+        self.btn_save = QtGui.QPushButton('Save', self.main_frame)
+        self.btn_save.setToolTip('Save figure to file.')
+        self.btn_save.clicked.connect(self.on_save)
 
         #############################
         # Equal spacing options
@@ -232,8 +237,10 @@ class Driver(QtGui.QMainWindow):
         ##### Done with spacing options
 
         # Create the navigation toolbar, tied to the canvas
-        self.mpl_toolbar = NavigationToolbar(self.canvas, self.main_frame, coordinates=False)
-#        self.canvas.mpl_connect('key_press_event', self.on_key_press)
+        # self.mpl_toolbar = NavigationToolbar(self.canvas, self.main_frame, coordinates=False)
+
+        # Uncomment if you want matplotlib's key press events
+        # self.canvas.mpl_connect('key_press_event', self.on_key_press)
 
         ###################
         # Layout the frame
@@ -241,7 +248,7 @@ class Driver(QtGui.QMainWindow):
         
         self.vbox = QtGui.QVBoxLayout()
         self.vbox.addWidget(self.canvas)
-        self.vbox.addWidget(self.mpl_toolbar)
+        #self.vbox.addWidget(self.mpl_toolbar)
         
         self.hbox = QtGui.QHBoxLayout()
 
@@ -249,6 +256,7 @@ class Driver(QtGui.QMainWindow):
         self.vbox_board_width.addWidget(self.tb_board_width_label)
         self.vbox_board_width.addWidget(self.tb_board_width)
         self.vbox_board_width.addStretch(1)
+        self.vbox_board_width.addWidget(self.btn_save)
         self.hbox.addLayout(self.vbox_board_width)
 
         self.vbox_bit_width = QtGui.QVBoxLayout()
@@ -335,11 +343,11 @@ class Driver(QtGui.QMainWindow):
         self.canvas.draw()
         self.canvas.updateGeometry()
 
-    # def on_key_press(self, event):
-    #     print('you pressed', event.key)
-    #     # implement the default mpl key press events described at
-    #     # http://matplotlib.org/users/navigation_toolbar.html#navigation-keyboard-shortcuts
-    #     key_press_handler(event, self.canvas, self.mpl_toolbar)
+    def on_key_press(self, event):
+        if options.debug: print 'you pressed', event.key
+        # implement the default mpl key press events described at
+        # http://matplotlib.org/users/navigation_toolbar.html#navigation-keyboard-shortcuts
+        key_press_handler(event, self.canvas, self.mpl_toolbar)
     
     def on_cb_es_centered(self):
         if options.debug: print 'on_cb_es_centered'
@@ -453,10 +461,6 @@ class Driver(QtGui.QMainWindow):
         self.vs_cut_values[0] = value
         self.var_spacing.set_cuts(values=self.vs_cut_values)
         self.draw_mpl()
-    
-    def on_draw_button(self): 
-        if options.debug: print 'on_draw_button'
-        self.draw_mpl()
 
     def on_save(self, event):
         if options.debug: print 'on_save'
@@ -466,7 +470,7 @@ class Driver(QtGui.QMainWindow):
         #file_choices = 'PNG (*.png)'
         #file_choices += ';;' + default
 
-        # Or, these wildcards match what is in the toolbar's save button:
+        # Or, these wildcards match what matplotlib supports:
         filetypes = self.canvas.get_supported_filetypes_grouped()
         default_filetype = self.canvas.get_default_filetype()
         file_choices = ''
