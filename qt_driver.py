@@ -331,7 +331,7 @@ class Driver(QtGui.QMainWindow):
         self.template = router.Incra_Template(self.board)
         self.mpl.draw(self.template, self.board, self.bit, self.spacing)
         self.canvas.draw()
-        self.canvas.updateGeometry()
+        self.canvas.update()
     
     def on_cb_es_centered(self):
         if options.debug: print 'on_cb_es_centered'
@@ -386,6 +386,7 @@ class Driver(QtGui.QMainWindow):
         if options.debug: print 'on_tabs_spacing'
         self.reinit_spacing()
         self.draw_mpl()
+        self.flash_status_message('Changed to spacing algorithm %s' % str(self.tabs_spacing.tabText(index)))
     
     def on_bit_width(self):
         if options.debug: print 'on_bit_width'
@@ -401,6 +402,7 @@ class Driver(QtGui.QMainWindow):
             self.bit.set_width_from_string(text)
             self.reinit_spacing()
             self.draw_mpl()
+            self.flash_status_message('Changed bit width to ' + text)
     
     def on_bit_depth(self):
         if options.debug: print 'on_bit_depth'
@@ -409,6 +411,7 @@ class Driver(QtGui.QMainWindow):
             text = str(self.tb_bit_depth.text())
             self.bit.set_depth_from_string(text)
             self.draw_mpl()
+            self.flash_status_message('Changed bit depth to ' + text)
     
     def on_bit_angle(self):
         if options.debug: print 'on_bit_angle'
@@ -418,6 +421,7 @@ class Driver(QtGui.QMainWindow):
             self.bit.set_angle_from_string(text)
             self.reinit_spacing()
             self.draw_mpl()
+            self.flash_status_message('Changed bit angle to ' + text)
     
     def on_board_width(self):
         if options.debug: print 'on_board_width'
@@ -427,24 +431,28 @@ class Driver(QtGui.QMainWindow):
             self.board.set_width_from_string(text)
             self.reinit_spacing()
             self.draw_mpl()
+            self.flash_status_message('Changed board width to ' + text)
 
     def on_es_slider0(self, value):
         if options.debug: print 'on_es_slider0'
         self.es_cut_values[0] = value
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.draw_mpl()
+        self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
     
     def on_es_slider1(self, value):
         if options.debug: print 'on_es_slider1'
         self.es_cut_values[1] = value
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.draw_mpl()
+        self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
     
     def on_vs_slider0(self, value):
         if options.debug: print 'on_vs_slider0'
         self.vs_cut_values[0] = value
         self.var_spacing.set_cuts(values=self.vs_cut_values)
         self.draw_mpl()
+        self.flash_status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
 
     def on_save(self, event):
         if options.debug: print 'on_save'
@@ -472,7 +480,7 @@ class Driver(QtGui.QMainWindow):
                                                          file_choices, default))
         if path:
             self.canvas.print_figure(path, dpi=self.dpi)
-            self.flash_status_message("Saved to %s" % path, 3000)
+            self.flash_status_message("Saved to %s" % path)
         
     def on_exit(self):
         if options.debug: print 'on_exit'
@@ -495,7 +503,7 @@ class Driver(QtGui.QMainWindow):
 
         QtGui.QMessageBox.about(self, 'About', msg)
     
-    def flash_status_message(self, msg, flash_len_ms=1500):
+    def flash_status_message(self, msg, flash_len_ms=6000):
         self.statusbar.showMessage(msg)
         QtCore.QTimer.singleShot(flash_len_ms, self.on_flash_status_off)
     
