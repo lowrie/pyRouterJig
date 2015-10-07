@@ -148,12 +148,18 @@ class Units:
         r = My_Fraction(whole, numer, denom).to_string()
         if with_units: r += self.units_string()
         return r
-    def units_string(self):
-        '''Returns a string that represents the units for intervals_to_string'''
+    def units_string(self, verbose=False):
+        '''Returns a string that represents the units'''
         if self.metric:
-            return ' mm'
+            if verbose:
+                return ' millimeters'
+            else:
+                return ' mm'
         else:
-            return '"'
+            if verbose:
+                return ' inches'
+            else:
+                return '"'
     def string_to_intervals(self, s):
         '''
         Converts a string representation to the number of intervals.

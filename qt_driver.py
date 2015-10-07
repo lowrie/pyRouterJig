@@ -116,6 +116,7 @@ class Driver(QtGui.QMainWindow):
         self.main_frame = QtGui.QWidget()
 
         lineEditWidth = 80
+        sunits = options.units.units_string(verbose=True)
         
         # Create the mpl Figure and FigureCanvas objects. 
         self.dpi = 100
@@ -123,29 +124,37 @@ class Driver(QtGui.QMainWindow):
         self.canvas.setParent(self.main_frame)
         self.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.canvas.setFocus()
-        
+
         # Board width text box
         self.tb_board_width_label = QtGui.QLabel('Board Width')
         self.tb_board_width = QtGui.QLineEdit(self.main_frame)
         self.tb_board_width.setFixedWidth(lineEditWidth)
+        tip = '<b>Board Width</b> is the width (in%s) of the board for the joint.' % sunits
+        self.tb_board_width.setToolTip(tip)
         self.tb_board_width.editingFinished.connect(self.on_board_width)
         
         # Bit width text box
         self.tb_bit_width_label = QtGui.QLabel('Bit Width')
         self.tb_bit_width = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_width.setFixedWidth(lineEditWidth)
+        tip = '<b>Bit Width</b> is the width (in%s) of maximum cutting width of the router bit.' % sunits
+        self.tb_bit_width.setToolTip(tip)
         self.tb_bit_width.editingFinished.connect(self.on_bit_width)
         
         # Bit depth text box
         self.tb_bit_depth_label = QtGui.QLabel('Bit Depth')
         self.tb_bit_depth = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_depth.setFixedWidth(lineEditWidth)
+        tip = '<b>Bit Depth</b> is the cutting depth (in%s) of the router bit.' % sunits
+        self.tb_bit_depth.setToolTip(tip)
         self.tb_bit_depth.editingFinished.connect(self.on_bit_depth)
         
         # Bit angle text box
         self.tb_bit_angle_label = QtGui.QLabel('Bit Angle')
         self.tb_bit_angle = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_angle.setFixedWidth(lineEditWidth)
+        tip = '<b>Bit Angle</b> is the angle (in degrees) of the router bit for dovetail bits.  Set to zero for straight bits.'
+        self.tb_bit_angle.setToolTip(tip)
         self.tb_bit_angle.editingFinished.connect(self.on_bit_angle)
 
         #############################
@@ -164,6 +173,8 @@ class Driver(QtGui.QMainWindow):
         self.es_slider0.setMaximum(p.vMax)
         self.es_slider0.setValue(p.vInit)
         self.es_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
+        tip = '<b>%s</b> slider allows you to specify additional spacing between the Board-B fingers' % p.label
+        self.es_slider0.setToolTip(tip)
         if p.vMax - p.vMin < 10:
             self.es_slider0.setTickInterval(1)
         self.es_slider0.valueChanged.connect(self.on_es_slider0)
@@ -177,6 +188,8 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1.setMaximum(p.vMax)
         self.es_slider1.setValue(p.vInit)
         self.es_slider1.setTickPosition(QtGui.QSlider.TicksBelow)
+        tip = '<b>%s</b> slider allows you to specify additional width added to both Board-A and Board-B fingers.' % p.label
+        self.es_slider1.setToolTip(tip)
         if p.vMax - p.vMin < 10:
             self.es_slider1.setTickInterval(1)
         self.es_slider1.valueChanged.connect(self.on_es_slider1)
@@ -187,6 +200,8 @@ class Driver(QtGui.QMainWindow):
         self.cb_es_centered = QtGui.QCheckBox(p.label, self.main_frame)
         self.cb_es_centered.setChecked(True)
         self.cb_es_centered.stateChanged.connect(self.on_cb_es_centered)
+        tip = 'Check <b>%s</b> to force a finger to be centered on the board.' % p.label
+        self.cb_es_centered.setToolTip(tip)
 
         #############################
         # Variable spacing options
@@ -204,6 +219,12 @@ class Driver(QtGui.QMainWindow):
         self.vs_slider0.setMaximum(p.vMax)
         self.vs_slider0.setValue(p.vInit)
         self.vs_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
+        tip = '''<b>%s</b> slider allows you to specify the number of
+        fingers.  At its minimum value, the width of the center finger is maximized. At
+        its maximum value, the width of the center finger is minimized, and the result is
+        the roughly the same as equally-spaced with, zero "B-spacing", zero "Width", and
+        the "Centered" option checked.''' % p.label
+        self.vs_slider0.setToolTip(tip)
         if p.vMax - p.vMin < 10:
             self.vs_slider0.setTickInterval(1)
         self.vs_slider0.valueChanged.connect(self.on_vs_slider0)
@@ -280,6 +301,8 @@ class Driver(QtGui.QMainWindow):
         self.tab_vs = QtGui.QWidget()
         self.tab_vs.setLayout(self.hbox_vs)
         self.tabs_spacing.addTab(self.tab_vs, 'Variable')
+        tip = 'These tabs specify the layout algorithm for the fingers.'
+        self.tabs_spacing.setToolTip(tip)
         self.tabs_spacing.currentChanged.connect(self.on_tabs_spacing)
         
         # either add the spacing to the bottom
