@@ -29,10 +29,8 @@ import spacing
 import utils
 from utils import options
 
-from matplotlib.backend_bases import key_press_handler
 from matplotlib.backends.backend_qt4agg import (
-    FigureCanvasQTAgg as FigureCanvas,
-    NavigationToolbar2QT as NavigationToolbar)
+    FigureCanvasQTAgg as FigureCanvas)
 
 from PyQt4 import QtCore, QtGui
 #from PySlide import QtCore, QtGui
@@ -110,8 +108,7 @@ class Driver(QtGui.QMainWindow):
         '''
         Creates the main panel with all the controls on it:
           * mpl canvas 
-          * mpl navigation toolbar
-          * Control panel for interaction
+          * control panel for interaction
         '''
         self.main_frame = QtGui.QWidget()
 
@@ -236,19 +233,12 @@ class Driver(QtGui.QMainWindow):
 
         ##### Done with spacing options
 
-        # Create the navigation toolbar, tied to the canvas
-        # self.mpl_toolbar = NavigationToolbar(self.canvas, self.main_frame, coordinates=False)
-
-        # Uncomment if you want matplotlib's key press events
-        # self.canvas.mpl_connect('key_press_event', self.on_key_press)
-
         ###################
         # Layout the frame
         ###################
         
         self.vbox = QtGui.QVBoxLayout()
         self.vbox.addWidget(self.canvas)
-        #self.vbox.addWidget(self.mpl_toolbar)
         
         self.hbox = QtGui.QHBoxLayout()
 
@@ -342,12 +332,6 @@ class Driver(QtGui.QMainWindow):
         self.mpl.draw(self.template, self.board, self.bit, self.spacing)
         self.canvas.draw()
         self.canvas.updateGeometry()
-
-    def on_key_press(self, event):
-        if options.debug: print 'you pressed', event.key
-        # implement the default mpl key press events described at
-        # http://matplotlib.org/users/navigation_toolbar.html#navigation-keyboard-shortcuts
-        key_press_handler(event, self.canvas, self.mpl_toolbar)
     
     def on_cb_es_centered(self):
         if options.debug: print 'on_cb_es_centered'
