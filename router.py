@@ -90,10 +90,12 @@ class Router_Bit:
         msg = 'Bit width is "%s".  Set to a postive value.'
         try:
             self.width = utils.string_to_intervals(s)
-        except Router_Exception, e: 
-            raise Router_Exception('Problem setting bit width: %s' % e)
+        except ValueError, e: 
+            msg = 'ValueError setting bit width: %s\n' % (e) + \
+                  msg % s
+            raise Router_Exception(msg)
         except:
-            raise Router_Exception(msg % s)
+            raise
         if self.width <= 0:
             raise Router_Exception(msg % s)
         self.reinit()
@@ -101,10 +103,12 @@ class Router_Bit:
         msg = 'Bit depth is "%s".  Set to a postive value.'
         try:
             self.depth = utils.string_to_intervals(s)
-        except Router_Exception, e: 
-            raise Router_Exception('Problem setting bit depth: %s' % e)
+        except ValueError, e: 
+            msg = 'ValueError setting bit depth: %s\n' % (e) + \
+                  msg % s
+            raise Router_Exception(msg)
         except:
-            raise Router_Exception(msg % s)
+            raise
         if self.depth <= 0:
             raise Router_Exception(msg % s)
         self.reinit()
@@ -112,8 +116,12 @@ class Router_Bit:
         msg = 'Bit angle is "%s".  Set to zero or a postive value.'
         try:
             self.angle = float(s)
+        except ValueError, e: 
+            msg = 'ValueError setting bit angle: %s\n' % (e) + \
+                  msg % s
+            raise Router_Exception(msg)
         except:
-            raise Router_Exception(msg % s)
+            raise
         if self.angle < 0:
             raise Router_Exception(msg % s)
         self.reinit()
@@ -183,10 +191,11 @@ class Board(My_Rectangle):
         msg = 'Board width is "%s".  Set to a postive value.'
         try:
             self.width = utils.string_to_intervals(s)
-        except Router_Exception, e: 
-            raise Router_Exception('Problem setting board width: %s' % e)
+        except ValueError, e: 
+            msg = 'ValueError setting board width: %s\n' % (e) + \
+                  msg % s
+            raise Router_Exception(msg)
         except:
-#            raise Router_Exception(msg % s)
             raise
         if self.width <= 0:
             raise Router_Exception(msg % s)
@@ -194,10 +203,12 @@ class Board(My_Rectangle):
         msg = 'Board height is "%s".  Set to a postive value.'
         try:
             self.height = utils.string_to_intervals(s)
-        except Router_Exception, e: 
-            raise Router_Exception('Problem setting board height: %s' % e)
+        except ValueError, e: 
+            msg = 'ValueError setting board height: %s\n' % (e) + \
+                  msg % s
+            raise Router_Exception(msg)
         except:
-            raise Router_Exception(msg % s)
+            raise
         if self.height <= 0:
             raise Router_Exception(msg % s)
 

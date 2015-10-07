@@ -94,16 +94,16 @@ class My_Fraction:
                     self.whole = int(wholeNum[0])
                     self.numerator = int(wholeNum[1])
                 else:
-                    raise TypeError(msg % s)
+                    raise ValueError(msg % s)
                 denom = sp[1].split(None)
                 if len(denom) == 1:
                     self.denominator = int(denom[0])
                 else:
-                    raise TypeError(msg % s)
+                    raise ValueError(msg % s)
             elif len(sp) == 1: # no divisor, so must be a whole number
                 self.whole = int(sp[0])
             else:
-                raise TypeError(msg % s)
+                raise ValueError(msg % s)
         else:
             # found a decimal point
             whole = s[:dotloc].strip()
@@ -168,7 +168,7 @@ class Units:
         if f.numerator > 0:
             ratio = self.intervals_per_inch / f.denominator
             if ratio * f.denominator != self.intervals_per_inch:
-                raise Router_Exception('"%s" is not an exact number of intervals' % s)
+                raise ValueError('"%s" is not an exact number of intervals' % s)
             r += ratio * f.numerator
         return r
 

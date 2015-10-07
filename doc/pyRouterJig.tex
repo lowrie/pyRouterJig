@@ -38,9 +38,8 @@ joints.  It has the following features:
   also hope that by making \codename~freely available, including the source
   code, others that are more artistic than I can devise extensions and
   improvements to \codename.  By making this software freely available, I am
-  not implying that others should do the same for their hard work.  At least
-  for now, I am fortunate enough to have a job that I enjoy immensely and pays
-  reasonably well.  Woodworking is my hobby, not my career.  But because
+  not implying that others should do the same for their hard work. 
+   Woodworking is my hobby, not my career.  But because
   \codename~is free, as the saying goes, ``you get what you pay for.''  I will
   consider implementing changes and feature requests you might have, but in
   the end, if you desperately want to change the code, learn
@@ -51,7 +50,7 @@ joints.  It has the following features:
 
 \section{Installation}
 
-For code development for this project, all I have access to is a Mac, and in
+To develop the code for this project, all I have access to is a Mac, and in
 particular, OSX 10.9.2.\footnote{I'm looking for volunteers to test on other
   platforms, such as Windows and Linux.}  \codename~depends upon the following
 \href{http://www.python.org}{Python} packages, which must be installed in
@@ -158,8 +157,38 @@ please contact me.  Ideally, you know Python and can send me proposed patches
 
 \subsection{Known Bugs}
 
-The following bugs frustrate me to no end:
+\begin{enumerate}
+\item The first use of Variable Spacing puts its slider (for number of
+  fingers) in the upper left-hand
+  corner.  Resizing the window fixes the slider placement.
+\item Autosizing after changing the board width is broken.  Again, resizing
+  the window should fix this issue, and it appears related to the previous bug.
+\item I can't add tic labels to the sliders.  This may be an issue just on
+  the Mac.  I actually can add the tic labels, it's just that they don't
+  ``hide'' properly.
+\end{enumerate}
 
+\subsection{Features}
+
+I'm working on the following features, but would appreciate help:
+
+\begin{enumerate}
+\item Enable use of arrow keys for sliders.
+\item More inline help, such as define wxPython ``tooltips'' for each input
+  value.  These are windows that pop up when you put the mouse over a value.
+\item Define the option for ``fold-over templates'' that are appropriate for
+  hand-cut joints.  This would be an alternative to the Incra template.
+\item More friendly error messages and handling.
+\item Get rid of the dependence on matplotlib and use wxPython drawing
+  directly.  The biggest issue I've had is printing.  For example, with my
+  anaconda installation, wxPython's demo/PrintFramework.py segfaults when I
+  try to print.
+\item More spacing options.
+\item An interactive GUI to allow manual adjustment of fingers positions and
+  widths.
+\item Consider relaxing the requirement that board and bit dimensions be exact multiples
+of intervals.
+\end{enumerate}
 
 
 \section{Software License and Disclaimer}

@@ -20,28 +20,6 @@
 
 '''
 Contains the main driver, using wxPython.
-
-TODO:
-
-Bugs:
-- Can't use tick labels on sliders, because they won't hide.
-- Redrawing after changing board size doesn't autofit within window
-  size properly.
-- First use of variable spacing puts its slider in mpl region.  Resizing the window fixes it.
-  Might be related to redrawing bug.
-
-Features:
-- Enable use of arrows for sliders.
-- Tooltips for each input.
-- Make fold-over templates, appropriate for hand cut.
-- Documentation
-- More friendly error messages and handling.
-
-Other:
-- Should we really be forcing board and bit dimensions to be exact
-  multiples of intervals?
-- Replace matplotlib with direct wxPython graphics?  Need to make sure
-  printing works as well. 
 '''
 
 import os, sys, traceback
