@@ -119,8 +119,6 @@ class Driver(QtGui.QMainWindow):
         self.dpi = 100
         self.canvas = FigureCanvas(self.mpl.fig)
         self.canvas.setParent(self.main_frame)
-        self.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.canvas.setFocus()
 
         # Board width text box
         self.tb_board_width_label = QtGui.QLabel('Board Width')
@@ -171,6 +169,7 @@ class Driver(QtGui.QMainWindow):
         self.es_cut_values[0] = p.vInit
         self.es_slider0_label = QtGui.QLabel(p.label)
         self.es_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
+        self.es_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.es_slider0.setMinimum(p.vMin)
         self.es_slider0.setMaximum(p.vMax)
         self.es_slider0.setValue(p.vInit)
@@ -186,6 +185,7 @@ class Driver(QtGui.QMainWindow):
         self.es_cut_values[1] = p.vInit
         self.es_slider1_label = QtGui.QLabel(p.label)
         self.es_slider1 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
+        self.es_slider1.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.es_slider1.setMinimum(p.vMin)
         self.es_slider1.setMaximum(p.vMax)
         self.es_slider1.setValue(p.vInit)
@@ -217,6 +217,7 @@ class Driver(QtGui.QMainWindow):
         self.vs_cut_values[0] = p.vInit
         self.vs_slider0_label = QtGui.QLabel(p.label)
         self.vs_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
+        self.vs_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.vs_slider0.setMinimum(p.vMin)
         self.vs_slider0.setMaximum(p.vMax)
         self.vs_slider0.setValue(p.vInit)
