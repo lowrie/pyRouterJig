@@ -43,9 +43,7 @@ class Driver(QtGui.QMainWindow):
         sys.excepthook = self.exception_hook
         self.except_handled = False
 
-        self.create_menu()
-        self.create_status_bar()
-
+        # Create an initial joint
         self.board = router.Board(width=utils.inches_to_intervals(7.5))
         self.bit = router.Router_Bit(16, 24)
         self.template = router.Incra_Template(self.board)
@@ -54,9 +52,17 @@ class Driver(QtGui.QMainWindow):
         self.var_spacing = spacing.Variable_Spaced(self.bit, self.board)
         self.var_spacing.set_cuts()
         self.spacing = self.equal_spacing # the default
+
+        # Create the matplotlib object.  Nothing is drawn quite yet.
         self.mpl = mpl.MPL_Plotter()
 
-        self.create_main_frame()
+        # Create the main frame and menus
+        self.create_menu()
+        self.create_status_bar()
+        self.create_widgets()
+        self.layout_widgets()
+
+        # Draw the initial figure using matplotlib
         self.draw_mpl()
 
     def exception_hook(self, etype, value, trace):
@@ -104,11 +110,9 @@ class Driver(QtGui.QMainWindow):
         about_action.triggered.connect(self.on_about)
         self.file_menu.addAction(about_action)
 
-    def create_main_frame(self):
+    def create_widgets(self):
         '''
-        Creates the main panel with all the controls on it:
-          * mpl canvas 
-          * control panel for interaction
+        Creates all of the widgets in the main panel
         '''
         self.main_frame = QtGui.QWidget()
 
@@ -128,6 +132,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_board_width.setFixedWidth(lineEditWidth)
         tip = '<b>Board Width</b> is the width (in%s) of the board for the joint.' % sunits
         self.tb_board_width.setToolTip(tip)
+        self.tb_board_width.setText(utils.intervals_to_string(self.board.width))
         self.tb_board_width.editingFinished.connect(self.on_board_width)
         
         # Bit width text box
@@ -136,6 +141,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_width.setFixedWidth(lineEditWidth)
         tip = '<b>Bit Width</b> is the width (in%s) of maximum cutting width of the router bit.' % sunits
         self.tb_bit_width.setToolTip(tip)
+        self.tb_bit_width.setText(utils.intervals_to_string(self.bit.width))
         self.tb_bit_width.editingFinished.connect(self.on_bit_width)
         
         # Bit depth text box
@@ -144,6 +150,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_depth.setFixedWidth(lineEditWidth)
         tip = '<b>Bit Depth</b> is the cutting depth (in%s) of the router bit.' % sunits
         self.tb_bit_depth.setToolTip(tip)
+        self.tb_bit_depth.setText(utils.intervals_to_string(self.bit.depth))
         self.tb_bit_depth.editingFinished.connect(self.on_bit_depth)
         
         # Bit angle text box
@@ -152,6 +159,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_angle.setFixedWidth(lineEditWidth)
         tip = '<b>Bit Angle</b> is the angle (in degrees) of the router bit for dovetail bits.  Set to zero for straight bits.'
         self.tb_bit_angle.setToolTip(tip)
+        self.tb_bit_angle.setText('%g' % self.bit.angle)
         self.tb_bit_angle.editingFinished.connect(self.on_bit_angle)
 
         # Save button
@@ -159,14 +167,12 @@ class Driver(QtGui.QMainWindow):
         self.btn_save.setToolTip('Save figure to file.')
         self.btn_save.clicked.connect(self.on_save)
 
-        #############################
-        # Equal spacing options
-        #############################
+        # Equal spacing widgets
 
         self.equal_spacing_params = self.equal_spacing.get_params()
         self.es_cut_values = [0] * 3
 
-        # First slider
+        # ...first slider
         p = self.equal_spacing_params[0]
         self.es_cut_values[0] = p.vInit
         self.es_slider0_label = QtGui.QLabel(p.label)
@@ -182,7 +188,7 @@ class Driver(QtGui.QMainWindow):
             self.es_slider0.setTickInterval(1)
         self.es_slider0.valueChanged.connect(self.on_es_slider0)
 
-        # Second slider
+        # ...second slider
         p = self.equal_spacing_params[1]
         self.es_cut_values[1] = p.vInit
         self.es_slider1_label = QtGui.QLabel(p.label)
@@ -198,7 +204,7 @@ class Driver(QtGui.QMainWindow):
             self.es_slider1.setTickInterval(1)
         self.es_slider1.valueChanged.connect(self.on_es_slider1)
 
-        # Check box for centering
+        # ...check box for centering
         p = self.equal_spacing_params[2]
         self.es_cut_values[2] = p.vInit
         self.cb_es_centered = QtGui.QCheckBox(p.label, self.main_frame)
@@ -207,14 +213,12 @@ class Driver(QtGui.QMainWindow):
         tip = 'Check <b>%s</b> to force a finger to be centered on the board.' % p.label
         self.cb_es_centered.setToolTip(tip)
 
-        #############################
-        # Variable spacing options
-        #############################
+        # Variable spacing widgets
         
         self.var_spacing_params = self.var_spacing.get_params()
         self.vs_cut_values = [0] * 2
 
-        # First slider
+        # ...slider
         p = self.var_spacing_params[0]
         self.vs_cut_values[0] = p.vInit
         self.vs_slider0_label = QtGui.QLabel(p.label)
@@ -234,17 +238,24 @@ class Driver(QtGui.QMainWindow):
             self.vs_slider0.setTickInterval(1)
         self.vs_slider0.valueChanged.connect(self.on_vs_slider0)
 
-        ##### Done with spacing options
+    def layout_widgets(self):
+        '''
+        Does the layout of the widgets in the main frame
+        '''
 
-        ###################
-        # Layout the frame
-        ###################
-        
+        # vbox contains all of the widgets in the main frame, positioned
+        # vertically
         self.vbox = QtGui.QVBoxLayout()
+
+        # Add the matplotlib canvas to the top
         self.vbox.addWidget(self.canvas)
         
+        # hbox contains all of the control widgets
+        # (everything but the canvas)
         self.hbox = QtGui.QHBoxLayout()
 
+        # Add the board width label, board width input text box,
+        # and save button, all stacked vertically on the left side.
         self.vbox_board_width = QtGui.QVBoxLayout()
         self.vbox_board_width.addWidget(self.tb_board_width_label)
         self.vbox_board_width.addWidget(self.tb_board_width)
@@ -252,24 +263,28 @@ class Driver(QtGui.QMainWindow):
         self.vbox_board_width.addWidget(self.btn_save)
         self.hbox.addLayout(self.vbox_board_width)
 
+        # Add the bit width label and its text box
         self.vbox_bit_width = QtGui.QVBoxLayout()
         self.vbox_bit_width.addWidget(self.tb_bit_width_label)
         self.vbox_bit_width.addWidget(self.tb_bit_width)
         self.vbox_bit_width.addStretch(1)
         self.hbox.addLayout(self.vbox_bit_width)
 
+        # Add the bit depth label and its text box
         self.vbox_bit_depth = QtGui.QVBoxLayout()
         self.vbox_bit_depth.addWidget(self.tb_bit_depth_label)
         self.vbox_bit_depth.addWidget(self.tb_bit_depth)
         self.vbox_bit_depth.addStretch(1)
         self.hbox.addLayout(self.vbox_bit_depth)
 
+        # Add the bit angle label and its text box
         self.vbox_bit_angle = QtGui.QVBoxLayout()
         self.vbox_bit_angle.addWidget(self.tb_bit_angle_label)
         self.vbox_bit_angle.addWidget(self.tb_bit_angle)
         self.vbox_bit_angle.addStretch(1)
         self.hbox.addLayout(self.vbox_bit_angle)
 
+        # Create the layout of the Equal spacing controls
         self.hbox_es = QtGui.QHBoxLayout()
 
         self.vbox_es_slider0 = QtGui.QVBoxLayout()
@@ -284,6 +299,9 @@ class Driver(QtGui.QMainWindow):
 
         self.hbox_es.addWidget(self.cb_es_centered)
 
+        # Create the layout of the Variable spacing controls.  Given only one
+        # item, this is overkill, but the coding allows us to add additional
+        # controls later.
         self.hbox_vs = QtGui.QHBoxLayout()
 
         self.vbox_vs_slider0 = QtGui.QVBoxLayout()
@@ -291,7 +309,7 @@ class Driver(QtGui.QMainWindow):
         self.vbox_vs_slider0.addWidget(self.vs_slider0)
         self.hbox_vs.addLayout(self.vbox_vs_slider0)
 
-        # Add each spacing option as a tab
+        # Add the spacing layouts as Tabs
         self.tabs_spacing = QtGui.QTabWidget()
         self.tab_es = QtGui.QWidget()
         self.tab_es.setLayout(self.hbox_es)
@@ -303,23 +321,22 @@ class Driver(QtGui.QMainWindow):
         self.tabs_spacing.setToolTip(tip)
         self.tabs_spacing.currentChanged.connect(self.on_tabs_spacing)
         
-        # either add the spacing to the bottom
+        # either add the spacing Tabs to the bottom
         #self.vbox.addLayout(self.hbox)
         #self.vbox.addWidget(self.tabs_spacing)
-        # ... or to the right
+        # ... or to the right of the text boxes
         self.hbox.addWidget(self.tabs_spacing)
         self.vbox.addLayout(self.hbox)
-        
-        # Set the current values of the text boxes
-        self.tb_board_width.setText(utils.intervals_to_string(self.board.width))
-        self.tb_bit_width.setText(utils.intervals_to_string(self.bit.width))
-        self.tb_bit_depth.setText(utils.intervals_to_string(self.bit.depth))
-        self.tb_bit_angle.setText('%g' % self.bit.angle)
 
+        # Lay it all out
         self.main_frame.setLayout(self.vbox)
         self.setCentralWidget(self.main_frame)
     
     def create_status_bar(self):
+        '''
+        Creates a status message bar that is placed at the bottom of the
+        main frame.
+        '''
         self.statusbar = self.statusBar()
         self.statusbar.showMessage('Ready')
 
@@ -494,6 +511,8 @@ class Driver(QtGui.QMainWindow):
         if path:
             self.canvas.print_figure(path, dpi=self.dpi)
             self.flash_status_message("Saved to %s" % path)
+        else:
+            self.flash_status_message("Unable to save %s!" % path)
         
     def on_exit(self):
         if options.debug: print 'on_exit'

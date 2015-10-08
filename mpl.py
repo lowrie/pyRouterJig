@@ -84,7 +84,9 @@ class MPL_Plotter:
 
         # Clear out any previous figure
         self.fig.clear()
-        if do_blank_draw: self.fig.canvas.draw() # only do this on board resize
+        if do_blank_draw: 
+            if options.debug: print 'doing blank draw'
+            self.fig.canvas.draw() # only do this on board resize
 
         # Adjust to the new figure size
         if options.debug: print 'mpl fig size ', self.fig_width, self.fig_height
