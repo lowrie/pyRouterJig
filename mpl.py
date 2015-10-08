@@ -82,19 +82,21 @@ class MPL_Plotter:
             self.fig_height = wwh
             do_blank_draw = True
 
-        # Generate the new geometry layout
-        self.geom = router.Joint_Geometry(self.template, self.board, self.bit, self.spacing, margins)
-
         # Clear out any previous figure
         self.fig.clear()
         if do_blank_draw: self.fig.canvas.draw() # only do this on board resize
 
+        # Adjust to the new figure size
+        if options.debug: print 'mpl fig size ', self.fig_width, self.fig_height
         self.fig.set_size_inches(self.fig_width, self.fig_height)
         self.axes = self.fig.add_subplot(1,1,1, aspect='equal')
 
         # Set the window limits in frac dimensions
         self.axes.set_xlim([0, window_width])
         self.axes.set_ylim([0, window_height])
+
+        # Generate the new geometry layout
+        self.geom = router.Joint_Geometry(self.template, self.board, self.bit, self.spacing, margins)
 
         # Plot the template bounding box
         rect_T = self.geom.rect_T

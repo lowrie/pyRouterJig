@@ -119,6 +119,8 @@ class Driver(QtGui.QMainWindow):
         self.dpi = 100
         self.canvas = FigureCanvas(self.mpl.fig)
         self.canvas.setParent(self.main_frame)
+        self.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.canvas.setFocus()
 
         # Board width text box
         self.tb_board_width_label = QtGui.QLabel('Board Width')
@@ -268,8 +270,6 @@ class Driver(QtGui.QMainWindow):
         self.vbox_bit_angle.addStretch(1)
         self.hbox.addLayout(self.vbox_bit_angle)
 
-        #self.hbox.addStretch(1)
-
         self.hbox_es = QtGui.QHBoxLayout()
 
         self.vbox_es_slider0 = QtGui.QVBoxLayout()
@@ -290,7 +290,6 @@ class Driver(QtGui.QMainWindow):
         self.vbox_vs_slider0.addWidget(self.vs_slider0_label)
         self.vbox_vs_slider0.addWidget(self.vs_slider0)
         self.hbox_vs.addLayout(self.vbox_vs_slider0)
-
 
         # Add each spacing option as a tab
         self.tabs_spacing = QtGui.QTabWidget()
@@ -339,6 +338,10 @@ class Driver(QtGui.QMainWindow):
         self.es_cut_values[2] = self.cb_es_centered.isChecked()
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.draw_mpl()
+        if self.es_cut_values[2]:
+            self.flash_status_message('Checked Centered.')
+        else:
+            self.flash_status_message('Unchecked Centered.')
 
     def reinit_spacing(self):
         '''
@@ -513,9 +516,10 @@ class Driver(QtGui.QMainWindow):
 
         QtGui.QMessageBox.about(self, 'About', msg)
     
-    def flash_status_message(self, msg, flash_len_ms=6000):
+    def flash_status_message(self, msg, flash_len_ms=None):
         self.statusbar.showMessage(msg)
-        QtCore.QTimer.singleShot(flash_len_ms, self.on_flash_status_off)
+        if flash_len_ms is not None:
+            QtCore.QTimer.singleShot(flash_len_ms, self.on_flash_status_off)
     
     def on_flash_status_off(self):
         if options.debug: print 'on_flash_status_off'
