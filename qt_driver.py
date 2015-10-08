@@ -354,18 +354,24 @@ class Driver(QtGui.QMainWindow):
             self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
             self.equal_spacing_params = self.equal_spacing.get_params()
             p = self.equal_spacing_params[0]
+            self.es_slider0.blockSignals(True)
             self.es_slider0.setMinimum(p.vMin)
             self.es_slider0.setMaximum(p.vMax)
             self.es_slider0.setValue(p.vInit)
+            self.es_slider0.blockSignals(False)
             self.es_cut_values[0] = p.vInit
             p = self.equal_spacing_params[1]
+            self.es_slider1.blockSignals(True)
             self.es_slider1.setMinimum(p.vMin)
             self.es_slider1.setMaximum(p.vMax)
             self.es_slider1.setValue(p.vInit)
+            self.es_slider1.blockSignals(False)
             self.es_cut_values[1] = p.vInit
             p = self.equal_spacing_params[2]
             centered = self.es_cut_values[2]
+            self.cb_es_centered.blockSignals(True)
             self.cb_es_centered.setChecked(centered)
+            self.cb_es_centered.blockSignals(False)
             self.equal_spacing.set_cuts(values=self.es_cut_values)
             self.spacing = self.equal_spacing
         elif spacing_index == 1:
@@ -373,9 +379,11 @@ class Driver(QtGui.QMainWindow):
             self.var_spacing = spacing.Variable_Spaced(self.bit, self.board)
             self.var_spacing_params = self.var_spacing.get_params()
             p = self.var_spacing_params[0]
+            self.vs_slider0.blockSignals(True)
             self.vs_slider0.setMinimum(p.vMin)
             self.vs_slider0.setMaximum(p.vMax)
             self.vs_slider0.setValue(p.vInit)
+            self.vs_slider0.blockSignals(False)
             self.vs_cut_values[0] = p.vInit
             self.var_spacing.set_cuts(values=self.vs_cut_values)
             self.spacing = self.var_spacing
@@ -397,6 +405,7 @@ class Driver(QtGui.QMainWindow):
         # in the middle of an exception, etc.  This logic also avoids
         # unnecessary redraws.
         if self.tb_bit_width.isModified():
+            if options.debug: print ' bit_width modified'
             self.tb_bit_width.setModified(False)
             text = str(self.tb_bit_width.text())
             self.bit.set_width_from_string(text)
@@ -434,21 +443,21 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed board width to ' + text)
 
     def on_es_slider0(self, value):
-        if options.debug: print 'on_es_slider0'
+        if options.debug: print 'on_es_slider0', value
         self.es_cut_values[0] = value
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
     
     def on_es_slider1(self, value):
-        if options.debug: print 'on_es_slider1'
+        if options.debug: print 'on_es_slider1', value
         self.es_cut_values[1] = value
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
     
     def on_vs_slider0(self, value):
-        if options.debug: print 'on_vs_slider0'
+        if options.debug: print 'on_vs_slider0', value
         self.vs_cut_values[0] = value
         self.var_spacing.set_cuts(values=self.vs_cut_values)
         self.draw_mpl()
