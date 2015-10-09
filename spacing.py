@@ -41,13 +41,11 @@ class Spacing_Param:
     '''
     Stores a generic parameter for the spacing algorithms.  Attributes:
 
-    label: a string describing the parameter
     vMin: minimum value
     vMax: maximum value
     vInit: initial and current value
     '''
-    def __init__(self, label, vMin, vMax, vInit):
-        self.label = label
+    def __init__(self, vMin, vMax, vInit):
         self.vMin  = vMin
         self.vMax  = vMax
         self.vInit = vInit
@@ -58,6 +56,7 @@ class Base_Spacing:
 
     Attributes:
 
+    labels (static): list of labels for the Spacing_Params
     description: string description of algorithm
     bit: A Router_Bit object.
     board: A Board object.
@@ -89,12 +88,13 @@ class Equally_Spaced(Base_Spacing):
     centered: If true, then a finger is centered on the board width.  If Always
     true for dovetail bits.  Default is true.
     '''
+    labels = ['B-spacing', 'Width', 'Centered']
     def __init__(self, bit, board):
         Base_Spacing.__init__(self, bit, board)
     def get_params(self):
-        p1 = Spacing_Param('B-spacing', 0, self.board.width / 4, 0)
-        p2 = Spacing_Param('Width', self.bit.width, self.board.width / 2, self.bit.width)
-        p3 = Spacing_Param('Centered', None, None, True)
+        p1 = Spacing_Param(0, self.board.width / 4, 0)
+        p2 = Spacing_Param(self.bit.width, self.board.width / 2, self.bit.width)
+        p3 = Spacing_Param(None, None, True)
         return [p1, p2, p3]
     def set_cuts(self, b_spacing=0, width=None, centered=True, values=None):
         if values is not None:
@@ -157,6 +157,7 @@ class Variable_Spaced(Base_Spacing):
 
     Fingers: Roughly the number of full fingers on either the A or B board.
     '''
+    labels = ['Fingers']
     def __init__(self, bit, board):
         Base_Spacing.__init__(self, bit, board)
         # eff_width is the effective width, an average of the bit width
@@ -175,7 +176,7 @@ class Variable_Spaced(Base_Spacing):
                                     ' bit width specified.')
         self.mDefault = (self.mMin + self.mMax) / 2
     def get_params(self):
-        p1 = Spacing_Param('Fingers', self.mMin, self.mMax, self.mDefault)
+        p1 = Spacing_Param(self.mMin, self.mMax, self.mDefault)
         return [p1]
     def set_cuts(self, m=None, values=None):
         # set the number of fingers, m

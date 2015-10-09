@@ -35,8 +35,68 @@ from matplotlib.backends.backend_qt4agg import (
 from PyQt4 import QtCore, QtGui
 #from PySlide import QtCore, QtGui
 
+# Define helper strings
+
+class Help:
+    short_desc = 'pyRouterJig is a joint layout tool for woodworking.'
+
+    license = '\
+    Copyright 2015 Robert B. Lowrie (pyrouterjig@lowrielodge.org)\
+    \n\n\
+    pyRouterJig is free software: you can redistribute it and/or modify it under\
+    the terms of the GNU General Public License as published by the Free Software\
+    Foundation, either version 3 of the License, or (at your option) any later\
+    version.\
+    \n\n\
+    pyRouterJig is distributed in the hope that it will be useful, but WITHOUT ANY\
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR\
+    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\
+    You should have received a copy of the GNU General Public License along with\
+    pyRouterJig; see the file LICENSE. If not, see http://www.gnu.org/licenses/.\
+    \n\n\
+    USE AT YOUR OWN RISK!'
+    
+    board_width = '<b>Board Width</b> is the width (in%s) of the board for \
+    the joint.'
+
+    bit_width = '<b>Bit Width</b> is the width (in%s) of \
+    maximum cutting width of the router bit.'
+
+    bit_depth = '<b>Bit Depth</b> is the cutting depth (in%s) of the \
+    router bit.'
+
+    bit_angle = '<b>Bit Angle</b> is the angle (in degrees) of the router \
+    bit for dovetail bits.  Set to zero for straight bits.'
+
+    es_slider0 = '<b>%s</b> slider allows you to specify additional \
+    spacing between the Board-B fingers'
+
+    es_slider1 = '<b>%s</b> slider allows you to specify additional \
+    width added to both Board-A and Board-B fingers.'
+
+    es_centered = 'Check <b>%s</b> to force a finger to be centered on \
+    the board.'
+
+    vs_slider0 = '<b>%s</b> slider allows you to specify the number of \
+    fingers. At its minimum value, the width of the center finger is \
+    maximized. At its maximum value, the width of the center finger is \
+    minimized, and the result is the roughly the same as equally-spaced \
+    with, zero "B-spacing", zero "Width", and the "Centered" option \
+    checked.'
+    
+    def __init__(self, unit_s):
+        Help.board_width = Help.board_width % unit_s
+        Help.bit_width = Help.bit_width % unit_s
+        Help.bit_depth = Help.bit_depth % unit_s
+        labels = spacing.Equally_Spaced.labels
+        Help.es_slider0 = Help.es_slider0 % labels[0]
+        Help.es_slider1 = Help.es_slider1 % labels[1]
+        Help.es_centered = Help.es_centered % labels[2]
+        Help.vs_slider0 = Help.vs_slider0 % spacing.Variable_Spaced.labels[0]
+
 class Driver(QtGui.QMainWindow):
-    ''' Qt driver for MPL_Plotter
+    ''' 
+    Qt driver for MPL_Plotter
     '''
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
@@ -117,7 +177,6 @@ class Driver(QtGui.QMainWindow):
         self.main_frame = QtGui.QWidget()
 
         lineEditWidth = 80
-        sunits = options.units.units_string(verbose=True)
         
         # Create the mpl Figure and FigureCanvas objects. 
         self.dpi = 100
@@ -130,8 +189,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_board_width_label = QtGui.QLabel('Board Width')
         self.tb_board_width = QtGui.QLineEdit(self.main_frame)
         self.tb_board_width.setFixedWidth(lineEditWidth)
-        tip = '<b>Board Width</b> is the width (in%s) of the board for the joint.' % sunits
-        self.tb_board_width.setToolTip(tip)
+        self.tb_board_width.setToolTip(Help.board_width)
         self.tb_board_width.setText(utils.intervals_to_string(self.board.width))
         self.tb_board_width.editingFinished.connect(self.on_board_width)
         
@@ -139,8 +197,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_width_label = QtGui.QLabel('Bit Width')
         self.tb_bit_width = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_width.setFixedWidth(lineEditWidth)
-        tip = '<b>Bit Width</b> is the width (in%s) of maximum cutting width of the router bit.' % sunits
-        self.tb_bit_width.setToolTip(tip)
+        self.tb_bit_width.setToolTip(Help.bit_width)
         self.tb_bit_width.setText(utils.intervals_to_string(self.bit.width))
         self.tb_bit_width.editingFinished.connect(self.on_bit_width)
         
@@ -148,8 +205,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_depth_label = QtGui.QLabel('Bit Depth')
         self.tb_bit_depth = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_depth.setFixedWidth(lineEditWidth)
-        tip = '<b>Bit Depth</b> is the cutting depth (in%s) of the router bit.' % sunits
-        self.tb_bit_depth.setToolTip(tip)
+        self.tb_bit_depth.setToolTip(Help.bit_depth)
         self.tb_bit_depth.setText(utils.intervals_to_string(self.bit.depth))
         self.tb_bit_depth.editingFinished.connect(self.on_bit_depth)
         
@@ -157,8 +213,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_angle_label = QtGui.QLabel('Bit Angle')
         self.tb_bit_angle = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_angle.setFixedWidth(lineEditWidth)
-        tip = '<b>Bit Angle</b> is the angle (in degrees) of the router bit for dovetail bits.  Set to zero for straight bits.'
-        self.tb_bit_angle.setToolTip(tip)
+        self.tb_bit_angle.setToolTip(Help.bit_angle)
         self.tb_bit_angle.setText('%g' % self.bit.angle)
         self.tb_bit_angle.editingFinished.connect(self.on_bit_angle)
 
@@ -170,20 +225,20 @@ class Driver(QtGui.QMainWindow):
         # Equal spacing widgets
 
         self.equal_spacing_params = self.equal_spacing.get_params()
+        labels = spacing.Equally_Spaced.labels
         self.es_cut_values = [0] * 3
 
         # ...first slider
         p = self.equal_spacing_params[0]
         self.es_cut_values[0] = p.vInit
-        self.es_slider0_label = QtGui.QLabel(p.label)
+        self.es_slider0_label = QtGui.QLabel(labels[0])
         self.es_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
         self.es_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.es_slider0.setMinimum(p.vMin)
         self.es_slider0.setMaximum(p.vMax)
         self.es_slider0.setValue(p.vInit)
         self.es_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
-        tip = '<b>%s</b> slider allows you to specify additional spacing between the Board-B fingers' % p.label
-        self.es_slider0.setToolTip(tip)
+        self.es_slider0.setToolTip(Help.es_slider0)
         if p.vMax - p.vMin < 10:
             self.es_slider0.setTickInterval(1)
         self.es_slider0.valueChanged.connect(self.on_es_slider0)
@@ -191,15 +246,14 @@ class Driver(QtGui.QMainWindow):
         # ...second slider
         p = self.equal_spacing_params[1]
         self.es_cut_values[1] = p.vInit
-        self.es_slider1_label = QtGui.QLabel(p.label)
+        self.es_slider1_label = QtGui.QLabel(labels[1])
         self.es_slider1 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
         self.es_slider1.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.es_slider1.setMinimum(p.vMin)
         self.es_slider1.setMaximum(p.vMax)
         self.es_slider1.setValue(p.vInit)
         self.es_slider1.setTickPosition(QtGui.QSlider.TicksBelow)
-        tip = '<b>%s</b> slider allows you to specify additional width added to both Board-A and Board-B fingers.' % p.label
-        self.es_slider1.setToolTip(tip)
+        self.es_slider1.setToolTip(Help.es_slider1)
         if p.vMax - p.vMin < 10:
             self.es_slider1.setTickInterval(1)
         self.es_slider1.valueChanged.connect(self.on_es_slider1)
@@ -207,33 +261,28 @@ class Driver(QtGui.QMainWindow):
         # ...check box for centering
         p = self.equal_spacing_params[2]
         self.es_cut_values[2] = p.vInit
-        self.cb_es_centered = QtGui.QCheckBox(p.label, self.main_frame)
+        self.cb_es_centered = QtGui.QCheckBox(labels[2], self.main_frame)
         self.cb_es_centered.setChecked(True)
         self.cb_es_centered.stateChanged.connect(self.on_cb_es_centered)
-        tip = 'Check <b>%s</b> to force a finger to be centered on the board.' % p.label
-        self.cb_es_centered.setToolTip(tip)
+        self.cb_es_centered.setToolTip(Help.es_centered)
 
         # Variable spacing widgets
         
         self.var_spacing_params = self.var_spacing.get_params()
+        labels = spacing.Variable_Spaced.labels
         self.vs_cut_values = [0] * 2
 
         # ...slider
         p = self.var_spacing_params[0]
         self.vs_cut_values[0] = p.vInit
-        self.vs_slider0_label = QtGui.QLabel(p.label)
+        self.vs_slider0_label = QtGui.QLabel(labels[0])
         self.vs_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
         self.vs_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.vs_slider0.setMinimum(p.vMin)
         self.vs_slider0.setMaximum(p.vMax)
         self.vs_slider0.setValue(p.vInit)
         self.vs_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
-        tip = '''<b>%s</b> slider allows you to specify the number of
-        fingers.  At its minimum value, the width of the center finger is maximized. At
-        its maximum value, the width of the center finger is minimized, and the result is
-        the roughly the same as equally-spaced with, zero "B-spacing", zero "Width", and
-        the "Centered" option checked.''' % p.label
-        self.vs_slider0.setToolTip(tip)
+        self.vs_slider0.setToolTip(Help.vs_slider0)
         if p.vMax - p.vMin < 10:
             self.vs_slider0.setTickInterval(1)
         self.vs_slider0.valueChanged.connect(self.on_vs_slider0)
@@ -520,20 +569,11 @@ class Driver(QtGui.QMainWindow):
         
     def on_about(self, event):
         if options.debug: print 'on_about'
-        msg = 'pyRouterJig is a joint layout tool for woodworking.\n\n' +\
-              'Copyright 2015 Robert B. Lowrie (pyrouterjig@lowrielodge.org)\n\n' +\
-               'pyRouterJig is free software: you can redistribute it and/or modify it under'+\
-               ' the terms of the GNU General Public License as published by the Free Software'+\
-               ' Foundation, either version 3 of the License, or (at your option) any later'+\
-               ' version.\n\n' +\
-               'pyRouterJig is distributed in the hope that it will be useful, but WITHOUT ANY'+\
-               ' WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR'+\
-               ' A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n\n'+\
-               'You should have received a copy of the GNU General Public License along with'+\
-               ' pyRouterJig; see the file LICENSE. If not, see http://www.gnu.org/licenses/.\n\n'+\
-                   'USE AT YOUR OWN RISK!'
 
-        QtGui.QMessageBox.about(self, 'About', msg)
+        box = QtGui.QMessageBox(self)
+        box.setText(Help.short_desc)
+        box.setInformativeText(Help.license)
+        box.show()
     
     def flash_status_message(self, msg, flash_len_ms=None):
         self.statusbar.showMessage(msg)
@@ -551,6 +591,9 @@ if __name__ == '__main__':
     #options.units.metric = True
 
     #options.debug = True
+    
+    sunits = options.units.units_string(verbose=True)
+    Help(sunits)
 
     app = QtGui.QApplication(sys.argv)
     form = Driver()
