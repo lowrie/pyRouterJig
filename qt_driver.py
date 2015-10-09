@@ -83,16 +83,21 @@ class Help:
     minimized, and the result is the roughly the same as equally-spaced \
     with, zero "B-spacing", zero "Width", and the "Centered" option \
     checked.'
-    
-    def __init__(self, unit_s):
-        Help.board_width = Help.board_width % unit_s
-        Help.bit_width = Help.bit_width % unit_s
-        Help.bit_depth = Help.bit_depth % unit_s
+
+    statics_set = False
+    @staticmethod
+    def set_statics():
+        if Help.statics_set: return
+        sunits = options.units.units_string(verbose=True)
+        Help.board_width = Help.board_width % sunits
+        Help.bit_width = Help.bit_width % sunits
+        Help.bit_depth = Help.bit_depth % sunits
         labels = spacing.Equally_Spaced.labels
         Help.es_slider0 = Help.es_slider0 % labels[0]
         Help.es_slider1 = Help.es_slider1 % labels[1]
         Help.es_centered = Help.es_centered % labels[2]
         Help.vs_slider0 = Help.vs_slider0 % spacing.Variable_Spaced.labels[0]
+        Help.statics_set = True
 
 class Driver(QtGui.QMainWindow):
     ''' 
@@ -592,11 +597,11 @@ if __name__ == '__main__':
 
     #options.debug = True
     
-    sunits = options.units.units_string(verbose=True)
-    Help(sunits)
+    Help.set_statics()
 
     app = QtGui.QApplication(sys.argv)
-    form = Driver()
-    form.show()
+    driver = Driver()
+    driver.show()
+    driver.raise_()
     app.exec_()
 
