@@ -35,26 +35,27 @@ from matplotlib.backends.backend_qt4agg import (
 from PyQt4 import QtCore, QtGui
 #from PySlide import QtCore, QtGui
 
-# Define helper strings
+# Define documentation strings
 
-class Help:
+class Doc:
     short_desc = 'pyRouterJig is a joint layout tool for woodworking.'
 
-    license = '\
+    license = '<p>\
     Copyright 2015 Robert B. Lowrie (pyrouterjig@lowrielodge.org)\
-    \n\n\
+    <p>\
     pyRouterJig is free software: you can redistribute it and/or modify it under\
     the terms of the GNU General Public License as published by the Free Software\
     Foundation, either version 3 of the License, or (at your option) any later\
     version.\
-    \n\n\
+    <p>\
     pyRouterJig is distributed in the hope that it will be useful, but WITHOUT ANY\
     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR\
     A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\
     You should have received a copy of the GNU General Public License along with\
-    pyRouterJig; see the file LICENSE. If not, see http://www.gnu.org/licenses/.\
-    \n\n\
-    USE AT YOUR OWN RISK!'
+    pyRouterJig; see the file LICENSE. If not, see \
+    <a href=http://www.gnu.org/licenses/>http://www.gnu.org/licenses/</a>.\
+    <p>\
+    <h3>USE AT YOUR OWN RISK!</h3>'
     
     board_width = '<b>Board Width</b> is the width (in%s) of the board for \
     the joint.'
@@ -87,17 +88,17 @@ class Help:
     statics_set = False
     @staticmethod
     def set_statics():
-        if Help.statics_set: return
+        if Doc.statics_set: return
         sunits = options.units.units_string(verbose=True)
-        Help.board_width = Help.board_width % sunits
-        Help.bit_width = Help.bit_width % sunits
-        Help.bit_depth = Help.bit_depth % sunits
+        Doc.board_width = Doc.board_width % sunits
+        Doc.bit_width = Doc.bit_width % sunits
+        Doc.bit_depth = Doc.bit_depth % sunits
         labels = spacing.Equally_Spaced.labels
-        Help.es_slider0 = Help.es_slider0 % labels[0]
-        Help.es_slider1 = Help.es_slider1 % labels[1]
-        Help.es_centered = Help.es_centered % labels[2]
-        Help.vs_slider0 = Help.vs_slider0 % spacing.Variable_Spaced.labels[0]
-        Help.statics_set = True
+        Doc.es_slider0 = Doc.es_slider0 % labels[0]
+        Doc.es_slider1 = Doc.es_slider1 % labels[1]
+        Doc.es_centered = Doc.es_centered % labels[2]
+        Doc.vs_slider0 = Doc.vs_slider0 % spacing.Variable_Spaced.labels[0]
+        Doc.statics_set = True
 
 class Driver(QtGui.QMainWindow):
     ''' 
@@ -194,7 +195,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_board_width_label = QtGui.QLabel('Board Width')
         self.tb_board_width = QtGui.QLineEdit(self.main_frame)
         self.tb_board_width.setFixedWidth(lineEditWidth)
-        self.tb_board_width.setToolTip(Help.board_width)
+        self.tb_board_width.setToolTip(Doc.board_width)
         self.tb_board_width.setText(utils.intervals_to_string(self.board.width))
         self.tb_board_width.editingFinished.connect(self.on_board_width)
         
@@ -202,7 +203,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_width_label = QtGui.QLabel('Bit Width')
         self.tb_bit_width = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_width.setFixedWidth(lineEditWidth)
-        self.tb_bit_width.setToolTip(Help.bit_width)
+        self.tb_bit_width.setToolTip(Doc.bit_width)
         self.tb_bit_width.setText(utils.intervals_to_string(self.bit.width))
         self.tb_bit_width.editingFinished.connect(self.on_bit_width)
         
@@ -210,7 +211,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_depth_label = QtGui.QLabel('Bit Depth')
         self.tb_bit_depth = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_depth.setFixedWidth(lineEditWidth)
-        self.tb_bit_depth.setToolTip(Help.bit_depth)
+        self.tb_bit_depth.setToolTip(Doc.bit_depth)
         self.tb_bit_depth.setText(utils.intervals_to_string(self.bit.depth))
         self.tb_bit_depth.editingFinished.connect(self.on_bit_depth)
         
@@ -218,7 +219,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_angle_label = QtGui.QLabel('Bit Angle')
         self.tb_bit_angle = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_angle.setFixedWidth(lineEditWidth)
-        self.tb_bit_angle.setToolTip(Help.bit_angle)
+        self.tb_bit_angle.setToolTip(Doc.bit_angle)
         self.tb_bit_angle.setText('%g' % self.bit.angle)
         self.tb_bit_angle.editingFinished.connect(self.on_bit_angle)
 
@@ -243,7 +244,7 @@ class Driver(QtGui.QMainWindow):
         self.es_slider0.setMaximum(p.vMax)
         self.es_slider0.setValue(p.vInit)
         self.es_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
-        self.es_slider0.setToolTip(Help.es_slider0)
+        self.es_slider0.setToolTip(Doc.es_slider0)
         if p.vMax - p.vMin < 10:
             self.es_slider0.setTickInterval(1)
         self.es_slider0.valueChanged.connect(self.on_es_slider0)
@@ -258,7 +259,7 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1.setMaximum(p.vMax)
         self.es_slider1.setValue(p.vInit)
         self.es_slider1.setTickPosition(QtGui.QSlider.TicksBelow)
-        self.es_slider1.setToolTip(Help.es_slider1)
+        self.es_slider1.setToolTip(Doc.es_slider1)
         if p.vMax - p.vMin < 10:
             self.es_slider1.setTickInterval(1)
         self.es_slider1.valueChanged.connect(self.on_es_slider1)
@@ -269,7 +270,7 @@ class Driver(QtGui.QMainWindow):
         self.cb_es_centered = QtGui.QCheckBox(labels[2], self.main_frame)
         self.cb_es_centered.setChecked(True)
         self.cb_es_centered.stateChanged.connect(self.on_cb_es_centered)
-        self.cb_es_centered.setToolTip(Help.es_centered)
+        self.cb_es_centered.setToolTip(Doc.es_centered)
 
         # Variable spacing widgets
         
@@ -287,7 +288,7 @@ class Driver(QtGui.QMainWindow):
         self.vs_slider0.setMaximum(p.vMax)
         self.vs_slider0.setValue(p.vInit)
         self.vs_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
-        self.vs_slider0.setToolTip(Help.vs_slider0)
+        self.vs_slider0.setToolTip(Doc.vs_slider0)
         if p.vMax - p.vMin < 10:
             self.vs_slider0.setTickInterval(1)
         self.vs_slider0.valueChanged.connect(self.on_vs_slider0)
@@ -576,8 +577,9 @@ class Driver(QtGui.QMainWindow):
         if options.debug: print 'on_about'
 
         box = QtGui.QMessageBox(self)
-        box.setText(Help.short_desc)
-        box.setInformativeText(Help.license)
+        s = '<h2>Welcome to pyRouterJig!</h2>'
+        box.setText(s + Doc.short_desc + Doc.license)
+        box.setTextFormat(QtCore.Qt.RichText)
         box.show()
     
     def flash_status_message(self, msg, flash_len_ms=None):
@@ -597,7 +599,7 @@ if __name__ == '__main__':
 
     #options.debug = True
     
-    Help.set_statics()
+    Doc.set_statics()
 
     app = QtGui.QApplication(sys.argv)
     driver = Driver()
