@@ -146,9 +146,9 @@ class MPL_Plotter:
         self.axes.fill(self.geom.xB, self.geom.yB, hatch='/', fill=None)
         self.axes.fill(self.geom.xA, self.geom.yA, hatch='/', fill=None)
         self.axes.annotate('Board-A', (board_A.xMid(), board_A.yT()), va='top', ha='center', \
-                           textcoords='offset points', xytext=(0,-2))
+                           textcoords='offset points', xytext=(0,-3))
         self.axes.annotate('Board-B', (board_B.xMid(), board_B.yB), va='bottom', ha='center', \
-                           textcoords='offset points', xytext=(0,4))
+                           textcoords='offset points', xytext=(0,3))
 
         # Plot the board center
         self.axes.plot((board_T.xMid(), board_T.xMid()), (rect_T.yB, board_A.yT()), color="black",

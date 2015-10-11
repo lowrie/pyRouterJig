@@ -57,11 +57,11 @@ class Doc:
     <p>\
     <h3>USE AT YOUR OWN RISK!</h3>'
     
-    board_width = '<b>Board Width</b> is the width (in%s) of the board for \
+    board_width = '<b>Board Width</b> is the board width (in%s) for \
     the joint.'
 
-    bit_width = '<b>Bit Width</b> is the width (in%s) of \
-    maximum cutting width of the router bit.'
+    bit_width = '<b>Bit Width</b> is the maximum cutting width (in%s) of \
+    the router bit.'
 
     bit_depth = '<b>Bit Depth</b> is the cutting depth (in%s) of the \
     router bit.'
