@@ -149,14 +149,12 @@ class Driver(QtGui.QMainWindow):
         '''
         Creates the drop-down menus.
         '''
-
         self.menubar = self.menuBar()
 
-        # Uncomment if you want the menu on the application window, for Mac OSX
-#        if sys.platform=="darwin": 
-#            self.menubar.setNativeMenuBar(False)1
+        if options.use_qt_menubar: 
+            self.menubar.setNativeMenuBar(False)
 
-        self.file_menu = self.menubar.addMenu('&pyRouterJig')
+        self.file_menu = self.menubar.addMenu('File')
 
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -231,7 +229,7 @@ class Driver(QtGui.QMainWindow):
         # Equal spacing widgets
 
         self.equal_spacing_params = self.equal_spacing.get_params()
-        labels = spacing.Equally_Spaced.labels
+        labels = self.equal_spacing.full_labels
         self.es_cut_values = [0] * 3
 
         # ...first slider
@@ -275,7 +273,7 @@ class Driver(QtGui.QMainWindow):
         # Variable spacing widgets
         
         self.var_spacing_params = self.var_spacing.get_params()
-        labels = spacing.Variable_Spaced.labels
+        labels = self.var_spacing.full_labels
         self.vs_cut_values = [0] * 2
 
         # ...slider
@@ -522,6 +520,7 @@ class Driver(QtGui.QMainWindow):
         if options.debug: print 'on_es_slider0', value
         self.es_cut_values[0] = value
         self.equal_spacing.set_cuts(values=self.es_cut_values)
+        self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
     
@@ -529,6 +528,7 @@ class Driver(QtGui.QMainWindow):
         if options.debug: print 'on_es_slider1', value
         self.es_cut_values[1] = value
         self.equal_spacing.set_cuts(values=self.es_cut_values)
+        self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
     
@@ -536,6 +536,7 @@ class Driver(QtGui.QMainWindow):
         if options.debug: print 'on_vs_slider0', value
         self.vs_cut_values[0] = value
         self.var_spacing.set_cuts(values=self.vs_cut_values)
+        self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
 
@@ -592,8 +593,7 @@ class Driver(QtGui.QMainWindow):
         self.statusbar.showMessage('')
 
 
-if __name__ == '__main__':
-
+def run():
     # Uncomment this line for metric
     #options.units.metric = True
 
@@ -606,4 +606,7 @@ if __name__ == '__main__':
     driver.show()
     driver.raise_()
     app.exec_()
+
+if __name__ == '__main__':
+    run()
 

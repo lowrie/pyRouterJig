@@ -206,6 +206,9 @@ class Options:
     Stores global the options:
 
     debug: If true, prints extra diagnostics for developers.
+    use_qt_menubar: If True, use the Qt menubar attached to the
+      application. Otherwise, use the native menubar for the
+      platform.
     units: The global Units object.
     margins: The global Margins object.
     dpi_screen: Dots-per-inch used for screen plotting.
@@ -213,11 +216,12 @@ class Options:
     min_finger_width: avoid a finger smaller than dimension
     '''
     def __init__(self):
-        self.debug      = False
-        self.units      = Units(32)
-        self.margins    = Margins(self.units.inches_to_intervals(0.25))
+        self.debug = False
+        self.use_qt_menubar = False
+        self.units = Units(32)
+        self.margins = Margins(self.units.inches_to_intervals(0.25))
         self.dpi_screen = 110
-        self.dpi_paper  = 72
+        self.dpi_paper = 72
         self.min_finger_width = self.units.inches_to_intervals(0.125)
 
 options = Options()

@@ -56,12 +56,15 @@ class Base_Spacing:
 
     Attributes:
 
-    labels (static): list of labels for the Spacing_Params
     description: string description of algorithm
     bit: A Router_Bit object.
     board: A Board object.
     cuts: A list of Cut objects, which represent the female fingers in Board-A.
+    labels: list of labels for the Spacing_Params
+
+    cuts and full_labels are not set until set_cuts is called.
     '''
+    labels = []
     def __init__(self, bit, board):
         self.description = 'NONE'
         self.bit         = bit
@@ -70,8 +73,9 @@ class Base_Spacing:
         '''Returns a list of Spacing_Params the control the algoritm.'''
         return ()
     def set_cuts(self):
-        '''Computes the attribute "cuts".'''
+        '''Computes the attributes "cuts" and "full_labels".'''
         self.cuts = []
+        self.full_labels = []
 
 class Equally_Spaced(Base_Spacing):
     '''
@@ -81,7 +85,8 @@ class Equally_Spaced(Base_Spacing):
     Parameters that control the spacing are:
 
     b_spacing: Extra spacing, beyond the bit width  added between the fingers 
-               of the B-board.  Default is 0.
+               of the B-board.  Default is 0.  The reported b_spacing has the
+               bit width added on to this value.
     
     width: Width of fingers.  Default is the bit width.
 
@@ -103,11 +108,10 @@ class Equally_Spaced(Base_Spacing):
             centered = values[2]
         elif width is None:
             width = self.bit.width
-        self.description = 'Equally spaced (B-spacing=' +\
-                           utils.intervals_to_string(b_spacing, True) +\
-                           ', width=' +\
-                            utils.intervals_to_string(width, True) +\
-                            ')'
+        self.full_labels = ['B-spacing: ' + utils.intervals_to_string(width + b_spacing, True),\
+                            'Width: ' + utils.intervals_to_string(width, True),\
+                            'Centered']
+        self.description = 'Equally spaced (' + self.full_labels[0] + ', ' + self.full_labels[1] + ')'
         self.cuts = [] # return value
         neck_width = my_round(self.bit.neck + width - self.bit.width + b_spacing)
         if neck_width < 1:
@@ -184,7 +188,8 @@ class Variable_Spaced(Base_Spacing):
             m = values[0]
         elif m is None:
             m = self.mDefault
-        self.description = 'Variable Spaced (Fingers=%d)' % (m)
+        self.full_labels = ['Fingers: %d' % m]
+        self.description = 'Variable Spaced (' + self.full_labels[0] + ')'
         # c is the ideal center-cut width
         c = self.eff_width * ((m - 1.0) * self.wb - m * (m + 1.0) + self.alpha * m) /\
             (m * m - 2.0 * m - 1.0 + self.alpha)

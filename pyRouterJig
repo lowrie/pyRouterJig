@@ -1,0 +1,4 @@
+#!/usr/bin/env pythonw
+
+import qt_driver
+qt_driver.run()
