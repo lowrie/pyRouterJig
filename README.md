@@ -1,5 +1,5 @@
 # pyRouterJig
 pyRouterJig is a woodworking layout tool for creating box and dovetail joints
 
-To run pyRouterJig, run the <b>pyRouterJig</b> file.
+For more information, [see the pyRouterJig website](http://lowrie.github.io/pyRouterJig/)
 
