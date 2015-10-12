@@ -1,11 +1,15 @@
 ##########################################################################
 #
-# Options for pyRouterJig.  Be careful editing this file.
+# Options for pyRouterJig.  Be careful editing this file.  Any errors
+# that occur will not be friendly.  Also, these options may change
+# or be deleted with future versions.
 #
 # Do not change these 2 lines ############################################
 from utils import Units, Margins
-class Options: pass
+class Options: pass # Empty class.  Static attributes added below.
 ##########################################################################
+
+# You can change the options below.
 
 # units sets the unit system and size of an interval.
 # Use this line for English, with a 1/32" interval size:
