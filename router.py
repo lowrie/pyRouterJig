@@ -90,7 +90,7 @@ class Router_Bit:
     def set_width_from_string(self, s):
         msg = 'Bit width is "%s".  Set to a postive value.'
         try:
-            self.width = utils.string_to_intervals(s)
+            self.width = Options.units.string_to_intervals(s)
         except ValueError, e: 
             msg = 'ValueError setting bit width: %s\n' % (e) + \
                   msg % s
@@ -103,7 +103,7 @@ class Router_Bit:
     def set_depth_from_string(self, s):
         msg = 'Bit depth is "%s".  Set to a postive value.'
         try:
-            self.depth = utils.string_to_intervals(s)
+            self.depth = Options.units.string_to_intervals(s)
         except ValueError, e: 
             msg = 'ValueError setting bit depth: %s\n' % (e) + \
                   msg % s
@@ -191,7 +191,7 @@ class Board(My_Rectangle):
     def set_width_from_string(self, s):
         msg = 'Board width is "%s".  Set to a postive value.'
         try:
-            self.width = utils.string_to_intervals(s)
+            self.width = Options.units.string_to_intervals(s)
         except ValueError, e: 
             msg = 'ValueError setting board width: %s\n' % (e) + \
                   msg % s
@@ -203,7 +203,7 @@ class Board(My_Rectangle):
     def set_height_from_string(self, s):
         msg = 'Board height is "%s".  Set to a postive value.'
         try:
-            self.height = utils.string_to_intervals(s)
+            self.height = Options.units.string_to_intervals(s)
         except ValueError, e: 
             msg = 'ValueError setting board height: %s\n' % (e) + \
                   msg % s

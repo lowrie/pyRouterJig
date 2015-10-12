@@ -64,7 +64,7 @@ class MPL_Plotter:
         wwl = Options.units.intervals_to_inches(window_width)
         if wwl < min_width:
             wwl = min_width
-            window_width = utils.inches_to_intervals(wwl)
+            window_width = Options.units.inches_to_intervals(wwl)
             margins.left = (window_width - self.template.length) / 2
             margins.right = margins.left
             window_width  = self.template.length + margins.left + margins.right
