@@ -24,8 +24,9 @@ Contains the router, board, template and their geometry properties.
 
 import math, sys
 from copy import deepcopy
+from options import Options
 import utils
-from utils import options, my_round
+from utils import my_round
 
 class Router_Exception(Exception):
     '''
@@ -47,9 +48,9 @@ class Incra_Template:
     length: total length of template
     '''
     def __init__(self, board, margin=None, length=None):
-        self.height = options.units.inches_to_intervals(0.5) # incra uses 1/2" templates
+        self.height = Options.units.inches_to_intervals(0.5) # incra uses 1/2" templates
         if margin is None:
-            self.margin = options.units.inches_to_intervals(1.0) # margin at each end of template tape
+            self.margin = Options.units.inches_to_intervals(1.0) # margin at each end of template tape
         else:
             self.margin = margin
         if length is None:

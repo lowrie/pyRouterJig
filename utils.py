@@ -180,9 +180,22 @@ class Units:
 
 class Margins:
     '''
-    Defines window margins and vertical separation between objects
+    Defines window margins and vertical separation between objects for
+    the figure.
+
+    Attributes (all distances in intervals)
+
+    sep: Vertical separation between template and Board-B and Board-B
+         and Board-A.
+    left: Left margin
+    right: Right margin
+    botoom: Bottom margin
+    top: Top margin
     '''
     def __init__(self, sep, left=None, right=None, bottom=None, top=None):
+        '''
+        If any value is left unspecified, it's value is set to sep.
+        '''
         self.sep = sep
         if left is None:
             self.left = sep
@@ -200,38 +213,3 @@ class Margins:
             self.top = sep
         else:
             self.top = top
-
-class Options:
-    '''
-    Stores global the options:
-
-    debug: If true, prints extra diagnostics for developers.
-    use_qt_menubar: If True, use the Qt menubar attached to the
-      application. Otherwise, use the native menubar for the
-      platform.
-    units: The global Units object.
-    margins: The global Margins object.
-    dpi_screen: Dots-per-inch used for screen plotting.
-    dpi_paper: Dots-per-inch used for screen printing.
-    min_finger_width: avoid a finger smaller than dimension
-    '''
-    def __init__(self):
-        self.debug = False
-        self.use_qt_menubar = False
-        self.units = Units(32)
-        self.margins = Margins(self.units.inches_to_intervals(0.25))
-        self.dpi_screen = 110
-        self.dpi_paper = 72
-        self.min_finger_width = self.units.inches_to_intervals(0.125)
-
-options = Options()
-
-# Some helper functions for the global Options object:
-def inches_to_intervals(inches):
-    return options.units.inches_to_intervals(inches)
-def string_to_intervals(s):
-    return options.units.string_to_intervals(s)
-def intervals_to_string(i, with_units=False):
-    return options.units.intervals_to_string(i, with_units)
-def intervals_to_inches(i):
-    return options.units.intervals_to_inches(i)

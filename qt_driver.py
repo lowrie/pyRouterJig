@@ -19,7 +19,7 @@
 ###########################################################################
 
 '''
-Contains the main driver, using pySlide or pyQt.
+Contains the main driver, using pySide or pyQt.
 '''
 
 import os, sys, traceback
@@ -27,78 +27,14 @@ import router
 import mpl
 import spacing
 import utils
-from utils import options
+from options import Options
+from doc import Doc
 
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 
 from PyQt4 import QtCore, QtGui
 #from PySlide import QtCore, QtGui
-
-# Define documentation strings
-
-class Doc:
-    short_desc = 'pyRouterJig is a joint layout tool for woodworking.'
-
-    license = '<p>\
-    Copyright 2015 Robert B. Lowrie (pyrouterjig@lowrielodge.org)\
-    <p>\
-    pyRouterJig is free software: you can redistribute it and/or modify it under\
-    the terms of the GNU General Public License as published by the Free Software\
-    Foundation, either version 3 of the License, or (at your option) any later\
-    version.\
-    <p>\
-    pyRouterJig is distributed in the hope that it will be useful, but WITHOUT ANY\
-    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR\
-    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\
-    You should have received a copy of the GNU General Public License along with\
-    pyRouterJig; see the file LICENSE. If not, see \
-    <a href=http://www.gnu.org/licenses/>http://www.gnu.org/licenses/</a>.\
-    <p>\
-    <h3>USE AT YOUR OWN RISK!</h3>'
-    
-    board_width = '<b>Board Width</b> is the board width (in%s) for \
-    the joint.'
-
-    bit_width = '<b>Bit Width</b> is the maximum cutting width (in%s) of \
-    the router bit.'
-
-    bit_depth = '<b>Bit Depth</b> is the cutting depth (in%s) of the \
-    router bit.'
-
-    bit_angle = '<b>Bit Angle</b> is the angle (in degrees) of the router \
-    bit for dovetail bits.  Set to zero for straight bits.'
-
-    es_slider0 = '<b>%s</b> slider allows you to specify additional \
-    spacing between the Board-B fingers'
-
-    es_slider1 = '<b>%s</b> slider allows you to specify additional \
-    width added to both Board-A and Board-B fingers.'
-
-    es_centered = 'Check <b>%s</b> to force a finger to be centered on \
-    the board.'
-
-    vs_slider0 = '<b>%s</b> slider allows you to specify the number of \
-    fingers. At its minimum value, the width of the center finger is \
-    maximized. At its maximum value, the width of the center finger is \
-    minimized, and the result is the roughly the same as equally-spaced \
-    with, zero "B-spacing", zero "Width", and the "Centered" option \
-    checked.'
-
-    statics_set = False
-    @staticmethod
-    def set_statics():
-        if Doc.statics_set: return
-        sunits = options.units.units_string(verbose=True)
-        Doc.board_width = Doc.board_width % sunits
-        Doc.bit_width = Doc.bit_width % sunits
-        Doc.bit_depth = Doc.bit_depth % sunits
-        labels = spacing.Equally_Spaced.labels
-        Doc.es_slider0 = Doc.es_slider0 % labels[0]
-        Doc.es_slider1 = Doc.es_slider1 % labels[1]
-        Doc.es_centered = Doc.es_centered % labels[2]
-        Doc.vs_slider0 = Doc.vs_slider0 % spacing.Variable_Spaced.labels[0]
-        Doc.statics_set = True
 
 class Driver(QtGui.QMainWindow):
     ''' 
@@ -110,7 +46,7 @@ class Driver(QtGui.QMainWindow):
         self.except_handled = False
 
         # Create an initial joint
-        self.board = router.Board(width=utils.inches_to_intervals(7.5))
+        self.board = router.Board(width=Options.units.inches_to_intervals(7.5))
         self.bit = router.Router_Bit(16, 24)
         self.template = router.Incra_Template(self.board)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
@@ -151,7 +87,7 @@ class Driver(QtGui.QMainWindow):
         '''
         self.menubar = self.menuBar()
 
-        if options.use_qt_menubar: 
+        if Options.use_qt_menubar: 
             self.menubar.setNativeMenuBar(False)
 
         self.file_menu = self.menubar.addMenu('File')
@@ -194,7 +130,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_board_width = QtGui.QLineEdit(self.main_frame)
         self.tb_board_width.setFixedWidth(lineEditWidth)
         self.tb_board_width.setToolTip(Doc.board_width)
-        self.tb_board_width.setText(utils.intervals_to_string(self.board.width))
+        self.tb_board_width.setText(Options.units.intervals_to_string(self.board.width))
         self.tb_board_width.editingFinished.connect(self.on_board_width)
         
         # Bit width text box
@@ -202,7 +138,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_width = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_width.setFixedWidth(lineEditWidth)
         self.tb_bit_width.setToolTip(Doc.bit_width)
-        self.tb_bit_width.setText(utils.intervals_to_string(self.bit.width))
+        self.tb_bit_width.setText(Options.units.intervals_to_string(self.bit.width))
         self.tb_bit_width.editingFinished.connect(self.on_bit_width)
         
         # Bit depth text box
@@ -210,7 +146,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_depth = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_depth.setFixedWidth(lineEditWidth)
         self.tb_bit_depth.setToolTip(Doc.bit_depth)
-        self.tb_bit_depth.setText(utils.intervals_to_string(self.bit.depth))
+        self.tb_bit_depth.setText(Options.units.intervals_to_string(self.bit.depth))
         self.tb_bit_depth.editingFinished.connect(self.on_bit_depth)
         
         # Bit angle text box
@@ -397,14 +333,14 @@ class Driver(QtGui.QMainWindow):
         '''
         (Re)draws the matplotlib figure
         '''
-        if options.debug: print 'draw_mpl'
+        if Options.debug: print 'draw_mpl'
         self.template = router.Incra_Template(self.board)
         self.mpl.draw(self.template, self.board, self.bit, self.spacing)
         self.canvas.draw()
         self.canvas.update()
     
     def on_cb_es_centered(self):
-        if options.debug: print 'on_cb_es_centered'
+        if Options.debug: print 'on_cb_es_centered'
         self.es_cut_values[2] = self.cb_es_centered.isChecked()
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.draw_mpl()
@@ -465,13 +401,13 @@ class Driver(QtGui.QMainWindow):
             raise ValueError('Bad value for spacing_index %d' % spacing_index)
 
     def on_tabs_spacing(self, index):
-        if options.debug: print 'on_tabs_spacing'
+        if Options.debug: print 'on_tabs_spacing'
         self.reinit_spacing()
         self.draw_mpl()
         self.flash_status_message('Changed to spacing algorithm %s' % str(self.tabs_spacing.tabText(index)))
     
     def on_bit_width(self):
-        if options.debug: print 'on_bit_width'
+        if Options.debug: print 'on_bit_width'
         # With editingFinished, we also need to check whether the
         # value actually changed. This is because editingFinished gets
         # triggered every time focus changes, which can occur many 
@@ -479,7 +415,7 @@ class Driver(QtGui.QMainWindow):
         # in the middle of an exception, etc.  This logic also avoids
         # unnecessary redraws.
         if self.tb_bit_width.isModified():
-            if options.debug: print ' bit_width modified'
+            if Options.debug: print ' bit_width modified'
             self.tb_bit_width.setModified(False)
             text = str(self.tb_bit_width.text())
             self.bit.set_width_from_string(text)
@@ -488,7 +424,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed bit width to ' + text)
     
     def on_bit_depth(self):
-        if options.debug: print 'on_bit_depth'
+        if Options.debug: print 'on_bit_depth'
         if self.tb_bit_depth.isModified():
             self.tb_bit_depth.setModified(False)
             text = str(self.tb_bit_depth.text())
@@ -497,7 +433,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed bit depth to ' + text)
     
     def on_bit_angle(self):
-        if options.debug: print 'on_bit_angle'
+        if Options.debug: print 'on_bit_angle'
         if self.tb_bit_angle.isModified():
             self.tb_bit_angle.setModified(False)
             text = str(self.tb_bit_angle.text())
@@ -507,7 +443,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed bit angle to ' + text)
     
     def on_board_width(self):
-        if options.debug: print 'on_board_width'
+        if Options.debug: print 'on_board_width'
         if self.tb_board_width.isModified():
             self.tb_board_width.setModified(False)
             text = str(self.tb_board_width.text())
@@ -517,7 +453,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed board width to ' + text)
 
     def on_es_slider0(self, value):
-        if options.debug: print 'on_es_slider0', value
+        if Options.debug: print 'on_es_slider0', value
         self.es_cut_values[0] = value
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
@@ -525,7 +461,7 @@ class Driver(QtGui.QMainWindow):
         self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
     
     def on_es_slider1(self, value):
-        if options.debug: print 'on_es_slider1', value
+        if Options.debug: print 'on_es_slider1', value
         self.es_cut_values[1] = value
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
@@ -533,7 +469,7 @@ class Driver(QtGui.QMainWindow):
         self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
     
     def on_vs_slider0(self, value):
-        if options.debug: print 'on_vs_slider0', value
+        if Options.debug: print 'on_vs_slider0', value
         self.vs_cut_values[0] = value
         self.var_spacing.set_cuts(values=self.vs_cut_values)
         self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
@@ -541,7 +477,7 @@ class Driver(QtGui.QMainWindow):
         self.flash_status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
 
     def on_save(self, event):
-        if options.debug: print 'on_save'
+        if Options.debug: print 'on_save'
 
         # Limit file save types to png and pdf:
         #default = 'Portable Document Format (*.pdf)'
@@ -571,11 +507,11 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message("Unable to save %s!" % path)
         
     def on_exit(self):
-        if options.debug: print 'on_exit'
+        if Options.debug: print 'on_exit'
         QtGui.qApp.quit()
         
     def on_about(self, event):
-        if options.debug: print 'on_about'
+        if Options.debug: print 'on_about'
 
         box = QtGui.QMessageBox(self)
         s = '<h2>Welcome to pyRouterJig!</h2>'
@@ -589,16 +525,11 @@ class Driver(QtGui.QMainWindow):
             QtCore.QTimer.singleShot(flash_len_ms, self.on_flash_status_off)
     
     def on_flash_status_off(self):
-        if options.debug: print 'on_flash_status_off'
+        if Options.debug: print 'on_flash_status_off'
         self.statusbar.showMessage('')
 
 
 def run():
-    # Uncomment this line for metric
-    #options.units.metric = True
-
-    #options.debug = True
-    
     Doc.set_statics()
 
     app = QtGui.QApplication(sys.argv)
