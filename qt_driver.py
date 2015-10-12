@@ -67,6 +67,10 @@ class Driver(QtGui.QMainWindow):
         # Draw the initial figure using matplotlib
         self.draw_mpl()
 
+        # Keep track whether the current figure has been saved.  We initialize to true,
+        # because we assume that that the user does not want the default joint saved.
+        self.file_saved = True
+
     def exception_hook(self, etype, value, trace):
         '''
         Handler for all exceptions.
@@ -87,16 +91,16 @@ class Driver(QtGui.QMainWindow):
         '''
         self.menubar = self.menuBar()
 
-        if Options.use_qt_menubar: 
-            self.menubar.setNativeMenuBar(False)
+        # always attach the menubar to the application window, even on the Mac
+        self.menubar.setNativeMenuBar(False)
 
-        self.file_menu = self.menubar.addMenu('File')
+        self.file_menu = self.menubar.addMenu('pyRouterJig')
 
-        exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
-        exit_action.setShortcut('Ctrl+Q')
-        exit_action.setStatusTip('Exit pyRouterJig')
-        exit_action.triggered.connect(self.on_exit)
-        self.file_menu.addAction(exit_action)
+        about_action = QtGui.QAction(QtGui.QIcon('about.png'), '&About', self)
+        about_action.setShortcut('Ctrl+A')
+        about_action.setStatusTip('About this program')
+        about_action.triggered.connect(self.on_about)
+        self.file_menu.addAction(about_action)
 
         save_action = QtGui.QAction(QtGui.QIcon('save.png'), '&Save', self)
         save_action.setShortcut('Ctrl+S')
@@ -104,11 +108,11 @@ class Driver(QtGui.QMainWindow):
         save_action.triggered.connect(self.on_save)
         self.file_menu.addAction(save_action)
 
-        about_action = QtGui.QAction(QtGui.QIcon('about.png'), '&About', self)
-        about_action.setShortcut('Ctrl+A')
-        about_action.setStatusTip('About this program')
-        about_action.triggered.connect(self.on_about)
-        self.file_menu.addAction(about_action)
+        exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Quit', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.setStatusTip('Exit pyRouterJig')
+        exit_action.triggered.connect(self.on_exit)
+        self.file_menu.addAction(exit_action)
 
     def create_widgets(self):
         '''
@@ -338,16 +342,6 @@ class Driver(QtGui.QMainWindow):
         self.mpl.draw(self.template, self.board, self.bit, self.spacing)
         self.canvas.draw()
         self.canvas.update()
-    
-    def on_cb_es_centered(self):
-        if Options.debug: print 'on_cb_es_centered'
-        self.es_cut_values[2] = self.cb_es_centered.isChecked()
-        self.equal_spacing.set_cuts(values=self.es_cut_values)
-        self.draw_mpl()
-        if self.es_cut_values[2]:
-            self.flash_status_message('Checked Centered.')
-        else:
-            self.flash_status_message('Unchecked Centered.')
 
     def reinit_spacing(self):
         '''
@@ -400,11 +394,23 @@ class Driver(QtGui.QMainWindow):
         else:
             raise ValueError('Bad value for spacing_index %d' % spacing_index)
 
+    def on_cb_es_centered(self):
+        if Options.debug: print 'on_cb_es_centered'
+        self.es_cut_values[2] = self.cb_es_centered.isChecked()
+        self.equal_spacing.set_cuts(values=self.es_cut_values)
+        self.draw_mpl()
+        if self.es_cut_values[2]:
+            self.flash_status_message('Checked Centered.')
+        else:
+            self.flash_status_message('Unchecked Centered.')
+        self.file_saved = False
+
     def on_tabs_spacing(self, index):
         if Options.debug: print 'on_tabs_spacing'
         self.reinit_spacing()
         self.draw_mpl()
         self.flash_status_message('Changed to spacing algorithm %s' % str(self.tabs_spacing.tabText(index)))
+        self.file_saved = False
     
     def on_bit_width(self):
         if Options.debug: print 'on_bit_width'
@@ -422,6 +428,7 @@ class Driver(QtGui.QMainWindow):
             self.reinit_spacing()
             self.draw_mpl()
             self.flash_status_message('Changed bit width to ' + text)
+            self.file_saved = False
     
     def on_bit_depth(self):
         if Options.debug: print 'on_bit_depth'
@@ -431,6 +438,7 @@ class Driver(QtGui.QMainWindow):
             self.bit.set_depth_from_string(text)
             self.draw_mpl()
             self.flash_status_message('Changed bit depth to ' + text)
+            self.file_saved = False
     
     def on_bit_angle(self):
         if Options.debug: print 'on_bit_angle'
@@ -441,7 +449,8 @@ class Driver(QtGui.QMainWindow):
             self.reinit_spacing()
             self.draw_mpl()
             self.flash_status_message('Changed bit angle to ' + text)
-    
+            self.file_saved = False
+
     def on_board_width(self):
         if Options.debug: print 'on_board_width'
         if self.tb_board_width.isModified():
@@ -451,6 +460,7 @@ class Driver(QtGui.QMainWindow):
             self.reinit_spacing()
             self.draw_mpl()
             self.flash_status_message('Changed board width to ' + text)
+            self.file_saved = False
 
     def on_es_slider0(self, value):
         if Options.debug: print 'on_es_slider0', value
@@ -459,6 +469,7 @@ class Driver(QtGui.QMainWindow):
         self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
+        self.file_saved = False
     
     def on_es_slider1(self, value):
         if Options.debug: print 'on_es_slider1', value
@@ -467,6 +478,7 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
+        self.file_saved = False
     
     def on_vs_slider0(self, value):
         if Options.debug: print 'on_vs_slider0', value
@@ -475,6 +487,7 @@ class Driver(QtGui.QMainWindow):
         self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
+        self.file_saved = False
 
     def on_save(self, event):
         if Options.debug: print 'on_save'
@@ -503,12 +516,20 @@ class Driver(QtGui.QMainWindow):
         if path:
             self.canvas.print_figure(path, dpi=self.dpi)
             self.flash_status_message("Saved to %s" % path)
+            self.file_saved = True
         else:
             self.flash_status_message("Unable to save %s!" % path)
         
     def on_exit(self):
         if Options.debug: print 'on_exit'
-        QtGui.qApp.quit()
+        if self.file_saved:
+            QtGui.qApp.quit()
+        else:
+            reply = QtGui.QMessageBox.question(self, 'Message',
+                                               "Figure was changed but not saved.  Are you sure to quit?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+
+            if reply == QtGui.QMessageBox.Yes:
+                QtGui.qApp.quit()
         
     def on_about(self, event):
         if Options.debug: print 'on_about'
@@ -527,6 +548,15 @@ class Driver(QtGui.QMainWindow):
     def on_flash_status_off(self):
         if Options.debug: print 'on_flash_status_off'
         self.statusbar.showMessage('')
+
+    def closeEvent(self, event):
+        '''
+        For closeEvents (user closes window or presses Ctrl-Q), ignore and call
+        on_exit()
+        '''
+        if Options.debug: print 'closeEvent'
+        self.on_exit()
+        event.ignore()
 
 
 def run():

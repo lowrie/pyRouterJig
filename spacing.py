@@ -109,7 +109,7 @@ class Equally_Spaced(Base_Spacing):
             centered = values[2]
         elif width is None:
             width = self.bit.width
-        self.full_labels = ['B-spacing: ' + Options.units.intervals_to_string(width + b_spacing, True),\
+        self.full_labels = ['B-spacing: ' + Options.units.intervals_to_string(2 * width + b_spacing, True),\
                             'Width: ' + Options.units.intervals_to_string(width, True),\
                             'Centered']
         self.description = 'Equally spaced (' + self.full_labels[0] + ', ' + self.full_labels[1] + ')'

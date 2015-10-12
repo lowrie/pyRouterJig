@@ -37,8 +37,5 @@ Options.margins = Margins(8)
 # stdout during a pyRouterJig session.  This option is typically only useful
 # for developers.
 Options.debug = False
-
-# If True, use the Qt menubar attached to the application. Otherwise, use the
-# native menubar for the platform.
-Options.use_qt_menubar = False
+#Options.debug = True
 
