@@ -536,6 +536,7 @@ class Driver(QtGui.QMainWindow):
 
         box = QtGui.QMessageBox(self)
         s = '<h2>Welcome to pyRouterJig!</h2>'
+        s += '<h3>Version: %s</h3>' % utils.version
         box.setText(s + Doc.short_desc + Doc.license)
         box.setTextFormat(QtCore.Qt.RichText)
         box.show()
