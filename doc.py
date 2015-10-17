@@ -18,11 +18,14 @@
 #
 ###########################################################################
 
+'''
+Defines documentation helpers.
+'''
+
 import spacing
-import utils
 from options import OPTIONS
 
-class Doc:
+class Doc(object):
     '''
     Defines documentation strings.
     '''
@@ -44,7 +47,7 @@ class Doc:
     <a href=http://www.gnu.org/licenses/>http://www.gnu.org/licenses/</a>.\
     <p>\
     <h3>USE AT YOUR OWN RISK!</h3>'
-    
+
     board_width = '<b>Board Width</b> is the board width (in%s) of \
     the joint.'
 
@@ -74,9 +77,19 @@ class Doc:
     checked.'
 
     statics_set = False
+
+    # you don't really need an instance of this class, but it
+    # doesn't hurt anything
+    def __init__(self):
+        Doc.set_statics()
+
     @staticmethod
     def set_statics():
-        if Doc.statics_set: return
+        '''
+        Sets the static variables for this class
+        '''
+        if Doc.statics_set:
+            return
         sunits = OPTIONS['units'].units_string(verbose=True)
         Doc.board_width = Doc.board_width % sunits
         Doc.bit_width = Doc.bit_width % sunits
