@@ -20,7 +20,7 @@
 
 import spacing
 import utils
-from options import Options
+from options import OPTIONS
 
 class Doc:
     '''
@@ -77,7 +77,7 @@ class Doc:
     @staticmethod
     def set_statics():
         if Doc.statics_set: return
-        sunits = Options.units.units_string(verbose=True)
+        sunits = OPTIONS['units'].units_string(verbose=True)
         Doc.board_width = Doc.board_width % sunits
         Doc.bit_width = Doc.bit_width % sunits
         Doc.bit_depth = Doc.bit_depth % sunits

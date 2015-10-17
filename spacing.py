@@ -27,7 +27,7 @@ from operator import attrgetter
 import utils
 import router
 from utils import my_round
-from options import Options
+from options import OPTIONS
 
 class Spacing_Exception(Exception):
     '''
@@ -109,8 +109,8 @@ class Equally_Spaced(Base_Spacing):
             centered = values[2]
         elif width is None:
             width = self.bit.width
-        self.full_labels = ['B-spacing: ' + Options.units.intervals_to_string(2 * width + b_spacing, True),\
-                            'Width: ' + Options.units.intervals_to_string(width, True),\
+        self.full_labels = ['B-spacing: ' + OPTIONS['units'].intervals_to_string(2 * width + b_spacing, True),\
+                            'Width: ' + OPTIONS['units'].intervals_to_string(width, True),\
                             'Centered']
         self.description = 'Equally spaced (' + self.full_labels[0] + ', ' + self.full_labels[1] + ')'
         self.cuts = [] # return value
@@ -132,14 +132,14 @@ class Equally_Spaced(Base_Spacing):
         i = left - neck_width
         while i > 0:
             li = max(i - width, 0)
-            if i - li > Options.min_finger_width:
+            if i - li > OPTIONS['min_finger_width']:
                 self.cuts.append(router.Cut(li, i))
             i = li - neck_width
         # do right side of self.board
         i = right + neck_width
         while i < self.board.width:
             ri = min(i + width, self.board.width)
-            if ri - i > Options.min_finger_width:
+            if ri - i > OPTIONS['min_finger_width']:
                 self.cuts.append(router.Cut(i, ri))
             i = ri + neck_width
         # If we have only one cut the entire width of the board, then
@@ -211,7 +211,7 @@ class Variable_Spaced(Base_Spacing):
             # so reset it to the adjacent interval and get rid of a finger.
             intervals[0] = intervals[1]
             m -= 1
-        if Options.debug:
+        if OPTIONS['debug']:
             print 'intervals', intervals
         # Adjustments for dovetails
         deltaP = self.bit.width - self.eff_width

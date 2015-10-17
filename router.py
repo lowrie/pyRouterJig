@@ -24,9 +24,11 @@ Contains the router, board, template and their geometry properties.
 
 import math, sys
 from copy import deepcopy
-from options import Options
+from options import OPTIONS
 import utils
 from utils import my_round
+
+UNITS = OPTIONS['units']
 
 class Router_Exception(Exception):
     '''
@@ -48,9 +50,10 @@ class Incra_Template:
     length: total length of template
     '''
     def __init__(self, board, margin=None, length=None):
-        self.height = Options.units.inches_to_intervals(0.5) # incra uses 1/2" templates
+        # incra uses 1/2" high templates
+        self.height = UNITS.inches_to_intervals(0.5)
         if margin is None:
-            self.margin = Options.units.inches_to_intervals(1.0) # margin at each end of template tape
+            self.margin = UNITS.inches_to_intervals(1.0)
         else:
             self.margin = margin
         if length is None:
@@ -90,7 +93,7 @@ class Router_Bit:
     def set_width_from_string(self, s):
         msg = 'Bit width is "%s".  Set to a postive value.'
         try:
-            self.width = Options.units.string_to_intervals(s)
+            self.width = UNITS.string_to_intervals(s)
         except ValueError, e: 
             msg = 'ValueError setting bit width: %s\n' % (e) + \
                   msg % s
@@ -103,7 +106,7 @@ class Router_Bit:
     def set_depth_from_string(self, s):
         msg = 'Bit depth is "%s".  Set to a postive value.'
         try:
-            self.depth = Options.units.string_to_intervals(s)
+            self.depth = UNITS.string_to_intervals(s)
         except ValueError, e: 
             msg = 'ValueError setting bit depth: %s\n' % (e) + \
                   msg % s
@@ -191,7 +194,7 @@ class Board(My_Rectangle):
     def set_width_from_string(self, s):
         msg = 'Board width is "%s".  Set to a postive value.'
         try:
-            self.width = Options.units.string_to_intervals(s)
+            self.width = UNITS.string_to_intervals(s)
         except ValueError, e: 
             msg = 'ValueError setting board width: %s\n' % (e) + \
                   msg % s
@@ -203,7 +206,7 @@ class Board(My_Rectangle):
     def set_height_from_string(self, s):
         msg = 'Board height is "%s".  Set to a postive value.'
         try:
-            self.height = Options.units.string_to_intervals(s)
+            self.height = UNITS.string_to_intervals(s)
         except ValueError, e: 
             msg = 'ValueError setting board height: %s\n' % (e) + \
                   msg % s

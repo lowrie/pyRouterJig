@@ -27,7 +27,7 @@ import matplotlib.pylab as pylab
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib import widgets
-from options import Options
+from options import OPTIONS
 import utils
 import router
 
@@ -37,7 +37,7 @@ class MPL_Plotter:
     '''
     def __init__(self, title=None):
         self.title = title
-        self.fig = plt.figure(dpi=Options.dpi_screen)
+        self.fig = plt.figure(dpi=OPTIONS['dpi_screen'])
         self.fig_width = 10.0
         self.fig_height = 3.5
         self.fig.set_size_inches(self.fig_width, self.fig_height)
@@ -53,7 +53,7 @@ class MPL_Plotter:
         self.spacing = spacing
 
         # Try default options, but reset if the template is too small for margins
-        margins = deepcopy(Options.margins)
+        margins = deepcopy(OPTIONS['margins'])
 
         # Set the window limits
         window_width  = self.template.length + margins.left + margins.right
@@ -61,14 +61,14 @@ class MPL_Plotter:
                         margins.bottom + margins.top
 
         min_width = 10
-        wwl = Options.units.intervals_to_inches(window_width)
+        wwl = OPTIONS['units'].intervals_to_inches(window_width)
         if wwl < min_width:
             wwl = min_width
-            window_width = Options.units.inches_to_intervals(wwl)
+            window_width = OPTIONS['units'].inches_to_intervals(wwl)
             margins.left = (window_width - self.template.length) / 2
             margins.right = margins.left
             window_width  = self.template.length + margins.left + margins.right
-        wwh = Options.units.intervals_to_inches(window_height)
+        wwh = OPTIONS['units'].intervals_to_inches(window_height)
         
         # Set the final figure width and height, and determine whether to draw
         # a blank screen to erase the old figure.  Draw a blank screen only if
@@ -85,11 +85,11 @@ class MPL_Plotter:
         # Clear out any previous figure
         self.fig.clear()
         if do_blank_draw: 
-            if Options.debug: print 'doing blank draw'
+            if OPTIONS['debug']: print 'doing blank draw'
             self.fig.canvas.draw() # only do this on board resize
 
         # Adjust to the new figure size
-        if Options.debug: print 'mpl fig size ', self.fig_width, self.fig_height
+        if OPTIONS['debug']: print 'mpl fig size ', self.fig_width, self.fig_height
         self.fig.set_size_inches(self.fig_width, self.fig_height)
         self.axes = self.fig.add_subplot(1,1,1, aspect='equal')
 
@@ -159,16 +159,16 @@ class MPL_Plotter:
         if title is None:
             title = self.spacing.description
             title += '    Board width: '
-            title += Options.units.intervals_to_string(self.board.width, True)
+            title += OPTIONS['units'].intervals_to_string(self.board.width, True)
             title += '    Bit: '
             if self.bit.angle > 0:
                 title += '%.1f deg. dovetail' % self.bit.angle
             else:
                 title += 'straight'
             title += ', width: '
-            title += Options.units.intervals_to_string(self.bit.width, True)
+            title += OPTIONS['units'].intervals_to_string(self.bit.width, True)
             title += ', depth: '
-            title += Options.units.intervals_to_string(self.bit.depth, True)
+            title += OPTIONS['units'].intervals_to_string(self.bit.depth, True)
         self.axes.annotate(title, (board_T.xMid(), 0), va='bottom', ha='center',
                            textcoords='offset points', xytext=(0,2))
 
@@ -181,4 +181,5 @@ class MPL_Plotter:
 
         self.fig.canvas.draw()
     def savefig(self, filename):
-        self.fig.savefig(filename, dpi=Options.dpi_paper, bbox_inches='tight', pad_inches=0)
+        self.fig.savefig(filename, dpi=OPTIONS['dpi_paper'],
+                         bbox_inches='tight', pad_inches=0)

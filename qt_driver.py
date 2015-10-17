@@ -27,7 +27,7 @@ import router
 import mpl
 import spacing
 import utils
-from options import Options
+from options import OPTIONS
 from doc import Doc
 
 from matplotlib.backends.backend_qt4agg import (
@@ -35,6 +35,9 @@ from matplotlib.backends.backend_qt4agg import (
 
 from PyQt4 import QtCore, QtGui
 #from PySlide import QtCore, QtGui
+
+UNITS = OPTIONS['units']
+DEBUG = OPTIONS['debug']
 
 class Driver(QtGui.QMainWindow):
     ''' 
@@ -46,7 +49,7 @@ class Driver(QtGui.QMainWindow):
         self.except_handled = False
 
         # Create an initial joint
-        self.board = router.Board(width=Options.units.inches_to_intervals(7.5))
+        self.board = router.Board(width=UNITS.inches_to_intervals(7.5))
         self.bit = router.Router_Bit(16, 24)
         self.template = router.Incra_Template(self.board)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
@@ -134,7 +137,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_board_width = QtGui.QLineEdit(self.main_frame)
         self.tb_board_width.setFixedWidth(lineEditWidth)
         self.tb_board_width.setToolTip(Doc.board_width)
-        self.tb_board_width.setText(Options.units.intervals_to_string(self.board.width))
+        self.tb_board_width.setText(UNITS.intervals_to_string(self.board.width))
         self.tb_board_width.editingFinished.connect(self.on_board_width)
         
         # Bit width text box
@@ -142,7 +145,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_width = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_width.setFixedWidth(lineEditWidth)
         self.tb_bit_width.setToolTip(Doc.bit_width)
-        self.tb_bit_width.setText(Options.units.intervals_to_string(self.bit.width))
+        self.tb_bit_width.setText(UNITS.intervals_to_string(self.bit.width))
         self.tb_bit_width.editingFinished.connect(self.on_bit_width)
         
         # Bit depth text box
@@ -150,7 +153,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_depth = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_depth.setFixedWidth(lineEditWidth)
         self.tb_bit_depth.setToolTip(Doc.bit_depth)
-        self.tb_bit_depth.setText(Options.units.intervals_to_string(self.bit.depth))
+        self.tb_bit_depth.setText(UNITS.intervals_to_string(self.bit.depth))
         self.tb_bit_depth.editingFinished.connect(self.on_bit_depth)
         
         # Bit angle text box
@@ -337,7 +340,7 @@ class Driver(QtGui.QMainWindow):
         '''
         (Re)draws the matplotlib figure
         '''
-        if Options.debug: print 'draw_mpl'
+        if DEBUG: print 'draw_mpl'
         self.template = router.Incra_Template(self.board)
         self.mpl.draw(self.template, self.board, self.bit, self.spacing)
         self.canvas.draw()
@@ -395,7 +398,7 @@ class Driver(QtGui.QMainWindow):
             raise ValueError('Bad value for spacing_index %d' % spacing_index)
 
     def on_cb_es_centered(self):
-        if Options.debug: print 'on_cb_es_centered'
+        if DEBUG: print 'on_cb_es_centered'
         self.es_cut_values[2] = self.cb_es_centered.isChecked()
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.draw_mpl()
@@ -406,14 +409,14 @@ class Driver(QtGui.QMainWindow):
         self.file_saved = False
 
     def on_tabs_spacing(self, index):
-        if Options.debug: print 'on_tabs_spacing'
+        if DEBUG: print 'on_tabs_spacing'
         self.reinit_spacing()
         self.draw_mpl()
         self.flash_status_message('Changed to spacing algorithm %s' % str(self.tabs_spacing.tabText(index)))
         self.file_saved = False
     
     def on_bit_width(self):
-        if Options.debug: print 'on_bit_width'
+        if DEBUG: print 'on_bit_width'
         # With editingFinished, we also need to check whether the
         # value actually changed. This is because editingFinished gets
         # triggered every time focus changes, which can occur many 
@@ -421,7 +424,7 @@ class Driver(QtGui.QMainWindow):
         # in the middle of an exception, etc.  This logic also avoids
         # unnecessary redraws.
         if self.tb_bit_width.isModified():
-            if Options.debug: print ' bit_width modified'
+            if DEBUG: print ' bit_width modified'
             self.tb_bit_width.setModified(False)
             text = str(self.tb_bit_width.text())
             self.bit.set_width_from_string(text)
@@ -431,7 +434,7 @@ class Driver(QtGui.QMainWindow):
             self.file_saved = False
     
     def on_bit_depth(self):
-        if Options.debug: print 'on_bit_depth'
+        if DEBUG: print 'on_bit_depth'
         if self.tb_bit_depth.isModified():
             self.tb_bit_depth.setModified(False)
             text = str(self.tb_bit_depth.text())
@@ -441,7 +444,7 @@ class Driver(QtGui.QMainWindow):
             self.file_saved = False
     
     def on_bit_angle(self):
-        if Options.debug: print 'on_bit_angle'
+        if DEBUG: print 'on_bit_angle'
         if self.tb_bit_angle.isModified():
             self.tb_bit_angle.setModified(False)
             text = str(self.tb_bit_angle.text())
@@ -452,7 +455,7 @@ class Driver(QtGui.QMainWindow):
             self.file_saved = False
 
     def on_board_width(self):
-        if Options.debug: print 'on_board_width'
+        if DEBUG: print 'on_board_width'
         if self.tb_board_width.isModified():
             self.tb_board_width.setModified(False)
             text = str(self.tb_board_width.text())
@@ -463,7 +466,7 @@ class Driver(QtGui.QMainWindow):
             self.file_saved = False
 
     def on_es_slider0(self, value):
-        if Options.debug: print 'on_es_slider0', value
+        if DEBUG: print 'on_es_slider0', value
         self.es_cut_values[0] = value
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
@@ -472,7 +475,7 @@ class Driver(QtGui.QMainWindow):
         self.file_saved = False
     
     def on_es_slider1(self, value):
-        if Options.debug: print 'on_es_slider1', value
+        if DEBUG: print 'on_es_slider1', value
         self.es_cut_values[1] = value
         self.equal_spacing.set_cuts(values=self.es_cut_values)
         self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
@@ -481,7 +484,7 @@ class Driver(QtGui.QMainWindow):
         self.file_saved = False
     
     def on_vs_slider0(self, value):
-        if Options.debug: print 'on_vs_slider0', value
+        if DEBUG: print 'on_vs_slider0', value
         self.vs_cut_values[0] = value
         self.var_spacing.set_cuts(values=self.vs_cut_values)
         self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
@@ -490,7 +493,7 @@ class Driver(QtGui.QMainWindow):
         self.file_saved = False
 
     def on_save(self, event):
-        if Options.debug: print 'on_save'
+        if DEBUG: print 'on_save'
 
         # Limit file save types to png and pdf:
         #default = 'Portable Document Format (*.pdf)'
@@ -521,7 +524,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message("Unable to save %s!" % path)
         
     def on_exit(self):
-        if Options.debug: print 'on_exit'
+        if DEBUG: print 'on_exit'
         if self.file_saved:
             QtGui.qApp.quit()
         else:
@@ -532,7 +535,7 @@ class Driver(QtGui.QMainWindow):
                 QtGui.qApp.quit()
         
     def on_about(self, event):
-        if Options.debug: print 'on_about'
+        if DEBUG: print 'on_about'
 
         box = QtGui.QMessageBox(self)
         s = '<h2>Welcome to pyRouterJig!</h2>'
@@ -547,7 +550,7 @@ class Driver(QtGui.QMainWindow):
             QtCore.QTimer.singleShot(flash_len_ms, self.on_flash_status_off)
     
     def on_flash_status_off(self):
-        if Options.debug: print 'on_flash_status_off'
+        if DEBUG: print 'on_flash_status_off'
         self.statusbar.showMessage('')
 
     def closeEvent(self, event):
@@ -555,7 +558,7 @@ class Driver(QtGui.QMainWindow):
         For closeEvents (user closes window or presses Ctrl-Q), ignore and call
         on_exit()
         '''
-        if Options.debug: print 'closeEvent'
+        if DEBUG: print 'closeEvent'
         self.on_exit()
         event.ignore()
 
