@@ -22,7 +22,7 @@
 Contains the main driver, using pySide or pyQt.
 '''
 
-import os, sys, traceback
+import sys, traceback
 import router
 import mpl
 import spacing
@@ -33,14 +33,15 @@ from doc import Doc
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 
-from PyQt4 import QtCore, QtGui
-#from PySlide import QtCore, QtGui
+from PyQt4 import QtGui
+from PyQt4 import QtCore
+#from PySide import QtCore, QtGui
 
 UNITS = OPTIONS['units']
 DEBUG = OPTIONS['debug']
 
 class Driver(QtGui.QMainWindow):
-    ''' 
+    '''
     Qt driver for MPL_Plotter
     '''
     def __init__(self, parent=None):
@@ -84,7 +85,7 @@ class Driver(QtGui.QMainWindow):
         self.except_handled = True
         tmp = traceback.format_exception(etype, value, trace)
         exception = '\n'.join(tmp)
-        
+
         QtGui.QMessageBox.warning(self, 'Error', exception)
         self.except_handled = False
 
@@ -102,19 +103,19 @@ class Driver(QtGui.QMainWindow):
         about_action = QtGui.QAction(QtGui.QIcon('about.png'), '&About', self)
         about_action.setShortcut('Ctrl+A')
         about_action.setStatusTip('About this program')
-        about_action.triggered.connect(self.on_about)
+        about_action.triggered.connect(self._on_about)
         self.file_menu.addAction(about_action)
 
         save_action = QtGui.QAction(QtGui.QIcon('save.png'), '&Save', self)
         save_action.setShortcut('Ctrl+S')
         save_action.setStatusTip('Save figure to file')
-        save_action.triggered.connect(self.on_save)
+        save_action.triggered.connect(self._on_save)
         self.file_menu.addAction(save_action)
 
         exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Quit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit pyRouterJig')
-        exit_action.triggered.connect(self.on_exit)
+        exit_action.triggered.connect(self._on_exit)
         self.file_menu.addAction(exit_action)
 
     def create_widgets(self):
@@ -124,8 +125,8 @@ class Driver(QtGui.QMainWindow):
         self.main_frame = QtGui.QWidget()
 
         lineEditWidth = 80
-        
-        # Create the mpl Figure and FigureCanvas objects. 
+
+        # Create the mpl Figure and FigureCanvas objects.
         self.dpi = 100
         self.canvas = FigureCanvas(self.mpl.fig)
         self.canvas.setParent(self.main_frame)
@@ -138,45 +139,45 @@ class Driver(QtGui.QMainWindow):
         self.tb_board_width.setFixedWidth(lineEditWidth)
         self.tb_board_width.setToolTip(Doc.board_width)
         self.tb_board_width.setText(UNITS.intervals_to_string(self.board.width))
-        self.tb_board_width.editingFinished.connect(self.on_board_width)
-        
+        self.tb_board_width.editingFinished.connect(self._on_board_width)
+
         # Bit width text box
         self.tb_bit_width_label = QtGui.QLabel('Bit Width')
         self.tb_bit_width = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_width.setFixedWidth(lineEditWidth)
         self.tb_bit_width.setToolTip(Doc.bit_width)
         self.tb_bit_width.setText(UNITS.intervals_to_string(self.bit.width))
-        self.tb_bit_width.editingFinished.connect(self.on_bit_width)
-        
+        self.tb_bit_width.editingFinished.connect(self._on_bit_width)
+
         # Bit depth text box
         self.tb_bit_depth_label = QtGui.QLabel('Bit Depth')
         self.tb_bit_depth = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_depth.setFixedWidth(lineEditWidth)
         self.tb_bit_depth.setToolTip(Doc.bit_depth)
         self.tb_bit_depth.setText(UNITS.intervals_to_string(self.bit.depth))
-        self.tb_bit_depth.editingFinished.connect(self.on_bit_depth)
-        
+        self.tb_bit_depth.editingFinished.connect(self._on_bit_depth)
+
         # Bit angle text box
         self.tb_bit_angle_label = QtGui.QLabel('Bit Angle')
         self.tb_bit_angle = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_angle.setFixedWidth(lineEditWidth)
         self.tb_bit_angle.setToolTip(Doc.bit_angle)
         self.tb_bit_angle.setText('%g' % self.bit.angle)
-        self.tb_bit_angle.editingFinished.connect(self.on_bit_angle)
+        self.tb_bit_angle.editingFinished.connect(self._on_bit_angle)
 
         # Save button
         self.btn_save = QtGui.QPushButton('Save', self.main_frame)
         self.btn_save.setToolTip('Save figure to file.')
-        self.btn_save.clicked.connect(self.on_save)
+        self.btn_save.clicked.connect(self._on_save)
 
         # Equal spacing widgets
 
-        self.equal_spacing_params = self.equal_spacing.get_params()
+        params = self.equal_spacing.get_params()
         labels = self.equal_spacing.full_labels
         self.es_cut_values = [0] * 3
 
         # ...first slider
-        p = self.equal_spacing_params[0]
+        p = params[0]
         self.es_cut_values[0] = p.vInit
         self.es_slider0_label = QtGui.QLabel(labels[0])
         self.es_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
@@ -188,10 +189,10 @@ class Driver(QtGui.QMainWindow):
         self.es_slider0.setToolTip(Doc.es_slider0)
         if p.vMax - p.vMin < 10:
             self.es_slider0.setTickInterval(1)
-        self.es_slider0.valueChanged.connect(self.on_es_slider0)
+        self.es_slider0.valueChanged.connect(self._on_es_slider0)
 
         # ...second slider
-        p = self.equal_spacing_params[1]
+        p = params[1]
         self.es_cut_values[1] = p.vInit
         self.es_slider1_label = QtGui.QLabel(labels[1])
         self.es_slider1 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
@@ -203,24 +204,24 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1.setToolTip(Doc.es_slider1)
         if p.vMax - p.vMin < 10:
             self.es_slider1.setTickInterval(1)
-        self.es_slider1.valueChanged.connect(self.on_es_slider1)
+        self.es_slider1.valueChanged.connect(self._on_es_slider1)
 
         # ...check box for centering
-        p = self.equal_spacing_params[2]
+        p = params[2]
         self.es_cut_values[2] = p.vInit
         self.cb_es_centered = QtGui.QCheckBox(labels[2], self.main_frame)
         self.cb_es_centered.setChecked(True)
-        self.cb_es_centered.stateChanged.connect(self.on_cb_es_centered)
+        self.cb_es_centered.stateChanged.connect(self._on_cb_es_centered)
         self.cb_es_centered.setToolTip(Doc.es_centered)
 
         # Variable spacing widgets
-        
-        self.var_spacing_params = self.var_spacing.get_params()
+
+        params = self.var_spacing.get_params()
         labels = self.var_spacing.full_labels
         self.vs_cut_values = [0] * 2
 
         # ...slider
-        p = self.var_spacing_params[0]
+        p = params[0]
         self.vs_cut_values[0] = p.vInit
         self.vs_slider0_label = QtGui.QLabel(labels[0])
         self.vs_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
@@ -232,7 +233,7 @@ class Driver(QtGui.QMainWindow):
         self.vs_slider0.setToolTip(Doc.vs_slider0)
         if p.vMax - p.vMin < 10:
             self.vs_slider0.setTickInterval(1)
-        self.vs_slider0.valueChanged.connect(self.on_vs_slider0)
+        self.vs_slider0.valueChanged.connect(self._on_vs_slider0)
 
     def layout_widgets(self):
         '''
@@ -245,7 +246,7 @@ class Driver(QtGui.QMainWindow):
 
         # Add the matplotlib canvas to the top
         self.vbox.addWidget(self.canvas)
-        
+
         # hbox contains all of the control widgets
         # (everything but the canvas)
         self.hbox = QtGui.QHBoxLayout()
@@ -315,8 +316,8 @@ class Driver(QtGui.QMainWindow):
         self.tabs_spacing.addTab(self.tab_vs, 'Variable')
         tip = 'These tabs specify the layout algorithm for the fingers.'
         self.tabs_spacing.setToolTip(tip)
-        self.tabs_spacing.currentChanged.connect(self.on_tabs_spacing)
-        
+        self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
+
         # either add the spacing Tabs to the bottom
         #self.vbox.addLayout(self.hbox)
         #self.vbox.addWidget(self.tabs_spacing)
@@ -327,7 +328,7 @@ class Driver(QtGui.QMainWindow):
         # Lay it all out
         self.main_frame.setLayout(self.vbox)
         self.setCentralWidget(self.main_frame)
-    
+
     def create_status_bar(self):
         '''
         Creates a status message bar that is placed at the bottom of the
@@ -337,10 +338,9 @@ class Driver(QtGui.QMainWindow):
         self.statusbar.showMessage('Ready')
 
     def draw_mpl(self):
-        '''
-        (Re)draws the matplotlib figure
-        '''
-        if DEBUG: print 'draw_mpl'
+        '''(Re)draws the matplotlib figure'''
+        if DEBUG:
+            print 'draw_mpl'
         self.template = router.Incra_Template(self.board)
         self.mpl.draw(self.template, self.board, self.bit, self.spacing)
         self.canvas.draw()
@@ -351,7 +351,7 @@ class Driver(QtGui.QMainWindow):
         Re-initializes the joint spacing objects.  This must be called
         when the router bit or board change dimensions.
         '''
-        
+
         # The ordering of the index is the same order that the tabs
         # were created in create main frame
         spacing_index = self.tabs_spacing.currentIndex()
@@ -359,48 +359,50 @@ class Driver(QtGui.QMainWindow):
         if spacing_index == 0:
             # do the equal spacing parameters.  Preserve the centered option.
             self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
-            self.equal_spacing_params = self.equal_spacing.get_params()
-            p = self.equal_spacing_params[0]
+            params = self.equal_spacing.get_params()
+            p = params[0]
             self.es_slider0.blockSignals(True)
             self.es_slider0.setMinimum(p.vMin)
             self.es_slider0.setMaximum(p.vMax)
             self.es_slider0.setValue(p.vInit)
             self.es_slider0.blockSignals(False)
             self.es_cut_values[0] = p.vInit
-            p = self.equal_spacing_params[1]
+            p = params[1]
             self.es_slider1.blockSignals(True)
             self.es_slider1.setMinimum(p.vMin)
             self.es_slider1.setMaximum(p.vMax)
             self.es_slider1.setValue(p.vInit)
             self.es_slider1.blockSignals(False)
             self.es_cut_values[1] = p.vInit
-            p = self.equal_spacing_params[2]
+            p = params[2]
             centered = self.es_cut_values[2]
             self.cb_es_centered.blockSignals(True)
             self.cb_es_centered.setChecked(centered)
             self.cb_es_centered.blockSignals(False)
-            self.equal_spacing.set_cuts(values=self.es_cut_values)
+            self.equal_spacing.set_cuts(self.es_cut_values)
             self.spacing = self.equal_spacing
         elif spacing_index == 1:
             # do the variable spacing parameters
             self.var_spacing = spacing.Variable_Spaced(self.bit, self.board)
-            self.var_spacing_params = self.var_spacing.get_params()
-            p = self.var_spacing_params[0]
+            params = self.var_spacing.get_params()
+            p = params[0]
             self.vs_slider0.blockSignals(True)
             self.vs_slider0.setMinimum(p.vMin)
             self.vs_slider0.setMaximum(p.vMax)
             self.vs_slider0.setValue(p.vInit)
             self.vs_slider0.blockSignals(False)
             self.vs_cut_values[0] = p.vInit
-            self.var_spacing.set_cuts(values=self.vs_cut_values)
+            self.var_spacing.set_cuts(self.vs_cut_values)
             self.spacing = self.var_spacing
         else:
             raise ValueError('Bad value for spacing_index %d' % spacing_index)
 
-    def on_cb_es_centered(self):
-        if DEBUG: print 'on_cb_es_centered'
+    def _on_cb_es_centered(self):
+        '''Handles changes to centered checkbox'''
+        if DEBUG:
+            print '_on_cb_es_centered'
         self.es_cut_values[2] = self.cb_es_centered.isChecked()
-        self.equal_spacing.set_cuts(values=self.es_cut_values)
+        self.equal_spacing.set_cuts(self.es_cut_values)
         self.draw_mpl()
         if self.es_cut_values[2]:
             self.flash_status_message('Checked Centered.')
@@ -408,23 +410,29 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Unchecked Centered.')
         self.file_saved = False
 
-    def on_tabs_spacing(self, index):
-        if DEBUG: print 'on_tabs_spacing'
+    def _on_tabs_spacing(self, index):
+        '''Handles changes to spacing algorithm'''
+        if DEBUG:
+            print '_on_tabs_spacing'
         self.reinit_spacing()
         self.draw_mpl()
-        self.flash_status_message('Changed to spacing algorithm %s' % str(self.tabs_spacing.tabText(index)))
+        self.flash_status_message('Changed to spacing algorithm %s'\
+                                  % str(self.tabs_spacing.tabText(index)))
         self.file_saved = False
-    
-    def on_bit_width(self):
-        if DEBUG: print 'on_bit_width'
+
+    def _on_bit_width(self):
+        '''Handles changes to bit width'''
+        if DEBUG:
+            print '_on_bit_width'
         # With editingFinished, we also need to check whether the
         # value actually changed. This is because editingFinished gets
-        # triggered every time focus changes, which can occur many 
+        # triggered every time focus changes, which can occur many
         # times when an exception is thrown, or user tries to quit
         # in the middle of an exception, etc.  This logic also avoids
         # unnecessary redraws.
         if self.tb_bit_width.isModified():
-            if DEBUG: print ' bit_width modified'
+            if DEBUG:
+                print ' bit_width modified'
             self.tb_bit_width.setModified(False)
             text = str(self.tb_bit_width.text())
             self.bit.set_width_from_string(text)
@@ -432,9 +440,11 @@ class Driver(QtGui.QMainWindow):
             self.draw_mpl()
             self.flash_status_message('Changed bit width to ' + text)
             self.file_saved = False
-    
-    def on_bit_depth(self):
-        if DEBUG: print 'on_bit_depth'
+
+    def _on_bit_depth(self):
+        '''Handles changes to bit depth'''
+        if DEBUG:
+            print '_on_bit_depth'
         if self.tb_bit_depth.isModified():
             self.tb_bit_depth.setModified(False)
             text = str(self.tb_bit_depth.text())
@@ -442,9 +452,11 @@ class Driver(QtGui.QMainWindow):
             self.draw_mpl()
             self.flash_status_message('Changed bit depth to ' + text)
             self.file_saved = False
-    
-    def on_bit_angle(self):
-        if DEBUG: print 'on_bit_angle'
+
+    def _on_bit_angle(self):
+        '''Handles changes to bit angle'''
+        if DEBUG:
+            print '_on_bit_angle'
         if self.tb_bit_angle.isModified():
             self.tb_bit_angle.setModified(False)
             text = str(self.tb_bit_angle.text())
@@ -454,8 +466,10 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed bit angle to ' + text)
             self.file_saved = False
 
-    def on_board_width(self):
-        if DEBUG: print 'on_board_width'
+    def _on_board_width(self):
+        '''Handles changes to board width'''
+        if DEBUG:
+            print '_on_board_width'
         if self.tb_board_width.isModified():
             self.tb_board_width.setModified(False)
             text = str(self.tb_board_width.text())
@@ -465,35 +479,43 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed board width to ' + text)
             self.file_saved = False
 
-    def on_es_slider0(self, value):
-        if DEBUG: print 'on_es_slider0', value
+    def _on_es_slider0(self, value):
+        '''Handles changes to the equally-spaced slider B-spacing'''
+        if DEBUG:
+            print '_on_es_slider0', value
         self.es_cut_values[0] = value
-        self.equal_spacing.set_cuts(values=self.es_cut_values)
+        self.equal_spacing.set_cuts(self.es_cut_values)
         self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
         self.file_saved = False
-    
-    def on_es_slider1(self, value):
-        if DEBUG: print 'on_es_slider1', value
+
+    def _on_es_slider1(self, value):
+        '''Handles changes to the equally-spaced slider Width'''
+        if DEBUG:
+            print '_on_es_slider1', value
         self.es_cut_values[1] = value
-        self.equal_spacing.set_cuts(values=self.es_cut_values)
+        self.equal_spacing.set_cuts(self.es_cut_values)
         self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
         self.file_saved = False
-    
-    def on_vs_slider0(self, value):
-        if DEBUG: print 'on_vs_slider0', value
+
+    def _on_vs_slider0(self, value):
+        '''Handles changes to the variable-spaced slider Fingers'''
+        if DEBUG:
+            print '_on_vs_slider0', value
         self.vs_cut_values[0] = value
-        self.var_spacing.set_cuts(values=self.vs_cut_values)
+        self.var_spacing.set_cuts(self.vs_cut_values)
         self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
         self.draw_mpl()
         self.flash_status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
         self.file_saved = False
 
-    def on_save(self, event):
-        if DEBUG: print 'on_save'
+    def _on_save(self):
+        '''Handles save to file events'''
+        if DEBUG:
+            print '_on_save'
 
         # Limit file save types to png and pdf:
         #default = 'Portable Document Format (*.pdf)'
@@ -505,7 +527,8 @@ class Driver(QtGui.QMainWindow):
         default_filetype = self.canvas.get_default_filetype()
         file_choices = ''
         for key, value in filetypes.iteritems():
-            if len(file_choices) > 0: file_choices += ';;'
+            if len(file_choices) > 0:
+                file_choices += ';;'
             # we probably need to consider all value, but for now, just
             # grab the first
             s = key + ' (*.' + value[0] + ')'
@@ -513,8 +536,8 @@ class Driver(QtGui.QMainWindow):
             if default_filetype == value[0]:
                 default = s
 
-        path = unicode(QtGui.QFileDialog.getSaveFileName(self, 
-                                                         'Save file', '', 
+        path = unicode(QtGui.QFileDialog.getSaveFileName(self,
+                                                         'Save file', '',
                                                          file_choices, default))
         if path:
             self.canvas.print_figure(path, dpi=self.dpi)
@@ -522,48 +545,61 @@ class Driver(QtGui.QMainWindow):
             self.file_saved = True
         else:
             self.flash_status_message("Unable to save %s!" % path)
-        
-    def on_exit(self):
-        if DEBUG: print 'on_exit'
+
+    def _on_exit(self):
+        '''Handles code exit events'''
+        if DEBUG:
+            print '_on_exit'
         if self.file_saved:
             QtGui.qApp.quit()
         else:
-            reply = QtGui.QMessageBox.question(self, 'Message',
-                                               "Figure was changed but not saved.  Are you sure to quit?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            msg = 'Figure was changed but not saved.  Are you sure to quit?'
+            reply = QtGui.QMessageBox.question(self, 'Message', msg,
+                                               QtGui.QMessageBox.Yes,
+                                               QtGui.QMessageBox.No)
 
             if reply == QtGui.QMessageBox.Yes:
                 QtGui.qApp.quit()
-        
-    def on_about(self, event):
-        if DEBUG: print 'on_about'
+
+    def _on_about(self):
+        '''Handles about dialog event'''
+        if DEBUG:
+            print '_on_about'
 
         box = QtGui.QMessageBox(self)
         s = '<h2>Welcome to pyRouterJig!</h2>'
-        s += '<h3>Version: %s</h3>' % utils.version
+        s += '<h3>Version: %s</h3>' % utils.VERSION
         box.setText(s + Doc.short_desc + Doc.license)
         box.setTextFormat(QtCore.Qt.RichText)
         box.show()
-    
+
     def flash_status_message(self, msg, flash_len_ms=None):
+        '''Flashes a status message to the status bar'''
         self.statusbar.showMessage(msg)
         if flash_len_ms is not None:
-            QtCore.QTimer.singleShot(flash_len_ms, self.on_flash_status_off)
-    
-    def on_flash_status_off(self):
-        if DEBUG: print 'on_flash_status_off'
+            QtCore.QTimer.singleShot(flash_len_ms, self._on_flash_status_off)
+
+    def _on_flash_status_off(self):
+        '''Handles event to turn off statusbar message'''
+        if DEBUG:
+            print '_on_flash_status_off'
         self.statusbar.showMessage('')
 
     def closeEvent(self, event):
         '''
         For closeEvents (user closes window or presses Ctrl-Q), ignore and call
-        on_exit()
+        _on_exit()
         '''
-        if DEBUG: print 'closeEvent'
-        self.on_exit()
+        if DEBUG:
+            print 'closeEvent'
+        self._on_exit()
         event.ignore()
 
 
 def run():
+    '''
+    Sets up and runs the application
+    '''
     Doc.set_statics()
 
     app = QtGui.QApplication(sys.argv)

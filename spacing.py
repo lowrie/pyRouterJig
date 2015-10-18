@@ -24,21 +24,23 @@ Contains the classes that define the finger width and spacing.
 
 import math
 from operator import attrgetter
-import utils
 import router
 from utils import my_round
 from options import OPTIONS
+
+UNITS = OPTIONS['units']
 
 class Spacing_Exception(Exception):
     '''
     Exception handler for spacings
     '''
     def __init__(self, msg):
+        Exception.__init__(self, msg)
         self.msg = msg
     def __str__(self):
         return self.msg
 
-class Spacing_Param:
+class Spacing_Param(object):
     '''
     Stores a generic parameter for the spacing algorithms.  Attributes:
 
@@ -47,11 +49,11 @@ class Spacing_Param:
     vInit: initial and current value
     '''
     def __init__(self, vMin, vMax, vInit):
-        self.vMin  = vMin
-        self.vMax  = vMax
+        self.vMin = vMin
+        self.vMax = vMax
         self.vInit = vInit
 
-class Base_Spacing:
+class Base_Spacing(object):
     '''
     Base class for spacing algorithms.
 
@@ -68,15 +70,16 @@ class Base_Spacing:
     labels = []
     def __init__(self, bit, board):
         self.description = 'NONE'
-        self.bit         = bit
-        self.board       = board
-    def get_params(self):
-        '''Returns a list of Spacing_Params the control the algoritm.'''
-        return ()
-    def set_cuts(self):
-        '''Computes the attributes "cuts" and "full_labels".'''
+        self.bit = bit
+        self.board = board
         self.cuts = []
         self.full_labels = []
+    def get_params(self):
+        '''Returns a list of Spacing_Params the control the algoritm.'''
+        pass
+    def set_cuts(self, values=None):
+        '''Computes the attributes "cuts" and "full_labels".'''
+        pass
 
 class Equally_Spaced(Base_Spacing):
     '''
@@ -85,10 +88,10 @@ class Equally_Spaced(Base_Spacing):
 
     Parameters that control the spacing are:
 
-    b_spacing: Extra spacing, beyond the bit width  added between the fingers 
+    b_spacing: Extra spacing, beyond the bit width  added between the fingers
                of the B-board.  Default is 0.  The reported b_spacing has the
                bit width added on to this value.
-    
+
     width: Width of fingers.  Default is the bit width.
 
     centered: If true, then a finger is centered on the board width.  If Always
@@ -102,22 +105,27 @@ class Equally_Spaced(Base_Spacing):
         p2 = Spacing_Param(self.bit.width, self.board.width / 2, self.bit.width)
         p3 = Spacing_Param(None, None, True)
         return [p1, p2, p3]
-    def set_cuts(self, b_spacing=0, width=None, centered=True, values=None):
+    def set_cuts(self, values=None):
         if values is not None:
             b_spacing = values[0]
             width = values[1]
             centered = values[2]
-        elif width is None:
+        else:
+            b_spacing = 0
             width = self.bit.width
-        self.full_labels = ['B-spacing: ' + OPTIONS['units'].intervals_to_string(2 * width + b_spacing, True),\
-                            'Width: ' + OPTIONS['units'].intervals_to_string(width, True),\
+            centered = True
+        label = UNITS.intervals_to_string(2 * width + b_spacing, True)
+        self.full_labels = ['B-spacing: ' + label,\
+                            'Width: ' + UNITS.intervals_to_string(width, True),\
                             'Centered']
-        self.description = 'Equally spaced (' + self.full_labels[0] + ', ' + self.full_labels[1] + ')'
+        self.description = 'Equally spaced (' + self.full_labels[0] + \
+                           ', ' + self.full_labels[1] + ')'
         self.cuts = [] # return value
         neck_width = my_round(self.bit.neck + width - self.bit.width + b_spacing)
         if neck_width < 1:
             raise Spacing_Exception('Specified bit paramters give a zero'
-                                    ' or negative cut width (%d intervals) at the surface!  Please change the'
+                                    ' or negative cut width (%d intervals) at'
+                                    ' the surface!  Please change the'
                                     ' bit parameters width, depth, or angle.' % neck_width)
         # put a cut at the center of the board
         xMid = self.board.width / 2
@@ -183,11 +191,11 @@ class Variable_Spaced(Base_Spacing):
     def get_params(self):
         p1 = Spacing_Param(self.mMin, self.mMax, self.mDefault)
         return [p1]
-    def set_cuts(self, m=None, values=None):
+    def set_cuts(self, values=None):
         # set the number of fingers, m
         if values is not None:
             m = values[0]
-        elif m is None:
+        else:
             m = self.mDefault
         self.full_labels = ['Fingers: %d' % m]
         self.description = 'Variable Spaced (' + self.full_labels[0] + ')'
