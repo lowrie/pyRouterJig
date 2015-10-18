@@ -52,45 +52,7 @@ class MPL_Plotter(object):
         # Generate the new geometry layout
         geom = router.Joint_Geometry(template, board, bit, spacing, margins)
 
-        # Plot the template bounding box
-        rect_T = geom.rect_T
-        axes.plot(rect_T.xAll(), rect_T.yAll(), color="black",
-                  linewidth=1.0, linestyle="-")
-
-        # Fill the template margins with a grayshade
-        board_T = geom.board_T
-        axes.fill_betweenx([rect_T.yB, rect_T.yT()], [rect_T.xL, rect_T.xL],
-                           [board_T.xL, board_T.xL], facecolor='0.9', linewidth=0)
-        axes.fill_betweenx([rect_T.yB, rect_T.yT()], [board_T.xR(), board_T.xR()],
-                           [rect_T.xR(), rect_T.xR()], facecolor='0.9', linewidth=0)
-
-        # Plot the router passes
-        # ... do the B passes
-        ip = 0
-        for c in geom.bCuts[::-1]:
-            for p in range(len(c.passes) - 1, -1, -1):
-                xp = c.passes[p] + board_T.xL
-                ip += 1
-                label = '%dB' % ip
-                axes.plot([xp, xp], [rect_T.yB, rect_T.yMid()], color="black",
-                          linewidth=1.0, linestyle="-")
-                if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    axes.annotate(s=label, xy=(xp, rect_T.yB), xytext=(0, 2),
-                                  textcoords='offset points', rotation='vertical',
-                                  ha='right', va='bottom', fontsize=self.pass_fontsize)
-        # ... do the A passes
-        ip = 0
-        for c in geom.aCuts[::-1]:
-            for p in range(len(c.passes) - 1, -1, -1):
-                xp = c.passes[p] + board_T.xL
-                ip += 1
-                label = '%dA' % ip
-                axes.plot([xp, xp], [rect_T.yMid(), rect_T.yT()], color="black",
-                          linewidth=1.0, linestyle="-")
-                if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    axes.annotate(s=label, xy=(xp, rect_T.yT()), xytext=(0, -2),
-                                  textcoords='offset points', rotation='vertical',
-                                  ha='right', va='top', fontsize=self.pass_fontsize)
+        self.draw_template(axes, geom)
 
         # Plot the boards
         board_A = geom.board_A
@@ -103,8 +65,8 @@ class MPL_Plotter(object):
                       textcoords='offset points', xytext=(0, 3))
 
         # Plot the board center
-        axes.plot((board_T.xMid(), board_T.xMid()), (rect_T.yB, board_A.yT()), color="black",
-                  linewidth=1.0, linestyle='--')
+        axes.plot((geom.board_T.xMid(), geom.board_T.xMid()), (geom.rect_T.yB, board_A.yT()),
+                  color="black", linewidth=1.0, linestyle='--')
 
         # Add a title
         title = self.title
@@ -121,7 +83,7 @@ class MPL_Plotter(object):
             title += OPTIONS['units'].intervals_to_string(bit.width, True)
             title += ', depth: '
             title += OPTIONS['units'].intervals_to_string(bit.depth, True)
-        axes.annotate(title, (board_T.xMid(), 0), va='bottom', ha='center',
+        axes.annotate(title, (geom.board_T.xMid(), 0), va='bottom', ha='center',
                       textcoords='offset points', xytext=(0, 2))
 
         # get rid of all plotting margins and axes
@@ -184,6 +146,50 @@ class MPL_Plotter(object):
         axes.set_ylim([0, window_height])
 
         return axes, margins
+    def draw_template(self, axes, geom):
+        '''
+        Draws the Incra template
+        '''
+
+        # Plot the template bounding box
+        rect_T = geom.rect_T
+        axes.plot(rect_T.xAll(), rect_T.yAll(), color="black",
+                  linewidth=1.0, linestyle="-")
+
+        # Fill the template margins with a grayshade
+        board_T = geom.board_T
+        axes.fill_betweenx([rect_T.yB, rect_T.yT()], [rect_T.xL, rect_T.xL],
+                           [board_T.xL, board_T.xL], facecolor='0.9', linewidth=0)
+        axes.fill_betweenx([rect_T.yB, rect_T.yT()], [board_T.xR(), board_T.xR()],
+                           [rect_T.xR(), rect_T.xR()], facecolor='0.9', linewidth=0)
+
+        # Plot the router passes
+        # ... do the B passes
+        ip = 0
+        for c in geom.bCuts[::-1]:
+            for p in range(len(c.passes) - 1, -1, -1):
+                xp = c.passes[p] + board_T.xL
+                ip += 1
+                label = '%dB' % ip
+                axes.plot([xp, xp], [rect_T.yB, rect_T.yMid()], color="black",
+                          linewidth=1.0, linestyle="-")
+                if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
+                    axes.annotate(s=label, xy=(xp, rect_T.yB), xytext=(0, 2),
+                                  textcoords='offset points', rotation='vertical',
+                                  ha='right', va='bottom', fontsize=self.pass_fontsize)
+        # ... do the A passes
+        ip = 0
+        for c in geom.aCuts[::-1]:
+            for p in range(len(c.passes) - 1, -1, -1):
+                xp = c.passes[p] + board_T.xL
+                ip += 1
+                label = '%dA' % ip
+                axes.plot([xp, xp], [rect_T.yMid(), rect_T.yT()], color="black",
+                          linewidth=1.0, linestyle="-")
+                if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
+                    axes.annotate(s=label, xy=(xp, rect_T.yT()), xytext=(0, -2),
+                                  textcoords='offset points', rotation='vertical',
+                                  ha='right', va='top', fontsize=self.pass_fontsize)
     def savefig(self, filename):
         '''
         Saves the figure to filename

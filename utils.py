@@ -18,9 +18,13 @@
 #
 ###########################################################################
 
+'''
+This module contains base utilitities for pyRouterJig
+'''
+
 import math, fractions
 
-version = '0.1.0'
+VERSION = '0.1.0'
 
 def my_round(f):
     '''
@@ -28,9 +32,9 @@ def my_round(f):
     '''
     return int(round(f))
 
-class My_Fraction:
+class My_Fraction(object):
     '''
-    Represents a number as whole + numerator / denominator, all of which must be 
+    Represents a number as whole + numerator / denominator, all of which must be
     integers.
 
     We call this My_Fraction, to avoid confusion with fractions.Fraction.
@@ -48,12 +52,13 @@ class My_Fraction:
         Reduces the fraction to the minimum values for the numerator and
         denominator.
         '''
-        if self.denominator is None or self.numerator == 0: return
+        if self.denominator is None or self.numerator == 0:
+            return
         dwhole = self.numerator / self.denominator
         self.whole += dwhole
         self.numerator -= dwhole * self.denominator
         gcd = fractions.gcd(self.numerator, self.denominator)
-        self.numerator   /= gcd
+        self.numerator /= gcd
         self.denominator /= gcd
     def to_string(self):
         '''
@@ -75,7 +80,7 @@ class My_Fraction:
         Initialize from a string assumed to be of the form:
 
         [whitespace][integer][whitespace][integer][whitespace]/[whitespace][integer][whitespace]
-        
+
         where each of the [] are optional.
         '''
         msg = 'Bad number specification: %s'
@@ -87,12 +92,12 @@ class My_Fraction:
             # No decimal point, so try fractional form
             sp = s.split('/')
             if len(sp) == 2: # found a divisor
-                wholeNum = sp[0].split(None)
-                if len(wholeNum) == 1:
-                    self.numerator = int(wholeNum[0])
-                elif len(wholeNum) == 2:
-                    self.whole = int(wholeNum[0])
-                    self.numerator = int(wholeNum[1])
+                whole_num = sp[0].split(None)
+                if len(whole_num) == 1:
+                    self.numerator = int(whole_num[0])
+                elif len(whole_num) == 2:
+                    self.whole = int(whole_num[0])
+                    self.numerator = int(whole_num[1])
                 else:
                     raise ValueError(msg % s)
                 denom = sp[1].split(None)
@@ -115,13 +120,13 @@ class My_Fraction:
                 self.denominator = my_round(math.pow(10, int(math.log10(self.numerator))+1))
                 self.reduce()
 
-class Units:
+class Units(object):
     '''
     Converts to and from intervals and the units being used.
 
     metric: If true, then an interval corresponds to 1 mm.
-    
-    intervals_per_inch:  For metric false, this correpsonds 
+
+    intervals_per_inch:  For metric false, this correpsonds
     to the number of intervals per inch.  So a value of 32
     (the default) corresponds an interval size of 1/32".
     For metric true, this values is the number of mm in an inch.
@@ -146,7 +151,8 @@ class Units:
         numer = intervals - self.intervals_per_inch * whole
         denom = self.intervals_per_inch
         r = My_Fraction(whole, numer, denom).to_string()
-        if with_units: r += self.units_string()
+        if with_units:
+            r += self.units_string()
         return r
     def units_string(self, verbose=False):
         '''Returns a string that represents the units'''
@@ -178,7 +184,7 @@ class Units:
             r += ratio * f.numerator
         return r
 
-class Margins:
+class Margins(object):
     '''
     Defines window margins and vertical separation between objects for
     the figure.

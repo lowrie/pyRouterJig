@@ -22,10 +22,9 @@
 Contains the router, board, template and their geometry properties.
 '''
 
-import math, sys
+import math
 from copy import deepcopy
 from options import OPTIONS
-import utils
 from utils import my_round
 
 UNITS = OPTIONS['units']
@@ -35,11 +34,12 @@ class Router_Exception(Exception):
     Exception handler for all routerJig
     '''
     def __init__(self, msg):
+        Exception.__init__(self, msg)
         self.msg = msg
     def __str__(self):
         return self.msg
 
-class Incra_Template:
+class Incra_Template(object):
     '''
     Contains properties of an incra template
 
@@ -61,7 +61,7 @@ class Incra_Template:
         else:
             self.length = length
 
-class Router_Bit:
+class Router_Bit(object):
     '''
     Stores properties of dovetail and straight router bits.
 
@@ -73,7 +73,7 @@ class Router_Bit:
     width: max cutting width.  This is the bottom of a dovetail bit.
            For now, this must be an even number.
 
-    depth: cutting depth. Equals board thickness for through dovetails 
+    depth: cutting depth. Equals board thickness for through dovetails
             and box joints.
 
     Computed attributes:
@@ -91,10 +91,13 @@ class Router_Bit:
         self.angle = angle
         self.reinit()
     def set_width_from_string(self, s):
+        '''
+        Sets the width from the string s, following requirements from units.string_to_intervals().
+        '''
         msg = 'Bit width is "%s".  Set to a postive value.'
         try:
             self.width = UNITS.string_to_intervals(s)
-        except ValueError, e: 
+        except ValueError, e:
             msg = 'ValueError setting bit width: %s\n' % (e) + \
                   msg % s
             raise Router_Exception(msg)
@@ -104,10 +107,13 @@ class Router_Bit:
             raise Router_Exception(msg % s)
         self.reinit()
     def set_depth_from_string(self, s):
+        '''
+        Sets the depth from the string s, following requirements from units.string_to_intervals().
+        '''
         msg = 'Bit depth is "%s".  Set to a postive value.'
         try:
             self.depth = UNITS.string_to_intervals(s)
-        except ValueError, e: 
+        except ValueError, e:
             msg = 'ValueError setting bit depth: %s\n' % (e) + \
                   msg % s
             raise Router_Exception(msg)
@@ -117,10 +123,13 @@ class Router_Bit:
             raise Router_Exception(msg % s)
         self.reinit()
     def set_angle_from_string(self, s):
+        '''
+        Sets the angle from the string s, where s represents a floating point number.
+        '''
         msg = 'Bit angle is "%s".  Set to zero or a postive value.'
         try:
             self.angle = float(s)
-        except ValueError, e: 
+        except ValueError, e:
             msg = 'ValueError setting bit angle: %s\n' % (e) + \
                   msg % s
             raise Router_Exception(msg)
@@ -142,7 +151,7 @@ class Router_Bit:
             self.offset = self.depth * math.tan(self.angle * math.pi / 180)
         self.neck = self.width - 2 * self.offset
 
-class My_Rectangle:
+class My_Rectangle(object):
     '''
     Stores a rectangle geometry
     '''
@@ -155,7 +164,7 @@ class My_Rectangle:
         '''
         self.xL = xL
         self.yB = yB
-        self.width  = width
+        self.width = width
         self.height = height
     def xMid(self):
         '''Returns the x-coordinate of the midpoint.'''
@@ -170,8 +179,10 @@ class My_Rectangle:
         '''Returns the y-coordinates of a closed polygon of the rectangle.'''
         return (self.yB, self.yB, self.yT(), self.yT(), self.yB)
     def xR(self):
+        '''Returns the right (max) x-coordindate'''
         return self.xL + self.width
     def yT(self):
+        '''Returns the top (max) y-coordindate'''
         return self.yB + self.height
     def shift(self, xs, ys):
         '''Shift the rectangle by the distances xs and ys'''
@@ -192,10 +203,13 @@ class Board(My_Rectangle):
         My_Rectangle.__init__(self, 0, 0, width, height)
         self.thickness = thickness
     def set_width_from_string(self, s):
+        '''
+        Sets the width from the string s, following requirements from units.string_to_intervals().
+        '''
         msg = 'Board width is "%s".  Set to a postive value.'
         try:
             self.width = UNITS.string_to_intervals(s)
-        except ValueError, e: 
+        except ValueError, e:
             msg = 'ValueError setting board width: %s\n' % (e) + \
                   msg % s
             raise Router_Exception(msg)
@@ -204,10 +218,13 @@ class Board(My_Rectangle):
         if self.width <= 0:
             raise Router_Exception(msg % s)
     def set_height_from_string(self, s):
+        '''
+        Sets the height from the string s, following requirements from units.string_to_intervals().
+        '''
         msg = 'Board height is "%s".  Set to a postive value.'
         try:
             self.height = UNITS.string_to_intervals(s)
-        except ValueError, e: 
+        except ValueError, e:
             msg = 'ValueError setting board height: %s\n' % (e) + \
                   msg % s
             raise Router_Exception(msg)
@@ -216,7 +233,7 @@ class Board(My_Rectangle):
         if self.height <= 0:
             raise Router_Exception(msg % s)
 
-class Cut:
+class Cut(object):
     '''
     Cut description.
 
@@ -233,6 +250,9 @@ class Cut:
         self.R = right
         self.passes = []
     def validate(self, bit, board):
+        '''
+        Checks whether the attributes of the cut are valid.
+        '''
         if self.L >= self.R:
             raise Router_Exception('cut left = %d, right = %d: '\
                                    'Must have right > left!' % (self.L, self.R))
@@ -255,25 +275,25 @@ class Cut:
         self.validate(bit, board)
         # Make the middle pass, centered (within an interval) on the cut
         if self.L == 0:
-            self.midPass = self.R - bit.halfwidth
+            mid_pass = self.R - bit.halfwidth
             xL = max(0, self.R - bit.width)
             xR = self.R
         elif self.R == board.width:
-            self.midPass = self.L + bit.halfwidth
+            mid_pass = self.L + bit.halfwidth
             xL = self.L
             xR = min(board.width, self.L + bit.width)
         else:
-            self.midPass = (self.L + self.R) / 2
-            xL = self.midPass - bit.halfwidth
+            mid_pass = (self.L + self.R) / 2
+            xL = mid_pass - bit.halfwidth
             if xL < self.L: # cut width must be odd
                 xL = self.L
-                self.midPass = self.L + bit.halfwidth
+                mid_pass = self.L + bit.halfwidth
             xR = min(xL + bit.width, board.width)
         if xL < self.L and self.L > 0:
             Router_Exception('Exceeded left part of a cut!')
         if xR > self.R and self.R < board.width:
             Router_Exception('Exceeded right part of a cut!')
-        self.passes = [self.midPass]
+        self.passes = [mid_pass]
         # Finish passes to left of the middle pass
         while xL > self.L:
             xL = max(xL - bit.width, self.L)
@@ -298,19 +318,19 @@ def adjoining_cuts(cuts, bit, board):
     # if the left-most input cut does not include the left edge, add an
     # adjoining cut that includes the left edge
     if cuts[0].L > 0:
-        left  = 0
+        left = 0
         right = my_round(cuts[0].L + bit.offset)
         adjCuts = [Cut(left, right)]
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
     for i in range(1, nc):
-        left  = my_round(cuts[i-1].R - bit.offset)
+        left = my_round(cuts[i-1].R - bit.offset)
         right = max(left + bit.width, my_round(cuts[i].L + bit.offset))
         adjCuts.append(Cut(left, right))
     # if the right-most input cut does not include the right edge, add an
     # adjoining cut that includes this edge
     if cuts[-1].R < board.width:
-        left  = my_round(cuts[-1].R - bit.offset)
+        left = my_round(cuts[-1].R - bit.offset)
         right = board.width
         adjCuts.append(Cut(left, right))
     return adjCuts
@@ -356,11 +376,11 @@ def board_coords(board, cuts, bit, joint_edge):
         # at the cut depth, start of cut
         x.append(c.L + xOrg)
         y.append(yCut)
-        # at the cut depth, end of cut 
+        # at the cut depth, end of cut
         x.append(c.R + xOrg)
         y.append(yCut)
         if c.R < board.width:
-            # at the surface, end of cut 
+            # at the surface, end of cut
             x.append(c.R + xOrg - bit.offset)
             y.append(yNocut)
     # add the last point on the top and bottom, at the right edge,
@@ -376,15 +396,15 @@ def board_coords(board, cuts, bit, joint_edge):
     y.append(y[0])
     return (x, y)
 
-class Joint_Geometry:
+class Joint_Geometry(object):
     '''
     Computes and stores all of the geometry attributes of the joint.
     '''
     def __init__(self, template, board, bit, spacing, margins):
         self.template = template
-        self.board    = board
-        self.bit      = bit
-        self.spacing  = spacing
+        self.board = board
+        self.bit = bit
+        self.spacing = spacing
 
         # determine b-cuts from the a-cuts
         self.aCuts = spacing.cuts
