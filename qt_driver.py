@@ -380,6 +380,8 @@ class Driver(QtGui.QMainWindow):
             self.cb_es_centered.setChecked(centered)
             self.cb_es_centered.blockSignals(False)
             self.equal_spacing.set_cuts(self.es_cut_values)
+            self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
+            self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
             self.spacing = self.equal_spacing
         elif spacing_index == 1:
             # do the variable spacing parameters
@@ -393,6 +395,7 @@ class Driver(QtGui.QMainWindow):
             self.vs_slider0.blockSignals(False)
             self.vs_cut_values[0] = p.vInit
             self.var_spacing.set_cuts(self.vs_cut_values)
+            self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
             self.spacing = self.var_spacing
         else:
             raise ValueError('Bad value for spacing_index %d' % spacing_index)

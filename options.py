@@ -24,8 +24,8 @@ OPTIONS['dpi_paper'] = 72
 
 # min_finger_width: avoid fingers that are smaller than this dimension.
 # Specified in intervals (integer).  So for English units, 8 corresponds to
-# 8/32" = 1/4"
-OPTIONS['min_finger_width'] = 8
+# 4/32" = 1/8"
+OPTIONS['min_finger_width'] = 4
 
 # The margins object controls top, bottom, and side margins, along with the
 # separation between objects in the figure.  Specified in intervals (integer).
