@@ -146,11 +146,12 @@ class Units(object):
     def intervals_to_string(self, intervals, with_units=False):
         '''A string representation of the value intervals'''
         if self.metric:
-            return '%d' % intervals
-        whole = int(intervals / self.intervals_per_inch)
-        numer = intervals - self.intervals_per_inch * whole
-        denom = self.intervals_per_inch
-        r = My_Fraction(whole, numer, denom).to_string()
+            r = '%d' % intervals
+        else:
+            whole = int(intervals / self.intervals_per_inch)
+            numer = intervals - self.intervals_per_inch * whole
+            denom = self.intervals_per_inch
+            r = My_Fraction(whole, numer, denom).to_string()
         if with_units:
             r += self.units_string()
         return r
