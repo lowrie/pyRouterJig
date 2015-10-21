@@ -562,8 +562,9 @@ class Driver(QtGui.QMainWindow):
         '''Handles screenshot events'''
         if DEBUG:
             print '_on_screenshot'
-        filename = 'screenshot_%d.png' % self.screenshot_index
-        QtGui.QPixmap.grabWindow(self.winId()).save(filename, 'png')
+        filetype = 'png'
+        filename = 'screenshot_%d.%s' % (self.screenshot_index, filetype)
+        QtGui.QPixmap.grabWindow(self.winId()).save(filename, filetype)
         self.flash_status_message("Saved screenshot to %s" % filename)
         self.screenshot_index += 1
 
@@ -574,7 +575,7 @@ class Driver(QtGui.QMainWindow):
         if self.file_saved:
             QtGui.qApp.quit()
         else:
-            msg = 'Figure was changed but not saved.  Are you sure to quit?'
+            msg = 'Figure was changed but not saved.  Are you sure you want to quit?'
             reply = QtGui.QMessageBox.question(self, 'Message', msg,
                                                QtGui.QMessageBox.Yes,
                                                QtGui.QMessageBox.No)
