@@ -22,7 +22,7 @@
 Contains the main driver, using pySide or pyQt.
 '''
 
-import sys, traceback
+import os, sys, traceback
 import router
 import mpl
 import spacing
@@ -75,6 +75,12 @@ class Driver(QtGui.QMainWindow):
         # because we assume that that the user does not want the default joint saved.
         self.file_saved = True
 
+        # The working_dir is where we save screenshots and files.  We start
+        # with the user home directory.  Ideally, if using the script to
+        # start the program, then we'd use the cwd, but that's complicated.
+        self.working_dir = os.path.expanduser('~')
+
+        # We form the screenshot filename from this index
         self.screenshot_index = 0
 
     def exception_hook(self, etype, value, trace):
@@ -549,21 +555,25 @@ class Driver(QtGui.QMainWindow):
                 default = s
 
         path = unicode(QtGui.QFileDialog.getSaveFileName(self,
-                                                         'Save file', '',
+                                                         'Save file',
+                                                         self.working_dir,
                                                          file_choices, default))
         if path:
             self.canvas.print_figure(path, dpi=self.dpi)
-            self.flash_status_message("Saved to %s" % path)
+            self.flash_status_message('Saved to %s' % path)
             self.file_saved = True
+            self.working_dir = os.path.dirname(path)
         else:
-            self.flash_status_message("Unable to save %s!" % path)
+            # ... then likely the cancel button was pressed
+            self.flash_status_message('No file saved')
 
     def _on_screenshot(self):
         '''Handles screenshot events'''
         if DEBUG:
             print '_on_screenshot'
         filetype = 'png'
-        filename = 'screenshot_%d.%s' % (self.screenshot_index, filetype)
+        filename = os.path.join(self.working_dir,
+                                'screenshot_%d.%s' % (self.screenshot_index, filetype))
         QtGui.QPixmap.grabWindow(self.winId()).save(filename, filetype)
         self.flash_status_message("Saved screenshot to %s" % filename)
         self.screenshot_index += 1
