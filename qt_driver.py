@@ -75,6 +75,8 @@ class Driver(QtGui.QMainWindow):
         # because we assume that that the user does not want the default joint saved.
         self.file_saved = True
 
+        self.screenshot_index = 0
+
     def exception_hook(self, etype, value, trace):
         '''
         Handler for all exceptions.
@@ -117,6 +119,13 @@ class Driver(QtGui.QMainWindow):
         exit_action.setStatusTip('Exit pyRouterJig')
         exit_action.triggered.connect(self._on_exit)
         self.file_menu.addAction(exit_action)
+
+        screenshot_action = QtGui.QAction(QtGui.QIcon('screenshot.png'),
+                                          '&Screenshot', self)
+        screenshot_action.setShortcut('Ctrl+W')
+        screenshot_action.setStatusTip('Screenshot of window')
+        screenshot_action.triggered.connect(self._on_screenshot)
+        self.file_menu.addAction(screenshot_action)
 
     def create_widgets(self):
         '''
@@ -548,6 +557,15 @@ class Driver(QtGui.QMainWindow):
             self.file_saved = True
         else:
             self.flash_status_message("Unable to save %s!" % path)
+
+    def _on_screenshot(self):
+        '''Handles screenshot events'''
+        if DEBUG:
+            print '_on_screenshot'
+        filename = 'screenshot_%d.png' % self.screenshot_index
+        QtGui.QPixmap.grabWindow(self.winId()).save(filename, 'png')
+        self.flash_status_message("Saved screenshot to %s" % filename)
+        self.screenshot_index += 1
 
     def _on_exit(self):
         '''Handles code exit events'''
