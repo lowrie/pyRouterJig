@@ -28,9 +28,9 @@ from qt_driver import Driver
 from options import OPTIONS
 from PyQt4 import QtGui
 from PyQt4 import QtCore
+from PyQt4.QtTest import QTest
 
 UNITS = OPTIONS['units']
-OPTIONS['debug'] = True
 
 app = QtGui.QApplication(sys.argv)
 
@@ -42,6 +42,9 @@ class Driver_Test(unittest.TestCase):
         self.d = Driver()
         self.d.show()
         self.d.raise_()
+        QTest.qWaitForWindowShown(self.d)
+    def test_options(self):
+        self.assertFalse(OPTIONS['debug'])
     def test_defaults(self):
         self.assertEqual(str(self.d.tb_board_width.text()), '7 1/2')
         self.assertEqual(str(self.d.tb_bit_width.text()), '1/2')
@@ -49,8 +52,12 @@ class Driver_Test(unittest.TestCase):
         self.assertEqual(str(self.d.tb_bit_angle.text()), '0')
     def test_screenshots(self):
         self.d._on_screenshot()
-        self.d.tb_bit_width.setText('1/4')
+        self.d.tb_bit_width.clear()
+        QTest.keyClicks(self.d.tb_bit_width, "1/4")
+        QTest.keyPress(self.d.tb_bit_width, QtCore.Qt.Key_Tab)
         self.d._on_bit_width()
+        QTest.qWaitForWindowShown(self.d)
+        QTest.qWait(1000)
         self.assertEqual(str(self.d.tb_bit_width.text()), '1/4')
         self.d._on_screenshot()
 

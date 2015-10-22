@@ -415,6 +415,7 @@ class Driver(QtGui.QMainWindow):
         else:
             raise ValueError('Bad value for spacing_index %d' % spacing_index)
 
+    @QtCore.pyqtSlot()
     def _on_cb_es_centered(self):
         '''Handles changes to centered checkbox'''
         if DEBUG:
@@ -428,6 +429,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Unchecked Centered.')
         self.file_saved = False
 
+    @QtCore.pyqtSlot()
     def _on_tabs_spacing(self, index):
         '''Handles changes to spacing algorithm'''
         if DEBUG:
@@ -438,6 +440,7 @@ class Driver(QtGui.QMainWindow):
                                   % str(self.tabs_spacing.tabText(index)))
         self.file_saved = False
 
+    @QtCore.pyqtSlot()
     def _on_bit_width(self):
         '''Handles changes to bit width'''
         if DEBUG:
@@ -459,6 +462,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed bit width to ' + text)
             self.file_saved = False
 
+    @QtCore.pyqtSlot()
     def _on_bit_depth(self):
         '''Handles changes to bit depth'''
         if DEBUG:
@@ -471,6 +475,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed bit depth to ' + text)
             self.file_saved = False
 
+    @QtCore.pyqtSlot()
     def _on_bit_angle(self):
         '''Handles changes to bit angle'''
         if DEBUG:
@@ -484,6 +489,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed bit angle to ' + text)
             self.file_saved = False
 
+    @QtCore.pyqtSlot()
     def _on_board_width(self):
         '''Handles changes to board width'''
         if DEBUG:
@@ -497,6 +503,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed board width to ' + text)
             self.file_saved = False
 
+    @QtCore.pyqtSlot()
     def _on_es_slider0(self, value):
         '''Handles changes to the equally-spaced slider B-spacing'''
         if DEBUG:
@@ -508,6 +515,7 @@ class Driver(QtGui.QMainWindow):
         self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
         self.file_saved = False
 
+    @QtCore.pyqtSlot()
     def _on_es_slider1(self, value):
         '''Handles changes to the equally-spaced slider Width'''
         if DEBUG:
@@ -519,6 +527,7 @@ class Driver(QtGui.QMainWindow):
         self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
         self.file_saved = False
 
+    @QtCore.pyqtSlot()
     def _on_vs_slider0(self, value):
         '''Handles changes to the variable-spaced slider Fingers'''
         if DEBUG:
@@ -530,6 +539,7 @@ class Driver(QtGui.QMainWindow):
         self.flash_status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
         self.file_saved = False
 
+    @QtCore.pyqtSlot()
     def _on_save(self):
         '''Handles save to file events'''
         if DEBUG:
@@ -567,6 +577,7 @@ class Driver(QtGui.QMainWindow):
             # ... then likely the cancel button was pressed
             self.flash_status_message('No file saved')
 
+    @QtCore.pyqtSlot()
     def _on_screenshot(self):
         '''Handles screenshot events'''
         if DEBUG:
@@ -578,6 +589,7 @@ class Driver(QtGui.QMainWindow):
         self.flash_status_message("Saved screenshot to %s" % filename)
         self.screenshot_index += 1
 
+    @QtCore.pyqtSlot()
     def _on_exit(self):
         '''Handles code exit events'''
         if DEBUG:
@@ -593,6 +605,7 @@ class Driver(QtGui.QMainWindow):
             if reply == QtGui.QMessageBox.Yes:
                 QtGui.qApp.quit()
 
+    @QtCore.pyqtSlot()
     def _on_about(self):
         '''Handles about dialog event'''
         if DEBUG:
@@ -611,6 +624,7 @@ class Driver(QtGui.QMainWindow):
         if flash_len_ms is not None:
             QtCore.QTimer.singleShot(flash_len_ms, self._on_flash_status_off)
 
+    @QtCore.pyqtSlot()
     def _on_flash_status_off(self):
         '''Handles event to turn off statusbar message'''
         if DEBUG:
