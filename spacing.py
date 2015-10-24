@@ -24,7 +24,6 @@ Contains the classes that define the finger width and spacing.
 from __future__ import print_function
 from __future__ import division
 from builtins import range
-from builtins import object
 
 import math
 from operator import attrgetter

@@ -24,7 +24,6 @@ Contains the matplotlib functionality for drawing the template and boards.
 from __future__ import print_function
 from __future__ import division
 from builtins import range
-from builtins import object
 
 from copy import deepcopy
 import matplotlib.pyplot as plt

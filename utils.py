@@ -22,7 +22,6 @@
 This module contains base utilitities for pyRouterJig
 '''
 from __future__ import division
-from builtins import object
 
 import math, fractions
 

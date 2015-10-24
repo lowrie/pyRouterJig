@@ -23,7 +23,6 @@ Contains the router, board, template and their geometry properties.
 '''
 from __future__ import division
 from builtins import range
-from builtins import object
 
 import math
 from copy import deepcopy

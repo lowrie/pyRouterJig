@@ -21,8 +21,6 @@
 '''
 Defines documentation helpers.
 '''
-from builtins import object
-
 import spacing
 from options import OPTIONS
 
