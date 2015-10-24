@@ -22,7 +22,7 @@
 Contains the router, board, template and their geometry properties.
 '''
 from __future__ import division
-from builtins import range
+from future.utils import lrange
 
 import math
 from copy import deepcopy
@@ -241,34 +241,34 @@ class Cut(object):
 
     Attributes:
 
-    L:  left (min x) location of cut.
-    R:  right (max x) location of cut.
+    xmin: min x-location of cut.
+    xmax: max x-location of cut.
     passes: Array of router passes to make the cut, indicating the center of the bit
     midPass: The particle pass in passes that is centered (within an interval)
              on the cut
     '''
-    def __init__(self, left, right):
-        self.L = left
-        self.R = right
+    def __init__(self, xmin, xmax):
+        self.xmin = xmin
+        self.xmax = xmax
         self.passes = []
     def validate(self, bit, board):
         '''
         Checks whether the attributes of the cut are valid.
         '''
-        if self.L >= self.R:
-            raise Router_Exception('cut left = %d, right = %d: '\
-                                   'Must have right > left!' % (self.L, self.R))
-        if self.L < 0:
-            raise Router_Exception('cut left = %d, right = %d: '\
-                                   'Must have left >=0!' % (self.L, self.R))
-        if self.R > board.width:
-            raise Router_Exception('cut left = %d, right = %d:'
-                                   ' Must have right < board width (%d)!'\
-                                   % (self.L, self.R, board.width))
-        if self.R - self.L < bit.width and self.L > 0 and self.R < board.width:
-            raise Router_Exception('cut left = %d, right = %d: '\
+        if self.xmin >= self.xmax:
+            raise Router_Exception('cut xmin = %d, xmax = %d: '\
+                                   'Must have xmax > xmin!' % (self.xmin, self.xmax))
+        if self.xmin < 0:
+            raise Router_Exception('cut xmin = %d, xmax = %d: '\
+                                   'Must have xmin >=0!' % (self.xmin, self.xmax))
+        if self.xmax > board.width:
+            raise Router_Exception('cut xmin = %d, xmax = %d:'
+                                   ' Must have xmax < board width (%d)!'\
+                                   % (self.xmin, self.xmax, board.width))
+        if self.xmax - self.xmin < bit.width and self.xmin > 0 and self.xmax < board.width:
+            raise Router_Exception('cut xmin = %d, xmax = %d: '\
                                    'Bit width (%d) too large for this cut!'\
-                                   % (self.L, self.R, bit.width))
+                                   % (self.xmin, self.xmax, bit.width))
     def make_router_passes(self, bit, board):
         '''Computes passes for the given bit.'''
         # The logic below assumes bit.width is even
@@ -276,33 +276,33 @@ class Cut(object):
             Router_Exception('Router-bit width must be even!')
         self.validate(bit, board)
         # Make the middle pass, centered (within an interval) on the cut
-        if self.L == 0:
-            mid_pass = self.R - bit.halfwidth
-            xL = max(0, self.R - bit.width)
-            xR = self.R
-        elif self.R == board.width:
-            mid_pass = self.L + bit.halfwidth
-            xL = self.L
-            xR = min(board.width, self.L + bit.width)
+        if self.xmin == 0:
+            mid_pass = self.xmax - bit.halfwidth
+            xL = max(0, self.xmax - bit.width)
+            xR = self.xmax
+        elif self.xmax == board.width:
+            mid_pass = self.xmin + bit.halfwidth
+            xL = self.xmin
+            xR = min(board.width, self.xmin + bit.width)
         else:
-            mid_pass = (self.L + self.R) // 2
+            mid_pass = (self.xmin + self.xmax) // 2
             xL = mid_pass - bit.halfwidth
-            if xL < self.L: # cut width must be odd
-                xL = self.L
-                mid_pass = self.L + bit.halfwidth
+            if xL < self.xmin: # cut width must be odd
+                xL = self.xmin
+                mid_pass = self.xmin + bit.halfwidth
             xR = min(xL + bit.width, board.width)
-        if xL < self.L and self.L > 0:
+        if xL < self.xmin and self.xmin > 0:
             Router_Exception('Exceeded left part of a cut!')
-        if xR > self.R and self.R < board.width:
+        if xR > self.xmax and self.xmax < board.width:
             Router_Exception('Exceeded right part of a cut!')
         self.passes = [mid_pass]
         # Finish passes to left of the middle pass
-        while xL > self.L:
-            xL = max(xL - bit.width, self.L)
+        while xL > self.xmin:
+            xL = max(xL - bit.width, self.xmin)
             self.passes.append(xL + bit.halfwidth)
         # Finish passes to right of the middle pass
-        while xR < self.R:
-            xR = min(xR + bit.width, self.R)
+        while xR < self.xmax:
+            xR = min(xR + bit.width, self.xmax)
             self.passes.append(xR - bit.halfwidth)
         # Sort the passes
         self.passes = sorted(self.passes)
@@ -319,20 +319,20 @@ def adjoining_cuts(cuts, bit, board):
     adjCuts = []
     # if the left-most input cut does not include the left edge, add an
     # adjoining cut that includes the left edge
-    if cuts[0].L > 0:
+    if cuts[0].xmin > 0:
         left = 0
-        right = my_round(cuts[0].L + bit.offset)
+        right = my_round(cuts[0].xmin + bit.offset)
         adjCuts = [Cut(left, right)]
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
-    for i in range(1, nc):
-        left = my_round(cuts[i-1].R - bit.offset)
-        right = max(left + bit.width, my_round(cuts[i].L + bit.offset))
+    for i in lrange(1, nc):
+        left = my_round(cuts[i-1].xmax - bit.offset)
+        right = max(left + bit.width, my_round(cuts[i].xmin + bit.offset))
         adjCuts.append(Cut(left, right))
     # if the right-most input cut does not include the right edge, add an
     # adjoining cut that includes this edge
-    if cuts[-1].R < board.width:
-        left = my_round(cuts[-1].R - bit.offset)
+    if cuts[-1].xmax < board.width:
+        left = my_round(cuts[-1].xmax - bit.offset)
         right = board.width
         adjCuts.append(Cut(left, right))
     return adjCuts
@@ -365,29 +365,29 @@ def board_coords(board, cuts, bit, joint_edge):
     y = [yOrg]
     yNocut = y[0] + sign * board.height # y-location of uncut edge
     yCut = yNocut - sign * bit.depth   # y-location of routed edge
-    if cuts[0].L > 0:
+    if cuts[0].xmin > 0:
         y.append(yNocut)
     else:
         y.append(yCut)
     # loop through the cuts and add them to the perimeter
     for c in cuts:
-        if c.L > 0:
+        if c.xmin > 0:
             # on the surface, start of cut
-            x.append(c.L + xOrg + bit.offset)
+            x.append(c.xmin + xOrg + bit.offset)
             y.append(yNocut)
         # at the cut depth, start of cut
-        x.append(c.L + xOrg)
+        x.append(c.xmin + xOrg)
         y.append(yCut)
         # at the cut depth, end of cut
-        x.append(c.R + xOrg)
+        x.append(c.xmax + xOrg)
         y.append(yCut)
-        if c.R < board.width:
+        if c.xmax < board.width:
             # at the surface, end of cut
-            x.append(c.R + xOrg - bit.offset)
+            x.append(c.xmax + xOrg - bit.offset)
             y.append(yNocut)
     # add the last point on the top and bottom, at the right edge,
     # accounting for whether the last cut includes this edge or not.
-    if cuts[-1].R < board.width:
+    if cuts[-1].xmax < board.width:
         x.append(xOrg + board.width)
         y.append(yNocut)
     # add the right-most corner point, on the unrouted edge

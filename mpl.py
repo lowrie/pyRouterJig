@@ -23,7 +23,7 @@ Contains the matplotlib functionality for drawing the template and boards.
 '''
 from __future__ import print_function
 from __future__ import division
-from builtins import range
+from future.utils import lrange
 
 from copy import deepcopy
 import matplotlib.pyplot as plt
@@ -170,7 +170,7 @@ class MPL_Plotter(object):
         # ... do the B passes
         ip = 0
         for c in geom.bCuts[::-1]:
-            for p in range(len(c.passes) - 1, -1, -1):
+            for p in lrange(len(c.passes) - 1, -1, -1):
                 xp = c.passes[p] + board_T.xL
                 ip += 1
                 label = '%dB' % ip
@@ -183,7 +183,7 @@ class MPL_Plotter(object):
         # ... do the A passes
         ip = 0
         for c in geom.aCuts[::-1]:
-            for p in range(len(c.passes) - 1, -1, -1):
+            for p in lrange(len(c.passes) - 1, -1, -1):
                 xp = c.passes[p] + board_T.xL
                 ip += 1
                 label = '%dA' % ip

@@ -23,7 +23,7 @@ Contains the classes that define the finger width and spacing.
 '''
 from __future__ import print_function
 from __future__ import division
-from builtins import range
+from future.utils import lrange
 
 import math
 from operator import attrgetter
@@ -155,14 +155,14 @@ class Equally_Spaced(Base_Spacing):
             i = ri + neck_width
         # If we have only one cut the entire width of the board, then
         # the board width is too small for the bit
-        if self.cuts[0].L == 0 and self.cuts[0].R == self.board.width:
+        if self.cuts[0].xmin == 0 and self.cuts[0].xmax == self.board.width:
             raise Spacing_Exception('Unable to compute a equally-spaced'\
                                     ' joint for the board and bit parameters'\
                                     ' specified.  This is likely because'\
                                     ' the board width is too small for the'\
                                     ' bit width specified.')
         # sort the cuts in increasing x
-        self.cuts = sorted(self.cuts, key=attrgetter('L'))
+        self.cuts = sorted(self.cuts, key=attrgetter('xmin'))
 
 class Variable_Spaced(Base_Spacing):
     '''
@@ -211,7 +211,7 @@ class Variable_Spaced(Base_Spacing):
         # in intervals.  Keep a running total of sizes.
         intervals = [0] * (m + 1)
         ivals = 0
-        for i in range(1, m+1):
+        for i in lrange(1, m+1):
             intervals[i] = int(c - d * i)
             ivals += 2 * intervals[i]
         # Set the center interval.  This takes up the slop in the rounding and interval
@@ -235,7 +235,7 @@ class Variable_Spaced(Base_Spacing):
         self.cuts = [router.Cut(left, right)]
         # do the remaining cuts
         do_cut = False
-        for i in range(1, m+1):
+        for i in lrange(1, m+1):
             if do_cut:
                 width = intervals[i] + deltaP
                 farLeft = max(0, left - width)
@@ -250,4 +250,4 @@ class Variable_Spaced(Base_Spacing):
             right = farRight
             do_cut = (not do_cut)
         # sort the cuts in increasing x
-        self.cuts = sorted(self.cuts, key=attrgetter('L'))
+        self.cuts = sorted(self.cuts, key=attrgetter('xmin'))

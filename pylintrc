@@ -134,13 +134,17 @@ const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
 const-name-hint=(([A-Z_][A-Z0-9_]*)|(__.*__))$
 
 # Regular expression matching correct attribute names
-attr-rgx=[a-z_][a-z0-9_]{2,30}$
+#attr-rgx=[a-z_][a-z0-9_]{2,30}$
+# RBL:
+attr-rgx=[a-z_][a-zA-Z0-9_]{0,30}$
 
 # Naming hint for attribute names
 attr-name-hint=[a-z_][a-z0-9_]{2,30}$
 
 # Regular expression matching correct argument names
-argument-rgx=[a-z_][a-z0-9_]{2,30}$
+#argument-rgx=[a-z_][a-z0-9_]{2,30}$
+# RBL:
+argument-rgx=[a-z_][a-zA-Z0-9_]{0,30}$
 
 # Naming hint for argument names
 argument-name-hint=[a-z_][a-z0-9_]{2,30}$
@@ -172,7 +176,9 @@ module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
 module-name-hint=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
 
 # Regular expression matching correct method names
-method-rgx=[a-z_][a-z0-9_]{2,30}$
+#method-rgx=[a-z_][a-z0-9_]{2,30}$
+# RBL:
+method-rgx=[a-z_][a-zA-Z0-9_]{2,30}$
 
 # Naming hint for method names
 method-name-hint=[a-z_][a-z0-9_]{2,30}$
@@ -351,7 +357,9 @@ max-parents=7
 max-attributes=7
 
 # Minimum number of public methods for a class (see R0903).
-min-public-methods=2
+#min-public-methods=2
+# RBL:
+min-public-methods=1
 
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=20

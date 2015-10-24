@@ -567,9 +567,9 @@ class Driver(QtGui.QMainWindow):
                 default = s
 
         path = str(QtGui.QFileDialog.getSaveFileName(self,
-                                                         'Save file',
-                                                         self.working_dir,
-                                                         file_choices, default))
+                                                     'Save file',
+                                                     self.working_dir,
+                                                     file_choices, default))
         if path:
             self.canvas.print_figure(path, dpi=self.dpi)
             self.flash_status_message('Saved to %s' % path)
