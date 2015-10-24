@@ -24,7 +24,6 @@ Contains the classes that define the finger width and spacing.
 from __future__ import print_function
 from __future__ import division
 from builtins import range
-from past.utils import old_div
 from builtins import object
 
 import math
@@ -106,8 +105,8 @@ class Equally_Spaced(Base_Spacing):
     def __init__(self, bit, board):
         Base_Spacing.__init__(self, bit, board)
     def get_params(self):
-        p1 = Spacing_Param(0, old_div(self.board.width, 4), 0)
-        p2 = Spacing_Param(self.bit.width, old_div(self.board.width, 2), self.bit.width)
+        p1 = Spacing_Param(0, self.board.width // 4, 0)
+        p2 = Spacing_Param(self.bit.width, self.board.width // 2, self.bit.width)
         p3 = Spacing_Param(None, None, True)
         return [p1, p2, p3]
     def set_cuts(self, values=None):
@@ -133,12 +132,12 @@ class Equally_Spaced(Base_Spacing):
                                     ' the surface!  Please change the'
                                     ' bit parameters width, depth, or angle.' % neck_width)
         # put a cut at the center of the board
-        xMid = old_div(self.board.width, 2)
+        xMid = self.board.width // 2
         if centered or \
            self.bit.angle > 0: # always symm. for dovetail
-            left = max(0, xMid - old_div(width, 2))
+            left = max(0, xMid - width // 2)
         else:
-            left = max(0, (old_div(xMid, width)) * width)
+            left = max(0, (xMid // width) * width)
         right = min(self.board.width, left + width)
         self.cuts.append(router.Cut(left, right))
         # do left side of board
@@ -181,18 +180,18 @@ class Variable_Spaced(Base_Spacing):
         # eff_width is the effective width, an average of the bit width
         # and the neck width
         self.eff_width = my_round(0.5 * (self.bit.width + self.bit.neck))
-        self.wb = old_div(self.board.width, self.eff_width)
+        self.wb = self.board.width // self.eff_width
         self.alpha = (self.wb + 1) % 2
         # min and max number of fingers
         self.mMin = max(3 - self.alpha, my_round(math.ceil(math.sqrt(self.wb))))
-        self.mMax = my_round(math.floor(old_div((self.wb - 1.0 + self.alpha), 2)))
+        self.mMax = my_round((self.wb - 1.0 + self.alpha) // 2)
         if self.mMax < self.mMin:
             raise Spacing_Exception('Unable to compute a variable-spaced'\
                                     ' joint for the board and bit parameters'\
                                     ' specified.  This is likely because'\
                                     ' the board width is too small for the'\
                                     ' bit width specified.')
-        self.mDefault = old_div((self.mMin + self.mMax), 2)
+        self.mDefault = (self.mMin + self.mMax) // 2
     def get_params(self):
         p1 = Spacing_Param(self.mMin, self.mMax, self.mDefault)
         return [p1]
@@ -208,7 +207,7 @@ class Variable_Spaced(Base_Spacing):
         c = self.eff_width * ((m - 1.0) * self.wb - m * (m + 1.0) + self.alpha * m) /\
             (m * m - 2.0 * m - 1.0 + self.alpha)
         # d is the ideal decrease in finger width for each finger away from center finger
-        d = old_div((c - self.eff_width), (m - 1.0))
+        d = (c - self.eff_width) / (m - 1.0)
         # compute fingers on one side of the center and the center and store them
         # in intervals.  Keep a running total of sizes.
         intervals = [0] * (m + 1)
@@ -230,9 +229,9 @@ class Variable_Spaced(Base_Spacing):
         deltaP = self.bit.width - self.eff_width
         deltaM = my_round(self.eff_width - self.bit.neck)
         # put a cut at the center of the board
-        xMid = old_div(self.board.width, 2)
+        xMid = self.board.width // 2
         width = intervals[0] + deltaP
-        left = max(0, xMid -  old_div(width, 2))
+        left = max(0, xMid -  width // 2)
         right = min(self.board.width, left + width)
         self.cuts = [router.Cut(left, right)]
         # do the remaining cuts

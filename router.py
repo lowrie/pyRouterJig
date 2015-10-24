@@ -23,7 +23,6 @@ Contains the router, board, template and their geometry properties.
 '''
 from __future__ import division
 from builtins import range
-from past.utils import old_div
 from builtins import object
 
 import math
@@ -147,7 +146,7 @@ class Router_Bit(object):
         Reinitializes internal attributes that are dependent on width
         and angle.
         '''
-        self.halfwidth = old_div(self.width, 2)
+        self.halfwidth = self.width // 2
         if 2 * self.halfwidth != self.width:
             raise Router_Exception('Router-bit width must be an even number of intervals!')
         self.offset = 0 # ensure exactly 0 for angle == 0
@@ -172,10 +171,10 @@ class My_Rectangle(object):
         self.height = height
     def xMid(self):
         '''Returns the x-coordinate of the midpoint.'''
-        return self.xL + old_div(self.width, 2)
+        return self.xL + self.width // 2
     def yMid(self):
         '''Returns the y-coordinate of the midpoint.'''
-        return self.yB + old_div(self.height, 2)
+        return self.yB + self.height // 2
     def xAll(self):
         '''Returns the x-coordinates of a closed polygon of the rectangle.'''
         return (self.xL, self.xR(), self.xR(), self.xL, self.xL)
@@ -287,7 +286,7 @@ class Cut(object):
             xL = self.L
             xR = min(board.width, self.L + bit.width)
         else:
-            mid_pass = old_div((self.L + self.R), 2)
+            mid_pass = (self.L + self.R) // 2
             xL = mid_pass - bit.halfwidth
             if xL < self.L: # cut width must be odd
                 xL = self.L
