@@ -22,6 +22,7 @@
 Contains the main driver, using pySide or pyQt.
 '''
 from __future__ import print_function
+from builtins import str
 
 import os, sys, traceback
 import router
@@ -555,7 +556,7 @@ class Driver(QtGui.QMainWindow):
         filetypes = self.canvas.get_supported_filetypes_grouped()
         default_filetype = self.canvas.get_default_filetype()
         file_choices = ''
-        for key, value in filetypes.iteritems():
+        for key, value in filetypes.items():
             if len(file_choices) > 0:
                 file_choices += ';;'
             # we probably need to consider all value, but for now, just
@@ -565,7 +566,7 @@ class Driver(QtGui.QMainWindow):
             if default_filetype == value[0]:
                 default = s
 
-        path = unicode(QtGui.QFileDialog.getSaveFileName(self,
+        path = str(QtGui.QFileDialog.getSaveFileName(self,
                                                          'Save file',
                                                          self.working_dir,
                                                          file_choices, default))

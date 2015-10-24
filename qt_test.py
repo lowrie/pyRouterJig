@@ -21,6 +21,7 @@
 '''
 Tests for qt_driver
 '''
+from builtins import str
 
 import sys
 import unittest

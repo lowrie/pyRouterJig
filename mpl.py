@@ -22,6 +22,10 @@
 Contains the matplotlib functionality for drawing the template and boards.
 '''
 from __future__ import print_function
+from __future__ import division
+from builtins import range
+from builtins import object
+from past.utils import old_div
 
 from copy import deepcopy
 import matplotlib.pyplot as plt
@@ -112,7 +116,7 @@ class MPL_Plotter(object):
         if wwl < min_width:
             wwl = min_width
             window_width = OPTIONS['units'].inches_to_intervals(wwl)
-            margins.left = (window_width - template.length) / 2
+            margins.left = old_div((window_width - template.length), 2)
             margins.right = margins.left
             window_width = template.length + margins.left + margins.right
         wwh = OPTIONS['units'].intervals_to_inches(window_height)

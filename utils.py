@@ -21,6 +21,9 @@
 '''
 This module contains base utilitities for pyRouterJig
 '''
+from __future__ import division
+from builtins import object
+from past.utils import old_div
 
 import math, fractions
 
@@ -54,7 +57,7 @@ class My_Fraction(object):
         '''
         if self.denominator is None or self.numerator == 0:
             return
-        dwhole = self.numerator / self.denominator
+        dwhole = old_div(self.numerator, self.denominator)
         self.whole += dwhole
         self.numerator -= dwhole * self.denominator
         gcd = fractions.gcd(self.numerator, self.denominator)
@@ -139,7 +142,7 @@ class Units(object):
             self.intervals_per_inch = 25.4
     def intervals_to_inches(self, intervals_):
         '''Converts intervals to inches.'''
-        return float(intervals_) / self.intervals_per_inch
+        return old_div(float(intervals_), self.intervals_per_inch)
     def inches_to_intervals(self, inches_):
         '''Converts the input inches to intervals'''
         return my_round(self.intervals_per_inch * inches_)
@@ -148,7 +151,7 @@ class Units(object):
         if self.metric:
             r = '%d' % intervals
         else:
-            whole = int(intervals / self.intervals_per_inch)
+            whole = int(old_div(intervals, self.intervals_per_inch))
             numer = intervals - self.intervals_per_inch * whole
             denom = self.intervals_per_inch
             r = My_Fraction(whole, numer, denom).to_string()
@@ -179,7 +182,7 @@ class Units(object):
         f.set_from_string(s)
         r = f.whole * self.intervals_per_inch
         if f.numerator > 0:
-            ratio = self.intervals_per_inch / f.denominator
+            ratio = old_div(self.intervals_per_inch, f.denominator)
             if ratio * f.denominator != self.intervals_per_inch:
                 raise ValueError('"%s" is not an exact number of intervals' % s)
             r += ratio * f.numerator
