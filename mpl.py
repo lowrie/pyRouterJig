@@ -21,6 +21,7 @@
 '''
 Contains the matplotlib functionality for drawing the template and boards.
 '''
+from __future__ import print_function
 
 from copy import deepcopy
 import matplotlib.pyplot as plt
@@ -132,12 +133,12 @@ class MPL_Plotter(object):
         self.fig.clear()
         if do_blank_draw:
             if OPTIONS['debug']:
-                print 'doing blank draw'
+                print('doing blank draw')
             self.fig.canvas.draw() # only do this on board resize
 
         # Adjust to the new figure size
         if OPTIONS['debug']:
-            print 'mpl fig size ', self.fig_width, self.fig_height
+            print('mpl fig size ', self.fig_width, self.fig_height)
         self.fig.set_size_inches(self.fig_width, self.fig_height)
         axes = self.fig.add_subplot(1, 1, 1, aspect='equal')
 

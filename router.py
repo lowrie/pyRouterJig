@@ -97,7 +97,7 @@ class Router_Bit(object):
         msg = 'Bit width is "%s".  Set to a postive value.'
         try:
             self.width = UNITS.string_to_intervals(s)
-        except ValueError, e:
+        except ValueError as e:
             msg = 'ValueError setting bit width: %s\n' % (e) + \
                   msg % s
             raise Router_Exception(msg)
@@ -113,7 +113,7 @@ class Router_Bit(object):
         msg = 'Bit depth is "%s".  Set to a postive value.'
         try:
             self.depth = UNITS.string_to_intervals(s)
-        except ValueError, e:
+        except ValueError as e:
             msg = 'ValueError setting bit depth: %s\n' % (e) + \
                   msg % s
             raise Router_Exception(msg)
@@ -129,7 +129,7 @@ class Router_Bit(object):
         msg = 'Bit angle is "%s".  Set to zero or a postive value.'
         try:
             self.angle = float(s)
-        except ValueError, e:
+        except ValueError as e:
             msg = 'ValueError setting bit angle: %s\n' % (e) + \
                   msg % s
             raise Router_Exception(msg)
@@ -209,7 +209,7 @@ class Board(My_Rectangle):
         msg = 'Board width is "%s".  Set to a postive value.'
         try:
             self.width = UNITS.string_to_intervals(s)
-        except ValueError, e:
+        except ValueError as e:
             msg = 'ValueError setting board width: %s\n' % (e) + \
                   msg % s
             raise Router_Exception(msg)
@@ -224,7 +224,7 @@ class Board(My_Rectangle):
         msg = 'Board height is "%s".  Set to a postive value.'
         try:
             self.height = UNITS.string_to_intervals(s)
-        except ValueError, e:
+        except ValueError as e:
             msg = 'ValueError setting board height: %s\n' % (e) + \
                   msg % s
             raise Router_Exception(msg)

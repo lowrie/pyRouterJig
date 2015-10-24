@@ -21,6 +21,7 @@
 '''
 Contains the classes that define the finger width and spacing.
 '''
+from __future__ import print_function
 
 import math
 from operator import attrgetter
@@ -220,7 +221,7 @@ class Variable_Spaced(Base_Spacing):
             intervals[0] = intervals[1]
             m -= 1
         if OPTIONS['debug']:
-            print 'intervals', intervals
+            print('intervals', intervals)
         # Adjustments for dovetails
         deltaP = self.bit.width - self.eff_width
         deltaM = my_round(self.eff_width - self.bit.neck)

@@ -21,6 +21,7 @@
 '''
 Contains the main driver, using pySide or pyQt.
 '''
+from __future__ import print_function
 
 import os, sys, traceback
 import router
@@ -355,7 +356,7 @@ class Driver(QtGui.QMainWindow):
     def draw_mpl(self):
         '''(Re)draws the matplotlib figure'''
         if DEBUG:
-            print 'draw_mpl'
+            print('draw_mpl')
         self.template = router.Incra_Template(self.board)
         self.mpl.draw(self.template, self.board, self.bit, self.spacing)
         self.canvas.draw()
@@ -419,7 +420,7 @@ class Driver(QtGui.QMainWindow):
     def _on_cb_es_centered(self):
         '''Handles changes to centered checkbox'''
         if DEBUG:
-            print '_on_cb_es_centered'
+            print('_on_cb_es_centered')
         self.es_cut_values[2] = self.cb_es_centered.isChecked()
         self.equal_spacing.set_cuts(self.es_cut_values)
         self.draw_mpl()
@@ -433,7 +434,7 @@ class Driver(QtGui.QMainWindow):
     def _on_tabs_spacing(self, index):
         '''Handles changes to spacing algorithm'''
         if DEBUG:
-            print '_on_tabs_spacing'
+            print('_on_tabs_spacing')
         self.reinit_spacing()
         self.draw_mpl()
         self.flash_status_message('Changed to spacing algorithm %s'\
@@ -444,7 +445,7 @@ class Driver(QtGui.QMainWindow):
     def _on_bit_width(self):
         '''Handles changes to bit width'''
         if DEBUG:
-            print '_on_bit_width'
+            print('_on_bit_width')
         # With editingFinished, we also need to check whether the
         # value actually changed. This is because editingFinished gets
         # triggered every time focus changes, which can occur many
@@ -453,7 +454,7 @@ class Driver(QtGui.QMainWindow):
         # unnecessary redraws.
         if self.tb_bit_width.isModified():
             if DEBUG:
-                print ' bit_width modified'
+                print(' bit_width modified')
             self.tb_bit_width.setModified(False)
             text = str(self.tb_bit_width.text())
             self.bit.set_width_from_string(text)
@@ -466,7 +467,7 @@ class Driver(QtGui.QMainWindow):
     def _on_bit_depth(self):
         '''Handles changes to bit depth'''
         if DEBUG:
-            print '_on_bit_depth'
+            print('_on_bit_depth')
         if self.tb_bit_depth.isModified():
             self.tb_bit_depth.setModified(False)
             text = str(self.tb_bit_depth.text())
@@ -479,7 +480,7 @@ class Driver(QtGui.QMainWindow):
     def _on_bit_angle(self):
         '''Handles changes to bit angle'''
         if DEBUG:
-            print '_on_bit_angle'
+            print('_on_bit_angle')
         if self.tb_bit_angle.isModified():
             self.tb_bit_angle.setModified(False)
             text = str(self.tb_bit_angle.text())
@@ -493,7 +494,7 @@ class Driver(QtGui.QMainWindow):
     def _on_board_width(self):
         '''Handles changes to board width'''
         if DEBUG:
-            print '_on_board_width'
+            print('_on_board_width')
         if self.tb_board_width.isModified():
             self.tb_board_width.setModified(False)
             text = str(self.tb_board_width.text())
@@ -507,7 +508,7 @@ class Driver(QtGui.QMainWindow):
     def _on_es_slider0(self, value):
         '''Handles changes to the equally-spaced slider B-spacing'''
         if DEBUG:
-            print '_on_es_slider0', value
+            print('_on_es_slider0', value)
         self.es_cut_values[0] = value
         self.equal_spacing.set_cuts(self.es_cut_values)
         self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
@@ -519,7 +520,7 @@ class Driver(QtGui.QMainWindow):
     def _on_es_slider1(self, value):
         '''Handles changes to the equally-spaced slider Width'''
         if DEBUG:
-            print '_on_es_slider1', value
+            print('_on_es_slider1', value)
         self.es_cut_values[1] = value
         self.equal_spacing.set_cuts(self.es_cut_values)
         self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
@@ -531,7 +532,7 @@ class Driver(QtGui.QMainWindow):
     def _on_vs_slider0(self, value):
         '''Handles changes to the variable-spaced slider Fingers'''
         if DEBUG:
-            print '_on_vs_slider0', value
+            print('_on_vs_slider0', value)
         self.vs_cut_values[0] = value
         self.var_spacing.set_cuts(self.vs_cut_values)
         self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
@@ -543,7 +544,7 @@ class Driver(QtGui.QMainWindow):
     def _on_save(self):
         '''Handles save to file events'''
         if DEBUG:
-            print '_on_save'
+            print('_on_save')
 
         # Limit file save types to png and pdf:
         #default = 'Portable Document Format (*.pdf)'
@@ -581,7 +582,7 @@ class Driver(QtGui.QMainWindow):
     def _on_screenshot(self):
         '''Handles screenshot events'''
         if DEBUG:
-            print '_on_screenshot'
+            print('_on_screenshot')
         filetype = 'png'
         filename = os.path.join(self.working_dir,
                                 'screenshot_%d.%s' % (self.screenshot_index, filetype))
@@ -593,7 +594,7 @@ class Driver(QtGui.QMainWindow):
     def _on_exit(self):
         '''Handles code exit events'''
         if DEBUG:
-            print '_on_exit'
+            print('_on_exit')
         if self.file_saved:
             QtGui.qApp.quit()
         else:
@@ -609,7 +610,7 @@ class Driver(QtGui.QMainWindow):
     def _on_about(self):
         '''Handles about dialog event'''
         if DEBUG:
-            print '_on_about'
+            print('_on_about')
 
         box = QtGui.QMessageBox(self)
         s = '<h2>Welcome to pyRouterJig!</h2>'
@@ -628,7 +629,7 @@ class Driver(QtGui.QMainWindow):
     def _on_flash_status_off(self):
         '''Handles event to turn off statusbar message'''
         if DEBUG:
-            print '_on_flash_status_off'
+            print('_on_flash_status_off')
         self.statusbar.showMessage('')
 
     def closeEvent(self, event):
@@ -637,7 +638,7 @@ class Driver(QtGui.QMainWindow):
         _on_exit()
         '''
         if DEBUG:
-            print 'closeEvent'
+            print('closeEvent')
         self._on_exit()
         event.ignore()
 
