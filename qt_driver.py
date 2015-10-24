@@ -429,7 +429,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Unchecked Centered.')
         self.file_saved = False
 
-    @QtCore.pyqtSlot()
+    @QtCore.pyqtSlot(int)
     def _on_tabs_spacing(self, index):
         '''Handles changes to spacing algorithm'''
         if DEBUG:
@@ -503,7 +503,7 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message('Changed board width to ' + text)
             self.file_saved = False
 
-    @QtCore.pyqtSlot()
+    @QtCore.pyqtSlot(int)
     def _on_es_slider0(self, value):
         '''Handles changes to the equally-spaced slider B-spacing'''
         if DEBUG:
@@ -515,7 +515,7 @@ class Driver(QtGui.QMainWindow):
         self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
         self.file_saved = False
 
-    @QtCore.pyqtSlot()
+    @QtCore.pyqtSlot(int)
     def _on_es_slider1(self, value):
         '''Handles changes to the equally-spaced slider Width'''
         if DEBUG:
@@ -527,7 +527,7 @@ class Driver(QtGui.QMainWindow):
         self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
         self.file_saved = False
 
-    @QtCore.pyqtSlot()
+    @QtCore.pyqtSlot(int)
     def _on_vs_slider0(self, value):
         '''Handles changes to the variable-spaced slider Fingers'''
         if DEBUG:
