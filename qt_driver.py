@@ -25,15 +25,12 @@ from __future__ import print_function
 from builtins import str
 
 import os, sys, traceback
+import mpl_qtcanvas
 import router
-import mpl
 import spacing
 import utils
 from options import OPTIONS
 from doc import Doc
-
-from matplotlib.backends.backend_qt4agg import (
-    FigureCanvasQTAgg as FigureCanvas)
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
@@ -44,7 +41,7 @@ DEBUG = OPTIONS['debug']
 
 class Driver(QtGui.QMainWindow):
     '''
-    Qt driver for MPL_Plotter
+    Qt driver for pyRouterJig
     '''
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
@@ -61,17 +58,14 @@ class Driver(QtGui.QMainWindow):
         self.var_spacing.set_cuts()
         self.spacing = self.equal_spacing # the default
 
-        # Create the matplotlib object.  Nothing is drawn quite yet.
-        self.mpl = mpl.MPL_Plotter()
-
         # Create the main frame and menus
         self.create_menu()
         self.create_status_bar()
         self.create_widgets()
         self.layout_widgets()
 
-        # Draw the initial figure using matplotlib
-        self.draw_mpl()
+        # Draw the initial figure
+        self.draw()
 
         # Keep track whether the current figure has been saved.  We initialize to true,
         # because we assume that that the user does not want the default joint saved.
@@ -143,12 +137,11 @@ class Driver(QtGui.QMainWindow):
 
         lineEditWidth = 80
 
-        # Create the mpl Figure and FigureCanvas objects.
-        self.dpi = 100
-        self.canvas = FigureCanvas(self.mpl.fig)
-        self.canvas.setParent(self.main_frame)
-        self.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.canvas.setFocus()
+        # Create the figure canvas, using mpl interface
+        self.fig = mpl_qtcanvas.MPL_QtCanvas()
+        self.fig.canvas.setParent(self.main_frame)
+        self.fig.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.fig.canvas.setFocus()
 
         # Board width text box
         self.tb_board_width_label = QtGui.QLabel('Board Width')
@@ -262,7 +255,7 @@ class Driver(QtGui.QMainWindow):
         self.vbox = QtGui.QVBoxLayout()
 
         # Add the matplotlib canvas to the top
-        self.vbox.addWidget(self.canvas)
+        self.vbox.addWidget(self.fig.canvas)
 
         # hbox contains all of the control widgets
         # (everything but the canvas)
@@ -354,14 +347,12 @@ class Driver(QtGui.QMainWindow):
         self.statusbar = self.statusBar()
         self.statusbar.showMessage('Ready')
 
-    def draw_mpl(self):
-        '''(Re)draws the matplotlib figure'''
+    def draw(self):
+        '''(Re)draws the template and boards'''
         if DEBUG:
-            print('draw_mpl')
+            print('draw')
         self.template = router.Incra_Template(self.board)
-        self.mpl.draw(self.template, self.board, self.bit, self.spacing)
-        self.canvas.draw()
-        self.canvas.update()
+        self.fig.draw(self.template, self.board, self.bit, self.spacing)
 
     def reinit_spacing(self):
         '''
@@ -424,7 +415,7 @@ class Driver(QtGui.QMainWindow):
             print('_on_cb_es_centered')
         self.es_cut_values[2] = self.cb_es_centered.isChecked()
         self.equal_spacing.set_cuts(self.es_cut_values)
-        self.draw_mpl()
+        self.draw()
         if self.es_cut_values[2]:
             self.flash_status_message('Checked Centered.')
         else:
@@ -437,7 +428,7 @@ class Driver(QtGui.QMainWindow):
         if DEBUG:
             print('_on_tabs_spacing')
         self.reinit_spacing()
-        self.draw_mpl()
+        self.draw()
         self.flash_status_message('Changed to spacing algorithm %s'\
                                   % str(self.tabs_spacing.tabText(index)))
         self.file_saved = False
@@ -460,7 +451,7 @@ class Driver(QtGui.QMainWindow):
             text = str(self.tb_bit_width.text())
             self.bit.set_width_from_string(text)
             self.reinit_spacing()
-            self.draw_mpl()
+            self.draw()
             self.flash_status_message('Changed bit width to ' + text)
             self.file_saved = False
 
@@ -473,7 +464,7 @@ class Driver(QtGui.QMainWindow):
             self.tb_bit_depth.setModified(False)
             text = str(self.tb_bit_depth.text())
             self.bit.set_depth_from_string(text)
-            self.draw_mpl()
+            self.draw()
             self.flash_status_message('Changed bit depth to ' + text)
             self.file_saved = False
 
@@ -487,7 +478,7 @@ class Driver(QtGui.QMainWindow):
             text = str(self.tb_bit_angle.text())
             self.bit.set_angle_from_string(text)
             self.reinit_spacing()
-            self.draw_mpl()
+            self.draw()
             self.flash_status_message('Changed bit angle to ' + text)
             self.file_saved = False
 
@@ -501,7 +492,7 @@ class Driver(QtGui.QMainWindow):
             text = str(self.tb_board_width.text())
             self.board.set_width_from_string(text)
             self.reinit_spacing()
-            self.draw_mpl()
+            self.draw()
             self.flash_status_message('Changed board width to ' + text)
             self.file_saved = False
 
@@ -513,7 +504,7 @@ class Driver(QtGui.QMainWindow):
         self.es_cut_values[0] = value
         self.equal_spacing.set_cuts(self.es_cut_values)
         self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
-        self.draw_mpl()
+        self.draw()
         self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
         self.file_saved = False
 
@@ -525,7 +516,7 @@ class Driver(QtGui.QMainWindow):
         self.es_cut_values[1] = value
         self.equal_spacing.set_cuts(self.es_cut_values)
         self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
-        self.draw_mpl()
+        self.draw()
         self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
         self.file_saved = False
 
@@ -537,7 +528,7 @@ class Driver(QtGui.QMainWindow):
         self.vs_cut_values[0] = value
         self.var_spacing.set_cuts(self.vs_cut_values)
         self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
-        self.draw_mpl()
+        self.draw()
         self.flash_status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
         self.file_saved = False
 
@@ -549,29 +540,18 @@ class Driver(QtGui.QMainWindow):
 
         # Limit file save types to png and pdf:
         #default = 'Portable Document Format (*.pdf)'
-        #file_choices = 'PNG (*.png)'
+        #file_choices = 'Portable Network Graphics (*.png)'
         #file_choices += ';;' + default
 
-        # Or, these wildcards match what matplotlib supports:
-        filetypes = self.canvas.get_supported_filetypes_grouped()
-        default_filetype = self.canvas.get_default_filetype()
-        file_choices = ''
-        for key, value in filetypes.items():
-            if len(file_choices) > 0:
-                file_choices += ';;'
-            # we probably need to consider all value, but for now, just
-            # grab the first
-            s = key + ' (*.' + value[0] + ')'
-            file_choices += s
-            if default_filetype == value[0]:
-                default = s
+        # Or, these wildcards match what the figure supports:
+        (file_choices, default) = self.fig.get_save_file_types()
 
         path = str(QtGui.QFileDialog.getSaveFileName(self,
                                                      'Save file',
                                                      self.working_dir,
                                                      file_choices, default))
         if path:
-            self.canvas.print_figure(path, dpi=self.dpi)
+            self.fig.save(path)
             self.flash_status_message('Saved to %s' % path)
             self.file_saved = True
             self.working_dir = os.path.dirname(path)

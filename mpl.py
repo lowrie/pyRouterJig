@@ -20,6 +20,7 @@
 
 '''
 Contains the matplotlib functionality for drawing the template and boards.
+The code here should be universal for any GUI driver.
 '''
 from __future__ import print_function
 from __future__ import division
