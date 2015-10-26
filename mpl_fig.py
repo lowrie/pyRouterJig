@@ -20,7 +20,6 @@
 
 '''
 Contains the matplotlib functionality for drawing the template and boards.
-The code here should be universal for any GUI driver.
 '''
 from __future__ import print_function
 from __future__ import division
@@ -31,9 +30,54 @@ import matplotlib.pyplot as plt
 from options import OPTIONS
 import router
 
+from matplotlib.backends.backend_qt4agg import (
+    FigureCanvasQTAgg as FigureCanvas)
+
+class MPL_QtFig(object):
+    '''
+    Interface to the qt_driver, using matplotlib to draw the boards and template.
+    '''
+    def __init__(self):
+        self.dpi = OPTIONS['dpi_paper']
+        self._mpl = MPL_Plotter()
+        self.canvas = FigureCanvas(self._mpl.fig)
+    def draw(self, template, board, bit, spacing):
+        '''
+        Draws the template and boards
+        '''
+        self._mpl.draw(template, board, bit, spacing)
+        self.canvas.draw()
+        self.canvas.update()
+    def get_save_file_types(self):
+        '''
+        Returns a string of supported file choices for use with QFileDialog()
+        and the default.
+        '''
+        default = 'Portable Network Graphics (*.png)'
+        filetypes = self.canvas.get_supported_filetypes_grouped()
+        default_filetype = self.canvas.get_default_filetype()
+        file_choices = ''
+        for key, value in filetypes.items():
+            if len(file_choices) > 0:
+                file_choices += ';;'
+            # we probably need to consider all value, but for now, just
+            # grab the first
+            s = key + ' (*.' + value[0] + ')'
+            file_choices += s
+            if default_filetype == value[0]:
+                default = s
+
+        return (file_choices, default)
+    def save(self, path):
+        '''
+        Saves figure to path
+        '''
+        self.canvas.print_figure(path, dpi=self.dpi)
+
 class MPL_Plotter(object):
     '''
     Plots the template and boards using matplotlib.
+    The code here should be universal for any GUI driver.
     '''
     def __init__(self, title=None):
         self.title = title
