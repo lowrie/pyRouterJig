@@ -37,9 +37,9 @@ class MPL_QtFig(object):
     '''
     Interface to the qt_driver, using matplotlib to draw the boards and template.
     '''
-    def __init__(self):
+    def __init__(self, template, board):
         self.dpi = OPTIONS['dpi_paper']
-        self._mpl = MPL_Plotter()
+        self._mpl = MPL_Plotter(template, board)
         self.canvas = FigureCanvas(self._mpl.fig)
     def draw(self, template, board, bit, spacing):
         '''
@@ -77,13 +77,13 @@ class MPL_QtFig(object):
 class MPL_Plotter(object):
     '''
     Plots the template and boards using matplotlib.
-    The code here should be universal for any GUI driver.
+    This class should be universal for any GUI driver.
     '''
-    def __init__(self, title=None):
-        self.title = title
+    def __init__(self, template, board):
         self.fig = plt.figure(dpi=OPTIONS['dpi_screen'])
-        self.fig_width = 10.0
-        self.fig_height = 3.5
+        self.fig_width = -1
+        self.fig_height = -1
+        self.set_fig_dimensions(template, board)
         self.fig.set_size_inches(self.fig_width, self.fig_height)
         # if subsequent passes are less than this value, don't label the pass (in intervals)
         self.sep_annotate = 4
@@ -94,12 +94,9 @@ class MPL_Plotter(object):
         '''
         Draws the entire figure
         '''
-
-        axes, margins = self.create_axes(template, board)
-
-        # Generate the new geometry layout
-        geom = router.Joint_Geometry(template, board, bit, spacing, margins)
-
+        # Generate the new geometry layout and draw the template
+        axes = self.create_axes(template, board)
+        geom = router.Joint_Geometry(template, board, bit, spacing, self.margins)
         self.draw_template(axes, geom)
 
         # Plot the boards
@@ -117,64 +114,67 @@ class MPL_Plotter(object):
                   color="black", linewidth=1.0, linestyle='--')
 
         # Add a title
-        title = self.title
-        if title is None:
-            title = spacing.description
-            title += '    Board width: '
-            title += OPTIONS['units'].intervals_to_string(board.width, True)
-            title += '    Bit: '
-            if bit.angle > 0:
-                title += '%.1f deg. dovetail' % bit.angle
-            else:
-                title += 'straight'
-            title += ', width: '
-            title += OPTIONS['units'].intervals_to_string(bit.width, True)
-            title += ', depth: '
-            title += OPTIONS['units'].intervals_to_string(bit.depth, True)
+        title = spacing.description
+        title += '    Board width: '
+        title += OPTIONS['units'].intervals_to_string(board.width, True)
+        title += '    Bit: '
+        if bit.angle > 0:
+            title += '%.1f deg. dovetail' % bit.angle
+        else:
+            title += 'straight'
+        title += ', width: '
+        title += OPTIONS['units'].intervals_to_string(bit.width, True)
+        title += ', depth: '
+        title += OPTIONS['units'].intervals_to_string(bit.depth, True)
         axes.annotate(title, (geom.board_T.xMid(), 0), va='bottom', ha='center',
                       textcoords='offset points', xytext=(0, 2))
 
         # get rid of all plotting margins and axes
         self.fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-        #####plt.axis('off')
         # ... this is also needed so that PDFs get rid of the margins
         axes.xaxis.set_major_locator(plt.NullLocator())
         axes.yaxis.set_major_locator(plt.NullLocator())
 
         self.fig.canvas.draw()
+    def set_fig_dimensions(self, template, board):
+        '''
+        Computes the figure dimension attributes, fig_width and fig_height, in inches.
+        Returns True if the dimensions changed.
+        '''
+        # Try default margins, but reset if the template is too small for margins
+        self.margins = deepcopy(OPTIONS['margins'])
+
+        # Set the window limits
+        self.window_width = template.length + self.margins.left + self.margins.right
+        self.window_height = template.height + 2 * (board.height + self.margins.sep) + \
+                             self.margins.bottom + self.margins.top
+
+        min_width = 10
+        wwl = OPTIONS['units'].intervals_to_inches(self.window_width)
+        if wwl < min_width:
+            wwl = min_width
+            self.window_width = OPTIONS['units'].inches_to_intervals(wwl)
+            self.margins.left = (self.window_width - template.length) // 2
+            self.margins.right = self.margins.left
+            self.window_width = template.length + self.margins.left + self.margins.right
+        wwh = OPTIONS['units'].intervals_to_inches(self.window_height)
+
+        dimensions_changed = False
+        if wwl != self.fig_width:
+            self.fig_width = wwl
+            dimensions_changed = True
+        if wwh != self.fig_height:
+            self.fig_height = wwh
+            dimensions_changed = True
+
+        return dimensions_changed
     def create_axes(self, template, board):
         '''
         Resets the figure size and creates the axes
         '''
-        # Try default options, but reset if the template is too small for margins
-        margins = deepcopy(OPTIONS['margins'])
-
-        # Set the window limits
-        window_width = template.length + margins.left + margins.right
-        window_height = template.height + 2 * (board.height + margins.sep) + \
-                        margins.bottom + margins.top
-
-        min_width = 10
-        wwl = OPTIONS['units'].intervals_to_inches(window_width)
-        if wwl < min_width:
-            wwl = min_width
-            window_width = OPTIONS['units'].inches_to_intervals(wwl)
-            margins.left = (window_width - template.length) // 2
-            margins.right = margins.left
-            window_width = template.length + margins.left + margins.right
-        wwh = OPTIONS['units'].intervals_to_inches(window_height)
-
-        # Set the final figure width and height, and determine whether to draw
-        # a blank screen to erase the old figure.  Draw a blank screen only if
-        # the figure dimensions change. Without this logic, get a flickering
-        # effect on each re-draw.
-        do_blank_draw = False
-        if wwl != self.fig_width:
-            self.fig_width = wwl
-            do_blank_draw = True
-        if wwh != self.fig_height:
-            self.fig_height = wwh
-            do_blank_draw = True
+        # Draw a blank screen only if the figure dimensions change. Without
+        # this logic, get a flickering effect on each re-draw.
+        do_blank_draw = self.set_fig_dimensions(template, board)
 
         # Clear out any previous figure
         self.fig.clear()
@@ -190,10 +190,10 @@ class MPL_Plotter(object):
         axes = self.fig.add_subplot(1, 1, 1, aspect='equal')
 
         # Set the window limits in frac dimensions
-        axes.set_xlim([0, window_width])
-        axes.set_ylim([0, window_height])
+        axes.set_xlim([0, self.window_width])
+        axes.set_ylim([0, self.window_height])
 
-        return axes, margins
+        return axes
     def draw_template(self, axes, geom):
         '''
         Draws the Incra template

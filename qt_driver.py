@@ -138,7 +138,7 @@ class Driver(QtGui.QMainWindow):
         lineEditWidth = 80
 
         # Create the figure canvas, using mpl interface
-        self.fig = mpl_fig.MPL_QtFig()
+        self.fig = mpl_fig.MPL_QtFig(self.template, self.board)
         self.fig.canvas.setParent(self.main_frame)
         self.fig.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.fig.canvas.setFocus()
