@@ -31,8 +31,6 @@ import router
 from utils import my_round
 from options import OPTIONS
 
-UNITS = OPTIONS['units']
-
 class Spacing_Exception(Exception):
     '''
     Exception handler for spacings
@@ -80,7 +78,7 @@ class Base_Spacing(object):
     def get_params(self):
         '''Returns a list of Spacing_Params the control the algoritm.'''
         pass
-    def set_cuts(self, values=None):
+    def set_cuts(self, units, values=None):
         '''Computes the attributes "cuts" and "full_labels".'''
         pass
 
@@ -108,7 +106,7 @@ class Equally_Spaced(Base_Spacing):
         p2 = Spacing_Param(self.bit.width, self.board.width // 2, self.bit.width)
         p3 = Spacing_Param(None, None, True)
         return [p1, p2, p3]
-    def set_cuts(self, values=None):
+    def set_cuts(self, units, values=None):
         if values is not None:
             b_spacing = values[0]
             width = values[1]
@@ -117,9 +115,9 @@ class Equally_Spaced(Base_Spacing):
             b_spacing = 0
             width = self.bit.width
             centered = True
-        label = UNITS.intervals_to_string(2 * width + b_spacing, True)
+        label = units.intervals_to_string(2 * width + b_spacing, True)
         self.full_labels = ['B-spacing: ' + label,\
-                            'Width: ' + UNITS.intervals_to_string(width, True),\
+                            'Width: ' + units.intervals_to_string(width, True),\
                             'Centered']
         self.description = 'Equally spaced (' + self.full_labels[0] + \
                            ', ' + self.full_labels[1] + ')'
@@ -194,7 +192,7 @@ class Variable_Spaced(Base_Spacing):
     def get_params(self):
         p1 = Spacing_Param(self.mMin, self.mMax, self.mDefault)
         return [p1]
-    def set_cuts(self, values=None):
+    def set_cuts(self, units, values=None):
         # set the number of fingers, m
         if values is not None:
             m = values[0]

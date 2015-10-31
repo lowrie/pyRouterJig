@@ -29,14 +29,13 @@ import mpl_fig
 import router
 import spacing
 import utils
+import doc
 from options import OPTIONS
-from doc import Doc
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 #from PySide import QtCore, QtGui
 
-UNITS = OPTIONS['units']
 DEBUG = OPTIONS['debug']
 
 class Driver(QtGui.QMainWindow):
@@ -48,14 +47,18 @@ class Driver(QtGui.QMainWindow):
         sys.excepthook = self.exception_hook
         self.except_handled = False
 
+        # Default is English units, 1/32" resolution
+        self.units = utils.Units(intervals_per_inch=32)
+        self.doc = doc.Doc(self.units)
+
         # Create an initial joint
-        self.board = router.Board(width=UNITS.inches_to_intervals(7.5))
-        self.bit = router.Router_Bit(16, 24)
-        self.template = router.Incra_Template(self.board)
+        self.board = router.Board(self.units, width=self.units.inches_to_intervals(7.5))
+        self.bit = router.Router_Bit(self.units, 16, 24)
+        self.template = router.Incra_Template(self.units, self.board)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
-        self.equal_spacing.set_cuts()
+        self.equal_spacing.set_cuts(self.units)
         self.var_spacing = spacing.Variable_Spaced(self.bit, self.board)
-        self.var_spacing.set_cuts()
+        self.var_spacing.set_cuts(self.units)
         self.spacing = self.equal_spacing # the default
 
         # Create the main frame and menus
@@ -102,13 +105,9 @@ class Driver(QtGui.QMainWindow):
         # always attach the menubar to the application window, even on the Mac
         self.menubar.setNativeMenuBar(False)
 
-        self.file_menu = self.menubar.addMenu('pyRouterJig')
+        # Add the file menu
 
-        about_action = QtGui.QAction(QtGui.QIcon('about.png'), '&About', self)
-        about_action.setShortcut('Ctrl+A')
-        about_action.setStatusTip('About this program')
-        about_action.triggered.connect(self._on_about)
-        self.file_menu.addAction(about_action)
+        self.file_menu = self.menubar.addMenu('File')
 
         save_action = QtGui.QAction(QtGui.QIcon('save.png'), '&Save', self)
         save_action.setShortcut('Ctrl+S')
@@ -116,18 +115,40 @@ class Driver(QtGui.QMainWindow):
         save_action.triggered.connect(self._on_save)
         self.file_menu.addAction(save_action)
 
-        exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Quit', self)
-        exit_action.setShortcut('Ctrl+Q')
-        exit_action.setStatusTip('Exit pyRouterJig')
-        exit_action.triggered.connect(self._on_exit)
-        self.file_menu.addAction(exit_action)
-
         screenshot_action = QtGui.QAction(QtGui.QIcon('screenshot.png'),
                                           '&Screenshot', self)
         screenshot_action.setShortcut('Ctrl+W')
         screenshot_action.setStatusTip('Screenshot of window')
         screenshot_action.triggered.connect(self._on_screenshot)
         self.file_menu.addAction(screenshot_action)
+
+        exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Quit', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.setStatusTip('Exit pyRouterJig')
+        exit_action.triggered.connect(self._on_exit)
+        self.file_menu.addAction(exit_action)
+
+        # Add units menu
+
+        self.units_menu = self.menubar.addMenu('Units')
+        ag = QtGui.QActionGroup(self, exclusive=True)
+        self.english_action = QtGui.QAction('English', self, checkable=True)
+        self.units_menu.addAction(ag.addAction(self.english_action))
+        self.metric_action = QtGui.QAction('Metric', self, checkable=True)
+        self.units_menu.addAction(ag.addAction(self.metric_action))
+        self.english_action.setChecked(True)
+        self.english_action.triggered.connect(self._on_units)
+        self.metric_action.triggered.connect(self._on_units)
+
+        # Add the help menu
+
+        self.help_menu = self.menubar.addMenu('Help')
+
+        about_action = QtGui.QAction(QtGui.QIcon('about.png'), '&About', self)
+        about_action.setShortcut('Ctrl+A')
+        about_action.setStatusTip('About this program')
+        about_action.triggered.connect(self._on_about)
+        self.help_menu.addAction(about_action)
 
     def create_widgets(self):
         '''
@@ -147,31 +168,27 @@ class Driver(QtGui.QMainWindow):
         self.tb_board_width_label = QtGui.QLabel('Board Width')
         self.tb_board_width = QtGui.QLineEdit(self.main_frame)
         self.tb_board_width.setFixedWidth(lineEditWidth)
-        self.tb_board_width.setToolTip(Doc.board_width)
-        self.tb_board_width.setText(UNITS.intervals_to_string(self.board.width))
+        self.tb_board_width.setText(self.units.intervals_to_string(self.board.width))
         self.tb_board_width.editingFinished.connect(self._on_board_width)
 
         # Bit width text box
         self.tb_bit_width_label = QtGui.QLabel('Bit Width')
         self.tb_bit_width = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_width.setFixedWidth(lineEditWidth)
-        self.tb_bit_width.setToolTip(Doc.bit_width)
-        self.tb_bit_width.setText(UNITS.intervals_to_string(self.bit.width))
+        self.tb_bit_width.setText(self.units.intervals_to_string(self.bit.width))
         self.tb_bit_width.editingFinished.connect(self._on_bit_width)
 
         # Bit depth text box
         self.tb_bit_depth_label = QtGui.QLabel('Bit Depth')
         self.tb_bit_depth = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_depth.setFixedWidth(lineEditWidth)
-        self.tb_bit_depth.setToolTip(Doc.bit_depth)
-        self.tb_bit_depth.setText(UNITS.intervals_to_string(self.bit.depth))
+        self.tb_bit_depth.setText(self.units.intervals_to_string(self.bit.depth))
         self.tb_bit_depth.editingFinished.connect(self._on_bit_depth)
 
         # Bit angle text box
         self.tb_bit_angle_label = QtGui.QLabel('Bit Angle')
         self.tb_bit_angle = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_angle.setFixedWidth(lineEditWidth)
-        self.tb_bit_angle.setToolTip(Doc.bit_angle)
         self.tb_bit_angle.setText('%g' % self.bit.angle)
         self.tb_bit_angle.editingFinished.connect(self._on_bit_angle)
 
@@ -196,7 +213,6 @@ class Driver(QtGui.QMainWindow):
         self.es_slider0.setMaximum(p.vMax)
         self.es_slider0.setValue(p.vInit)
         self.es_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
-        self.es_slider0.setToolTip(Doc.es_slider0)
         if p.vMax - p.vMin < 10:
             self.es_slider0.setTickInterval(1)
         self.es_slider0.valueChanged.connect(self._on_es_slider0)
@@ -211,7 +227,6 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1.setMaximum(p.vMax)
         self.es_slider1.setValue(p.vInit)
         self.es_slider1.setTickPosition(QtGui.QSlider.TicksBelow)
-        self.es_slider1.setToolTip(Doc.es_slider1)
         if p.vMax - p.vMin < 10:
             self.es_slider1.setTickInterval(1)
         self.es_slider1.valueChanged.connect(self._on_es_slider1)
@@ -222,7 +237,6 @@ class Driver(QtGui.QMainWindow):
         self.cb_es_centered = QtGui.QCheckBox(labels[2], self.main_frame)
         self.cb_es_centered.setChecked(True)
         self.cb_es_centered.stateChanged.connect(self._on_cb_es_centered)
-        self.cb_es_centered.setToolTip(Doc.es_centered)
 
         # Variable spacing widgets
 
@@ -240,10 +254,21 @@ class Driver(QtGui.QMainWindow):
         self.vs_slider0.setMaximum(p.vMax)
         self.vs_slider0.setValue(p.vInit)
         self.vs_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
-        self.vs_slider0.setToolTip(Doc.vs_slider0)
         if p.vMax - p.vMin < 10:
             self.vs_slider0.setTickInterval(1)
         self.vs_slider0.valueChanged.connect(self._on_vs_slider0)
+
+        self.set_tooltips()
+
+    def set_tooltips(self):
+        self.tb_board_width.setToolTip(self.doc.board_width())
+        self.tb_bit_width.setToolTip(self.doc.bit_width())
+        self.tb_bit_depth.setToolTip(self.doc.bit_depth())
+        self.tb_bit_angle.setToolTip(self.doc.bit_angle())
+        self.es_slider0.setToolTip(self.doc.es_slider0())
+        self.es_slider1.setToolTip(self.doc.es_slider1())
+        self.cb_es_centered.setToolTip(self.doc.es_centered())
+        self.vs_slider0.setToolTip(self.doc.vs_slider0())
 
     def layout_widgets(self):
         '''
@@ -351,8 +376,9 @@ class Driver(QtGui.QMainWindow):
         '''(Re)draws the template and boards'''
         if DEBUG:
             print('draw')
-        self.template = router.Incra_Template(self.board)
-        self.fig.draw(self.template, self.board, self.bit, self.spacing)
+        self.template = router.Incra_Template(self.units, self.board)
+        self.fig.draw(self.units, self.template, self.board, \
+                      self.bit, self.spacing)
 
     def reinit_spacing(self):
         '''
@@ -387,7 +413,7 @@ class Driver(QtGui.QMainWindow):
             self.cb_es_centered.blockSignals(True)
             self.cb_es_centered.setChecked(centered)
             self.cb_es_centered.blockSignals(False)
-            self.equal_spacing.set_cuts(self.es_cut_values)
+            self.equal_spacing.set_cuts(self.units, self.es_cut_values)
             self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
             self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
             self.spacing = self.equal_spacing
@@ -402,7 +428,7 @@ class Driver(QtGui.QMainWindow):
             self.vs_slider0.setValue(p.vInit)
             self.vs_slider0.blockSignals(False)
             self.vs_cut_values[0] = p.vInit
-            self.var_spacing.set_cuts(self.vs_cut_values)
+            self.var_spacing.set_cuts(self.units, self.vs_cut_values)
             self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
             self.spacing = self.var_spacing
         else:
@@ -414,7 +440,7 @@ class Driver(QtGui.QMainWindow):
         if DEBUG:
             print('_on_cb_es_centered')
         self.es_cut_values[2] = self.cb_es_centered.isChecked()
-        self.equal_spacing.set_cuts(self.es_cut_values)
+        self.equal_spacing.set_cuts(self.units, self.es_cut_values)
         self.draw()
         if self.es_cut_values[2]:
             self.flash_status_message('Checked Centered.')
@@ -502,7 +528,7 @@ class Driver(QtGui.QMainWindow):
         if DEBUG:
             print('_on_es_slider0', value)
         self.es_cut_values[0] = value
-        self.equal_spacing.set_cuts(self.es_cut_values)
+        self.equal_spacing.set_cuts(self.units, self.es_cut_values)
         self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
         self.draw()
         self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
@@ -514,7 +540,7 @@ class Driver(QtGui.QMainWindow):
         if DEBUG:
             print('_on_es_slider1', value)
         self.es_cut_values[1] = value
-        self.equal_spacing.set_cuts(self.es_cut_values)
+        self.equal_spacing.set_cuts(self.units, self.es_cut_values)
         self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
         self.draw()
         self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
@@ -526,7 +552,7 @@ class Driver(QtGui.QMainWindow):
         if DEBUG:
             print('_on_vs_slider0', value)
         self.vs_cut_values[0] = value
-        self.var_spacing.set_cuts(self.vs_cut_values)
+        self.var_spacing.set_cuts(self.units, self.vs_cut_values)
         self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
         self.draw()
         self.flash_status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
@@ -596,9 +622,31 @@ class Driver(QtGui.QMainWindow):
         box = QtGui.QMessageBox(self)
         s = '<h2>Welcome to pyRouterJig!</h2>'
         s += '<h3>Version: %s</h3>' % utils.VERSION
-        box.setText(s + Doc.short_desc + Doc.license)
+        box.setText(s + self.doc.short_desc() + self.doc.license())
         box.setTextFormat(QtCore.Qt.RichText)
         box.show()
+
+    @QtCore.pyqtSlot()
+    def _on_units(self):
+        '''Handles changes in units'''
+        if DEBUG:
+            print('_on_units')
+        do_metric = self.metric_action.isChecked()
+        if self.metric == do_metric:
+            return # no change in units
+        if do_metric:
+            self.units = utils.Units(metric=True)
+        else:
+            self.units = utils.Units(32)
+        self.board.change_units(self.units)
+        self.bit.change_units(self.units)
+        self.doc.change_units(self.units)
+        self.tb_board_width.setText(self.units.intervals_to_string(self.board.width))
+        self.tb_bit_width.setText(self.units.intervals_to_string(self.bit.width))
+        self.tb_bit_depth.setText(self.units.intervals_to_string(self.bit.depth))
+        self.reinit_spacing()
+        self.set_tooltips()
+        self.draw()
 
     def flash_status_message(self, msg, flash_len_ms=None):
         '''Flashes a status message to the status bar'''
@@ -628,8 +676,6 @@ def run():
     '''
     Sets up and runs the application
     '''
-    Doc.set_statics()
-
     app = QtGui.QApplication(sys.argv)
     driver = Driver()
     driver.show()

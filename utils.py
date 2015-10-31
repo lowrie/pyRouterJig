@@ -133,11 +133,28 @@ class Units(object):
     For metric true, this values is the number of mm in an inch.
 
     '''
+    mm_per_inch = 25.4
     def __init__(self, intervals_per_inch=32, metric=False):
         self.metric = metric
         self.intervals_per_inch = intervals_per_inch
         if metric:
-            self.intervals_per_inch = 25.4
+            self.intervals_per_inch = self.mm_per_inch
+    def get_scaling(self, new_units):
+        '''
+        Returns the scaling factor to change the current units to new_units.
+        The scaling factor is a floating point number, unless there is no
+        change in units, in which case the integer 1 is returned.
+        '''
+        s = 1
+        if new_units.metric:
+            if not self.metric:
+                s = self.mm_per_inch / self.intervals_per_inch
+        else:
+            if self.metric:
+                s = new_units.intervals_per_inch / self.mm_per_inch
+            elif self.intervals_per_inch != new_units.intervals_per_inch:
+                s = float(new_units.intervals_per_inch) / self.intervals_per_inch
+        return s
     def intervals_to_inches(self, intervals_):
         '''Converts intervals to inches.'''
         return float(intervals_) / self.intervals_per_inch
@@ -185,6 +202,11 @@ class Units(object):
                 raise ValueError('"%s" is not an exact number of intervals' % s)
             r += ratio * f.numerator
         return r
+    def metric_to_english(self, m):
+        '''
+        Converts metric intervals to english intervals
+        '''
+        return int(m / 25.4 * self.intervals_per_inch)
 
 class Margins(object):
     '''
@@ -200,24 +222,28 @@ class Margins(object):
     botoom: Bottom margin
     top: Top margin
     '''
-    def __init__(self, sep, left=None, right=None, bottom=None, top=None):
+    def __init__(self, default, sep=None, left=None, right=None, bottom=None, 
+                 top=None):
         '''
         If any value is left unspecified, it's value is set to sep.
         '''
-        self.sep = sep
+        if sep is None:
+            self.sep = default
+        else:
+            self.sep = default
         if left is None:
-            self.left = sep
+            self.left = default
         else:
             self.left = left
         if right is None:
-            self.right = sep
+            self.right = default
         else:
             self.right = right
         if bottom is None:
-            self.bottom = sep
+            self.bottom = default
         else:
             self.bottom = bottom
         if top is None:
-            self.top = sep
+            self.top = default
         else:
             self.top = top

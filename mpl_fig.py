@@ -41,11 +41,11 @@ class MPL_QtFig(object):
         self.dpi = OPTIONS['dpi_paper']
         self._mpl = MPL_Plotter(template, board)
         self.canvas = FigureCanvas(self._mpl.fig)
-    def draw(self, template, board, bit, spacing):
+    def draw(self, units, template, board, bit, spacing):
         '''
         Draws the template and boards
         '''
-        self._mpl.draw(template, board, bit, spacing)
+        self._mpl.draw(units, template, board, bit, spacing)
         self.canvas.draw()
         self.canvas.update()
     def get_save_file_types(self):
@@ -90,7 +90,7 @@ class MPL_Plotter(object):
         # fontsize for pass labels.  If this value is increased, likely need to increase
         # sep_annotate.
         self.pass_fontsize = 9
-    def draw(self, template, board, bit, spacing):
+    def draw(self, units, template, board, bit, spacing):
         '''
         Draws the entire figure
         '''
@@ -115,17 +115,17 @@ class MPL_Plotter(object):
 
         # Add a title
         title = spacing.description
-        title += '    Board width: '
-        title += OPTIONS['units'].intervals_to_string(board.width, True)
+        title += '\nBoard width: '
+        title += units.intervals_to_string(board.width, True)
         title += '    Bit: '
         if bit.angle > 0:
             title += '%.1f deg. dovetail' % bit.angle
         else:
             title += 'straight'
         title += ', width: '
-        title += OPTIONS['units'].intervals_to_string(bit.width, True)
+        title += units.intervals_to_string(bit.width, True)
         title += ', depth: '
-        title += OPTIONS['units'].intervals_to_string(bit.depth, True)
+        title += units.intervals_to_string(bit.depth, True)
         axes.annotate(title, (geom.board_T.xMid(), 0), va='bottom', ha='center',
                       textcoords='offset points', xytext=(0, 2))
 
@@ -150,14 +150,15 @@ class MPL_Plotter(object):
                              self.margins.bottom + self.margins.top
 
         min_width = 10
-        wwl = OPTIONS['units'].intervals_to_inches(self.window_width)
+        units = board.units
+        wwl = units.intervals_to_inches(self.window_width)
         if wwl < min_width:
             wwl = min_width
-            self.window_width = OPTIONS['units'].inches_to_intervals(wwl)
+            self.window_width = units.inches_to_intervals(wwl)
             self.margins.left = (self.window_width - template.length) // 2
             self.margins.right = self.margins.left
             self.window_width = template.length + self.margins.left + self.margins.right
-        wwh = OPTIONS['units'].intervals_to_inches(self.window_height)
+        wwh = units.intervals_to_inches(self.window_height)
 
         dimensions_changed = False
         if wwl != self.fig_width:

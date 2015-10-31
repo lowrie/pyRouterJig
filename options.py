@@ -5,16 +5,10 @@ that occur will not be friendly.  Also, these options may change
 or be deleted with future versions.
 '''
 # Do not change these 2 lines ##########################################
-from utils import Units, Margins
+from utils import Margins
 OPTIONS = {}
 
 # You can change the options below.
-
-# units sets the unit system and size of an interval.
-# Use this line for English, with a 1/32" interval size:
-OPTIONS['units'] = Units(intervals_per_inch=32)
-# Use this line for metric, which always uses a 1mm interval size:
-#OPTIONS['units'] = Units(metric=True)
 
 # Dots-per-inch for the screen (integer value)
 OPTIONS['dpi_screen'] = 110
@@ -30,7 +24,7 @@ OPTIONS['min_finger_width'] = 4
 # The margins object controls top, bottom, and side margins, along with the
 # separation between objects in the figure.  Specified in intervals (integer).
 # Here we just set all margins to 1/4".
-OPTIONS['margins'] = Margins(8)
+OPTIONS['margins'] = Margins(8, bottom=24)
 
 # Set debug to True to turn on debugging.  This will print a lot of output to
 # stdout during a pyRouterJig session.  This option is typically only useful

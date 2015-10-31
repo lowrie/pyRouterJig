@@ -22,15 +22,14 @@
 Defines documentation helpers.
 '''
 import spacing
-from options import OPTIONS
 
 class Doc(object):
     '''
     Defines documentation strings.
     '''
-    short_desc = 'pyRouterJig is a joint layout tool for woodworking.'
+    _short_desc = 'pyRouterJig is a joint layout tool for woodworking.'
 
-    license = '<p>\
+    _license = '<p>\
     Copyright 2015 Robert B. Lowrie (pyrouterjig@lowrielodge.org)\
     <p>\
     pyRouterJig is free software: you can redistribute it and/or modify it under\
@@ -47,55 +46,55 @@ class Doc(object):
     <p>\
     <h3>USE AT YOUR OWN RISK!</h3>'
 
-    board_width = '<b>Board Width</b> is the board width (in%s) of \
+    _board_width = '<b>Board Width</b> is the board width (in%s) of \
     the joint.'
 
-    bit_width = '<b>Bit Width</b> is the maximum cutting width (in%s) of \
+    _bit_width = '<b>Bit Width</b> is the maximum cutting width (in%s) of \
     the router bit.'
 
-    bit_depth = '<b>Bit Depth</b> is the cutting depth (in%s) of the \
+    _bit_depth = '<b>Bit Depth</b> is the cutting depth (in%s) of the \
     router bit.'
 
-    bit_angle = '<b>Bit Angle</b> is the angle (in degrees) of the router \
+    _bit_angle = '<b>Bit Angle</b> is the angle (in degrees) of the router \
     bit for dovetail bits.  Set to zero for straight bits.'
 
-    es_slider0 = '<b>%s</b> slider allows you to specify additional \
+    _es_slider0 = '<b>%s</b> slider allows you to specify additional \
     spacing between the Board-B fingers'
 
-    es_slider1 = '<b>%s</b> slider allows you to specify additional \
+    _es_slider1 = '<b>%s</b> slider allows you to specify additional \
     width added to both Board-A and Board-B fingers.'
 
-    es_centered = 'Check <b>%s</b> to force a finger to be centered on \
+    _es_centered = 'Check <b>%s</b> to force a finger to be centered on \
     the board.'
 
-    vs_slider0 = '<b>%s</b> slider allows you to specify the number of \
+    _vs_slider0 = '<b>%s</b> slider allows you to specify the number of \
     fingers. At its minimum value, the width of the center finger is \
     maximized. At its maximum value, the width of the center finger is \
     minimized, and the result is the roughly the same as equally-spaced \
     with, zero "B-spacing", zero "Width", and the "Centered" option \
     checked.'
 
-    statics_set = False
-
-    # you don't really need an instance of this class, but it
-    # doesn't hurt anything
-    def __init__(self):
-        Doc.set_statics()
-
-    @staticmethod
-    def set_statics():
-        '''
-        Sets the static variables for this class
-        '''
-        if Doc.statics_set:
-            return
-        sunits = OPTIONS['units'].units_string(verbose=True)
-        Doc.board_width = Doc.board_width % sunits
-        Doc.bit_width = Doc.bit_width % sunits
-        Doc.bit_depth = Doc.bit_depth % sunits
-        labels = spacing.Equally_Spaced.labels
-        Doc.es_slider0 = Doc.es_slider0 % labels[0]
-        Doc.es_slider1 = Doc.es_slider1 % labels[1]
-        Doc.es_centered = Doc.es_centered % labels[2]
-        Doc.vs_slider0 = Doc.vs_slider0 % spacing.Variable_Spaced.labels[0]
-        Doc.statics_set = True
+    def __init__(self, units):
+        self.sunits = units.units_string(verbose=True)
+    def change_units(self, new_units):
+        self.sunits = new_units.units_string(verbose=True)
+    def short_desc(self):
+        return self._short_desc
+    def license(self):
+        return self._license
+    def board_width(self):
+        return self._board_width % self.sunits
+    def bit_width(self):
+        return self._bit_width % self.sunits
+    def bit_depth(self):
+        return self._bit_depth % self.sunits
+    def bit_angle(self):
+        return self._bit_angle
+    def es_slider0(self):
+        return self._es_slider0 % spacing.Equally_Spaced.labels[0]
+    def es_slider1(self):
+        return self._es_slider1 % spacing.Equally_Spaced.labels[1]
+    def es_centered(self):
+        return self._es_centered % spacing.Equally_Spaced.labels[2]
+    def vs_slider0(self):
+        return self._vs_slider0 % spacing.Variable_Spaced.labels[0]

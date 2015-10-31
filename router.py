@@ -26,10 +26,7 @@ from future.utils import lrange
 
 import math
 from copy import deepcopy
-from options import OPTIONS
 from utils import my_round
-
-UNITS = OPTIONS['units']
 
 class Router_Exception(Exception):
     '''
@@ -51,11 +48,11 @@ class Incra_Template(object):
     margin: Dimension in x-coordinate placed on each end of template
     length: total length of template
     '''
-    def __init__(self, board, margin=None, length=None):
+    def __init__(self, units, board, margin=None, length=None):
         # incra uses 1/2" high templates
-        self.height = UNITS.inches_to_intervals(0.5)
+        self.height = units.inches_to_intervals(0.5)
         if margin is None:
-            self.margin = UNITS.inches_to_intervals(1.0)
+            self.margin = units.inches_to_intervals(1.0)
         else:
             self.margin = margin
         if length is None:
@@ -87,7 +84,8 @@ class Router_Bit(object):
 
     halfwidth: half of width
     '''
-    def __init__(self, width, depth, angle=0):
+    def __init__(self, units, width, depth, angle=0):
+        self.units = units
         self.width = width
         self.depth = depth
         self.angle = angle
@@ -98,7 +96,7 @@ class Router_Bit(object):
         '''
         msg = 'Bit width is "%s".  Set to a postive value.'
         try:
-            self.width = UNITS.string_to_intervals(s)
+            self.width = self.units.string_to_intervals(s)
         except ValueError as e:
             msg = 'ValueError setting bit width: %s\n' % (e) + \
                   msg % s
@@ -114,7 +112,7 @@ class Router_Bit(object):
         '''
         msg = 'Bit depth is "%s".  Set to a postive value.'
         try:
-            self.depth = UNITS.string_to_intervals(s)
+            self.depth = self.units.string_to_intervals(s)
         except ValueError as e:
             msg = 'ValueError setting bit depth: %s\n' % (e) + \
                   msg % s
@@ -152,6 +150,22 @@ class Router_Bit(object):
         if self.angle > 0:
             self.offset = self.depth * math.tan(self.angle * math.pi / 180)
         self.neck = self.width - 2 * self.offset
+    def scale(self, s):
+        '''Scales dimensions by the factor s'''
+        self.width = my_round(self.width * s)
+        self.width += self.width % 2
+        self.depth = my_round(self.depth * s)
+        self.reinit()
+    def change_units(self, new_units):
+        '''Changes units to new_units'''
+        s = self.units.get_scaling(new_units)
+        if s == 1:
+            return
+        self.width = my_round(self.width * s)
+        self.width += self.width % 2
+        self.depth = my_round(self.depth * s)
+        self.units = new_units
+        self.reinit()
 
 class My_Rectangle(object):
     '''
@@ -201,8 +215,9 @@ class Board(My_Rectangle):
 
     Dimentions are in interval units.
     '''
-    def __init__(self, width, height=32, thickness=32):
+    def __init__(self, units, width, height=32, thickness=32):
         My_Rectangle.__init__(self, 0, 0, width, height)
+        self.units = units
         self.thickness = thickness
     def set_width_from_string(self, s):
         '''
@@ -210,7 +225,7 @@ class Board(My_Rectangle):
         '''
         msg = 'Board width is "%s".  Set to a postive value.'
         try:
-            self.width = UNITS.string_to_intervals(s)
+            self.width = self.units.string_to_intervals(s)
         except ValueError as e:
             msg = 'ValueError setting board width: %s\n' % (e) + \
                   msg % s
@@ -225,7 +240,7 @@ class Board(My_Rectangle):
         '''
         msg = 'Board height is "%s".  Set to a postive value.'
         try:
-            self.height = UNITS.string_to_intervals(s)
+            self.height = self.units.string_to_intervals(s)
         except ValueError as e:
             msg = 'ValueError setting board height: %s\n' % (e) + \
                   msg % s
@@ -234,6 +249,14 @@ class Board(My_Rectangle):
             raise
         if self.height <= 0:
             raise Router_Exception(msg % s)
+    def change_units(self, new_units):
+        '''Changes units to new_units'''
+        s = self.units.get_scaling(new_units)
+        if s == 1:
+            return
+        self.width = my_round(self.width * s)
+        self.height = my_round(self.height * s)
+        self.thickness = my_round(self.thickness * s)
 
 class Cut(object):
     '''

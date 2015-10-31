@@ -31,8 +31,6 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4.QtTest import QTest
 
-UNITS = OPTIONS['units']
-
 app = QtGui.QApplication(sys.argv)
 
 class Driver_Test(unittest.TestCase):
