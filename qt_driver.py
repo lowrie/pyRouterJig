@@ -109,20 +109,19 @@ class Driver(QtGui.QMainWindow):
 
         self.file_menu = self.menubar.addMenu('File')
 
-        save_action = QtGui.QAction(QtGui.QIcon('save.png'), '&Save', self)
+        save_action = QtGui.QAction('&Save', self)
         save_action.setShortcut('Ctrl+S')
         save_action.setStatusTip('Save figure to file')
         save_action.triggered.connect(self._on_save)
         self.file_menu.addAction(save_action)
 
-        screenshot_action = QtGui.QAction(QtGui.QIcon('screenshot.png'),
-                                          '&Screenshot', self)
+        screenshot_action = QtGui.QAction('&Screenshot', self)
         screenshot_action.setShortcut('Ctrl+W')
         screenshot_action.setStatusTip('Screenshot of window')
         screenshot_action.triggered.connect(self._on_screenshot)
         self.file_menu.addAction(screenshot_action)
 
-        exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Quit', self)
+        exit_action = QtGui.QAction('&Quit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit pyRouterJig')
         exit_action.triggered.connect(self._on_exit)
@@ -144,7 +143,7 @@ class Driver(QtGui.QMainWindow):
 
         self.help_menu = self.menubar.addMenu('Help')
 
-        about_action = QtGui.QAction(QtGui.QIcon('about.png'), '&About', self)
+        about_action = QtGui.QAction('&About', self)
         about_action.setShortcut('Ctrl+A')
         about_action.setStatusTip('About this program')
         about_action.triggered.connect(self._on_about)
@@ -194,7 +193,6 @@ class Driver(QtGui.QMainWindow):
 
         # Save button
         self.btn_save = QtGui.QPushButton('Save', self.main_frame)
-        self.btn_save.setToolTip('Save figure to file.')
         self.btn_save.clicked.connect(self._on_save)
 
         # Equal spacing widgets
@@ -269,6 +267,7 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1.setToolTip(self.doc.es_slider1())
         self.cb_es_centered.setToolTip(self.doc.es_centered())
         self.vs_slider0.setToolTip(self.doc.vs_slider0())
+        self.btn_save.setToolTip('Save figure to file.')
 
     def layout_widgets(self):
         '''
@@ -349,9 +348,9 @@ class Driver(QtGui.QMainWindow):
         self.tab_vs = QtGui.QWidget()
         self.tab_vs.setLayout(self.hbox_vs)
         self.tabs_spacing.addTab(self.tab_vs, 'Variable')
+        self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
         tip = 'These tabs specify the layout algorithm for the fingers.'
         self.tabs_spacing.setToolTip(tip)
-        self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
 
         # either add the spacing Tabs to the bottom
         #self.vbox.addLayout(self.hbox)
@@ -359,6 +358,7 @@ class Driver(QtGui.QMainWindow):
         # ... or to the right of the text boxes
         self.hbox.addWidget(self.tabs_spacing)
         self.vbox.addLayout(self.hbox)
+#        self.vbox.setSizeConstraint(QtGui.QLayout.SetFixedSize)
 
         # Lay it all out
         self.main_frame.setLayout(self.vbox)
@@ -377,8 +377,7 @@ class Driver(QtGui.QMainWindow):
         if DEBUG:
             print('draw')
         self.template = router.Incra_Template(self.units, self.board)
-        self.fig.draw(self.units, self.template, self.board, \
-                      self.bit, self.spacing)
+        self.fig.draw(self.template, self.board, self.bit, self.spacing)
 
     def reinit_spacing(self):
         '''

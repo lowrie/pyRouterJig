@@ -41,11 +41,11 @@ class MPL_QtFig(object):
         self.dpi = OPTIONS['dpi_paper']
         self._mpl = MPL_Plotter(template, board)
         self.canvas = FigureCanvas(self._mpl.fig)
-    def draw(self, units, template, board, bit, spacing):
+    def draw(self, template, board, bit, spacing):
         '''
         Draws the template and boards
         '''
-        self._mpl.draw(units, template, board, bit, spacing)
+        self._mpl.draw(template, board, bit, spacing)
         self.canvas.draw()
         self.canvas.update()
     def get_save_file_types(self):
@@ -90,7 +90,7 @@ class MPL_Plotter(object):
         # fontsize for pass labels.  If this value is increased, likely need to increase
         # sep_annotate.
         self.pass_fontsize = 9
-    def draw(self, units, template, board, bit, spacing):
+    def draw(self, template, board, bit, spacing):
         '''
         Draws the entire figure
         '''
@@ -114,6 +114,7 @@ class MPL_Plotter(object):
                   color="black", linewidth=1.0, linestyle='--')
 
         # Add a title
+        units = board.units
         title = spacing.description
         title += '\nBoard width: '
         title += units.intervals_to_string(board.width, True)
