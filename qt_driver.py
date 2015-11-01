@@ -26,6 +26,7 @@ from builtins import str
 
 import os, sys, traceback
 import mpl_fig
+import qt_fig
 import router
 import spacing
 import utils
@@ -36,6 +37,7 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 #from PySide import QtCore, QtGui
 
+USE_MPL = True
 DEBUG = OPTIONS['debug']
 
 class Driver(QtGui.QMainWindow):
@@ -158,7 +160,10 @@ class Driver(QtGui.QMainWindow):
         lineEditWidth = 80
 
         # Create the figure canvas, using mpl interface
-        self.fig = mpl_fig.MPL_QtFig(self.template, self.board)
+        if USE_MPL:
+            self.fig = mpl_fig.MPL_QtFig(self.template, self.board)
+        else:
+            self.fig = qt_fig.Qt_Fig(self.template, self.board)
         self.fig.canvas.setParent(self.main_frame)
         self.fig.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.fig.canvas.setFocus()
@@ -676,6 +681,8 @@ def run():
     Sets up and runs the application
     '''
     app = QtGui.QApplication(sys.argv)
+#    app.setStyle('plastique')
+#    app.setStyle('windows')
     driver = Driver()
     driver.show()
     driver.raise_()

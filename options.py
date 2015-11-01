@@ -24,7 +24,7 @@ OPTIONS['min_finger_width'] = 4
 # The margins object controls top, bottom, and side margins, along with the
 # separation between objects in the figure.  Specified in intervals (integer).
 # Here we just set all margins to 1/4".
-OPTIONS['margins'] = Margins(8, bottom=24)
+OPTIONS['margins'] = Margins(8, bottom=16)
 
 # Set debug to True to turn on debugging.  This will print a lot of output to
 # stdout during a pyRouterJig session.  This option is typically only useful

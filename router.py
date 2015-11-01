@@ -212,13 +212,15 @@ class Board(My_Rectangle):
     width:  Dimension of routed edge (along x-axis)
     height: Dimension perpendicular to routed edge (along y-axis)
     thickness: Dimension into paper or screen.
+    icon: Icon image used for fill
 
     Dimentions are in interval units.
     '''
-    def __init__(self, units, width, height=32, thickness=32):
+    def __init__(self, units, width, height=32, thickness=32, icon=None):
         My_Rectangle.__init__(self, 0, 0, width, height)
         self.units = units
         self.thickness = thickness
+        self.icon = icon
     def set_width_from_string(self, s):
         '''
         Sets the width from the string s, following requirements from units.string_to_intervals().
