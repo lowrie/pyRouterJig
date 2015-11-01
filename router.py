@@ -221,6 +221,8 @@ class Board(My_Rectangle):
         self.units = units
         self.thickness = thickness
         self.icon = icon
+    def set_icon(self, icon):
+        self.icon = icon
     def set_width_from_string(self, s):
         '''
         Sets the width from the string s, following requirements from units.string_to_intervals().

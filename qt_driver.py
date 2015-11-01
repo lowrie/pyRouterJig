@@ -22,6 +22,7 @@
 Contains the main driver, using pySide or pyQt.
 '''
 from __future__ import print_function
+from future.utils import lrange
 from builtins import str
 
 import os, sys, traceback
@@ -37,7 +38,7 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 #from PySide import QtCore, QtGui
 
-USE_MPL = True
+USE_MPL = False
 DEBUG = OPTIONS['debug']
 
 class Driver(QtGui.QMainWindow):
@@ -140,6 +141,24 @@ class Driver(QtGui.QMainWindow):
         self.english_action.setChecked(True)
         self.english_action.triggered.connect(self._on_units)
         self.metric_action.triggered.connect(self._on_units)
+
+        # Add wood menu
+
+        self.wood_menu = self.menubar.addMenu('Wood')
+        ag = QtGui.QActionGroup(self, exclusive=True)
+        self.wood_to_icon = [['Cherry', 'black-cherry-sealed.jpg'],\
+                             ['Maple', 'hard-maple.jpg'],\
+                             ['Walnut', 'black-walnut-sealed.jpg']]
+        n = len(self.wood_to_icon)
+        self.wood_actions = []
+        for i in lrange(n):
+            self.wood_actions.append(QtGui.QAction(self.wood_to_icon[i][0], self, checkable=True))
+        for a in self.wood_actions:
+            self.wood_menu.addAction(ag.addAction(a))
+            a.triggered.connect(self._on_wood)
+        self.wood_actions[0].setChecked(True)
+        self.wood_dir = 'woods/'
+        self.board.set_icon(self.wood_dir + self.wood_to_icon[0][1])
 
         # Add the help menu
 
@@ -650,6 +669,20 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_depth.setText(self.units.intervals_to_string(self.bit.depth))
         self.reinit_spacing()
         self.set_tooltips()
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_wood(self):
+        '''Handles changes in wood'''
+        if DEBUG:
+            print('_on_wood')
+        index = 0
+        n = len(self.wood_actions)
+        for i in lrange(n):
+            if self.wood_actions[i].isChecked():
+                index = i
+                break
+        self.board.set_icon(self.wood_dir + self.wood_to_icon[index][1])
         self.draw()
 
     def flash_status_message(self, msg, flash_len_ms=None):
