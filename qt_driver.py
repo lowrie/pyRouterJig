@@ -40,6 +40,7 @@ from PyQt4 import QtCore
 
 USE_MPL = False
 DEBUG = OPTIONS['debug']
+WOODS = OPTIONS['woods']
 
 class Driver(QtGui.QMainWindow):
     '''
@@ -146,19 +147,15 @@ class Driver(QtGui.QMainWindow):
 
         self.wood_menu = self.menubar.addMenu('Wood')
         ag = QtGui.QActionGroup(self, exclusive=True)
-        self.wood_to_icon = [['Cherry', 'black-cherry-sealed.jpg'],\
-                             ['Maple', 'hard-maple.jpg'],\
-                             ['Walnut', 'black-walnut-sealed.jpg']]
-        n = len(self.wood_to_icon)
-        self.wood_actions = []
-        for i in lrange(n):
-            self.wood_actions.append(QtGui.QAction(self.wood_to_icon[i][0], self, checkable=True))
-        for a in self.wood_actions:
-            self.wood_menu.addAction(ag.addAction(a))
-            a.triggered.connect(self._on_wood)
-        self.wood_actions[0].setChecked(True)
+        skeys = sorted(WOODS.iterkeys())
+        self.wood_actions = {}
+        for k in skeys:
+            self.wood_actions[k] = QtGui.QAction(k, self, checkable=True)
+            self.wood_menu.addAction(ag.addAction(self.wood_actions[k]))
+            self.wood_actions[k].triggered.connect(self._on_wood)
+        self.wood_actions['Cherry'].setChecked(True)
         self.wood_dir = 'woods/'
-        self.board.set_icon(self.wood_dir + self.wood_to_icon[0][1])
+        self.board.set_icon(self.wood_dir + WOODS['Cherry'])
 
         # Add the help menu
 
@@ -676,13 +673,11 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes in wood'''
         if DEBUG:
             print('_on_wood')
-        index = 0
-        n = len(self.wood_actions)
-        for i in lrange(n):
-            if self.wood_actions[i].isChecked():
-                index = i
+        for k,v in self.wood_actions.iteritems():
+            if v.isChecked():
+                wood = k
                 break
-        self.board.set_icon(self.wood_dir + self.wood_to_icon[index][1])
+        self.board.set_icon(self.wood_dir + WOODS[wood])
         self.draw()
 
     def flash_status_message(self, msg, flash_len_ms=None):
