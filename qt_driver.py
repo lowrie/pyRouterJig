@@ -117,7 +117,7 @@ class Driver(QtGui.QMainWindow):
         self.file_menu.addAction(print_action)
 
         screenshot_action = QtGui.QAction('&Screenshot', self)
-        screenshot_action.setShortcut('Ctrl+W')
+        screenshot_action.setShortcut('Ctrl+S')
         screenshot_action.setStatusTip('Screenshot of window')
         screenshot_action.triggered.connect(self._on_screenshot)
         self.file_menu.addAction(screenshot_action)
@@ -592,7 +592,6 @@ class Driver(QtGui.QMainWindow):
             self.flash_status_message("Figure printed")
         else:
             self.flash_status_message("Figure not printed")
-
 
     @QtCore.pyqtSlot()
     def _on_screenshot(self):
