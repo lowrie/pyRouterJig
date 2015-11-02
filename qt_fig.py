@@ -90,7 +90,7 @@ class Qt_Fig(object):
         '''
         Prints the figure
         '''
-        self.canvas.print_fig(template, board, bit, spacing)
+        return self.canvas.print_fig(template, board, bit, spacing)
 
 class Qt_Plotter(QtGui.QWidget):
     '''
@@ -104,6 +104,7 @@ class Qt_Plotter(QtGui.QWidget):
         # if subsequent passes are less than this value, don't label the pass (in intervals)
         self.sep_annotate = 4
         self.geom = None
+        self.background = QtGui.QBrush(QtGui.QColor(240, 231, 201))
     def minimumSizeHint(self):
         '''
         Minimum size for this widget
@@ -128,7 +129,7 @@ class Qt_Plotter(QtGui.QWidget):
         fig_height = template.height + 2 * (board.height + self.margins.sep) + \
                      self.margins.bottom + self.margins.top
 
-        min_width = 320
+        min_width = 64
         if fig_width < min_width:
             fig_width = min_width
             self.margins.left = (fig_width - template.length) // 2
@@ -168,8 +169,9 @@ class Qt_Plotter(QtGui.QWidget):
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         printer.setOrientation(QtGui.QPrinter.Landscape)
         pdialog = QtGui.QPrintPreviewDialog(printer)
+        pdialog.setModal(True)
         pdialog.paintRequested.connect(self.preview_requested)
-        pdialog.exec_()
+        return pdialog.exec_()
     def preview_requested(self, printer):
         '''
         Handles the print preview action.
@@ -189,8 +191,7 @@ class Qt_Plotter(QtGui.QWidget):
         painter = QtGui.QPainter(self)
         size = self.size()
         # on the screen, we add a background color:
-        painter.fillRect(0, 0, size.width(), size.height(), \
-                         QtGui.QBrush(QtGui.QColor(255, 234, 163)))
+        painter.fillRect(0, 0, size.width(), size.height(), self.background)
         self.window_width, self.window_height = self.paint_all(painter)
         painter.end()
     def paint_all(self, painter, dpi=None):
@@ -299,15 +300,13 @@ class Qt_Plotter(QtGui.QWidget):
         self.draw_one_board(painter, self.geom.xA, self.geom.yA)
         self.draw_one_board(painter, self.geom.xB, self.geom.yB)
 
-        fill = QtGui.QBrush(QtGui.QColor(255, 234, 163))
-
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         p = (self.geom.board_A.xMid(), self.geom.board_A.yT())
-        paint_text(painter, 'A', p, flags, (0, 3), fill=fill)
+        paint_text(painter, 'A', p, flags, (0, 3), fill=self.background)
 
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         p = (self.geom.board_B.xMid(), self.geom.board_B.yB)
-        paint_text(painter, 'B', p, flags, (0, -3), fill=fill)
+        paint_text(painter, 'B', p, flags, (0, -3), fill=self.background)
     def draw_title(self, painter):
         '''
         Draws the title

@@ -176,6 +176,7 @@ class Driver(QtGui.QMainWindow):
         self.fig = qt_fig.Qt_Fig(self.template, self.board)
         self.fig.canvas.setParent(self.main_frame)
         self.fig.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.fig.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.fig.canvas.setFocus()
 
         # Board width text box
@@ -379,6 +380,7 @@ class Driver(QtGui.QMainWindow):
         #self.vbox.addWidget(self.tabs_spacing)
         # ... or to the right of the text boxes
         self.hbox.addWidget(self.tabs_spacing)
+        self.vbox.addStretch(1)
         self.vbox.addLayout(self.hbox)
 #        self.vbox.setSizeConstraint(QtGui.QLayout.SetFixedSize)
 
@@ -585,7 +587,12 @@ class Driver(QtGui.QMainWindow):
         if DEBUG:
             print('_on_print')
 
-        self.fig.print(self.template, self.board, self.bit, self.spacing)
+        r = self.fig.print(self.template, self.board, self.bit, self.spacing)
+        if r:
+            self.flash_status_message("Figure printed")
+        else:
+            self.flash_status_message("Figure not printed")
+
 
     @QtCore.pyqtSlot()
     def _on_screenshot(self):

@@ -11,7 +11,7 @@ OPTIONS = {}
 # You can change the options below.
 
 # Dots-per-inch for the screen (integer value)
-OPTIONS['dpi_screen'] = 110
+OPTIONS['dpi_screen'] = 1200
 
 # Dots-per-inch for printing (integer value)
 OPTIONS['dpi_paper'] = 72
