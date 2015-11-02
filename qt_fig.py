@@ -307,6 +307,13 @@ class Qt_Plotter(QtGui.QWidget):
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         p = (self.geom.board_B.xMid(), self.geom.board_B.yB)
         paint_text(painter, 'B', p, flags, (0, -3), fill=self.background)
+
+        # Plot the board center
+        painter.setPen(QtCore.Qt.DashLine)
+        painter.drawLine(self.geom.board_T.xMid(), self.geom.rect_T.yB, \
+                         self.geom.board_T.xMid(), self.geom.board_A.yT())
+        painter.setPen(QtCore.Qt.SolidLine)
+
     def draw_title(self, painter):
         '''
         Draws the title
