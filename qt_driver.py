@@ -53,8 +53,8 @@ class Driver(QtGui.QMainWindow):
         self.doc = doc.Doc(self.units)
 
         # Create an initial joint
-        self.board = router.Board(self.units, width=self.units.inches_to_intervals(7.5))
         self.bit = router.Router_Bit(self.units, 16, 24)
+        self.board = router.Board(self.bit, width=self.units.inches_to_intervals(7.5))
         self.template = router.Incra_Template(self.units, self.board)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
         self.equal_spacing.set_cuts(self.units)
@@ -513,6 +513,7 @@ class Driver(QtGui.QMainWindow):
             self.tb_bit_depth.setModified(False)
             text = str(self.tb_bit_depth.text())
             self.bit.set_depth_from_string(text)
+            self.board.set_height(self.bit)
             self.draw()
             self.flash_status_message('Changed bit depth to ' + text)
             self.file_saved = False

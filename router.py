@@ -209,18 +209,21 @@ class Board(My_Rectangle):
     '''
     Board of wood description.
 
-    width:  Dimension of routed edge (along x-axis)
+    Attributes:
+    units: Units object
+    width: Dimension of routed edge (along x-axis)
     height: Dimension perpendicular to routed edge (along y-axis)
-    thickness: Dimension into paper or screen.
+    thickness: Dimension into paper or screen (not used)
     icon: Icon image used for fill
 
     Dimentions are in interval units.
     '''
-    def __init__(self, units, width, height=32, thickness=32, icon=None):
-        My_Rectangle.__init__(self, 0, 0, width, height)
-        self.units = units
+    def __init__(self, bit, width, thickness=32, icon=None):
+        My_Rectangle.__init__(self, 0, 0, width, 32)
+        self.units = bit.units
         self.thickness = thickness
         self.icon = icon
+        self.set_height(bit)
     def set_icon(self, icon):
         self.icon = icon
     def set_width_from_string(self, s):
@@ -238,21 +241,11 @@ class Board(My_Rectangle):
             raise
         if self.width <= 0:
             raise Router_Exception(msg % s)
-    def set_height_from_string(self, s):
+    def set_height(self, bit):
         '''
-        Sets the height from the string s, following requirements from units.string_to_intervals().
+        Sets the height from the router bit depth of cut
         '''
-        msg = 'Board height is "%s".  Set to a postive value.'
-        try:
-            self.height = self.units.string_to_intervals(s)
-        except ValueError as e:
-            msg = 'ValueError setting board height: %s\n' % (e) + \
-                  msg % s
-            raise Router_Exception(msg)
-        except:
-            raise
-        if self.height <= 0:
-            raise Router_Exception(msg % s)
+        self.height = my_round(1.5 * bit.depth)
     def change_units(self, new_units):
         '''Changes units to new_units'''
         s = self.units.get_scaling(new_units)

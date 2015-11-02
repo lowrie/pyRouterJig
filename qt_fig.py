@@ -297,9 +297,17 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         Draws all the boards
         '''
+        # Draw the A and B boards
         self.draw_one_board(painter, self.geom.xA, self.geom.yA)
         self.draw_one_board(painter, self.geom.xB, self.geom.yB)
 
+        # Plot the board center
+        painter.setPen(QtCore.Qt.DashLine)
+        painter.drawLine(self.geom.board_T.xMid(), self.geom.rect_T.yB, \
+                         self.geom.board_T.xMid(), self.geom.board_A.yT())
+        painter.setPen(QtCore.Qt.SolidLine)
+
+        # Label the boards
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         p = (self.geom.board_A.xMid(), self.geom.board_A.yT())
         paint_text(painter, 'A', p, flags, (0, 3), fill=self.background)
@@ -307,12 +315,6 @@ class Qt_Plotter(QtGui.QWidget):
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         p = (self.geom.board_B.xMid(), self.geom.board_B.yB)
         paint_text(painter, 'B', p, flags, (0, -3), fill=self.background)
-
-        # Plot the board center
-        painter.setPen(QtCore.Qt.DashLine)
-        painter.drawLine(self.geom.board_T.xMid(), self.geom.rect_T.yB, \
-                         self.geom.board_T.xMid(), self.geom.board_A.yT())
-        painter.setPen(QtCore.Qt.SolidLine)
 
     def draw_title(self, painter):
         '''
