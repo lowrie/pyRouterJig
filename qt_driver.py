@@ -22,11 +22,9 @@
 Contains the main driver, using pySide or pyQt.
 '''
 from __future__ import print_function
-from future.utils import lrange
 from builtins import str
 
 import os, sys, traceback
-import mpl_fig
 import qt_fig
 import router
 import spacing
@@ -38,7 +36,6 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 #from PySide import QtCore, QtGui
 
-USE_MPL = False
 DEBUG = OPTIONS['debug']
 WOODS = OPTIONS['woods']
 
@@ -113,11 +110,11 @@ class Driver(QtGui.QMainWindow):
 
         self.file_menu = self.menubar.addMenu('File')
 
-        save_action = QtGui.QAction('&Save', self)
-        save_action.setShortcut('Ctrl+S')
-        save_action.setStatusTip('Save figure to file')
-        save_action.triggered.connect(self._on_save)
-        self.file_menu.addAction(save_action)
+        print_action = QtGui.QAction('&Print', self)
+        print_action.setShortcut('Ctrl+P')
+        print_action.setStatusTip('Print the figure')
+        print_action.triggered.connect(self._on_print)
+        self.file_menu.addAction(print_action)
 
         screenshot_action = QtGui.QAction('&Screenshot', self)
         screenshot_action.setShortcut('Ctrl+W')
@@ -176,10 +173,7 @@ class Driver(QtGui.QMainWindow):
         lineEditWidth = 80
 
         # Create the figure canvas, using mpl interface
-        if USE_MPL:
-            self.fig = mpl_fig.MPL_QtFig(self.template, self.board)
-        else:
-            self.fig = qt_fig.Qt_Fig(self.template, self.board)
+        self.fig = qt_fig.Qt_Fig(self.template, self.board)
         self.fig.canvas.setParent(self.main_frame)
         self.fig.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.fig.canvas.setFocus()
@@ -190,6 +184,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_board_width.setFixedWidth(lineEditWidth)
         self.tb_board_width.setText(self.units.intervals_to_string(self.board.width))
         self.tb_board_width.editingFinished.connect(self._on_board_width)
+        self.tb_board_width.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
 
         # Bit width text box
         self.tb_bit_width_label = QtGui.QLabel('Bit Width')
@@ -213,8 +208,8 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_angle.editingFinished.connect(self._on_bit_angle)
 
         # Save button
-        self.btn_save = QtGui.QPushButton('Save', self.main_frame)
-        self.btn_save.clicked.connect(self._on_save)
+        self.btn_print = QtGui.QPushButton('Print', self.main_frame)
+        self.btn_print.clicked.connect(self._on_print)
 
         # Equal spacing widgets
 
@@ -235,6 +230,7 @@ class Driver(QtGui.QMainWindow):
         if p.vMax - p.vMin < 10:
             self.es_slider0.setTickInterval(1)
         self.es_slider0.valueChanged.connect(self._on_es_slider0)
+        self.es_slider0.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
         # ...second slider
         p = params[1]
@@ -249,6 +245,7 @@ class Driver(QtGui.QMainWindow):
         if p.vMax - p.vMin < 10:
             self.es_slider1.setTickInterval(1)
         self.es_slider1.valueChanged.connect(self._on_es_slider1)
+        self.es_slider1.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
         # ...check box for centering
         p = params[2]
@@ -276,10 +273,14 @@ class Driver(QtGui.QMainWindow):
         if p.vMax - p.vMin < 10:
             self.vs_slider0.setTickInterval(1)
         self.vs_slider0.valueChanged.connect(self._on_vs_slider0)
+        self.vs_slider0.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
         self.set_tooltips()
 
     def set_tooltips(self):
+        '''
+        [Re]sets the tool tips for the widgets
+        '''
         self.tb_board_width.setToolTip(self.doc.board_width())
         self.tb_bit_width.setToolTip(self.doc.bit_width())
         self.tb_bit_depth.setToolTip(self.doc.bit_depth())
@@ -288,7 +289,7 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1.setToolTip(self.doc.es_slider1())
         self.cb_es_centered.setToolTip(self.doc.es_centered())
         self.vs_slider0.setToolTip(self.doc.vs_slider0())
-        self.btn_save.setToolTip('Save figure to file.')
+        self.btn_print.setToolTip('Print the figure')
 
     def layout_widgets(self):
         '''
@@ -299,7 +300,7 @@ class Driver(QtGui.QMainWindow):
         # vertically
         self.vbox = QtGui.QVBoxLayout()
 
-        # Add the matplotlib canvas to the top
+        # Add the figure canvas to the top
         self.vbox.addWidget(self.fig.canvas)
 
         # hbox contains all of the control widgets
@@ -307,12 +308,12 @@ class Driver(QtGui.QMainWindow):
         self.hbox = QtGui.QHBoxLayout()
 
         # Add the board width label, board width input text box,
-        # and save button, all stacked vertically on the left side.
+        # and print button, all stacked vertically on the left side.
         self.vbox_board_width = QtGui.QVBoxLayout()
         self.vbox_board_width.addWidget(self.tb_board_width_label)
         self.vbox_board_width.addWidget(self.tb_board_width)
         self.vbox_board_width.addStretch(1)
-        self.vbox_board_width.addWidget(self.btn_save)
+        self.vbox_board_width.addWidget(self.btn_print)
         self.hbox.addLayout(self.vbox_board_width)
 
         # Add the bit width label and its text box
@@ -579,31 +580,12 @@ class Driver(QtGui.QMainWindow):
         self.file_saved = False
 
     @QtCore.pyqtSlot()
-    def _on_save(self):
-        '''Handles save to file events'''
+    def _on_print(self):
+        '''Handles print events'''
         if DEBUG:
-            print('_on_save')
+            print('_on_print')
 
-        # Limit file save types to png and pdf:
-        #default = 'Portable Document Format (*.pdf)'
-        #file_choices = 'Portable Network Graphics (*.png)'
-        #file_choices += ';;' + default
-
-        # Or, these wildcards match what the figure supports:
-        (file_choices, default) = self.fig.get_save_file_types()
-
-        path = str(QtGui.QFileDialog.getSaveFileName(self,
-                                                     'Save file',
-                                                     self.working_dir,
-                                                     file_choices, default))
-        if path:
-            self.fig.save(path)
-            self.flash_status_message('Saved to %s' % path)
-            self.file_saved = True
-            self.working_dir = os.path.dirname(path)
-        else:
-            # ... then likely the cancel button was pressed
-            self.flash_status_message('No file saved')
+        self.fig.print(self.template, self.board, self.bit, self.spacing)
 
     @QtCore.pyqtSlot()
     def _on_screenshot(self):
@@ -673,7 +655,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes in wood'''
         if DEBUG:
             print('_on_wood')
-        for k,v in self.wood_actions.iteritems():
+        for k, v in self.wood_actions.iteritems():
             if v.isChecked():
                 wood = k
                 break

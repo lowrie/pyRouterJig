@@ -34,33 +34,63 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 #from PySide import QtCore, QtGui
 
+def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
+    '''
+    Puts text at coord with alignment flags.
+
+    painter: QPainter object
+    text: The text to print.
+    coord: The coordinate at which to place the text
+    flags: QtCore.Qt alignment flags
+    shift: Adjustments in coord, in pixels
+    angle: Rotation angle
+    fill: If not None, a QBrush that fills the bounding rectangle behind the text.
+    '''
+    # Save the current transform, then switch to transform that places the origin
+    # at coord and rotated by angle.
+    transform = painter.transform()
+    (x, y) = transform.map(coord[0], coord[1])
+    x += shift[0]
+    y += shift[1]
+    painter.resetTransform()
+    painter.translate(x, y)
+    painter.rotate(angle)
+    # Create a large rectangle and use it to find the bounding rectangle around the text.
+    # Find the origin of the rectangle based on the alignment.
+    big = 5000
+    xorg = 0
+    yorg = 0
+    if flags & QtCore.Qt.AlignRight:
+        xorg = -big
+    elif flags & QtCore.Qt.AlignHCenter:
+        xorg = -big // 2
+    if flags & QtCore.Qt.AlignBottom:
+        yorg = -big
+    rect = QtCore.QRect(xorg, yorg, big, big)
+    rect = painter.boundingRect(rect, flags, text)
+    # Draw the text
+    if fill is not None:
+        painter.fillRect(rect, fill)
+    painter.drawText(rect, flags, text)
+    # restore the original transform
+    painter.setTransform(transform)
+
 class Qt_Fig(object):
     '''
     Interface to the qt_driver, using Qt to draw the boards and template.
     '''
     def __init__(self, template, board):
-        self.dpi = OPTIONS['dpi_paper']
         self.canvas = Qt_Plotter(template, board)
     def draw(self, template, board, bit, spacing):
         '''
         Draws the template and boards
         '''
         self.canvas.draw(template, board, bit, spacing)
-    def get_save_file_types(self):
+    def print(self, template, board, bit, spacing):
         '''
-        Returns a string of supported file choices for use with QFileDialog()
-        and the default.
+        Prints the figure
         '''
-        default = 'Portable Network Graphics (*.png)'
-        file_choices = QtGui.QImageWriter.supportedImageFormats()
-        print(file_choices)
-
-        return (file_choices, default)
-    def save(self, path):
-        '''
-        Saves figure to path
-        '''
-        self.canvas.print_figure(path, dpi=self.dpi)
+        self.canvas.print_fig(template, board, bit, spacing)
 
 class Qt_Plotter(QtGui.QWidget):
     '''
@@ -68,23 +98,25 @@ class Qt_Plotter(QtGui.QWidget):
     '''
     def __init__(self, template, board):
         QtGui.QWidget.__init__(self)
-        self.dpi = OPTIONS['dpi_screen']
         self.fig_width = -1
         self.fig_height = -1
         self.set_fig_dimensions(template, board)
         # if subsequent passes are less than this value, don't label the pass (in intervals)
         self.sep_annotate = 4
-        # fontsize for pass labels.  If this value is increased, likely need to increase
-        # sep_annotate.
-        self.pass_fontsize = 9
         self.geom = None
     def minimumSizeHint(self):
+        '''
+        Minimum size for this widget
+        '''
         return QtCore.QSize(100, 100)
     def sizeHint(self):
+        '''
+        Size hint for this widget
+        '''
         return QtCore.QSize(self.window_width, self.window_height)
     def set_fig_dimensions(self, template, board):
         '''
-        Computes the figure dimension attributes, fig_width and fig_height, in 
+        Computes the figure dimension attributes, fig_width and fig_height, in
         intervals.
         Returns True if the dimensions changed.
         '''
@@ -111,89 +143,95 @@ class Qt_Plotter(QtGui.QWidget):
             self.fig_height = fig_height
             dimensions_changed = True
 
-        scale = self.dpi * board.units.intervals_to_inches(1)
+        scale = OPTIONS['dpi_screen'] * board.units.intervals_to_inches(1)
         self.window_width = int(scale * fig_width)
         self.window_height = int(scale * fig_height)
 
         return dimensions_changed
     def draw(self, template, board, bit, spacing):
         '''
-        Draws the entire figure
+        Draws the figure
         '''
         # Generate the new geometry layout
         self.set_fig_dimensions(template, board)
         self.geom = router.Joint_Geometry(template, board, bit, spacing, self.margins)
         self.update()
-    def savefig(self, filename):
+    def print_fig(self, template, board, bit, spacing):
         '''
-        Saves the figure to filename
+        Prints the figure
         '''
-        self.fig.savefig(filename, dpi=OPTIONS['dpi_paper'],
-                         bbox_inches='tight', pad_inches=0)
-    def paintEvent(self, event):
-        painter = QtGui.QPainter(self)
+        # Generate the new geometry layout
+        self.set_fig_dimensions(template, board)
+        self.geom = router.Joint_Geometry(template, board, bit, spacing, self.margins)
 
+        # Print through the preview dialog
+        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+        printer.setOrientation(QtGui.QPrinter.Landscape)
+        pdialog = QtGui.QPrintPreviewDialog(printer)
+        pdialog.paintRequested.connect(self.preview_requested)
+        pdialog.exec_()
+    def preview_requested(self, printer):
+        '''
+        Handles the print preview action.
+        '''
+        dpi = printer.resolution()
+        painter = QtGui.QPainter()
+        painter.begin(printer)
+        self.paint_all(painter, dpi)
+        painter.end()
+    def paintEvent(self, event):
+        '''
+        Handles the paint event, which draws to the screen
+        '''
         if self.geom is None:
-            painter.drawRect(10, 10, 40, 30)
             return
 
+        painter = QtGui.QPainter(self)
         size = self.size()
-        self.window_width = size.width()
-        self.window_height = size.height()
-
-        painter.fillRect(0, 0, self.window_width, self.window_height, \
+        # on the screen, we add a background color:
+        painter.fillRect(0, 0, size.width(), size.height(), \
                          QtGui.QBrush(QtGui.QColor(255, 234, 163)))
-                         
+        self.window_width, self.window_height = self.paint_all(painter)
+        painter.end()
+    def paint_all(self, painter, dpi=None):
+        '''
+        Paints all the objects.
 
-        window_ar = float(self.window_width) / self.window_height
-        fig_ar = float(self.fig_width) / self.fig_height
+        painter: A QPainter object
+        dpi: The resolution of the painter, in dots-per-inch.  If None, then
+             the image is maximized in the window, but maintaining aspect ratio.
+        '''
+        rw = painter.window()
+        window_width = rw.width()
+        window_height = rw.height()
 
-        # transform the painter to maintain the figure aspect ratio in the current 
-        # window
-        if fig_ar < window_ar:
-            w = my_round(fig_ar * self.window_height)
-            painter.translate((self.window_width - w) // 2, self.window_height)
-            s = float(self.window_height) / self.fig_height
+        if dpi is None:
+            # transform the painter to maintain the figure aspect ratio in the current
+            # window
+            window_ar = float(window_width) / window_height
+            fig_ar = float(self.fig_width) / self.fig_height
+            if fig_ar < window_ar:
+                w = my_round(fig_ar * window_height)
+                painter.translate((window_width - w) // 2, window_height)
+                scale = float(window_height) / self.fig_height
+            else:
+                h = my_round(window_width / fig_ar)
+                painter.translate(0, (window_height + h) // 2)
+                scale = float(window_width) / self.fig_width
         else:
-            h = my_round(self.window_width / fig_ar)
-            painter.translate(0, (self.window_height + h) // 2)
-            s = float(self.window_width) / self.fig_width
-        painter.scale(s, -s)
+            # Scale so that the image is the correct size on the page
+            painter.translate(0, window_height)
+            scale = float(dpi) / self.geom.board.units.intervals_per_inch
+        painter.scale(scale, -scale)
 
         painter.setPen(QtCore.Qt.black)
-        
+
         # draw the objects
         self.draw_template(painter)
         self.draw_boards(painter)
         self.draw_title(painter)
 
-        painter.end()
-    def paint_text(self, painter, text, coord, flags, shift=(0,0), angle=0, fill=None):
-        '''
-        Puts text at coord with alignment flags.
-        '''
-        transform = painter.transform()
-        (x, y) = transform.map(coord[0], coord[1])
-        x += shift[0]
-        y += shift[1]
-        painter.resetTransform()
-        painter.translate(x, y)
-        painter.rotate(angle)
-        big = 5000
-        xorg = 0
-        yorg = 0
-        if flags & QtCore.Qt.AlignRight:
-            xorg = -big
-        elif flags & QtCore.Qt.AlignHCenter:
-            xorg = -big // 2
-        if flags & QtCore.Qt.AlignBottom:
-            yorg = -big
-        rect = QtCore.QRect(xorg, yorg, big, big)
-        rect = painter.boundingRect(rect, flags, text)
-        if fill is not None:
-            painter.fillRect(rect, fill)
-        painter.drawText(rect, flags, text)
-        painter.setTransform(transform)
+        return (window_width, window_height)
     def draw_template(self, painter):
         '''
         Draws the Incra template
@@ -206,9 +244,9 @@ class Qt_Plotter(QtGui.QWidget):
 
         # Fill the template margins with a grayshade
         brush = QtGui.QBrush(QtGui.QColor(220, 220, 220))
-        painter.fillRect(rect_T.xL, rect_T.yB, board_T.xL - rect_T.xL, 
+        painter.fillRect(rect_T.xL, rect_T.yB, board_T.xL - rect_T.xL,
                          rect_T.height, brush)
-        painter.fillRect(board_T.xR(), rect_T.yB, rect_T.xR() - board_T.xR(), 
+        painter.fillRect(board_T.xR(), rect_T.yB, rect_T.xR() - board_T.xR(),
                          rect_T.height, brush)
 
         # Draw the template bounding box
@@ -226,7 +264,7 @@ class Qt_Plotter(QtGui.QWidget):
                 label = '%dB' % ip
                 painter.drawLine(xp, rect_T.yB, xp, rect_T.yMid())
                 if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    self.paint_text(painter, label, (xp, rect_T.yB), flags, shift, -90)
+                    paint_text(painter, label, (xp, rect_T.yB), flags, shift, -90)
        # ... do the A passes
         ip = 0
         flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
@@ -238,7 +276,7 @@ class Qt_Plotter(QtGui.QWidget):
                 label = '%dA' % ip
                 painter.drawLine(xp, rect_T.yMid(), xp, rect_T.yT())
                 if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    self.paint_text(painter, label, (xp, rect_T.yT()), flags, shift, -90)
+                    paint_text(painter, label, (xp, rect_T.yT()), flags, shift, -90)
     def draw_one_board(self, painter, x, y):
         '''
         Draws a single board
@@ -265,11 +303,11 @@ class Qt_Plotter(QtGui.QWidget):
 
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         p = (self.geom.board_A.xMid(), self.geom.board_A.yT())
-        self.paint_text(painter, 'A', p, flags, (0, 3), fill=fill)
+        paint_text(painter, 'A', p, flags, (0, 3), fill=fill)
 
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         p = (self.geom.board_B.xMid(), self.geom.board_B.yB)
-        self.paint_text(painter, 'B', p, flags, (0, -3), fill=fill)
+        paint_text(painter, 'B', p, flags, (0, -3), fill=fill)
     def draw_title(self, painter):
         '''
         Draws the title
@@ -289,4 +327,4 @@ class Qt_Plotter(QtGui.QWidget):
         title += units.intervals_to_string(self.geom.bit.depth, True)
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         p = (self.geom.board_T.xMid(), 0)
-        self.paint_text(painter, title, p, flags, (0, -3))
+        paint_text(painter, title, p, flags, (0, -3))

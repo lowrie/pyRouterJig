@@ -261,6 +261,7 @@ class Board(My_Rectangle):
         self.width = my_round(self.width * s)
         self.height = my_round(self.height * s)
         self.thickness = my_round(self.thickness * s)
+        self.units = new_units
 
 class Cut(object):
     '''
