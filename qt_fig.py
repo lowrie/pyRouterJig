@@ -145,7 +145,8 @@ class Qt_Plotter(QtGui.QWidget):
             self.fig_height = fig_height
             dimensions_changed = True
 
-        scale = OPTIONS['dpi_screen'] * board.units.intervals_to_inches(1)
+        # The 1200 here is effectively a dpi for the screen
+        scale = 1200 * board.units.intervals_to_inches(1)
         self.window_width = int(scale * fig_width)
         self.window_height = int(scale * fig_height)
 
@@ -334,6 +335,6 @@ class Qt_Plotter(QtGui.QWidget):
         title += units.intervals_to_string(self.geom.bit.width, True)
         title += ', depth: '
         title += units.intervals_to_string(self.geom.bit.depth, True)
-        flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
-        p = (self.geom.board_T.xMid(), 0)
-        paint_text(painter, title, p, flags, (0, -3))
+        flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
+        p = (self.geom.board_T.xMid(), self.margins.bottom)
+        paint_text(painter, title, p, flags, (0, 5))

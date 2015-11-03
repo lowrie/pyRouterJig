@@ -10,12 +10,6 @@ OPTIONS = {}
 
 # You can change the options below.
 
-# Dots-per-inch for the screen (integer value)
-OPTIONS['dpi_screen'] = 1200
-
-# Dots-per-inch for printing (integer value)
-OPTIONS['dpi_paper'] = 72
-
 # min_finger_width: avoid fingers that are smaller than this dimension.
 # Specified in intervals (integer).  So for English units, 8 corresponds to
 # 4/32" = 1/8"
