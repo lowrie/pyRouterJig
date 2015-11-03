@@ -30,6 +30,8 @@ from options import OPTIONS
 import router
 from utils import my_round
 
+import pyRouterJig_rc
+
 from PyQt4 import QtCore, QtGui
 #from PySide import QtCore, QtGui
 
@@ -285,7 +287,7 @@ class Qt_Plotter(QtGui.QWidget):
         pen = QtGui.QPen(QtCore.Qt.black)
         pen.setWidthF(0)
         painter.setPen(pen)
-        painter.setBrush(QtGui.QBrush(QtGui.QPixmap(self.geom.board.icon)))
+        painter.setBrush(QtGui.QBrush(QtGui.QPixmap(':' + self.geom.board.icon)))
         n = len(x)
         poly = QtGui.QPolygon()
         for i in lrange(n):
