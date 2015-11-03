@@ -144,7 +144,7 @@ class Driver(QtGui.QMainWindow):
 
         self.wood_menu = self.menubar.addMenu('Wood')
         ag = QtGui.QActionGroup(self, exclusive=True)
-        skeys = sorted(WOODS.iterkeys())
+        skeys = sorted(WOODS.keys())
         self.wood_actions = {}
         for k in skeys:
             self.wood_actions[k] = QtGui.QAction(k, self, checkable=True)
@@ -662,7 +662,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes in wood'''
         if DEBUG:
             print('_on_wood')
-        for k, v in self.wood_actions.iteritems():
+        for k, v in self.wood_actions.items():
             if v.isChecked():
                 wood = k
                 break
