@@ -28,19 +28,19 @@ OPTIONS['margins'] = Margins(8, bottom=16)
 
 # Define the wood types that are in the woods/ folder.
 # This list is used to build the Wood menu.
-OPTIONS['woods'] = {'Birch':'paper-birch.jpg',\
-                    'Cedar':'aromatic-red-cedar.jpg',\
-                    'Cherry':'black-cherry-sealed.jpg',\
-                    'Cypress':'cypress.jpg',\
-                    'Douglas Fir':'douglas-fir1.jpg',\
-                    'Mahagony':'african-mahogany-sealed.jpg',\
-                    'Maple':'hard-maple.jpg',\
-                    'Oak (Red)':'red-oak.jpg',\
-                    'Oak (White)':'white-oak.jpg',\
-                    'Pine':'virginia-pine.jpg',\
-                    'Spruce':'sitka-spruce.jpg',\
-                    'Teak':'teak1.jpg',\
-                    'Walnut':'black-walnut-sealed.jpg'}
+OPTIONS['woods'] = {'Birch':'paper-birch.png',\
+                    'Cedar':'aromatic-red-cedar.png',\
+                    'Cherry':'black-cherry-sealed.png',\
+                    'Cypress':'cypress.png',\
+                    'Douglas Fir':'douglas-fir1.png',\
+                    'Mahagony':'african-mahogany-sealed.png',\
+                    'Maple':'hard-maple.png',\
+                    'Oak (Red)':'red-oak.png',\
+                    'Oak (White)':'white-oak.png',\
+                    'Pine':'virginia-pine.png',\
+                    'Spruce':'sitka-spruce.png',\
+                    'Teak':'teak1.png',\
+                    'Walnut':'black-walnut-sealed.png'}
 
 # Set debug to True to turn on debugging.  This will print a lot of output to
 # stdout during a pyRouterJig session.  This option is typically only useful
