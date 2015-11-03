@@ -32,8 +32,7 @@ import utils
 import doc
 from options import OPTIONS
 
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+from PyQt4 import QtCore, QtGui
 #from PySide import QtCore, QtGui
 
 DEBUG = OPTIONS['debug']

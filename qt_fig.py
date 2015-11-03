@@ -30,8 +30,7 @@ from options import OPTIONS
 import router
 from utils import my_round
 
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+from PyQt4 import QtCore, QtGui
 #from PySide import QtCore, QtGui
 
 def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
