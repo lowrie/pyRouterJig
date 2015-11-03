@@ -14,12 +14,17 @@ a = Analysis(['pyRouterJig.py'],
              win_private_assemblies=None,
              cipher=block_cipher)
 
+# Explicitly add libraries that pyinstaller misses
 a.binaries += [('libQtCore.4.dylib', '/anaconda/lib/libQtCore.4.dylib', 'BINARY') ]
 a.binaries += [('libQtGui.4.dylib', '/anaconda/lib/libQtGui.4.dylib', 'BINARY') ]
 a.binaries += [('libpng16.16.dylib', '/anaconda/lib/libpng16.16.dylib', 'BINARY') ]
 
+# Remove various unused files from distribution
+a.datas = [x for x in a.datas if not x[0].endswith('.pyc')]
 a.datas = [x for x in a.datas if not x[0].startswith('.git')]
 a.datas = [x for x in a.datas if not x[0].startswith('woods')]
+a.datas = [x for x in a.datas if not x[0].startswith('icons')]
+# doc is different, because we need doc.py:
 a.datas = [x for x in a.datas if os.path.dirname(x[1]).find('doc') < 0]
 
 pyz = PYZ(a.pure, a.zipped_data,
