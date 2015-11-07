@@ -94,49 +94,60 @@ class Router_Bit(object):
         '''
         Sets the width from the string s, following requirements from units.string_to_intervals().
         '''
-        msg = 'Bit width is "%s".  Set to a postive value.'
+        msg = 'Bit width is %s\n' % s
+        if self.units.metric:
+            msg += 'Set to an even positive integer value, such as 6'
+        else:
+            msg += 'Set to a positive value, such as 1/2'
         try:
             self.width = self.units.string_to_intervals(s)
         except ValueError as e:
-            msg = 'ValueError setting bit width: %s\n' % (e) + \
-                  msg % s
+            msg = 'ValueError setting bit width: %s\n\n' % (e) + msg
             raise Router_Exception(msg)
         except:
             raise
         if self.width <= 0:
-            raise Router_Exception(msg % s)
+            raise Router_Exception(msg)
+        self.halfwidth = self.width // 2
+        if 2 * self.halfwidth != self.width:
+            pmsg = 'Bit width must be an even number of intervals.\n'
+            if not self.units.metric:
+                pmsg += 'The interval size is 1/%d"\n\n' % self.units.intervals_per_inch
+            raise Router_Exception(pmsg + msg)
         self.reinit()
     def set_depth_from_string(self, s):
         '''
         Sets the depth from the string s, following requirements from units.string_to_intervals().
         '''
-        msg = 'Bit depth is "%s".  Set to a postive value.'
+        msg = 'Bit depth is %s\n' % s
+        if self.units.metric:
+            msg += 'Set to a positive integer value, such as 5'
+        else:
+            msg += 'Set to a positive value, such as 3/4'
         try:
             self.depth = self.units.string_to_intervals(s)
         except ValueError as e:
-            msg = 'ValueError setting bit depth: %s\n' % (e) + \
-                  msg % s
+            msg = 'ValueError setting bit depth: %s\n\n' % (e) + msg
             raise Router_Exception(msg)
         except:
             raise
         if self.depth <= 0:
-            raise Router_Exception(msg % s)
+            raise Router_Exception(msg)
         self.reinit()
     def set_angle_from_string(self, s):
         '''
         Sets the angle from the string s, where s represents a floating point number.
         '''
-        msg = 'Bit angle is "%s".  Set to zero or a postive value.'
+        msg = 'Bit angle is %s\nSet to zero or a positive floating-point value, such as 7.5' % s
         try:
             self.angle = float(s)
         except ValueError as e:
-            msg = 'ValueError setting bit angle: %s\n' % (e) + \
-                  msg % s
+            msg = 'ValueError setting bit angle: %s\n\n' % (e) + msg
             raise Router_Exception(msg)
         except:
             raise
         if self.angle < 0:
-            raise Router_Exception(msg % s)
+            raise Router_Exception(msg)
         self.reinit()
     def reinit(self):
         '''
@@ -144,8 +155,6 @@ class Router_Bit(object):
         and angle.
         '''
         self.halfwidth = self.width // 2
-        if 2 * self.halfwidth != self.width:
-            raise Router_Exception('Router-bit width must be an even number of intervals!')
         self.offset = 0 # ensure exactly 0 for angle == 0
         if self.angle > 0:
             self.offset = self.depth * math.tan(self.angle * math.pi / 180)
@@ -153,7 +162,7 @@ class Router_Bit(object):
     def scale(self, s):
         '''Scales dimensions by the factor s'''
         self.width = my_round(self.width * s)
-        self.width += self.width % 2
+        self.width += self.width % 2 # ensure even
         self.depth = my_round(self.depth * s)
         self.reinit()
     def change_units(self, new_units):
@@ -162,7 +171,7 @@ class Router_Bit(object):
         if s == 1:
             return
         self.width = my_round(self.width * s)
-        self.width += self.width % 2
+        self.width += self.width % 2 # ensure even
         self.depth = my_round(self.depth * s)
         self.units = new_units
         self.reinit()
@@ -230,17 +239,20 @@ class Board(My_Rectangle):
         '''
         Sets the width from the string s, following requirements from units.string_to_intervals().
         '''
-        msg = 'Board width is "%s".  Set to a postive value.'
+        msg = 'Board width is %s\n' % s
+        if self.units.metric:
+            msg += 'Set to a postive integer value, such as 52'
+        else:
+            msg += 'Set to a postive value, such as 7 1/2'
         try:
             self.width = self.units.string_to_intervals(s)
         except ValueError as e:
-            msg = 'ValueError setting board width: %s\n' % (e) + \
-                  msg % s
+            msg = 'ValueError setting board width: %s\n\n' % (e) + msg
             raise Router_Exception(msg)
         except:
             raise
         if self.width <= 0:
-            raise Router_Exception(msg % s)
+            raise Router_Exception(msg)
     def set_height(self, bit):
         '''
         Sets the height from the router bit depth of cut

@@ -24,7 +24,8 @@ Contains the main driver, using pySide or pyQt.
 from __future__ import print_function
 from builtins import str
 
-import os, sys, traceback
+import os, sys, traceback, webbrowser
+
 import qt_fig
 import router
 import spacing
@@ -90,7 +91,10 @@ class Driver(QtGui.QMainWindow):
             return
 
         self.except_handled = True
-        tmp = traceback.format_exception(etype, value, trace)
+        if DEBUG:
+            tmp = traceback.format_exception(etype, value, trace)
+        else:
+            tmp = traceback.format_exception_only(etype, value)
         exception = '\n'.join(tmp)
 
         QtGui.QMessageBox.warning(self, 'Error', exception)
@@ -162,6 +166,11 @@ class Driver(QtGui.QMainWindow):
         about_action.setStatusTip('About this program')
         about_action.triggered.connect(self._on_about)
         self.help_menu.addAction(about_action)
+
+        doclink_action = QtGui.QAction('&Dccumentation', self)
+        doclink_action.setStatusTip('Opens documentation page in web browser')
+        doclink_action.triggered.connect(self._on_doclink)
+        self.help_menu.addAction(doclink_action)
 
     def create_widgets(self):
         '''
@@ -633,6 +642,14 @@ class Driver(QtGui.QMainWindow):
         box.setText(s + self.doc.short_desc() + self.doc.license())
         box.setTextFormat(QtCore.Qt.RichText)
         box.show()
+
+    @QtCore.pyqtSlot()
+    def _on_doclink(self):
+        '''Handles doclink event'''
+        if DEBUG:
+            print('_on_doclink')
+
+        webbrowser.open('http://lowrie.github.io/pyRouterJig/documentation.html')
 
     @QtCore.pyqtSlot()
     def _on_units(self):

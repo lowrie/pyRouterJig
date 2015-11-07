@@ -82,6 +82,7 @@ class Qt_Fig(object):
     '''
     def __init__(self, template, board):
         self.canvas = Qt_Plotter(template, board)
+        self.transform = None
     def draw(self, template, board, bit, spacing):
         '''
         Draws the template and boards
@@ -226,6 +227,7 @@ class Qt_Plotter(QtGui.QWidget):
             painter.translate(0, window_height)
             scale = float(dpi) / self.geom.board.units.intervals_per_inch
         painter.scale(scale, -scale)
+        self.transform = painter.transform()
 
         painter.setPen(QtCore.Qt.black)
 
@@ -338,3 +340,10 @@ class Qt_Plotter(QtGui.QWidget):
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         p = (self.geom.board_T.xMid(), self.margins.bottom)
         paint_text(painter, title, p, flags, (0, 5))
+
+    def mousePressEvent(self, QMouseEvent):
+        pos = QMouseEvent.pos()
+        (inverted, invertable) = self.transform.inverted()
+        posM = inverted.map(pos)
+        #print('posM', posM)
+
