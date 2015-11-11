@@ -76,10 +76,7 @@ class Base_Spacing(object):
         self.cuts = []
         self.full_labels = []
     def get_params(self):
-        '''Returns a list of Spacing_Params the control the algoritm.'''
-        pass
-    def set_cuts(self, units, values=None):
-        '''Computes the attributes "cuts" and "full_labels".'''
+        '''Returns a list of Spacing_Params that control the algoritm.'''
         pass
 
 class Equally_Spaced(Base_Spacing):
@@ -106,7 +103,7 @@ class Equally_Spaced(Base_Spacing):
         p2 = Spacing_Param(self.bit.width, self.board.width // 2, self.bit.width)
         p3 = Spacing_Param(None, None, True)
         return [p1, p2, p3]
-    def set_cuts(self, units, values=None):
+    def set_cuts(self, values=None):
         if values is not None:
             b_spacing = values[0]
             width = values[1]
@@ -115,6 +112,7 @@ class Equally_Spaced(Base_Spacing):
             b_spacing = 0
             width = self.bit.width
             centered = True
+        units = self.bit.units
         label = units.intervals_to_string(2 * width + b_spacing, True)
         self.full_labels = ['B-spacing: ' + label,\
                             'Width: ' + units.intervals_to_string(width, True),\
@@ -192,12 +190,13 @@ class Variable_Spaced(Base_Spacing):
     def get_params(self):
         p1 = Spacing_Param(self.mMin, self.mMax, self.mDefault)
         return [p1]
-    def set_cuts(self, units, values=None):
+    def set_cuts(self, values=None):
         # set the number of fingers, m
         if values is not None:
             m = values[0]
         else:
             m = self.mDefault
+        units = self.bit.units
         self.full_labels = ['Fingers: %d' % m]
         self.description = 'Variable Spaced (' + self.full_labels[0] + ')'
         # c is the ideal center-cut width
@@ -249,3 +248,33 @@ class Variable_Spaced(Base_Spacing):
             do_cut = (not do_cut)
         # sort the cuts in increasing x
         self.cuts = sorted(self.cuts, key=attrgetter('xmin'))
+
+class Custom_Spaced(Base_Spacing):
+    '''
+    Allows for user to interactively set the cuts.
+
+    Parameters that control the spacing are:
+
+    b_spacing: Extra spacing, beyond the bit width  added between the fingers
+               of the B-board.  Default is 0.  The reported b_spacing has the
+               bit width added on to this value.
+
+    width: Width of fingers.  Default is the bit width.
+    '''
+    labels = ['B-spacing', 'Width']
+    def __init__(self, bit, board):
+        Base_Spacing.__init__(self, bit, board)
+    def get_params(self):
+        p1 = Spacing_Param(0, self.board.width // 4, 0)
+        p2 = Spacing_Param(self.bit.width, self.board.width // 2, self.bit.width)
+        return [p1, p2]
+    def set_cuts(self, cuts):
+        self.cuts = cuts
+        units = self.bit.units
+        b_spacing = 0
+        width = self.bit.width
+        label = units.intervals_to_string(2 * width + b_spacing, True)
+        self.full_labels = ['B-spacing: ' + label,\
+                            'Width: ' + units.intervals_to_string(width, True),\
+                            'Centered']
+        self.description = 'Custom spacing'
