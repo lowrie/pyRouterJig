@@ -85,6 +85,9 @@ class Driver(QtGui.QMainWindow):
         # We form the screenshot filename from this index
         self.screenshot_index = 0
 
+        self.control_key = False
+        self.shift_key = False
+
     def exception_hook(self, etype, value, trace):
         '''
         Handler for all exceptions.
@@ -548,8 +551,8 @@ class Driver(QtGui.QMainWindow):
             print('_on_tabs_spacing')
         self.reinit_spacing()
         self.draw()
-        self.flash_status_message('Changed to spacing algorithm %s'\
-                                  % str(self.tabs_spacing.tabText(index)))
+        self.status_message('Changed to spacing algorithm %s'\
+                            % str(self.tabs_spacing.tabText(index)))
         self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -571,7 +574,7 @@ class Driver(QtGui.QMainWindow):
             self.bit.set_width_from_string(text)
             self.reinit_spacing()
             self.draw()
-            self.flash_status_message('Changed bit width to ' + text)
+            self.status_message('Changed bit width to ' + text)
             self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -585,7 +588,7 @@ class Driver(QtGui.QMainWindow):
             self.bit.set_depth_from_string(text)
             self.board.set_height(self.bit)
             self.draw()
-            self.flash_status_message('Changed bit depth to ' + text)
+            self.status_message('Changed bit depth to ' + text)
             self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -599,7 +602,7 @@ class Driver(QtGui.QMainWindow):
             self.bit.set_angle_from_string(text)
             self.reinit_spacing()
             self.draw()
-            self.flash_status_message('Changed bit angle to ' + text)
+            self.status_message('Changed bit angle to ' + text)
             self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -613,7 +616,7 @@ class Driver(QtGui.QMainWindow):
             self.board.set_width_from_string(text)
             self.reinit_spacing()
             self.draw()
-            self.flash_status_message('Changed board width to ' + text)
+            self.status_message('Changed board width to ' + text)
             self.file_saved = False
 
     @QtCore.pyqtSlot(int)
@@ -625,7 +628,7 @@ class Driver(QtGui.QMainWindow):
         self.equal_spacing.set_cuts(self.es_cut_values)
         self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
         self.draw()
-        self.flash_status_message('Changed slider %s' % str(self.es_slider0_label.text()))
+        self.status_message('Changed slider %s' % str(self.es_slider0_label.text()))
         self.file_saved = False
 
     @QtCore.pyqtSlot(int)
@@ -637,7 +640,7 @@ class Driver(QtGui.QMainWindow):
         self.equal_spacing.set_cuts(self.es_cut_values)
         self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
         self.draw()
-        self.flash_status_message('Changed slider %s' % str(self.es_slider1_label.text()))
+        self.status_message('Changed slider %s' % str(self.es_slider1_label.text()))
         self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -649,9 +652,9 @@ class Driver(QtGui.QMainWindow):
         self.equal_spacing.set_cuts(self.es_cut_values)
         self.draw()
         if self.es_cut_values[2]:
-            self.flash_status_message('Checked Centered.')
+            self.status_message('Checked Centered.')
         else:
-            self.flash_status_message('Unchecked Centered.')
+            self.status_message('Unchecked Centered.')
         self.file_saved = False
 
     @QtCore.pyqtSlot(int)
@@ -663,7 +666,7 @@ class Driver(QtGui.QMainWindow):
         self.var_spacing.set_cuts(self.vs_cut_values)
         self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
         self.draw()
-        self.flash_status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
+        self.status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
         self.file_saved = False
 
     @QtCore.pyqtSlot(int)
@@ -675,7 +678,7 @@ class Driver(QtGui.QMainWindow):
 #        self.custom_spacing.set_cuts(self.cs_cut_values)
         self.cs_slider0_label.setText(self.equal_custom.full_labels[0])
         self.draw()
-        self.flash_status_message('Changed slider %s' % str(self.cs_slider0_label.text()))
+        self.status_message('Changed slider %s' % str(self.cs_slider0_label.text()))
         self.file_saved = False
 
     @QtCore.pyqtSlot(int)
@@ -687,7 +690,7 @@ class Driver(QtGui.QMainWindow):
 #        self.custom_spacing.set_cuts(self.cs_cut_values)
         self.cs_slider1_label.setText(self.custom_spacing.full_labels[1])
         self.draw()
-        self.flash_status_message('Changed slider %s' % str(self.cs_slider1_label.text()))
+        self.status_message('Changed slider %s' % str(self.cs_slider1_label.text()))
         self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -698,9 +701,9 @@ class Driver(QtGui.QMainWindow):
 
         r = self.fig.print(self.template, self.board, self.bit, self.spacing)
         if r:
-            self.flash_status_message("Figure printed")
+            self.status_message("Figure printed")
         else:
-            self.flash_status_message("Figure not printed")
+            self.status_message("Figure not printed")
 
     @QtCore.pyqtSlot()
     def _on_screenshot(self):
@@ -711,7 +714,7 @@ class Driver(QtGui.QMainWindow):
         filename = os.path.join(self.working_dir,
                                 'screenshot_%d.%s' % (self.screenshot_index, filetype))
         QtGui.QPixmap.grabWindow(self.winId()).save(filename, filetype)
-        self.flash_status_message("Saved screenshot to %s" % filename)
+        self.status_message("Saved screenshot to %s" % filename)
         self.screenshot_index += 1
 
     @QtCore.pyqtSlot()
@@ -785,7 +788,7 @@ class Driver(QtGui.QMainWindow):
         self.board.set_icon(self.wood_dir + WOODS[wood])
         self.draw()
 
-    def flash_status_message(self, msg, flash_len_ms=None):
+    def status_message(self, msg, flash_len_ms=None):
         '''Flashes a status message to the status bar'''
         self.statusbar.showMessage(msg)
         if flash_len_ms is not None:
@@ -808,6 +811,60 @@ class Driver(QtGui.QMainWindow):
         self._on_exit()
         event.ignore()
 
+    def keyPressEvent(self, event):
+        # return if not custom spacing
+        if self.tabs_spacing.currentIndex() != 2:
+            event.ignore()
+            return
+        
+        msg = None
+        if event.key() == QtCore.Qt.Key_Shift:
+            self.shift_key = True
+        elif event.key() == QtCore.Qt.Key_Control:
+            self.control_key = True
+        elif event.key() == QtCore.Qt.Key_Left:
+            if self.shift_key:
+                msg = self.spacing.finger_widen_left()
+            elif self.control_key:
+                msg = self.spacing.finger_trim_left()
+            else:
+                msg = self.spacing.finger_shift_left()
+            self.draw()
+        elif event.key() == QtCore.Qt.Key_Right:
+            if self.shift_key:
+                msg = self.spacing.finger_widen_right()
+            elif self.control_key:
+                msg = self.spacing.finger_trim_right()
+            else:
+                msg = self.spacing.finger_shift_right()
+            self.draw()
+        elif event.key() == QtCore.Qt.Key_Space:
+            msg = self.spacing.finger_increment_active()
+            self.draw()
+        elif event.key() == QtCore.Qt.Key_Backspace:
+            msg = self.spacing.finger_delete_active()
+            self.draw()
+        elif event.key() == QtCore.Qt.Key_Plus:
+            msg = self.spacing.finger_add()
+            self.draw()
+        else:
+            msg = 'You pressed an unrecognized key: %x' % event.key()
+        if msg is not None:
+            self.status_message(msg)
+
+    def keyReleaseEvent(self, event):
+        # return if not custom spacing
+        if self.tabs_spacing.currentIndex() != 2:
+            event.ignore()
+            return
+            
+        if event.key() == QtCore.Qt.Key_Shift:
+            self.shift_key = False
+        elif event.key() == QtCore.Qt.Key_Control:
+            self.control_key = False
+        else:
+            if DEBUG:
+                print('you released %x' % event.key())
 
 def run():
     '''
@@ -823,4 +880,3 @@ def run():
 
 if __name__ == '__main__':
     run()
-

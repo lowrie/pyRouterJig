@@ -195,7 +195,10 @@ class Qt_Plotter(QtGui.QWidget):
         size = self.size()
         # on the screen, we add a background color:
         painter.fillRect(0, 0, size.width(), size.height(), self.background)
+        # paint all of the objects
         self.window_width, self.window_height = self.paint_all(painter)
+        # on the screen, highlight a finger
+        self.draw_finger(painter)
         painter.end()
     def paint_all(self, painter, dpi=None):
         '''
@@ -290,7 +293,12 @@ class Qt_Plotter(QtGui.QWidget):
         pen = QtGui.QPen(QtCore.Qt.black)
         pen.setWidthF(0)
         painter.setPen(pen)
-        painter.setBrush(QtGui.QBrush(QtGui.QPixmap(':' + self.geom.board.icon)))
+        brush = QtGui.QBrush(QtCore.Qt.black, \
+                             QtCore.Qt.DiagCrossPattern)
+        (inverted, invertable) = self.transform.inverted()
+        brush.setMatrix(inverted.toAffine())
+#        brush = QtGui.QBrush(QtGui.QPixmap(':' + self.geom.board.icon))
+        painter.setBrush(brush)
         n = len(x)
         poly = QtGui.QPolygon()
         for i in lrange(n):
@@ -319,7 +327,35 @@ class Qt_Plotter(QtGui.QWidget):
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         p = (self.geom.board_B.xMid(), self.geom.board_B.yB)
         paint_text(painter, 'B', p, flags, (0, -3), fill=self.background)
-
+    def draw_finger(self, painter):
+        '''
+        If the spacing supports it, highlight its respective finger and
+        draw its limits
+        '''
+        iFinger = self.geom.spacing.active_finger
+        if iFinger is None:
+            return
+        painter.save()
+        # highlight the finger rectangle
+        c = self.geom.aCuts[iFinger]
+        x = self.geom.board_B.xL + c.xmin
+        y = self.geom.board_B.yT() - self.geom.bit.depth
+        w = c.xmax - c.xmin
+        h = self.geom.bit.depth
+        painter.setPen(QtCore.Qt.red)
+        brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 100))
+        painter.fillRect(x, y, w, h, brush)
+        painter.drawRect(x, y, w, h)
+        # draw the limits
+        (xmin, xmax) = self.geom.spacing.get_limits()
+        xmin += self.geom.board_B.xL
+        xmax += self.geom.board_B.xL
+        yB = self.geom.board_B.yB
+        yT = self.geom.board_B.yT()
+        painter.setPen(QtCore.Qt.green)
+        painter.drawLine(xmin, yB, xmin, yT)
+        painter.drawLine(xmax, yB, xmax, yT)
+        painter.restore()
     def draw_title(self, painter):
         '''
         Draws the title
