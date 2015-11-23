@@ -400,19 +400,22 @@ class Custom_Spaced(Base_Spacing):
         '''
         index = None
         if self.cuts[0].xmin > self.bit.width:
-            print('add at left')
+            if OPTIONS['debug']:
+                print('add at left')
             index = 0
             xmin = 0
             xmax = self.cuts[0].xmin - self.bit.width
         for i in lrange(1, len(self.cuts)):
             if self.cuts[i].xmin - self.cuts[i - 1].xmax >= 3 * self.bit.width:
-                print('add in finger')
+                if OPTIONS['debug']:
+                    print('add in finger')
                 index = i
                 xmin = self.cuts[i - 1].xmax + self.bit.width
                 xmax = xmin + self.bit.width
                 break
             elif self.cuts[i].xmax - self.cuts[i].xmin >= 3 * self.bit.width:
-                print('add in cut')
+                if OPTIONS['debug']:
+                    print('add in cut')
                 index = i + 1
                 xmin = self.cuts[i].xmax - self.bit.width
                 xmax = self.cuts[i].xmax
@@ -420,7 +423,8 @@ class Custom_Spaced(Base_Spacing):
                 break
         if index is None and \
            self.cuts[-1].xmax < self.board.width - self.bit.width:
-            print('add at right')
+            if OPTIONS['debug']:
+                print('add at right')
             index = len(self.cuts)
             xmax = self.board.width
             xmin = xmax - self.bit.width

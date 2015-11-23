@@ -293,37 +293,7 @@ class Driver(QtGui.QMainWindow):
 
         params = self.custom_spacing.get_params()
         labels = self.custom_spacing.full_labels
-        self.cs_cut_values = [0] * 2
-
-        # ...first slider
-        p = params[0]
-        self.cs_cut_values[0] = p.vInit
-        self.cs_slider0_label = QtGui.QLabel(labels[0])
-        self.cs_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
-        self.cs_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.cs_slider0.setMinimum(p.vMin)
-        self.cs_slider0.setMaximum(p.vMax)
-        self.cs_slider0.setValue(p.vInit)
-        self.cs_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
-        if p.vMax - p.vMin < 10:
-            self.cs_slider0.setTickInterval(1)
-        self.cs_slider0.valueChanged.connect(self._on_cs_slider0)
-        self.cs_slider0.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
-
-        # ...second slider
-        p = params[1]
-        self.cs_cut_values[1] = p.vInit
-        self.cs_slider1_label = QtGui.QLabel(labels[1])
-        self.cs_slider1 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
-        self.cs_slider1.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.cs_slider1.setMinimum(p.vMin)
-        self.cs_slider1.setMaximum(p.vMax)
-        self.cs_slider1.setValue(p.vInit)
-        self.cs_slider1.setTickPosition(QtGui.QSlider.TicksBelow)
-        if p.vMax - p.vMin < 10:
-            self.cs_slider1.setTickInterval(1)
-        self.cs_slider1.valueChanged.connect(self._on_cs_slider1)
-        self.cs_slider1.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.cs_cut_values = []
 
         self.set_tooltips()
 
@@ -414,16 +384,6 @@ class Driver(QtGui.QMainWindow):
 
         # Create the layout of the custom spacing controls
         self.hbox_cs = QtGui.QHBoxLayout()
-
-        self.vbox_cs_slider0 = QtGui.QVBoxLayout()
-        self.vbox_cs_slider0.addWidget(self.cs_slider0_label)
-        self.vbox_cs_slider0.addWidget(self.cs_slider0)
-        self.hbox_cs.addLayout(self.vbox_cs_slider0)
-
-        self.vbox_cs_slider1 = QtGui.QVBoxLayout()
-        self.vbox_cs_slider1.addWidget(self.cs_slider1_label)
-        self.vbox_cs_slider1.addWidget(self.cs_slider1)
-        self.hbox_cs.addLayout(self.vbox_cs_slider1)
 
         # Add the spacing layouts as Tabs
         self.tabs_spacing = QtGui.QTabWidget()
@@ -524,22 +484,6 @@ class Driver(QtGui.QMainWindow):
             self.custom_spacing = spacing.Custom_Spaced(self.bit, self.board)
             self.custom_spacing.set_cuts(self.spacing.cuts)
             params = self.custom_spacing.get_params()
-            p = params[0]
-            self.cs_slider0.blockSignals(True)
-            self.cs_slider0.setMinimum(p.vMin)
-            self.cs_slider0.setMaximum(p.vMax)
-            self.cs_slider0.setValue(p.vInit)
-            self.cs_slider0.blockSignals(False)
-            self.cs_cut_values[0] = p.vInit
-            p = params[1]
-            self.cs_slider1.blockSignals(True)
-            self.cs_slider1.setMinimum(p.vMin)
-            self.cs_slider1.setMaximum(p.vMax)
-            self.cs_slider1.setValue(p.vInit)
-            self.cs_slider1.blockSignals(False)
-            self.cs_cut_values[1] = p.vInit
-            self.cs_slider0_label.setText(self.equal_spacing.full_labels[0])
-            self.cs_slider1_label.setText(self.equal_spacing.full_labels[1])
             self.spacing = self.custom_spacing
         else:
             raise ValueError('Bad value for spacing_index %d' % spacing_index)
@@ -667,30 +611,6 @@ class Driver(QtGui.QMainWindow):
         self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
         self.draw()
         self.status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
-        self.file_saved = False
-
-    @QtCore.pyqtSlot(int)
-    def _on_cs_slider0(self, value):
-        '''Handles changes to the custom-spaced slider B-spacing'''
-        if DEBUG:
-            print('_on_cs_slider0', value)
-        self.cs_cut_values[0] = value
-#        self.custom_spacing.set_cuts(self.cs_cut_values)
-        self.cs_slider0_label.setText(self.equal_custom.full_labels[0])
-        self.draw()
-        self.status_message('Changed slider %s' % str(self.cs_slider0_label.text()))
-        self.file_saved = False
-
-    @QtCore.pyqtSlot(int)
-    def _on_cs_slider1(self, value):
-        '''Handles changes to the custom-spaced slider Width'''
-        if DEBUG:
-            print('_on_cs_slider1', value)
-        self.cs_cut_values[1] = value
-#        self.custom_spacing.set_cuts(self.cs_cut_values)
-        self.cs_slider1_label.setText(self.custom_spacing.full_labels[1])
-        self.draw()
-        self.status_message('Changed slider %s' % str(self.cs_slider1_label.text()))
         self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -848,7 +768,12 @@ class Driver(QtGui.QMainWindow):
             msg = self.spacing.finger_add()
             self.draw()
         else:
-            msg = 'You pressed an unrecognized key: %x' % event.key()
+            msg = 'You pressed an unrecognized key: '
+            s = event.text()
+            if len(s) > 0:
+                msg += s
+            else:
+                msg += '%x' % event.key()
         if msg is not None:
             self.status_message(msg)
 
