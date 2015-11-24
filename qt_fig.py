@@ -295,11 +295,13 @@ class Qt_Plotter(QtGui.QWidget):
         pen = QtGui.QPen(QtCore.Qt.black)
         pen.setWidthF(0)
         painter.setPen(pen)
-        brush = QtGui.QBrush(QtCore.Qt.black, \
-                             QtCore.Qt.DiagCrossPattern)
-        (inverted, invertable) = self.transform.inverted()
-        brush.setMatrix(inverted.toAffine())
-#        brush = QtGui.QBrush(QtGui.QPixmap(':' + self.geom.board.icon))
+        if self.geom.board.icon is None:
+            brush = QtGui.QBrush(QtCore.Qt.black, \
+                                 QtCore.Qt.DiagCrossPattern)
+            (inverted, invertable) = self.transform.inverted()
+            brush.setMatrix(inverted.toAffine())
+        else:
+            brush = QtGui.QBrush(QtGui.QPixmap(':' + self.geom.board.icon))
         painter.setBrush(brush)
         n = len(x)
         poly = QtGui.QPolygon()

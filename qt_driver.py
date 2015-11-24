@@ -153,6 +153,7 @@ class Driver(QtGui.QMainWindow):
         self.wood_menu = self.menubar.addMenu('Wood')
         ag = QtGui.QActionGroup(self, exclusive=True)
         skeys = sorted(WOODS.keys())
+        skeys.append('NONE')
         self.wood_actions = {}
         for k in skeys:
             self.wood_actions[k] = QtGui.QAction(k, self, checkable=True)
@@ -705,7 +706,10 @@ class Driver(QtGui.QMainWindow):
             if v.isChecked():
                 wood = k
                 break
-        self.board.set_icon(self.wood_dir + WOODS[wood])
+        if wood == 'NONE':
+            self.board.set_icon(None)
+        else:
+            self.board.set_icon(self.wood_dir + WOODS[wood])
         self.draw()
 
     def status_message(self, msg, flash_len_ms=None):
