@@ -222,8 +222,8 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_angle.editingFinished.connect(self._on_bit_angle)
 
         # Save button
-        self.btn_print = QtGui.QPushButton('Print', self.main_frame)
-        self.btn_print.clicked.connect(self._on_print)
+        #self.btn_print = QtGui.QPushButton('Print', self.main_frame)
+        #self.btn_print.clicked.connect(self._on_print)
 
         # Equal spacing widgets
 
@@ -309,7 +309,7 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1.setToolTip(self.doc.es_slider1())
         self.cb_es_centered.setToolTip(self.doc.es_centered())
         self.vs_slider0.setToolTip(self.doc.vs_slider0())
-        self.btn_print.setToolTip('Print the figure')
+        #self.btn_print.setToolTip('Print the figure')
 
     def layout_widgets(self):
         '''
@@ -328,12 +328,12 @@ class Driver(QtGui.QMainWindow):
         self.hbox = QtGui.QHBoxLayout()
 
         # Add the board width label, board width input text box,
-        # and print button, all stacked vertically on the left side.
+        # all stacked vertically on the left side.
         self.vbox_board_width = QtGui.QVBoxLayout()
         self.vbox_board_width.addWidget(self.tb_board_width_label)
         self.vbox_board_width.addWidget(self.tb_board_width)
         self.vbox_board_width.addStretch(1)
-        self.vbox_board_width.addWidget(self.btn_print)
+#        self.vbox_board_width.addWidget(self.btn_print)
         self.hbox.addLayout(self.vbox_board_width)
 
         # Add the bit width label and its text box
@@ -732,6 +732,9 @@ class Driver(QtGui.QMainWindow):
         event.ignore()
 
     def keyPressEvent(self, event):
+        '''
+        Handles key press events
+        '''
         # return if not custom spacing
         if self.tabs_spacing.currentIndex() != 2:
             event.ignore()
@@ -778,6 +781,9 @@ class Driver(QtGui.QMainWindow):
             self.status_message(msg)
 
     def keyReleaseEvent(self, event):
+        '''
+        Handles key release events
+        '''
         # return if not custom spacing
         if self.tabs_spacing.currentIndex() != 2:
             event.ignore()

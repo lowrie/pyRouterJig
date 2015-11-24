@@ -103,7 +103,8 @@ class Qt_Plotter(QtGui.QWidget):
         self.fig_width = -1
         self.fig_height = -1
         self.set_fig_dimensions(template, board)
-        # if subsequent passes are less than this value, don't label the pass (in intervals)
+        # if subsequent passes are less than this value, don't label
+        # the pass (in intervals)
         self.sep_annotate = 4
         self.geom = None
         self.background = QtGui.QBrush(QtGui.QColor(240, 231, 201))
@@ -238,6 +239,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.draw_template(painter)
         self.draw_boards(painter)
         self.draw_title(painter)
+        self.draw_finger_sizes(painter)
 
         return (window_width, window_height)
     def draw_template(self, painter):
@@ -377,9 +379,38 @@ class Qt_Plotter(QtGui.QWidget):
         p = (self.geom.board_T.xMid(), self.margins.bottom)
         paint_text(painter, title, p, flags, (0, 5))
 
+    def draw_finger_sizes(self, painter):
+        '''
+        Annotates the finger sizes on each board
+        '''
+        # Draw the router passes
+        # ... do the B fingers, which correspond to a-Cuts
+        flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
+        shift = (0, 8)
+        for c in self.geom.aCuts:
+            x = self.geom.board_B.xL + (c.xmin + c.xmax) // 2
+            y = self.geom.board_B.yT()
+            label = '%d' % (c.xmax - c.xmin)
+            p = (x, y)
+            paint_text(painter, label, p, flags, shift, fill=self.background)
+        # ... do the A fingers, which correspond to b-Cuts
+        flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
+        shift = (0, -8)
+        for c in self.geom.bCuts:
+            x = self.geom.board_A.xL + (c.xmin + c.xmax) // 2
+            y = self.geom.board_A.yB
+            label = '%d' % (c.xmax - c.xmin)
+            p = (x, y)
+            paint_text(painter, label, p, flags, shift, fill=self.background)
+
     def mousePressEvent(self, QMouseEvent):
-        pos = QMouseEvent.pos()
+        '''
+        This is a placeholder for mouse events, and maps the clicked
+        coordinate to the interval coordinate system.
+        '''
+        pos = QMouseEvent.pos() # in pixel coordinates
         (inverted, invertable) = self.transform.inverted()
+        # map pixel coordinates to interval coords
         posM = inverted.map(pos)
         #print('posM', posM)
 

@@ -288,7 +288,7 @@ class Custom_Spaced(Base_Spacing):
         xmax = self.board.width
         if self.active_finger > 0:
             xmin = self.cuts[self.active_finger - 1].xmax + self.bit.width
-        if self.active_finger < len(self.cuts) - 2:
+        if self.active_finger < len(self.cuts) - 1:
             xmax = self.cuts[self.active_finger + 1].xmin - self.bit.width
         return (xmin, xmax)
     def finger_shift_left(self):
