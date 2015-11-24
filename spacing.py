@@ -371,13 +371,13 @@ class Custom_Spaced(Base_Spacing):
             c.xmax -= 1
             self.cuts[self.active_finger] = c
             return 'Trimmed finger on right 1 interval'
-    def finger_increment_active(self):
+    def finger_increment_active(self, i):
         '''
         Sets the active finger to the finger to the right, unless already
         at the last finger, in which case the active finger is cycled back
         to the first finger on the left.
         '''
-        self.active_finger = (self.active_finger + 1) % len(self.cuts)
+        self.active_finger = (self.active_finger + i) % len(self.cuts)
         return 'Switched active finger'
     def finger_delete_active(self):
         '''

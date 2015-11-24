@@ -87,6 +87,7 @@ class Driver(QtGui.QMainWindow):
 
         self.control_key = False
         self.shift_key = False
+        self.alt_key = False
 
     def exception_hook(self, etype, value, trace):
         '''
@@ -749,11 +750,15 @@ class Driver(QtGui.QMainWindow):
             self.shift_key = True
         elif event.key() == QtCore.Qt.Key_Control:
             self.control_key = True
+        elif event.key() == QtCore.Qt.Key_Alt:
+            self.alt_key = True
         elif event.key() == QtCore.Qt.Key_Left:
             if self.shift_key:
                 msg = self.spacing.finger_widen_left()
             elif self.control_key:
                 msg = self.spacing.finger_trim_left()
+            elif self.alt_key:
+                msg = self.spacing.finger_increment_active(-1)
             else:
                 msg = self.spacing.finger_shift_left()
             self.draw()
@@ -762,11 +767,10 @@ class Driver(QtGui.QMainWindow):
                 msg = self.spacing.finger_widen_right()
             elif self.control_key:
                 msg = self.spacing.finger_trim_right()
+            elif self.alt_key:
+                msg = self.spacing.finger_increment_active(1)
             else:
                 msg = self.spacing.finger_shift_right()
-            self.draw()
-        elif event.key() == QtCore.Qt.Key_Space:
-            msg = self.spacing.finger_increment_active()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Backspace:
             msg = self.spacing.finger_delete_active()
@@ -797,6 +801,8 @@ class Driver(QtGui.QMainWindow):
             self.shift_key = False
         elif event.key() == QtCore.Qt.Key_Control:
             self.control_key = False
+        elif event.key() == QtCore.Qt.Key_Alt:
+            self.alt_key = False
         else:
             if DEBUG:
                 print('you released %x' % event.key())
