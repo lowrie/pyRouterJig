@@ -286,10 +286,11 @@ class Custom_Spaced(Base_Spacing):
     def get_limits(self):
         xmin = 0
         xmax = self.board.width
+        neck_width = my_round(self.bit.neck)
         if self.active_finger > 0:
-            xmin = self.cuts[self.active_finger - 1].xmax + self.bit.width
+            xmin = self.cuts[self.active_finger - 1].xmax + neck_width
         if self.active_finger < len(self.cuts) - 1:
-            xmax = self.cuts[self.active_finger + 1].xmin - self.bit.width
+            xmax = self.cuts[self.active_finger + 1].xmin - neck_width
         return (xmin, xmax)
     def finger_shift_left(self):
         '''
@@ -398,6 +399,7 @@ class Custom_Spaced(Base_Spacing):
         Adds a finger to the first location possible, searching from the left.
         The active finger is set the the new finger.
         '''
+        neck_width = my_round(self.bit.neck)
         index = None
         if self.cuts[0].xmin > self.bit.width:
             if OPTIONS['debug']:
@@ -405,15 +407,17 @@ class Custom_Spaced(Base_Spacing):
             index = 0
             xmin = 0
             xmax = self.cuts[0].xmin - self.bit.width
+        wadd = 2 * self.bit.width + neck_width
+        wdelta = self.bit.width - neck_width
         for i in lrange(1, len(self.cuts)):
-            if self.cuts[i].xmin - self.cuts[i - 1].xmax >= 3 * self.bit.width:
+            if self.cuts[i].xmin - self.cuts[i - 1].xmax + wdelta >= wadd:
                 if OPTIONS['debug']:
                     print('add in finger')
                 index = i
-                xmin = self.cuts[i - 1].xmax + self.bit.width
+                xmin = self.cuts[i - 1].xmax + neck_width
                 xmax = xmin + self.bit.width
                 break
-            elif self.cuts[i].xmax - self.cuts[i].xmin >= 3 * self.bit.width:
+            elif self.cuts[i].xmax - self.cuts[i].xmin >= wadd:
                 if OPTIONS['debug']:
                     print('add in cut')
                 index = i + 1

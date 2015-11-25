@@ -291,7 +291,7 @@ class Driver(QtGui.QMainWindow):
         self.vs_slider0.valueChanged.connect(self._on_vs_slider0)
         self.vs_slider0.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
-        # Custom spacing widgets
+        # Custom spacing widgets (nothing yet)
 
         params = self.custom_spacing.get_params()
         labels = self.custom_spacing.full_labels
@@ -439,6 +439,16 @@ class Driver(QtGui.QMainWindow):
         # The ordering of the index is the same order that the tabs
         # were created in create main frame
         spacing_index = self.tabs_spacing.currentIndex()
+
+        # if spacing_index == 2:
+        #     print('setting read only')
+        #     self.tb_bit_width.setReadOnly(False)
+        #     self.tb_bit_width.setFocusPolicy(QtCore.Qt.NoFocus)
+        # else:
+        #     print('unsetting read only')
+        #     self.tb_bit_width.setReadOnly(True)
+        #     self.tb_bit_width.setFocusPolicy(QtCore.Qt.StrongFocus)
+        #     self.tb_bit_width.setFocus()
 
         if spacing_index == 0:
             # do the equal spacing parameters.  Preserve the centered option.
