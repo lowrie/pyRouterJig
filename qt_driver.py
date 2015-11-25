@@ -60,8 +60,8 @@ class Driver(QtGui.QMainWindow):
         self.equal_spacing.set_cuts()
         self.var_spacing = spacing.Variable_Spaced(self.bit, self.board)
         self.var_spacing.set_cuts()
-        self.custom_spacing = spacing.Custom_Spaced(self.bit, self.board)
-        self.custom_spacing.set_cuts(self.equal_spacing.cuts)
+        self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board)
+        self.edit_spacing.set_cuts(self.equal_spacing.cuts)
         self.spacing = self.equal_spacing # the default
 
         # Create the main frame and menus
@@ -291,10 +291,10 @@ class Driver(QtGui.QMainWindow):
         self.vs_slider0.valueChanged.connect(self._on_vs_slider0)
         self.vs_slider0.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
-        # Custom spacing widgets (nothing yet)
+        # Edit spacing widgets (nothing yet)
 
-        params = self.custom_spacing.get_params()
-        labels = self.custom_spacing.full_labels
+        params = self.edit_spacing.get_params()
+        labels = self.edit_spacing.full_labels
         self.cs_cut_values = []
 
         self.set_tooltips()
@@ -384,7 +384,7 @@ class Driver(QtGui.QMainWindow):
         self.vbox_vs_slider0.addWidget(self.vs_slider0)
         self.hbox_vs.addLayout(self.vbox_vs_slider0)
 
-        # Create the layout of the custom spacing controls
+        # Create the layout of the edit spacing controls
         self.hbox_cs = QtGui.QHBoxLayout()
 
         # Add the spacing layouts as Tabs
@@ -397,7 +397,7 @@ class Driver(QtGui.QMainWindow):
         self.tabs_spacing.addTab(self.tab_vs, 'Variable')
         self.tab_cs = QtGui.QWidget()
         self.tab_cs.setLayout(self.hbox_cs)
-        self.tabs_spacing.addTab(self.tab_cs, 'Custom')
+        self.tabs_spacing.addTab(self.tab_cs, 'Editor')
         self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
         tip = 'These tabs specify the layout algorithm for the fingers.'
         self.tabs_spacing.setToolTip(tip)
@@ -440,16 +440,22 @@ class Driver(QtGui.QMainWindow):
         # were created in create main frame
         spacing_index = self.tabs_spacing.currentIndex()
 
-        # if spacing_index == 2:
-        #     print('setting read only')
-        #     self.tb_bit_width.setReadOnly(False)
-        #     self.tb_bit_width.setFocusPolicy(QtCore.Qt.NoFocus)
-        # else:
-        #     print('unsetting read only')
-        #     self.tb_bit_width.setReadOnly(True)
-        #     self.tb_bit_width.setFocusPolicy(QtCore.Qt.StrongFocus)
-        #     self.tb_bit_width.setFocus()
+        # enable/disable editing of line edit boxes, depending upon spacing
+        # algorithm
+        tbs = [self.tb_board_width, self.tb_bit_width, self.tb_bit_depth,\
+               self.tb_bit_angle]
+        if spacing_index == 2:
+            print('setting read only')
+            for tb in tbs:
+                tb.setEnabled(False)
+                tb.setStyleSheet("color: rgb(200, 200, 200);")
+        else:
+            print('unsetting read only')
+            for tb in tbs:
+                tb.setEnabled(True)
+                tb.setStyleSheet("color: rgb(0, 0, 0);")
 
+        # Set up the widgets for each spacing algorithm
         if spacing_index == 0:
             # do the equal spacing parameters.  Preserve the centered option.
             self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
@@ -492,11 +498,13 @@ class Driver(QtGui.QMainWindow):
             self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
             self.spacing = self.var_spacing
         elif spacing_index == 2:
-            # do the custom spacing parameters
-            self.custom_spacing = spacing.Custom_Spaced(self.bit, self.board)
-            self.custom_spacing.set_cuts(self.spacing.cuts)
-            params = self.custom_spacing.get_params()
-            self.spacing = self.custom_spacing
+            # Do the edit spacing parameters.  Currently, this has no
+            # parameters, and uses as a starting spacing whatever the previous
+            # spacing set.
+            self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board)
+            self.edit_spacing.set_cuts(self.spacing.cuts)
+            params = self.edit_spacing.get_params()
+            self.spacing = self.edit_spacing
         else:
             raise ValueError('Bad value for spacing_index %d' % spacing_index)
 
@@ -750,7 +758,7 @@ class Driver(QtGui.QMainWindow):
         '''
         Handles key press events
         '''
-        # return if not custom spacing
+        # return if not edit spacing
         if self.tabs_spacing.currentIndex() != 2:
             event.ignore()
             return
@@ -802,7 +810,7 @@ class Driver(QtGui.QMainWindow):
         '''
         Handles key release events
         '''
-        # return if not custom spacing
+        # return if not edit spacing
         if self.tabs_spacing.currentIndex() != 2:
             event.ignore()
             return

@@ -252,19 +252,11 @@ class Variable_Spaced(Base_Spacing):
         # sort the cuts in increasing x
         self.cuts = sorted(self.cuts, key=attrgetter('xmin'))
 
-class Custom_Spaced(Base_Spacing):
+class Edit_Spaced(Base_Spacing):
     '''
-    Allows for user to interactively set the cuts.
-
-    Parameters that control the spacing are:
-
-    b_spacing: Extra spacing, beyond the bit width  added between the fingers
-               of the B-board.  Default is 0.  The reported b_spacing has the
-               bit width added on to this value.
-
-    width: Width of fingers.  Default is the bit width.
+    Allows for user to interactively edit the cuts.
     '''
-    labels = ['B-spacing', 'Width']
+    labels = []
     def __init__(self, bit, board):
         Base_Spacing.__init__(self, bit, board)
         self.adjust_left = True
@@ -277,11 +269,8 @@ class Custom_Spaced(Base_Spacing):
         units = self.bit.units
         b_spacing = 0
         width = self.bit.width
-        label = units.intervals_to_string(2 * width + b_spacing, True)
-        self.full_labels = ['B-spacing: ' + label,\
-                            'Width: ' + units.intervals_to_string(width, True),\
-                            'Centered']
-        self.description = 'Custom spacing'
+        self.full_labels = []
+        self.description = 'Edit spacing'
         self.active_finger = 1
     def get_limits(self):
         xmin = 0
