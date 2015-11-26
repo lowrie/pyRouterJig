@@ -342,15 +342,21 @@ class Qt_Plotter(QtGui.QWidget):
         painter.save()
         # highlight the finger rectangle
         c = self.geom.aCuts[iFinger]
-        xL = self.geom.board_B.xL + c.xmin
-        xR = xL + c.xmax - c.xmin
+        xLT = self.geom.board_B.xL + c.xmin
+        xRT = xLT + c.xmax - c.xmin
+        xLB = xLT
+        xRB = xRT
+        if xLT > self.geom.board_B.xL:
+            xLB += self.geom.bit.offset
+        if xRT < self.geom.board_B.xR():
+            xRB -= self.geom.bit.offset
         yT = self.geom.board_B.yT()
         yB = yT - self.geom.bit.depth
         poly = QtGui.QPolygonF()
-        poly.append(QtCore.QPointF(xL, yT))
-        poly.append(QtCore.QPointF(xR, yT))
-        poly.append(QtCore.QPointF(xR - self.geom.bit.offset, yB))
-        poly.append(QtCore.QPointF(xL + self.geom.bit.offset, yB))
+        poly.append(QtCore.QPointF(xLT, yT))
+        poly.append(QtCore.QPointF(xRT, yT))
+        poly.append(QtCore.QPointF(xRB, yB))
+        poly.append(QtCore.QPointF(xLB, yB))
         brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 100))
         painter.setBrush(brush)
         painter.drawPolygon(poly)
