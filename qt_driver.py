@@ -223,10 +223,6 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_angle.setText('%g' % self.bit.angle)
         self.tb_bit_angle.editingFinished.connect(self._on_bit_angle)
 
-        # Save button
-        #self.btn_print = QtGui.QPushButton('Print', self.main_frame)
-        #self.btn_print.clicked.connect(self._on_print)
-
         # Equal spacing widgets
 
         params = self.equal_spacing.get_params()
@@ -295,7 +291,9 @@ class Driver(QtGui.QMainWindow):
 
         params = self.edit_spacing.get_params()
         labels = self.edit_spacing.full_labels
-        self.cs_cut_values = []
+        self.edit_cut_values = []
+        self.edit_btn_undo = QtGui.QPushButton('Undo', self.main_frame)
+        self.edit_btn_undo.clicked.connect(self._on_edit_undo)
 
         self.set_tooltips()
 
@@ -311,7 +309,7 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1.setToolTip(self.doc.es_slider1())
         self.cb_es_centered.setToolTip(self.doc.es_centered())
         self.vs_slider0.setToolTip(self.doc.vs_slider0())
-        #self.btn_print.setToolTip('Print the figure')
+        self.edit_btn_undo.setToolTip('Undo the last change')
 
     def layout_widgets(self):
         '''
@@ -335,7 +333,6 @@ class Driver(QtGui.QMainWindow):
         self.vbox_board_width.addWidget(self.tb_board_width_label)
         self.vbox_board_width.addWidget(self.tb_board_width)
         self.vbox_board_width.addStretch(1)
-#        self.vbox_board_width.addWidget(self.btn_print)
         self.hbox.addLayout(self.vbox_board_width)
 
         # Add the bit width label and its text box
@@ -386,6 +383,7 @@ class Driver(QtGui.QMainWindow):
 
         # Create the layout of the edit spacing controls
         self.hbox_cs = QtGui.QHBoxLayout()
+        self.hbox_cs.addWidget(self.edit_btn_undo)
 
         # Add the spacing layouts as Tabs
         self.tabs_spacing = QtGui.QTabWidget()
@@ -731,11 +729,14 @@ class Driver(QtGui.QMainWindow):
             self.board.set_icon(self.wood_dir + WOODS[wood])
         self.draw()
 
-    def status_message(self, msg, flash_len_ms=None):
-        '''Flashes a status message to the status bar'''
-        self.statusbar.showMessage(msg)
-        if flash_len_ms is not None:
-            QtCore.QTimer.singleShot(flash_len_ms, self._on_flash_status_off)
+    @QtCore.pyqtSlot()
+    def _on_edit_undo(self):
+        '''Handles undo event'''
+        if DEBUG:
+            print('_on_edit_undo')
+        self.spacing.undo()
+        self.statusbar.showMessage('Undo')
+        self.draw()
 
     @QtCore.pyqtSlot()
     def _on_flash_status_off(self):
@@ -743,6 +744,12 @@ class Driver(QtGui.QMainWindow):
         if DEBUG:
             print('_on_flash_status_off')
         self.statusbar.showMessage('')
+
+    def status_message(self, msg, flash_len_ms=None):
+        '''Flashes a status message to the status bar'''
+        self.statusbar.showMessage(msg)
+        if flash_len_ms is not None:
+            QtCore.QTimer.singleShot(flash_len_ms, self._on_flash_status_off)
 
     def closeEvent(self, event):
         '''

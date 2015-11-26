@@ -25,7 +25,7 @@ from __future__ import print_function
 from __future__ import division
 from future.utils import lrange
 
-from copy import deepcopy
+import copy
 from options import OPTIONS
 import router
 from utils import my_round
@@ -130,7 +130,7 @@ class Qt_Plotter(QtGui.QWidget):
         Returns True if the dimensions changed.
         '''
         # Try default margins, but reset if the template is too small for margins
-        self.margins = deepcopy(OPTIONS['margins'])
+        self.margins = copy.deepcopy(OPTIONS['margins'])
 
         # Set the figure dimensions
         fig_width = template.length + self.margins.left + self.margins.right

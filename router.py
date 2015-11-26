@@ -25,7 +25,7 @@ from __future__ import division
 from future.utils import lrange
 
 import math
-from copy import deepcopy
+import copy
 from utils import my_round
 
 class Router_Exception(Exception):
@@ -461,11 +461,11 @@ class Joint_Geometry(object):
                                     board.width, template.height)
 
         # Determine board-B coordinates
-        self.board_B = deepcopy(board)
+        self.board_B = copy.deepcopy(board)
         self.board_B.shift(self.board_T.xL, self.rect_T.yT() + margins.sep)
         (self.xB, self.yB) = board_coords(self.board_B, self.bCuts, bit, 'top')
 
         # Determine board-A coordinates
-        self.board_A = deepcopy(self.board_B)
+        self.board_A = copy.deepcopy(self.board_B)
         self.board_A.shift(0, board.height + margins.sep)
         (self.xA, self.yA) = board_coords(self.board_A, self.aCuts, bit, 'bottom')
