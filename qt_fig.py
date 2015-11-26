@@ -83,11 +83,13 @@ class Qt_Fig(object):
     def __init__(self, template, board):
         self.canvas = Qt_Plotter(template, board)
         self.transform = None
+
     def draw(self, template, board, bit, spacing):
         '''
         Draws the template and boards
         '''
         self.canvas.draw(template, board, bit, spacing)
+
     def print(self, template, board, bit, spacing):
         '''
         Prints the figure
@@ -108,16 +110,19 @@ class Qt_Plotter(QtGui.QWidget):
         self.sep_annotate = 4
         self.geom = None
         self.background = QtGui.QBrush(QtGui.QColor(240, 231, 201))
+
     def minimumSizeHint(self):
         '''
         Minimum size for this widget
         '''
         return QtCore.QSize(100, 100)
+
     def sizeHint(self):
         '''
         Size hint for this widget
         '''
         return QtCore.QSize(self.window_width, self.window_height)
+
     def set_fig_dimensions(self, template, board):
         '''
         Computes the figure dimension attributes, fig_width and fig_height, in
@@ -153,6 +158,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.window_height = int(scale * fig_height)
 
         return dimensions_changed
+
     def draw(self, template, board, bit, spacing):
         '''
         Draws the figure
@@ -161,6 +167,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.set_fig_dimensions(template, board)
         self.geom = router.Joint_Geometry(template, board, bit, spacing, self.margins)
         self.update()
+
     def print_fig(self, template, board, bit, spacing):
         '''
         Prints the figure
@@ -176,6 +183,7 @@ class Qt_Plotter(QtGui.QWidget):
         pdialog.setModal(True)
         pdialog.paintRequested.connect(self.preview_requested)
         return pdialog.exec_()
+
     def preview_requested(self, printer):
         '''
         Handles the print preview action.
@@ -185,6 +193,7 @@ class Qt_Plotter(QtGui.QWidget):
         painter.begin(printer)
         self.paint_all(painter, dpi)
         painter.end()
+
     def paintEvent(self, event):
         '''
         Handles the paint event, which draws to the screen
@@ -201,6 +210,7 @@ class Qt_Plotter(QtGui.QWidget):
         # on the screen, highlight the active fingers
         self.draw_active_fingers(painter)
         painter.end()
+
     def paint_all(self, painter, dpi=None):
         '''
         Paints all the objects.
@@ -242,6 +252,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.draw_finger_sizes(painter)
 
         return (window_width, window_height)
+
     def draw_template(self, painter):
         '''
         Draws the Incra template
@@ -309,11 +320,11 @@ class Qt_Plotter(QtGui.QWidget):
             poly.append(QtCore.QPointF(x[i], y[i]))
         painter.drawPolygon(poly)
         painter.restore()
+
     def draw_boards(self, painter):
         '''
         Draws all the boards
         '''
-
         # Plot the board center
         painter.setPen(QtCore.Qt.DashLine)
         painter.drawLine(self.geom.board_T.xMid(), self.geom.rect_T.yB, \
@@ -332,6 +343,7 @@ class Qt_Plotter(QtGui.QWidget):
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         p = (self.geom.board_B.xMid(), self.geom.board_B.yB)
         paint_text(painter, 'B', p, flags, (0, -3), fill=self.background)
+
     def draw_active_fingers(self, painter):
         '''
         If the spacing supports it, highlight the active fingers and
@@ -371,6 +383,7 @@ class Qt_Plotter(QtGui.QWidget):
             painter.drawLine(xmin, yB, xmin, yT)
             painter.drawLine(xmax, yB, xmax, yT)
         painter.restore()
+
     def draw_title(self, painter):
         '''
         Draws the title
