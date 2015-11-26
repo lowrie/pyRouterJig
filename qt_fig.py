@@ -304,9 +304,9 @@ class Qt_Plotter(QtGui.QWidget):
             brush = QtGui.QBrush(QtGui.QPixmap(':' + self.geom.board.icon))
         painter.setBrush(brush)
         n = len(x)
-        poly = QtGui.QPolygon()
+        poly = QtGui.QPolygonF()
         for i in lrange(n):
-            poly.append(QtCore.QPoint(x[i], y[i]))
+            poly.append(QtCore.QPointF(x[i], y[i]))
         painter.drawPolygon(poly)
         painter.restore()
     def draw_boards(self, painter):
@@ -346,11 +346,11 @@ class Qt_Plotter(QtGui.QWidget):
         xR = xL + c.xmax - c.xmin
         yT = self.geom.board_B.yT()
         yB = yT - self.geom.bit.depth
-        poly = QtGui.QPolygon()
-        poly.append(QtCore.QPoint(xL, yT))
-        poly.append(QtCore.QPoint(xR, yT))
-        poly.append(QtCore.QPoint(xR - self.geom.bit.offset, yB))
-        poly.append(QtCore.QPoint(xL + self.geom.bit.offset, yB))
+        poly = QtGui.QPolygonF()
+        poly.append(QtCore.QPointF(xL, yT))
+        poly.append(QtCore.QPointF(xR, yT))
+        poly.append(QtCore.QPointF(xR - self.geom.bit.offset, yB))
+        poly.append(QtCore.QPointF(xL + self.geom.bit.offset, yB))
         brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 100))
         painter.setBrush(brush)
         painter.drawPolygon(poly)
