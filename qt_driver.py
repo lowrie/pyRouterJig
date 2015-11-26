@@ -790,7 +790,7 @@ class Driver(QtGui.QMainWindow):
             else:
                 msg = self.spacing.finger_shift_right()
             self.draw()
-        elif event.key() == QtCore.Qt.Key_Backspace:
+        elif event.key() == QtCore.Qt.Key_Minus:
             msg = self.spacing.finger_delete_active()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Plus:

@@ -357,7 +357,7 @@ class Qt_Plotter(QtGui.QWidget):
         poly.append(QtCore.QPointF(xRT, yT))
         poly.append(QtCore.QPointF(xRB, yB))
         poly.append(QtCore.QPointF(xLB, yB))
-        brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 100))
+        brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 75))
         painter.setBrush(brush)
         painter.drawPolygon(poly)
         painter.setPen(QtCore.Qt.red)

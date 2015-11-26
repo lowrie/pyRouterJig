@@ -390,12 +390,12 @@ class Edit_Spaced(Base_Spacing):
         '''
         neck_width = my_round(self.bit.neck)
         index = None
-        if self.cuts[0].xmin > self.bit.width:
+        if self.cuts[0].xmin > self.bit.neck:
             if OPTIONS['debug']:
                 print('add at left')
             index = 0
             xmin = 0
-            xmax = self.cuts[0].xmin - self.bit.width
+            xmax = self.cuts[0].xmin - neck_width
         wadd = 2 * self.bit.width + neck_width
         wdelta = self.bit.width - neck_width
         for i in lrange(1, len(self.cuts)):
@@ -415,12 +415,12 @@ class Edit_Spaced(Base_Spacing):
                 self.cuts[i].xmax = self.cuts[i].xmin + self.bit.width
                 break
         if index is None and \
-           self.cuts[-1].xmax < self.board.width - self.bit.width:
+           self.cuts[-1].xmax < self.board.width - self.bit.neck:
             if OPTIONS['debug']:
                 print('add at right')
             index = len(self.cuts)
             xmax = self.board.width
-            xmin = xmax - self.bit.width
+            xmin = self.cuts[-1].xmax + neck_width
         if index is None:
             return 'Unable to add finger'
         c = self.cuts[0:index]
