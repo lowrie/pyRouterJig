@@ -198,8 +198,8 @@ class Qt_Plotter(QtGui.QWidget):
         painter.fillRect(0, 0, size.width(), size.height(), self.background)
         # paint all of the objects
         self.window_width, self.window_height = self.paint_all(painter)
-        # on the screen, highlight a finger
-        self.draw_finger(painter)
+        # on the screen, highlight the active fingers
+        self.draw_active_fingers(painter)
         painter.end()
     def paint_all(self, painter, dpi=None):
         '''
@@ -331,46 +331,44 @@ class Qt_Plotter(QtGui.QWidget):
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         p = (self.geom.board_B.xMid(), self.geom.board_B.yB)
         paint_text(painter, 'B', p, flags, (0, -3), fill=self.background)
-    def draw_finger(self, painter):
+    def draw_active_fingers(self, painter):
         '''
-        If the spacing supports it, highlight its respective finger and
-        draw its limits
+        If the spacing supports it, highlight the active fingers and
+        draw their limits
         '''
-        iFinger = self.geom.spacing.active_finger
-        if iFinger is None:
-            return
         painter.save()
-        # highlight the finger rectangle
-        c = self.geom.aCuts[iFinger]
-        xLT = self.geom.board_B.xL + c.xmin
-        xRT = xLT + c.xmax - c.xmin
-        xLB = xLT
-        xRB = xRT
-        if xLT > self.geom.board_B.xL:
-            xLB += self.geom.bit.offset
-        if xRT < self.geom.board_B.xR():
-            xRB -= self.geom.bit.offset
-        yT = self.geom.board_B.yT()
-        yB = yT - self.geom.bit.depth
-        poly = QtGui.QPolygonF()
-        poly.append(QtCore.QPointF(xLT, yT))
-        poly.append(QtCore.QPointF(xRT, yT))
-        poly.append(QtCore.QPointF(xRB, yB))
-        poly.append(QtCore.QPointF(xLB, yB))
-        brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 75))
-        painter.setBrush(brush)
-        painter.drawPolygon(poly)
-        painter.setPen(QtCore.Qt.red)
-        painter.drawPolyline(poly)
-        # draw the limits
-        (xmin, xmax) = self.geom.spacing.get_limits()
-        xmin += self.geom.board_B.xL
-        xmax += self.geom.board_B.xL
-        yB = self.geom.board_B.yB
-        yT = self.geom.board_B.yT()
-        painter.setPen(QtCore.Qt.green)
-        painter.drawLine(xmin, yB, xmin, yT)
-        painter.drawLine(xmax, yB, xmax, yT)
+        for f in self.geom.spacing.active_fingers:
+            # highlight the finger rectangle
+            c = self.geom.aCuts[f]
+            xLT = self.geom.board_B.xL + c.xmin
+            xRT = xLT + c.xmax - c.xmin
+            xLB = xLT
+            xRB = xRT
+            if xLT > self.geom.board_B.xL:
+                xLB += self.geom.bit.offset
+            if xRT < self.geom.board_B.xR():
+                xRB -= self.geom.bit.offset
+            yT = self.geom.board_B.yT()
+            yB = yT - self.geom.bit.depth
+            poly = QtGui.QPolygonF()
+            poly.append(QtCore.QPointF(xLT, yT))
+            poly.append(QtCore.QPointF(xRT, yT))
+            poly.append(QtCore.QPointF(xRB, yB))
+            poly.append(QtCore.QPointF(xLB, yB))
+            brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 75))
+            painter.setBrush(brush)
+            painter.drawPolygon(poly)
+            painter.setPen(QtCore.Qt.red)
+            painter.drawPolyline(poly)
+            # draw the limits
+            (xmin, xmax) = self.geom.spacing.get_limits(f)
+            xmin += self.geom.board_B.xL
+            xmax += self.geom.board_B.xL
+            yB = self.geom.board_B.yB
+            yT = self.geom.board_B.yT()
+            painter.setPen(QtCore.Qt.green)
+            painter.drawLine(xmin, yB, xmin, yT)
+            painter.drawLine(xmax, yB, xmax, yT)
         painter.restore()
     def draw_title(self, painter):
         '''

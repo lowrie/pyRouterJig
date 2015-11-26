@@ -64,7 +64,7 @@ class Base_Spacing(object):
     bit: A Router_Bit object.
     board: A Board object.
     cuts: A list of Cut objects, which represent the female fingers in Board-A.
-    active_finger: A finger index to highlight.  Index is with respect to 
+    active_fingers: Finger indices to highlight.  Index is with respect to 
                    female fingers in Board-A.
     labels: list of labels for the Spacing_Params
 
@@ -75,7 +75,7 @@ class Base_Spacing(object):
         self.description = 'NONE'
         self.bit = bit
         self.board = board
-        self.active_finger = None
+        self.active_fingers = []
         self.cuts = []
         self.full_labels = []
     def get_params(self):
@@ -259,130 +259,143 @@ class Edit_Spaced(Base_Spacing):
     labels = []
     def __init__(self, bit, board):
         Base_Spacing.__init__(self, bit, board)
-        self.adjust_left = True
     def get_params(self):
-        p1 = Spacing_Param(0, self.board.width // 4, 0)
-        p2 = Spacing_Param(self.bit.width, self.board.width // 2, self.bit.width)
-        return [p1, p2]
+        return []
     def set_cuts(self, cuts):
+        '''
+        Sets cuts to the input cuts
+        '''
         self.cuts = cuts
-        units = self.bit.units
-        b_spacing = 0
-        width = self.bit.width
         self.full_labels = []
         self.description = 'Edit spacing'
-        self.active_finger = 1
-    def get_limits(self):
+        self.active_fingers = [0]
+    def get_limits(self, f):
+        '''
+        Returns the x-coordinate limits of the finger index f
+        '''
         xmin = 0
         xmax = self.board.width
         neck_width = my_round(self.bit.neck)
-        if self.active_finger > 0:
-            xmin = self.cuts[self.active_finger - 1].xmax + neck_width
-        if self.active_finger < len(self.cuts) - 1:
-            xmax = self.cuts[self.active_finger + 1].xmin - neck_width
+        if f > 0:
+            xmin = self.cuts[f - 1].xmax + neck_width
+        if f < len(self.cuts) - 1:
+            xmax = self.cuts[f + 1].xmin - neck_width
         return (xmin, xmax)
     def finger_shift_left(self):
         '''
-        Shifts the active finger 1 interval to the left
+        Shifts the active fingers 1 interval to the left
         '''
-        c = self.cuts[self.active_finger]
-        (xmin, xmax) = self.get_limits()
-        w = max(c.xmax - c.xmin, self.bit.width)
-        xmin = max(xmin, c.xmin - 1)
-        if xmin == c.xmin:
-            return 'Unable to shift active finger to left'
-        c.xmin = xmin
-        c.xmax = min(c.xmin + w, self.board.width)
-        self.cuts[self.active_finger] = c
-        return 'Shifted active finger 1 interval to left'
+        msg = 'Shifted active fingers 1 interval to left'
+        for f in self.active_fingers:
+            c = self.cuts[f]
+            (xmin, xmax) = self.get_limits(f)
+            w = max(c.xmax - c.xmin, self.bit.width)
+            xmin = max(xmin, c.xmin - 1)
+            if xmin == c.xmin:
+                msg = 'Unable to shift a finger to left'
+            c.xmin = xmin
+            c.xmax = min(c.xmin + w, self.board.width)
+            self.cuts[f] = c
+        return msg
     def finger_shift_right(self):
         '''
-        Shifts the active finger 1 interval to the right
+        Shifts the active fingers 1 interval to the right
         '''
-        c = self.cuts[self.active_finger]
-        (xmin, xmax) = self.get_limits()
-        w = max(c.xmax - c.xmin, self.bit.width)
-        xmax = min(xmax, c.xmax + 1)
-        if xmax == c.xmax:
-            return 'Unable to shift active finger to right'
-        c.xmax = xmax
-        c.xmin = max(c.xmax - w, 0)
-        self.cuts[self.active_finger] = c
-        return 'Shifted active finger 1 interval to right'
+        msg = 'Shifted active fingers 1 interval to right'
+        for f in self.active_fingers:
+            c = self.cuts[f]
+            (xmin, xmax) = self.get_limits(f)
+            w = max(c.xmax - c.xmin, self.bit.width)
+            xmax = min(xmax, c.xmax + 1)
+            if xmax == c.xmax:
+                msg = 'Unable to shift a finger to right'
+            c.xmax = xmax
+            c.xmin = max(c.xmax - w, 0)
+            self.cuts[f] = c
+        return msg
     def finger_widen_left(self):
         '''
-        Increases the active finger width on the left side by 1 interval
+        Increases the active fingers width on the left side by 1 interval
         '''
-        c = self.cuts[self.active_finger]
-        (xmin, xmax) = self.get_limits()
-        if c.xmin > xmin:
-            c.xmin -= 1
-            self.cuts[self.active_finger] = c
-            return 'Widened finger 1 interval on left'
-        else:
-            return 'Unable to widen finger on left any further'
+        msg = 'Widened finger 1 interval on left'
+        for f in self.active_fingers:
+            c = self.cuts[f]
+            (xmin, xmax) = self.get_limits(f)
+            if c.xmin > xmin:
+                c.xmin -= 1
+                self.cuts[f] = c
+            else:
+                msg = 'Unable to widen a finger on left any further'
+        return msg
     def finger_widen_right(self):
         '''
-        Increases the active finger width on the right side by 1 interval
+        Increases the active fingers width on the right side by 1 interval
         '''
-        c = self.cuts[self.active_finger]
-        (xmin, xmax) = self.get_limits()
-        if c.xmax < xmax:
-            c.xmax += 1
-            self.cuts[self.active_finger] = c
-            return 'Widened finger 1 interval on right'
-        else:
-            return 'Unable to widen finger on right any further'
+        msg = 'Widened finger 1 interval on right'
+        for f in self.active_fingers:
+            c = self.cuts[f]
+            (xmin, xmax) = self.get_limits(f)
+            if c.xmax < xmax:
+                c.xmax += 1
+                self.cuts[f] = c
+            else:
+                msg = 'Unable to widen a finger on right any further'
+        return msg
     def finger_trim_left(self):
         '''
-        Decreases the active finger width on the left side by 1 interval
+        Decreases the active fingers width on the left side by 1 interval
         '''
-        c = self.cuts[self.active_finger]
-        wmin = self.bit.width
-        if c.xmax == self.board.width:
-            wmin = 1
-        if c.xmax - c.xmin <= wmin:
-            return 'Unable to trim finger on left any further'
-        else:
-            c.xmin += 1
-            self.cuts[self.active_finger] = c
-            return 'Trimmed finger on left 1 interval'
+        msg = 'Trimmed finger on left 1 interval'
+        for f in self.active_fingers:
+            c = self.cuts[f]
+            wmin = self.bit.width
+            if c.xmax == self.board.width:
+                wmin = 1
+            if c.xmax - c.xmin <= wmin:
+                msg = 'Unable to trim a finger on left any further'
+            else:
+                c.xmin += 1
+                self.cuts[f] = c
+        return msg
     def finger_trim_right(self):
         '''
-        Decreases the active finger width on the right side by 1 interval
+        Decreases the active fingers width on the right side by 1 interval
         '''
-        c = self.cuts[self.active_finger]
-        wmin = self.bit.width
-        if c.xmin == 0:
-            wmin = 1
-        if c.xmax - c.xmin <= wmin:
-            return 'Unable to trim finger on right any further'
-        else:
-            c.xmax -= 1
-            self.cuts[self.active_finger] = c
-            return 'Trimmed finger on right 1 interval'
+        msg = 'Trimmed finger on right 1 interval'
+        for f in self.active_fingers:
+            c = self.cuts[f]
+            wmin = self.bit.width
+            if c.xmin == 0:
+                wmin = 1
+            if c.xmax - c.xmin <= wmin:
+                return 'Unable to trim a finger on right any further'
+            else:
+                c.xmax -= 1
+                self.cuts[f] = c
+        return msg
     def finger_increment_active(self, i):
         '''
         Sets the active finger to the finger to the right, unless already
         at the last finger, in which case the active finger is cycled back
         to the first finger on the left.
         '''
-        self.active_finger = (self.active_finger + i) % len(self.cuts)
-        return 'Switched active finger'
+        for k in lrange(len(self.active_fingers)):
+            self.active_fingers[k] = (self.active_fingers[k] + i) % len(self.cuts)
+        return 'Switched active fingers'
     def finger_delete_active(self):
         '''
-        Deletes the active finger.  If possible, the active finger index
-        remains unchanged, which means the active finger effective
-        moves to the finger to the right of the delelted finger.
+        Deletes the active fingers.
         '''
-        if len(self.cuts) < 2:
-            return 'Unable to delete last finger'
-        c = self.cuts[0:self.active_finger]
-        c.extend(self.cuts[self.active_finger + 1:])
-        if self.active_finger >= len(c):
-            self.active_finger = len(c) - 1
-        self.cuts = c
-        return 'Deleted finger'
+        msg = 'Deleted active fingers'
+        for f in self.active_fingers:
+            if len(self.cuts) < 2:
+                msg = 'Unable to delete last finger'
+                break
+            c = self.cuts[0:f]
+            c.extend(self.cuts[f + 1:])
+            self.cuts = c
+        self.active_fingers = [0]
+        return msg
     def finger_add(self):
         '''
         Adds a finger to the first location possible, searching from the left.
@@ -427,5 +440,5 @@ class Edit_Spaced(Base_Spacing):
         c.append(router.Cut(xmin, xmax))
         c.extend(self.cuts[index:])
         self.cuts = c
-        self.active_finger = index
+        self.active_fingers = [index]
         return 'Added finger'
