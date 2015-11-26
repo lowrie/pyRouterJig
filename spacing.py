@@ -373,14 +373,14 @@ class Edit_Spaced(Base_Spacing):
                 c.xmax -= 1
                 self.cuts[f] = c
         return msg
-    def finger_increment_active(self, i):
+    def finger_increment_active(self, inc):
         '''
         Sets the active finger to the finger to the right, unless already
         at the last finger, in which case the active finger is cycled back
         to the first finger on the left.
         '''
         for k in lrange(len(self.active_fingers)):
-            self.active_fingers[k] = (self.active_fingers[k] + i) % len(self.cuts)
+            self.active_fingers[k] = (self.active_fingers[k] + inc) % len(self.cuts)
         return 'Switched active fingers'
     def finger_delete_active(self):
         '''

@@ -313,15 +313,16 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         Draws all the boards
         '''
-        # Draw the A and B boards
-        self.draw_one_board(painter, self.geom.xA, self.geom.yA)
-        self.draw_one_board(painter, self.geom.xB, self.geom.yB)
 
         # Plot the board center
         painter.setPen(QtCore.Qt.DashLine)
         painter.drawLine(self.geom.board_T.xMid(), self.geom.rect_T.yB, \
                          self.geom.board_T.xMid(), self.geom.board_A.yT())
         painter.setPen(QtCore.Qt.SolidLine)
+
+        # Draw the A and B boards
+        self.draw_one_board(painter, self.geom.xA, self.geom.yA)
+        self.draw_one_board(painter, self.geom.xB, self.geom.yB)
 
         # Label the boards
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
