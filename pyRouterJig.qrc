@@ -1,17 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-  <file>woods/african-mahogany-sealed.png</file>
-  <file>woods/aromatic-red-cedar.png</file>
   <file>woods/black-cherry-sealed.png</file>
   <file>woods/black-walnut-sealed.png</file>
-  <file>woods/cypress.png</file>
-  <file>woods/douglas-fir1.png</file>
   <file>woods/hard-maple.png</file>
-  <file>woods/paper-birch.png</file>
-  <file>woods/red-oak.png</file>
-  <file>woods/sitka-spruce.png</file>
-  <file>woods/teak1.png</file>
-  <file>woods/virginia-pine.png</file>
-  <file>woods/white-oak.png</file>
 </qresource>
 </RCC>
