@@ -305,11 +305,11 @@ class Edit_Spaced(Base_Spacing):
         if len(self.undo_cuts) > 0:
             self.cuts = self.undo_cuts.pop()
 
-    def finger_shift_left(self):
+    def finger_move_left(self):
         '''
-        Shifts the active fingers 1 interval to the left
+        Moves the active fingers 1 interval to the left
         '''
-        msg = 'Shifted active fingers 1 interval to left'
+        msg = 'Moved active finger 1 interval to left'
         cuts_save = copy.deepcopy(self.cuts)
         fingers = []
         for f in self.active_fingers:
@@ -318,7 +318,7 @@ class Edit_Spaced(Base_Spacing):
             w = max(c.xmax - c.xmin, self.bit.width)
             xmin = max(xmin, c.xmin - 1)
             if xmin == c.xmin:
-                msg = 'Unable to shift a finger to left'
+                msg = 'Unable to move finger to left'
             else:
                 c.xmin = xmin
                 c.xmax = min(c.xmin + w, self.board.width)
@@ -328,11 +328,11 @@ class Edit_Spaced(Base_Spacing):
             self.undo_cuts.append(cuts_save)
         return msg
 
-    def finger_shift_right(self):
+    def finger_move_right(self):
         '''
-        Shifts the active fingers 1 interval to the right
+        Moves the active fingers 1 interval to the right
         '''
-        msg = 'Fingers active fingers 1 interval to right'
+        msg = 'Moved active finger 1 interval to right'
         cuts_save = copy.deepcopy(self.cuts)
         fingers = []
         for f in self.active_fingers:
@@ -341,7 +341,7 @@ class Edit_Spaced(Base_Spacing):
             w = max(c.xmax - c.xmin, self.bit.width)
             xmax = min(xmax, c.xmax + 1)
             if xmax == c.xmax:
-                msg = 'Unable to shift a finger to right'
+                msg = 'Unable to move finger to right'
             else:
                 c.xmax = xmax
                 c.xmin = max(c.xmax - w, 0)
@@ -366,7 +366,7 @@ class Edit_Spaced(Base_Spacing):
                 self.cuts[f] = c
                 fingers.append(f)
             else:
-                msg = 'Unable to widen a finger on left any further'
+                msg = 'Unable to widen finger on left any further'
         if len(fingers) > 0:
             self.undo_cuts.append(cuts_save)
         return msg
@@ -404,7 +404,7 @@ class Edit_Spaced(Base_Spacing):
             if c.xmax == self.board.width:
                 wmin = 1
             if c.xmax - c.xmin <= wmin:
-                msg = 'Unable to trim a finger on left any further'
+                msg = 'Unable to trim finger on left any further'
             else:
                 c.xmin += 1
                 self.cuts[f] = c

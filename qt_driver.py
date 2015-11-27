@@ -296,13 +296,13 @@ class Driver(QtGui.QMainWindow):
         self.edit_btn_del = QtGui.QPushButton('Delete', self.main_frame)
         self.edit_btn_del.clicked.connect(self._on_edit_del)
 
-        self.edit_shift_label = QtGui.QLabel('Shift')
-        self.edit_btn_shiftL = QtGui.QToolButton(self.main_frame)
-        self.edit_btn_shiftL.setArrowType(QtCore.Qt.LeftArrow)
-        self.edit_btn_shiftL.clicked.connect(self._on_edit_shiftL)
-        self.edit_btn_shiftR = QtGui.QToolButton(self.main_frame)
-        self.edit_btn_shiftR.setArrowType(QtCore.Qt.RightArrow)
-        self.edit_btn_shiftR.clicked.connect(self._on_edit_shiftR)
+        self.edit_move_label = QtGui.QLabel('Move')
+        self.edit_btn_moveL = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_moveL.setArrowType(QtCore.Qt.LeftArrow)
+        self.edit_btn_moveL.clicked.connect(self._on_edit_moveL)
+        self.edit_btn_moveR = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_moveR.setArrowType(QtCore.Qt.RightArrow)
+        self.edit_btn_moveR.clicked.connect(self._on_edit_moveR)
 
         self.edit_widen_label = QtGui.QLabel('Widen')
         self.edit_btn_widenL = QtGui.QToolButton(self.main_frame)
@@ -345,9 +345,9 @@ class Driver(QtGui.QMainWindow):
         self.edit_btn_undo.setToolTip('Undo the last change')
         self.edit_btn_add.setToolTip('Add a finger (if there is space to add fingers)')
         self.edit_btn_del.setToolTip('Delete the active finger')
-        self.edit_shift_label.setToolTip('Shifts the active finger')
-        self.edit_btn_shiftL.setToolTip('Shift active finger to left 1 interval')
-        self.edit_btn_shiftR.setToolTip('Shift active finger to right 1 interval')
+        self.edit_move_label.setToolTip('Moves the active finger')
+        self.edit_btn_moveL.setToolTip('Move active finger to left 1 interval')
+        self.edit_btn_moveR.setToolTip('Move active finger to right 1 interval')
         self.edit_widen_label.setToolTip('Widens the active finger')
         self.edit_btn_widenL.setToolTip('Widen active finger 1 interval on left side')
         self.edit_btn_widenR.setToolTip('Widen active finger 1 interval on right side')
@@ -435,9 +435,9 @@ class Driver(QtGui.QMainWindow):
         vline.setFrameStyle(QtGui.QFrame.VLine)
         vline.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.grid_edit.addWidget(vline, 0, 0, 2, 1)
-        self.grid_edit.addWidget(self.edit_shift_label, 0, 1, 1, 2, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_btn_shiftL, 1, 1)
-        self.grid_edit.addWidget(self.edit_btn_shiftR, 1, 2)
+        self.grid_edit.addWidget(self.edit_move_label, 0, 1, 1, 2, QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_btn_moveL, 1, 1)
+        self.grid_edit.addWidget(self.edit_btn_moveR, 1, 2)
         vline2 = QtGui.QFrame()
         vline2.setFrameStyle(QtGui.QFrame.VLine)
         vline2.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
@@ -823,20 +823,20 @@ class Driver(QtGui.QMainWindow):
         self.draw()
 
     @QtCore.pyqtSlot()
-    def _on_edit_shiftL(self):
-        '''Handles shift left event'''
+    def _on_edit_moveL(self):
+        '''Handles move left event'''
         if DEBUG:
-            print('_on_edit_shiftL')
-        msg = self.spacing.finger_shift_left()
+            print('_on_edit_moveL')
+        msg = self.spacing.finger_move_left()
         self.statusbar.showMessage(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
-    def _on_edit_shiftR(self):
-        '''Handles shift right event'''
+    def _on_edit_moveR(self):
+        '''Handles move right event'''
         if DEBUG:
-            print('_on_edit_shiftR')
-        msg = self.spacing.finger_shift_right()
+            print('_on_edit_moveR')
+        msg = self.spacing.finger_move_right()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -951,6 +951,10 @@ class Driver(QtGui.QMainWindow):
             self.control_key = True
         elif event.key() == QtCore.Qt.Key_Alt:
             self.alt_key = True
+        elif event.key() == QtCore.Qt.Key_U:
+            msg = self.spacing.undo()
+            msg = 'Undo'
+            self.draw()
         elif event.key() == QtCore.Qt.Key_Left:
             if self.shift_key:
                 msg = self.spacing.finger_widen_left()
@@ -959,7 +963,7 @@ class Driver(QtGui.QMainWindow):
             elif self.alt_key:
                 msg = self.spacing.finger_increment_active(-1)
             else:
-                msg = self.spacing.finger_shift_left()
+                msg = self.spacing.finger_move_left()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Right:
             if self.shift_key:
@@ -969,7 +973,7 @@ class Driver(QtGui.QMainWindow):
             elif self.alt_key:
                 msg = self.spacing.finger_increment_active(1)
             else:
-                msg = self.spacing.finger_shift_right()
+                msg = self.spacing.finger_move_right()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Minus:
             msg = self.spacing.finger_delete_active()
