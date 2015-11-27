@@ -285,6 +285,12 @@ class Edit_Spaced(Base_Spacing):
         self.active_fingers = [0]
         self.undo_cuts = []
 
+    def changes_made(self):
+        '''
+        Returns true if editing changes have been made
+        '''
+        return len(self.undo_cuts) > 0
+
     def get_limits(self, f):
         '''
         Returns the x-coordinate limits of the finger index f

@@ -483,6 +483,8 @@ class Driver(QtGui.QMainWindow):
         self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
         tip = 'These tabs specify the layout algorithm for the fingers.'
         self.tabs_spacing.setToolTip(tip)
+        self.spacing_index = 0 # default is Equal
+        self.tabs_spacing.setCurrentIndex(self.spacing_index)
 
         # either add the spacing Tabs to the bottom
         #self.vbox.addLayout(self.hbox)
@@ -520,25 +522,23 @@ class Driver(QtGui.QMainWindow):
 
         # The ordering of the index is the same order that the tabs
         # were created in create main frame
-        spacing_index = self.tabs_spacing.currentIndex()
+        self.spacing_index = self.tabs_spacing.currentIndex()
 
         # enable/disable editing of line edit boxes, depending upon spacing
         # algorithm
         tbs = [self.tb_board_width, self.tb_bit_width, self.tb_bit_depth,\
                self.tb_bit_angle]
-        if spacing_index == 2:
-            print('setting read only')
+        if self.spacing_index == 2:
             for tb in tbs:
                 tb.setEnabled(False)
                 tb.setStyleSheet("color: rgb(200, 200, 200);")
         else:
-            print('unsetting read only')
             for tb in tbs:
                 tb.setEnabled(True)
                 tb.setStyleSheet("color: rgb(0, 0, 0);")
 
         # Set up the widgets for each spacing algorithm
-        if spacing_index == 0:
+        if self.spacing_index == 0:
             # do the equal spacing parameters.  Preserve the centered option.
             self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
             params = self.equal_spacing.get_params()
@@ -565,7 +565,7 @@ class Driver(QtGui.QMainWindow):
             self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
             self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
             self.spacing = self.equal_spacing
-        elif spacing_index == 1:
+        elif self.spacing_index == 1:
             # do the variable spacing parameters
             self.var_spacing = spacing.Variable_Spaced(self.bit, self.board)
             params = self.var_spacing.get_params()
@@ -579,22 +579,30 @@ class Driver(QtGui.QMainWindow):
             self.var_spacing.set_cuts(self.vs_cut_values)
             self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
             self.spacing = self.var_spacing
-        elif spacing_index == 2:
+        elif self.spacing_index == 2:
             # Do the edit spacing parameters.  Currently, this has no
             # parameters, and uses as a starting spacing whatever the previous
             # spacing set.
             self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board)
             self.edit_spacing.set_cuts(self.spacing.cuts)
-            params = self.edit_spacing.get_params()
             self.spacing = self.edit_spacing
         else:
-            raise ValueError('Bad value for spacing_index %d' % spacing_index)
+            raise ValueError('Bad value for spacing_index %d' % self.spacing_index)
 
     @QtCore.pyqtSlot(int)
     def _on_tabs_spacing(self, index):
         '''Handles changes to spacing algorithm'''
         if DEBUG:
             print('_on_tabs_spacing')
+        if self.spacing_index == 2 and index != 2 and self.spacing.changes_made():
+            msg = 'You are exiting the Editor, which will discard any changes made in the Editor.  Are you sure you want to do this?'
+            reply = QtGui.QMessageBox.question(self, 'Message', msg,
+                                               QtGui.QMessageBox.Yes,
+                                               QtGui.QMessageBox.No)
+
+            if reply == QtGui.QMessageBox.No:
+                self.tabs_spacing.setCurrentIndex(self.spacing_index)
+                return
         self.reinit_spacing()
         self.draw()
         self.status_message('Changed to spacing algorithm %s'\
@@ -952,7 +960,7 @@ class Driver(QtGui.QMainWindow):
         elif event.key() == QtCore.Qt.Key_Alt:
             self.alt_key = True
         elif event.key() == QtCore.Qt.Key_U:
-            msg = self.spacing.undo()
+            self.spacing.undo()
             msg = 'Undo'
             self.draw()
         elif event.key() == QtCore.Qt.Key_Left:
