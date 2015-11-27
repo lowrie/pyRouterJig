@@ -287,13 +287,46 @@ class Driver(QtGui.QMainWindow):
         self.vs_slider0.valueChanged.connect(self._on_vs_slider0)
         self.vs_slider0.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
-        # Edit spacing widgets (nothing yet)
+        # Edit spacing widgets
 
-        params = self.edit_spacing.get_params()
-        labels = self.edit_spacing.full_labels
-        self.edit_cut_values = []
         self.edit_btn_undo = QtGui.QPushButton('Undo', self.main_frame)
         self.edit_btn_undo.clicked.connect(self._on_edit_undo)
+        self.edit_btn_add = QtGui.QPushButton('Add', self.main_frame)
+        self.edit_btn_add.clicked.connect(self._on_edit_add)
+        self.edit_btn_del = QtGui.QPushButton('Delete', self.main_frame)
+        self.edit_btn_del.clicked.connect(self._on_edit_del)
+
+        self.edit_shift_label = QtGui.QLabel('Shift')
+        self.edit_btn_shiftL = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_shiftL.setArrowType(QtCore.Qt.LeftArrow)
+        self.edit_btn_shiftL.clicked.connect(self._on_edit_shiftL)
+        self.edit_btn_shiftR = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_shiftR.setArrowType(QtCore.Qt.RightArrow)
+        self.edit_btn_shiftR.clicked.connect(self._on_edit_shiftR)
+
+        self.edit_widen_label = QtGui.QLabel('Widen')
+        self.edit_btn_widenL = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_widenL.setArrowType(QtCore.Qt.LeftArrow)
+        self.edit_btn_widenL.clicked.connect(self._on_edit_widenL)
+        self.edit_btn_widenR = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_widenR.setArrowType(QtCore.Qt.RightArrow)
+        self.edit_btn_widenR.clicked.connect(self._on_edit_widenR)
+
+        self.edit_trim_label = QtGui.QLabel('Trim')
+        self.edit_btn_trimL = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_trimL.setArrowType(QtCore.Qt.LeftArrow)
+        self.edit_btn_trimL.clicked.connect(self._on_edit_trimL)
+        self.edit_btn_trimR = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_trimR.setArrowType(QtCore.Qt.RightArrow)
+        self.edit_btn_trimR.clicked.connect(self._on_edit_trimR)
+
+        self.edit_select_label = QtGui.QLabel('Select')
+        self.edit_btn_selectL = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_selectL.setArrowType(QtCore.Qt.LeftArrow)
+        self.edit_btn_selectL.clicked.connect(self._on_edit_selectL)
+        self.edit_btn_selectR = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_selectR.setArrowType(QtCore.Qt.RightArrow)
+        self.edit_btn_selectR.clicked.connect(self._on_edit_selectR)
 
         self.set_tooltips()
 
@@ -310,6 +343,20 @@ class Driver(QtGui.QMainWindow):
         self.cb_es_centered.setToolTip(self.doc.es_centered())
         self.vs_slider0.setToolTip(self.doc.vs_slider0())
         self.edit_btn_undo.setToolTip('Undo the last change')
+        self.edit_btn_add.setToolTip('Add a finger (if there is space to add fingers)')
+        self.edit_btn_del.setToolTip('Delete the active finger')
+        self.edit_shift_label.setToolTip('Shifts the active finger')
+        self.edit_btn_shiftL.setToolTip('Shift active finger to left 1 interval')
+        self.edit_btn_shiftR.setToolTip('Shift active finger to right 1 interval')
+        self.edit_widen_label.setToolTip('Widens the active finger')
+        self.edit_btn_widenL.setToolTip('Widen active finger 1 interval on left side')
+        self.edit_btn_widenR.setToolTip('Widen active finger 1 interval on right side')
+        self.edit_trim_label.setToolTip('Trims the active finger')
+        self.edit_btn_trimL.setToolTip('Trim active finger 1 interval on left side')
+        self.edit_btn_trimR.setToolTip('Trim active finger 1 interval on right side')
+        self.edit_select_label.setToolTip('Selects the active finger')
+        self.edit_btn_selectL.setToolTip('Move active finger to left')
+        self.edit_btn_selectR.setToolTip('Move active finger to right')
 
     def layout_widgets(self):
         '''
@@ -382,8 +429,45 @@ class Driver(QtGui.QMainWindow):
         self.hbox_vs.addLayout(self.vbox_vs_slider0)
 
         # Create the layout of the edit spacing controls
-        self.hbox_cs = QtGui.QHBoxLayout()
-        self.hbox_cs.addWidget(self.edit_btn_undo)
+        self.hbox_edit = QtGui.QHBoxLayout()
+        self.grid_edit = QtGui.QGridLayout()
+        vline = QtGui.QFrame()
+        vline.setFrameStyle(QtGui.QFrame.VLine)
+        vline.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.grid_edit.addWidget(vline, 0, 0, 2, 1)
+        self.grid_edit.addWidget(self.edit_shift_label, 0, 1, 1, 2, QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_btn_shiftL, 1, 1)
+        self.grid_edit.addWidget(self.edit_btn_shiftR, 1, 2)
+        vline2 = QtGui.QFrame()
+        vline2.setFrameStyle(QtGui.QFrame.VLine)
+        vline2.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.grid_edit.addWidget(vline2, 0, 3, 2, 1)
+        self.grid_edit.addWidget(self.edit_widen_label, 0, 4, 1, 2, QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_btn_widenL, 1, 4)
+        self.grid_edit.addWidget(self.edit_btn_widenR, 1, 5)
+        vline3 = QtGui.QFrame()
+        vline3.setFrameStyle(QtGui.QFrame.VLine)
+        vline3.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.grid_edit.addWidget(vline3, 0, 6, 2, 1)
+        self.grid_edit.addWidget(self.edit_trim_label, 0, 7, 1, 2, QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_btn_trimL, 1, 7)
+        self.grid_edit.addWidget(self.edit_btn_trimR, 1, 8)
+        vline4 = QtGui.QFrame()
+        vline4.setFrameStyle(QtGui.QFrame.VLine)
+        vline4.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.grid_edit.addWidget(vline4, 0, 9, 2, 1)
+        self.grid_edit.addWidget(self.edit_select_label, 0, 10, 1, 2, QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_btn_selectL, 1, 10)
+        self.grid_edit.addWidget(self.edit_btn_selectR, 1, 11)
+        vline5 = QtGui.QFrame()
+        vline5.setFrameStyle(QtGui.QFrame.VLine)
+        vline5.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.grid_edit.addWidget(vline5, 0, 12, 2, 1)
+        self.grid_edit.addWidget(self.edit_btn_add, 0, 13)
+        self.grid_edit.addWidget(self.edit_btn_del, 1, 13)
+        self.hbox_edit.addLayout(self.grid_edit)
+        self.hbox_edit.addStretch(1)
+        self.hbox_edit.addWidget(self.edit_btn_undo)
 
         # Add the spacing layouts as Tabs
         self.tabs_spacing = QtGui.QTabWidget()
@@ -393,9 +477,9 @@ class Driver(QtGui.QMainWindow):
         self.tab_vs = QtGui.QWidget()
         self.tab_vs.setLayout(self.hbox_vs)
         self.tabs_spacing.addTab(self.tab_vs, 'Variable')
-        self.tab_cs = QtGui.QWidget()
-        self.tab_cs.setLayout(self.hbox_cs)
-        self.tabs_spacing.addTab(self.tab_cs, 'Editor')
+        self.tab_edit = QtGui.QWidget()
+        self.tab_edit.setLayout(self.hbox_edit)
+        self.tabs_spacing.addTab(self.tab_edit, 'Editor')
         self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
         tip = 'These tabs specify the layout algorithm for the fingers.'
         self.tabs_spacing.setToolTip(tip)
@@ -736,6 +820,96 @@ class Driver(QtGui.QMainWindow):
             print('_on_edit_undo')
         self.spacing.undo()
         self.statusbar.showMessage('Undo')
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_shiftL(self):
+        '''Handles shift left event'''
+        if DEBUG:
+            print('_on_edit_shiftL')
+        msg = self.spacing.finger_shift_left()
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_shiftR(self):
+        '''Handles shift right event'''
+        if DEBUG:
+            print('_on_edit_shiftR')
+        msg = self.spacing.finger_shift_right()
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_widenL(self):
+        '''Handles widen left event'''
+        if DEBUG:
+            print('_on_edit_widenL')
+        msg = self.spacing.finger_widen_left()
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_widenR(self):
+        '''Handles widen right event'''
+        if DEBUG:
+            print('_on_edit_widenR')
+        msg = self.spacing.finger_widen_right()
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_trimL(self):
+        '''Handles trim left event'''
+        if DEBUG:
+            print('_on_edit_trimL')
+        msg = self.spacing.finger_trim_left()
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_trimR(self):
+        '''Handles trim right event'''
+        if DEBUG:
+            print('_on_edit_trimR')
+        msg = self.spacing.finger_trim_right()
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_selectL(self):
+        '''Handles select left event'''
+        if DEBUG:
+            print('_on_edit_selectL')
+        msg = self.spacing.finger_increment_active(-1)
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_selectR(self):
+        '''Handles select right event'''
+        if DEBUG:
+            print('_on_edit_selectR')
+        msg = self.spacing.finger_increment_active(1)
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_add(self):
+        '''Handles add finger event'''
+        if DEBUG:
+            print('_on_edit_add')
+        msg = self.spacing.finger_add()
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_del(self):
+        '''Handles delete fingers event'''
+        if DEBUG:
+            print('_on_edit_del')
+        msg = self.spacing.finger_delete_active()
+        self.statusbar.showMessage(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
