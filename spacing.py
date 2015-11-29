@@ -324,7 +324,7 @@ class Edit_Spaced(Base_Spacing):
             (xmin, xmax) = self.get_limits(f)
             xmin = max(xmin, c.xmin - 1)
             w = c.xmax - c.xmin
-            if xmin == 0:
+            if c.xmin == 0:
                 w -= 1
             else:
                 w = max(w, self.bit.width)
@@ -358,7 +358,7 @@ class Edit_Spaced(Base_Spacing):
             (xmin, xmax) = self.get_limits(f)
             xmax = min(xmax, c.xmax + 1)
             w = c.xmax - c.xmin
-            if xmax == self.board.width:
+            if c.xmax == self.board.width:
                 w -= 1
             else:
                 w = max(w, self.bit.width)

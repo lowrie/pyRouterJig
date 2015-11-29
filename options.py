@@ -11,9 +11,9 @@ OPTIONS = {}
 # You can change the options below.
 
 # min_finger_width: avoid fingers that are smaller than this dimension.
-# Specified in intervals (integer).  So for English units, 8 corresponds to
-# 4/32" = 1/8"
-OPTIONS['min_finger_width'] = 4
+# Specified in intervals (integer).  So for English units, 2 corresponds to
+# 2/32" = 1/16"
+OPTIONS['min_finger_width'] = 2
 
 # The margins object controls top, bottom, and side margins, along with the
 # separation between objects in the figure.  Specified in intervals (integer).
