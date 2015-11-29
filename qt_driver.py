@@ -531,11 +531,11 @@ class Driver(QtGui.QMainWindow):
         if self.spacing_index == 2:
             for tb in tbs:
                 tb.setEnabled(False)
-                tb.setStyleSheet("color: rgb(200, 200, 200);")
+                tb.setStyleSheet("color: gray;")
         else:
             for tb in tbs:
                 tb.setEnabled(True)
-                tb.setStyleSheet("color: rgb(0, 0, 0);")
+                tb.setStyleSheet("color: black;")
 
         # Set up the widgets for each spacing algorithm
         if self.spacing_index == 0:
