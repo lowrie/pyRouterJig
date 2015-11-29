@@ -276,7 +276,7 @@ class Qt_Plotter(QtGui.QWidget):
         # Draw the router passes
         # ... do the B passes
         ip = 0
-        flags = QtCore.Qt.AlignLeft | QtCore.Qt.AlignBottom
+        flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
         shift = (0, -2)
         for c in self.geom.bCuts[::-1]:
             for p in lrange(len(c.passes) - 1, -1, -1):
@@ -285,10 +285,10 @@ class Qt_Plotter(QtGui.QWidget):
                 label = '%dB' % ip
                 painter.drawLine(xp, rect_T.yB, xp, rect_T.yMid())
                 if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    paint_text(painter, label, (xp, rect_T.yB), flags, shift, -90)
+                    paint_text(painter, label, (xp, rect_T.yMid()), flags, shift, -90)
        # ... do the A passes
         ip = 0
-        flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
+        flags = QtCore.Qt.AlignLeft | QtCore.Qt.AlignBottom
         shift = (0, 2)
         for c in self.geom.aCuts[::-1]:
             for p in lrange(len(c.passes) - 1, -1, -1):
@@ -297,7 +297,7 @@ class Qt_Plotter(QtGui.QWidget):
                 label = '%dA' % ip
                 painter.drawLine(xp, rect_T.yMid(), xp, rect_T.yT())
                 if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    paint_text(painter, label, (xp, rect_T.yT()), flags, shift, -90)
+                    paint_text(painter, label, (xp, rect_T.yMid()), flags, shift, -90)
     def draw_one_board(self, painter, x, y):
         '''
         Draws a single board
