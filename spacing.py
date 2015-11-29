@@ -318,20 +318,31 @@ class Edit_Spaced(Base_Spacing):
         msg = 'Moved active finger 1 interval to left'
         cuts_save = copy.deepcopy(self.cuts)
         fingers = []
+        delete_finger = False
         for f in self.active_fingers:
             c = self.cuts[f]
             (xmin, xmax) = self.get_limits(f)
-            w = max(c.xmax - c.xmin, self.bit.width)
             xmin = max(xmin, c.xmin - 1)
-            if xmin == c.xmin:
-                msg = 'Unable to move finger to left'
+            w = c.xmax - c.xmin
+            if xmin == 0:
+                w -= 1
             else:
-                c.xmin = xmin
-                c.xmax = min(c.xmin + w, self.board.width)
-                self.cuts[f] = c
-                fingers.append(f)
-        if len(fingers) > 0:
+                w = max(w, self.bit.width)
+            if w == 0:
+                # note its possible for only one finger to be deleted
+                delete_finger = True
+            else:
+                if xmin == c.xmin and xmin > 0:
+                    msg = 'Unable to move finger to left'
+                else:
+                    c.xmin = xmin
+                    c.xmax = min(c.xmin + w, self.board.width)
+                    self.cuts[f] = c
+                    fingers.append(f)
+        if len(fingers) > 0 or delete_finger:
             self.undo_cuts.append(cuts_save)
+        if delete_finger:
+            self.finger_delete(0)
         return msg
 
     def finger_move_right(self):
@@ -341,20 +352,32 @@ class Edit_Spaced(Base_Spacing):
         msg = 'Moved active finger 1 interval to right'
         cuts_save = copy.deepcopy(self.cuts)
         fingers = []
+        delete_finger = False
         for f in self.active_fingers:
             c = self.cuts[f]
             (xmin, xmax) = self.get_limits(f)
-            w = max(c.xmax - c.xmin, self.bit.width)
             xmax = min(xmax, c.xmax + 1)
-            if xmax == c.xmax:
-                msg = 'Unable to move finger to right'
+            w = c.xmax - c.xmin
+            if xmax == self.board.width:
+                w -= 1
             else:
-                c.xmax = xmax
-                c.xmin = max(c.xmax - w, 0)
-                self.cuts[f] = c
-                fingers.append(f)
-        if len(fingers) > 0:
+                w = max(w, self.bit.width)
+            if w == 0:
+                # note its possible for only one finger to be deleted
+                delete_finger = True
+            else:
+                if xmax == c.xmax and xmax < self.board.width:
+                    msg = 'Unable to move finger to right'
+                else:
+                    c.xmax = xmax
+                    c.xmin = max(c.xmax - w, 0)
+                    self.cuts[f] = c
+                    fingers.append(f)
+        if len(fingers) > 0 or delete_finger:
             self.undo_cuts.append(cuts_save)
+        if delete_finger:
+            self.finger_delete(len(self.cuts) - 1)
+            self.active_fingers = [len(self.cuts) - 1]
         return msg
 
     def finger_widen_left(self):
@@ -451,6 +474,18 @@ class Edit_Spaced(Base_Spacing):
             self.active_fingers[k] = (self.active_fingers[k] + inc) % len(self.cuts)
         return 'Switched active fingers'
 
+    def finger_delete(self, f):
+        '''
+        Deletes finger of index f.  Returns True if able to delete the finger,
+        False otherwise.
+        '''
+        if len(self.cuts) < 2:
+            return False
+        c = self.cuts[0:f]
+        c.extend(self.cuts[f + 1:])
+        self.cuts = c
+        return True
+
     def finger_delete_active(self):
         '''
         Deletes the active fingers.
@@ -459,12 +494,9 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         fingers = []
         for f in self.active_fingers:
-            if len(self.cuts) < 2:
+            if not self.finger_delete(f):
                 msg = 'Unable to delete last finger'
                 break
-            c = self.cuts[0:f]
-            c.extend(self.cuts[f + 1:])
-            self.cuts = c
             fingers.append(f)
         self.active_fingers = [0]
         if len(fingers) > 0:
