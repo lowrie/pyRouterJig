@@ -50,9 +50,9 @@ class Incra_Template(object):
     '''
     def __init__(self, units, board, margin=None, length=None):
         # incra uses 1/2" high templates
-        self.height = units.inches_to_intervals(0.5)
+        self.height = units.inches_to_increments(0.5)
         if margin is None:
-            self.margin = units.inches_to_intervals(1.0)
+            self.margin = units.inches_to_increments(1.0)
         else:
             self.margin = margin
         if length is None:
@@ -92,7 +92,7 @@ class Router_Bit(object):
         self.reinit()
     def set_width_from_string(self, s):
         '''
-        Sets the width from the string s, following requirements from units.string_to_intervals().
+        Sets the width from the string s, following requirements from units.string_to_increments().
         '''
         msg = 'Bit width is %s\n' % s
         if self.units.metric:
@@ -100,7 +100,7 @@ class Router_Bit(object):
         else:
             msg += 'Set to a positive value, such as 1/2'
         try:
-            self.width = self.units.string_to_intervals(s)
+            self.width = self.units.string_to_increments(s)
         except ValueError as e:
             msg = 'ValueError setting bit width: %s\n\n' % (e) + msg
             raise Router_Exception(msg)
@@ -110,14 +110,14 @@ class Router_Bit(object):
             raise Router_Exception(msg)
         self.halfwidth = self.width // 2
         if 2 * self.halfwidth != self.width:
-            pmsg = 'Bit width must be an even number of intervals.\n'
+            pmsg = 'Bit width must be an even number of increments.\n'
             if not self.units.metric:
-                pmsg += 'The interval size is 1/%d"\n\n' % self.units.intervals_per_inch
+                pmsg += 'The increment size is 1/%d"\n\n' % self.units.increments_per_inch
             raise Router_Exception(pmsg + msg)
         self.reinit()
     def set_depth_from_string(self, s):
         '''
-        Sets the depth from the string s, following requirements from units.string_to_intervals().
+        Sets the depth from the string s, following requirements from units.string_to_increments().
         '''
         msg = 'Bit depth is %s\n' % s
         if self.units.metric:
@@ -125,7 +125,7 @@ class Router_Bit(object):
         else:
             msg += 'Set to a positive value, such as 3/4'
         try:
-            self.depth = self.units.string_to_intervals(s)
+            self.depth = self.units.string_to_increments(s)
         except ValueError as e:
             msg = 'ValueError setting bit depth: %s\n\n' % (e) + msg
             raise Router_Exception(msg)
@@ -225,7 +225,7 @@ class Board(My_Rectangle):
     thickness: Dimension into paper or screen (not used)
     icon: Icon image used for fill
 
-    Dimentions are in interval units.
+    Dimentions are in increment units.
     '''
     def __init__(self, bit, width, thickness=32, icon=None):
         My_Rectangle.__init__(self, 0, 0, width, 32)
@@ -237,7 +237,7 @@ class Board(My_Rectangle):
         self.icon = icon
     def set_width_from_string(self, s):
         '''
-        Sets the width from the string s, following requirements from units.string_to_intervals().
+        Sets the width from the string s, following requirements from units.string_to_increments().
         '''
         msg = 'Board width is %s\n' % s
         if self.units.metric:
@@ -245,7 +245,7 @@ class Board(My_Rectangle):
         else:
             msg += 'Set to a postive value, such as 7 1/2'
         try:
-            self.width = self.units.string_to_intervals(s)
+            self.width = self.units.string_to_increments(s)
         except ValueError as e:
             msg = 'ValueError setting board width: %s\n\n' % (e) + msg
             raise Router_Exception(msg)
@@ -277,7 +277,7 @@ class Cut(object):
     xmin: min x-location of cut.
     xmax: max x-location of cut.
     passes: Array of router passes to make the cut, indicating the center of the bit
-    midPass: The particle pass in passes that is centered (within an interval)
+    midPass: The particle pass in passes that is centered (within an increment)
              on the cut
     '''
     def __init__(self, xmin, xmax):
@@ -308,7 +308,7 @@ class Cut(object):
         if bit.width % 2 != 0:
             Router_Exception('Router-bit width must be even!')
         self.validate(bit, board)
-        # Make the middle pass, centered (within an interval) on the cut
+        # Make the middle pass, centered (within an increment) on the cut
         if self.xmin == 0:
             mid_pass = self.xmax - bit.halfwidth
             xL = max(0, self.xmax - bit.width)

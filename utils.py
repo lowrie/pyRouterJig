@@ -123,22 +123,22 @@ class My_Fraction(object):
 
 class Units(object):
     '''
-    Converts to and from intervals and the units being used.
+    Converts to and from increments and the units being used.
 
-    metric: If true, then an interval corresponds to 1 mm.
+    metric: If true, then an increment corresponds to 1 mm.
 
-    intervals_per_inch:  For metric false, this correpsonds
-    to the number of intervals per inch.  So a value of 32
-    (the default) corresponds an interval size of 1/32".
+    increments_per_inch:  For metric false, this correpsonds
+    to the number of increments per inch.  So a value of 32
+    (the default) corresponds an increment size of 1/32".
     For metric true, this values is the number of mm in an inch.
 
     '''
     mm_per_inch = 25.4
-    def __init__(self, intervals_per_inch=32, metric=False):
+    def __init__(self, increments_per_inch=32, metric=False):
         self.metric = metric
-        self.intervals_per_inch = intervals_per_inch
+        self.increments_per_inch = increments_per_inch
         if metric:
-            self.intervals_per_inch = self.mm_per_inch
+            self.increments_per_inch = self.mm_per_inch
     def get_scaling(self, new_units):
         '''
         Returns the scaling factor to change the current units to new_units.
@@ -148,27 +148,27 @@ class Units(object):
         s = 1
         if new_units.metric:
             if not self.metric:
-                s = self.mm_per_inch / self.intervals_per_inch
+                s = self.mm_per_inch / self.increments_per_inch
         else:
             if self.metric:
-                s = new_units.intervals_per_inch / self.mm_per_inch
-            elif self.intervals_per_inch != new_units.intervals_per_inch:
-                s = float(new_units.intervals_per_inch) / self.intervals_per_inch
+                s = new_units.increments_per_inch / self.mm_per_inch
+            elif self.increments_per_inch != new_units.increments_per_inch:
+                s = float(new_units.increments_per_inch) / self.increments_per_inch
         return s
-    def intervals_to_inches(self, intervals_):
-        '''Converts intervals to inches.'''
-        return float(intervals_) / self.intervals_per_inch
-    def inches_to_intervals(self, inches_):
-        '''Converts the input inches to intervals'''
-        return my_round(self.intervals_per_inch * inches_)
-    def intervals_to_string(self, intervals, with_units=False):
-        '''A string representation of the value intervals'''
+    def increments_to_inches(self, increments_):
+        '''Converts increments to inches.'''
+        return float(increments_) / self.increments_per_inch
+    def inches_to_increments(self, inches_):
+        '''Converts the input inches to increments'''
+        return my_round(self.increments_per_inch * inches_)
+    def increments_to_string(self, increments, with_units=False):
+        '''A string representation of the value increments'''
         if self.metric:
-            r = '%d' % intervals
+            r = '%d' % increments
         else:
-            whole = intervals // self.intervals_per_inch
-            numer = intervals - self.intervals_per_inch * whole
-            denom = self.intervals_per_inch
+            whole = increments // self.increments_per_inch
+            numer = increments - self.increments_per_inch * whole
+            denom = self.increments_per_inch
             r = My_Fraction(whole, numer, denom).to_string()
         if with_units:
             r += self.units_string()
@@ -185,9 +185,9 @@ class Units(object):
                 return ' inches'
             else:
                 return '"'
-    def string_to_intervals(self, s):
+    def string_to_increments(self, s):
         '''
-        Converts a string representation to the number of intervals.
+        Converts a string representation to the number of increments.
         Assumes the string is in inches or mm, depending on the metric
         attribute.
         '''
@@ -195,25 +195,25 @@ class Units(object):
             return int(s)
         f = My_Fraction()
         f.set_from_string(s)
-        r = f.whole * self.intervals_per_inch
+        r = f.whole * self.increments_per_inch
         if f.numerator > 0:
-            ratio = self.intervals_per_inch // f.denominator
-            if ratio * f.denominator != self.intervals_per_inch:
-                raise ValueError('"%s" is not an exact number of intervals' % s)
+            ratio = self.increments_per_inch // f.denominator
+            if ratio * f.denominator != self.increments_per_inch:
+                raise ValueError('"%s" is not an exact number of increments' % s)
             r += ratio * f.numerator
         return r
     def metric_to_english(self, m):
         '''
-        Converts metric intervals to english intervals
+        Converts metric increments to english increments
         '''
-        return int(m / 25.4 * self.intervals_per_inch)
+        return int(m / 25.4 * self.increments_per_inch)
 
 class Margins(object):
     '''
     Defines window margins and vertical separation between objects for
     the figure.
 
-    Attributes (all distances in intervals)
+    Attributes (all distances in increments)
 
     sep: Vertical separation between template and Board-B and Board-B
          and Board-A.

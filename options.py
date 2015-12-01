@@ -11,12 +11,12 @@ OPTIONS = {}
 # You can change the options below.
 
 # min_finger_width: avoid fingers that are smaller than this dimension.
-# Specified in intervals (integer).  So for English units, 2 corresponds to
+# Specified in increments (integer).  So for English units, 2 corresponds to
 # 2/32" = 1/16"
 OPTIONS['min_finger_width'] = 2
 
 # The margins object controls top, bottom, and side margins, along with the
-# separation between objects in the figure.  Specified in intervals (integer).
+# separation between objects in the figure.  Specified in increments (integer).
 # Here we just set all margins to 1/4".
 OPTIONS['margins'] = Margins(8, bottom=16)
 
@@ -29,6 +29,6 @@ OPTIONS['woods'] = {'Cherry':'black-cherry-sealed.png',\
 # Set debug to True to turn on debugging.  This will print a lot of output to
 # stdout during a pyRouterJig session.  This option is typically only useful
 # for developers.
-OPTIONS['debug'] = False
-#OPTIONS['debug'] = True
+#OPTIONS['debug'] = False
+OPTIONS['debug'] = True
 

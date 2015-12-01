@@ -66,8 +66,10 @@ class Base_Spacing(object):
     bit: A Router_Bit object.
     board: A Board object.
     cuts: A list of Cut objects, which represent the female fingers in Board-A.
-    active_fingers: Finger indices to highlight.  Index is with respect to 
+    cursor_finger: Finger index to highlight perimeter.  Index is with respect to 
                    female fingers in Board-A.
+    active_fingers: Finger indices to highlight with fill.  Index is with respect to 
+                    female fingers in Board-A.
     labels: list of labels for the Spacing_Params
 
     cuts and full_labels are not set until set_cuts is called.
@@ -78,6 +80,7 @@ class Base_Spacing(object):
         self.description = 'NONE'
         self.bit = bit
         self.board = board
+        self.cursor_finger = None
         self.active_fingers = []
         self.cuts = []
         self.full_labels = []
@@ -123,9 +126,9 @@ class Equally_Spaced(Base_Spacing):
             width = self.bit.width
             centered = True
         units = self.bit.units
-        label = units.intervals_to_string(2 * width + b_spacing, True)
+        label = units.increments_to_string(2 * width + b_spacing, True)
         self.full_labels = ['B-spacing: ' + label,\
-                            'Width: ' + units.intervals_to_string(width, True),\
+                            'Width: ' + units.increments_to_string(width, True),\
                             'Centered']
         self.description = 'Equally spaced (' + self.full_labels[0] + \
                            ', ' + self.full_labels[1] + ')'
@@ -133,7 +136,7 @@ class Equally_Spaced(Base_Spacing):
         neck_width = my_round(self.bit.neck + width - self.bit.width + b_spacing)
         if neck_width < 1:
             raise Spacing_Exception('Specified bit paramters give a zero'
-                                    ' or negative cut width (%d intervals) at'
+                                    ' or negative cut width (%d increments) at'
                                     ' the surface!  Please change the'
                                     ' bit parameters width, depth, or angle.' % neck_width)
         # put a cut at the center of the board
@@ -218,28 +221,28 @@ class Variable_Spaced(Base_Spacing):
         # d is the ideal decrease in finger width for each finger away from center finger
         d = (c - self.eff_width) / (m - 1.0)
         # compute fingers on one side of the center and the center and store them
-        # in intervals.  Keep a running total of sizes.
-        intervals = [0] * (m + 1)
+        # in increments.  Keep a running total of sizes.
+        increments = [0] * (m + 1)
         ivals = 0
         for i in lrange(1, m+1):
-            intervals[i] = int(c - d * i)
-            ivals += 2 * intervals[i]
-        # Set the center interval.  This takes up the slop in the rounding and interval
+            increments[i] = int(c - d * i)
+            ivals += 2 * increments[i]
+        # Set the center increment.  This takes up the slop in the rounding and increment
         # resolution.
-        intervals[0] = self.board.width - ivals
-        if intervals[0] < intervals[1]:
-            # The center interval is narrower than the adjacent interval,
-            # so reset it to the adjacent interval and get rid of a finger.
-            intervals[0] = intervals[1]
+        increments[0] = self.board.width - ivals
+        if increments[0] < increments[1]:
+            # The center increment is narrower than the adjacent increment,
+            # so reset it to the adjacent increment and get rid of a finger.
+            increments[0] = increments[1]
             m -= 1
         if OPTIONS['debug']:
-            print('intervals', intervals)
+            print('increments', increments)
         # Adjustments for dovetails
         deltaP = self.bit.width - self.eff_width
         deltaM = my_round(self.eff_width - self.bit.neck)
         # put a cut at the center of the board
         xMid = self.board.width // 2
-        width = intervals[0] + deltaP
+        width = increments[0] + deltaP
         left = max(0, xMid -  width // 2)
         right = min(self.board.width, left + width)
         self.cuts = [router.Cut(left, right)]
@@ -247,13 +250,13 @@ class Variable_Spaced(Base_Spacing):
         do_cut = False
         for i in lrange(1, m+1):
             if do_cut:
-                width = intervals[i] + deltaP
+                width = increments[i] + deltaP
                 farLeft = max(0, left - width)
                 self.cuts.append(router.Cut(farLeft, left))
                 farRight = min(self.board.width, right + width)
                 self.cuts.append(router.Cut(right, farRight))
             else:
-                width = intervals[i] - deltaM
+                width = increments[i] - deltaM
                 farLeft = max(0, left - width)
                 farRight = min(self.board.width, right + width)
             left = farLeft
@@ -282,7 +285,8 @@ class Edit_Spaced(Base_Spacing):
         self.cuts = cuts
         self.full_labels = []
         self.description = 'Edit spacing'
-        self.active_fingers = [0]
+        self.cursor_finger = 0
+        self.active_fingers = [self.cursor_finger]
         self.undo_cuts = []
 
     def changes_made(self):
@@ -313,13 +317,14 @@ class Edit_Spaced(Base_Spacing):
 
     def finger_move_left(self):
         '''
-        Moves the active fingers 1 interval to the left
+        Moves the active fingers 1 increment to the left
         '''
-        msg = 'Moved active finger 1 interval to left'
         cuts_save = copy.deepcopy(self.cuts)
-        fingers = []
+        op = []
+        noop = []
         delete_finger = False
-        for f in self.active_fingers:
+        s = sorted(self.active_fingers)
+        for f in s:
             c = self.cuts[f]
             (xmin, xmax) = self.get_limits(f)
             xmin = max(xmin, c.xmin - 1)
@@ -333,27 +338,36 @@ class Edit_Spaced(Base_Spacing):
                 delete_finger = True
             else:
                 if xmin == c.xmin and xmin > 0:
+                    noop.append(f)
                     msg = 'Unable to move finger to left'
                 else:
                     c.xmin = xmin
                     c.xmax = min(c.xmin + w, self.board.width)
                     self.cuts[f] = c
-                    fingers.append(f)
-        if len(fingers) > 0 or delete_finger:
+                    op.append(f)
+        if len(op) > 0 or delete_finger:
             self.undo_cuts.append(cuts_save)
+        if len(op) > 0:
+            msg = 'Moved finger indices ' + `op` + ' to left 1 increment'
+        else:
+            msg = 'Moved no fingers'
+        if len(noop) > 0:
+            msg += '; unable to move indices ' + `noop`
         if delete_finger:
+            msg += '; deleted finger 0'
             self.finger_delete(0)
         return msg
 
     def finger_move_right(self):
         '''
-        Moves the active fingers 1 interval to the right
+        Moves the active fingers 1 increment to the right
         '''
-        msg = 'Moved active finger 1 interval to right'
         cuts_save = copy.deepcopy(self.cuts)
-        fingers = []
+        op = []
+        noop = []
         delete_finger = False
-        for f in self.active_fingers:
+        s = sorted(self.active_fingers, reverse=True)
+        for f in s:
             c = self.cuts[f]
             (xmin, xmax) = self.get_limits(f)
             xmax = min(xmax, c.xmax + 1)
@@ -367,112 +381,163 @@ class Edit_Spaced(Base_Spacing):
                 delete_finger = True
             else:
                 if xmax == c.xmax and xmax < self.board.width:
-                    msg = 'Unable to move finger to right'
+                    noop.append(f)
                 else:
                     c.xmax = xmax
                     c.xmin = max(c.xmax - w, 0)
                     self.cuts[f] = c
-                    fingers.append(f)
-        if len(fingers) > 0 or delete_finger:
+                    op.append(f)
+        if len(op) > 0 or delete_finger:
             self.undo_cuts.append(cuts_save)
+        if len(op) > 0:
+            msg = 'Moved finger indices ' + `op` + ' to right 1 increment'
+        else:
+            msg = 'Moved no fingers'
+        if len(noop) > 0:
+            msg += '; unable to move indices ' + `noop`
         if delete_finger:
-            self.finger_delete(len(self.cuts) - 1)
+            f = len(self.cuts) - 1
+            msg += '; deleted finger %d' % f
+            self.finger_delete(f)
             self.active_fingers = [len(self.cuts) - 1]
         return msg
 
     def finger_widen_left(self):
         '''
-        Increases the active fingers width on the left side by 1 interval
+        Increases the active fingers width on the left side by 1 increment
         '''
-        msg = 'Widened finger 1 interval on left'
         cuts_save = copy.deepcopy(self.cuts)
-        fingers = []
+        op = []
+        noop = []
         for f in self.active_fingers:
             c = self.cuts[f]
             (xmin, xmax) = self.get_limits(f)
             if c.xmin > xmin:
                 c.xmin -= 1
                 self.cuts[f] = c
-                fingers.append(f)
+                op.append(f)
             else:
-                msg = 'Unable to widen finger on left any further'
-        if len(fingers) > 0:
+                noop.append(F)
+        if len(op) > 0:
             self.undo_cuts.append(cuts_save)
+            msg = 'Widened finger indices ' + `op` + ' on left 1 increment'
+        else:
+            msg = 'Widened no fingers'
+        if len(noop) > 0:
+            msg += '; unable to widen indices ' + `noop`
         return msg
 
     def finger_widen_right(self):
         '''
-        Increases the active fingers width on the right side by 1 interval
+        Increases the active fingers width on the right side by 1 increment
         '''
-        msg = 'Widened finger 1 interval on right'
         cuts_save = copy.deepcopy(self.cuts)
-        fingers = []
+        op = []
+        noop = []
         for f in self.active_fingers:
             c = self.cuts[f]
             (xmin, xmax) = self.get_limits(f)
             if c.xmax < xmax:
                 c.xmax += 1
                 self.cuts[f] = c
-                fingers.append(f)
+                op.append(f)
             else:
-                msg = 'Unable to widen a finger on right any further'
-        if len(fingers) > 0:
+                noop.append(f)
+        if len(op) > 0:
             self.undo_cuts.append(cuts_save)
+            msg = 'Widened finger indices ' + `op` + ' on right 1 increment'
+        else:
+            msg = 'Widened no fingers'
+        if len(noop) > 0:
+            msg += '; unable to widen indices ' + `noop`
         return msg
 
     def finger_trim_left(self):
         '''
-        Decreases the active fingers width on the left side by 1 interval
+        Decreases the active fingers width on the left side by 1 increment
         '''
-        msg = 'Trimmed finger on left 1 interval'
         cuts_save = copy.deepcopy(self.cuts)
-        fingers = []
+        op = []
+        noop = []
         for f in self.active_fingers:
             c = self.cuts[f]
             wmin = self.bit.width
             if c.xmax == self.board.width:
                 wmin = 1
             if c.xmax - c.xmin <= wmin:
-                msg = 'Unable to trim finger on left any further'
+                noop.append(f)
             else:
                 c.xmin += 1
                 self.cuts[f] = c
-                fingers.append(f)
-        if len(fingers) > 0:
+                op.append(f)
+        if len(op) > 0:
             self.undo_cuts.append(cuts_save)
+            msg = 'Trimmed finger indices ' + `op` + ' on left 1 increment'
+        else:
+            msg = 'Trimmed no fingers'
+        if len(noop) > 0:
+            msg += '; unable to trim indices ' + `noop`
         return msg
 
     def finger_trim_right(self):
         '''
-        Decreases the active fingers width on the right side by 1 interval
+        Decreases the active fingers width on the right side by 1 increment
         '''
-        msg = 'Trimmed finger on right 1 interval'
         cuts_save = copy.deepcopy(self.cuts)
-        fingers = []
+        op = []
+        noop = []
         for f in self.active_fingers:
             c = self.cuts[f]
             wmin = self.bit.width
             if c.xmin == 0:
                 wmin = 1
             if c.xmax - c.xmin <= wmin:
-                return 'Unable to trim a finger on right any further'
+                noop.append(f)
             else:
                 c.xmax -= 1
                 self.cuts[f] = c
-                fingers.append(f)
-        if len(fingers) > 0:
+                op.append(f)
+        if len(op) > 0:
             self.undo_cuts.append(cuts_save)
+            msg = 'Trimmed finger indices ' + `op` + ' on right 1 increment'
+        else:
+            msg = 'Trimmed no fingers'
+        if len(noop) > 0:
+            msg += '; unable to trim indices ' + `noop`
         return msg
 
-    def finger_increment_active(self, inc):
+    def finger_increment_cursor(self, inc):
         '''
-        Sets the active finger to the finger to the right, unless already
-        at the last finger, in which case the active finger is cycled back
-        to the first finger on the left.
+        Increments the cursor finger, cyclicly.  Increment can be positive or negative.
         '''
-        for k in lrange(len(self.active_fingers)):
-            self.active_fingers[k] = (self.active_fingers[k] + inc) % len(self.cuts)
-        return 'Switched active fingers'
+        self.cursor_finger = (self.cursor_finger + inc) % len(self.cuts)
+        return 'Moved finger cursor to finger index %d' % self.cursor_finger
+
+    def finger_toggle(self):
+        '''
+        Toggles Increments the cursor finger, cyclicly.  Increment can be positive or negative.
+        '''
+        if self.cursor_finger in self.active_fingers:
+            self.active_fingers.remove(self.cursor_finger)
+            msg = 'Deactivated finger index %d' % self.cursor_finger
+        else:
+            self.active_fingers.append(self.cursor_finger)
+            msg = 'Activated finger index %d' % self.cursor_finger
+        return msg
+
+    def finger_all_active(self):
+        '''
+        Sets all fingers as active.
+        '''
+        self.active_fingers = lrange(len(self.cuts))
+        return 'All fingers activated'
+
+    def finger_all_not_active(self):
+        '''
+        Deactivate all fingers.
+        '''
+        self.active_fingers = []
+        return 'All fingers deactivated'
 
     def finger_delete(self, f):
         '''
@@ -490,17 +555,25 @@ class Edit_Spaced(Base_Spacing):
         '''
         Deletes the active fingers.
         '''
-        msg = 'Deleted active fingers'
         cuts_save = copy.deepcopy(self.cuts)
-        fingers = []
-        for f in self.active_fingers:
+        deleted = []
+        failed = False
+        # delete in reverse order, so that modifications to cuts don't affect index values
+        rev = sorted(self.active_fingers, reverse=True)
+        for f in rev:
             if not self.finger_delete(f):
-                msg = 'Unable to delete last finger'
+                failed = True
                 break
-            fingers.append(f)
-        self.active_fingers = [0]
-        if len(fingers) > 0:
+            deleted.append(f)
+        self.cursor_finger = 0
+        self.active_fingers = [self.cursor_finger]
+        if len(deleted) > 0:
+            msg = 'Deleted finger indices ' + `deleted`
             self.undo_cuts.append(cuts_save)
+        else:
+            msg = 'Deleted no fingers'
+        if failed:
+            msg += '; unable to delete last finger'
         return msg
 
     def finger_add(self):
@@ -511,7 +584,6 @@ class Edit_Spaced(Base_Spacing):
         neck_width = my_round(self.bit.neck)
         index = None
         cuts_save = copy.deepcopy(self.cuts)
-        fingers = []
         if self.cuts[0].xmin > self.bit.neck:
             if OPTIONS['debug']:
                 print('add at left')
@@ -550,5 +622,6 @@ class Edit_Spaced(Base_Spacing):
         c.append(router.Cut(xmin, xmax))
         c.extend(self.cuts[index:])
         self.cuts = c
+        self.cursor_finger = index
         self.active_fingers = [index]
         return 'Added finger'

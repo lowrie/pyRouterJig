@@ -39,6 +39,20 @@ from PyQt4 import QtCore, QtGui
 DEBUG = OPTIONS['debug']
 WOODS = OPTIONS['woods']
 
+def create_vline():
+    '''Creates a vertical line'''
+    vline = QtGui.QFrame()
+    vline.setFrameStyle(QtGui.QFrame.VLine)
+    vline.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+    return vline
+
+def create_hline():
+    '''Creates a horizontal line'''
+    hline = QtGui.QFrame()
+    hline.setFrameStyle(QtGui.QFrame.HLine)
+    hline.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+    return hline
+
 class Driver(QtGui.QMainWindow):
     '''
     Qt driver for pyRouterJig
@@ -49,12 +63,12 @@ class Driver(QtGui.QMainWindow):
         self.except_handled = False
 
         # Default is English units, 1/32" resolution
-        self.units = utils.Units(intervals_per_inch=32)
+        self.units = utils.Units(increments_per_inch=32)
         self.doc = doc.Doc(self.units)
 
         # Create an initial joint
         self.bit = router.Router_Bit(self.units, 16, 24)
-        self.board = router.Board(self.bit, width=self.units.inches_to_intervals(7.5))
+        self.board = router.Board(self.bit, width=self.units.inches_to_increments(7.5))
         self.template = router.Incra_Template(self.units, self.board)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
         self.equal_spacing.set_cuts()
@@ -174,7 +188,7 @@ class Driver(QtGui.QMainWindow):
         about_action.triggered.connect(self._on_about)
         self.help_menu.addAction(about_action)
 
-        doclink_action = QtGui.QAction('&Dccumentation', self)
+        doclink_action = QtGui.QAction('&Documentation', self)
         doclink_action.setStatusTip('Opens documentation page in web browser')
         doclink_action.triggered.connect(self._on_doclink)
         self.help_menu.addAction(doclink_action)
@@ -198,7 +212,7 @@ class Driver(QtGui.QMainWindow):
         self.tb_board_width_label = QtGui.QLabel('Board Width')
         self.tb_board_width = QtGui.QLineEdit(self.main_frame)
         self.tb_board_width.setFixedWidth(lineEditWidth)
-        self.tb_board_width.setText(self.units.intervals_to_string(self.board.width))
+        self.tb_board_width.setText(self.units.increments_to_string(self.board.width))
         self.tb_board_width.editingFinished.connect(self._on_board_width)
         self.tb_board_width.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
 
@@ -206,14 +220,14 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_width_label = QtGui.QLabel('Bit Width')
         self.tb_bit_width = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_width.setFixedWidth(lineEditWidth)
-        self.tb_bit_width.setText(self.units.intervals_to_string(self.bit.width))
+        self.tb_bit_width.setText(self.units.increments_to_string(self.bit.width))
         self.tb_bit_width.editingFinished.connect(self._on_bit_width)
 
         # Bit depth text box
         self.tb_bit_depth_label = QtGui.QLabel('Bit Depth')
         self.tb_bit_depth = QtGui.QLineEdit(self.main_frame)
         self.tb_bit_depth.setFixedWidth(lineEditWidth)
-        self.tb_bit_depth.setText(self.units.intervals_to_string(self.bit.depth))
+        self.tb_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.tb_bit_depth.editingFinished.connect(self._on_bit_depth)
 
         # Bit angle text box
@@ -320,13 +334,18 @@ class Driver(QtGui.QMainWindow):
         self.edit_btn_trimR.setArrowType(QtCore.Qt.RightArrow)
         self.edit_btn_trimR.clicked.connect(self._on_edit_trimR)
 
-        self.edit_select_label = QtGui.QLabel('Select')
-        self.edit_btn_selectL = QtGui.QToolButton(self.main_frame)
-        self.edit_btn_selectL.setArrowType(QtCore.Qt.LeftArrow)
-        self.edit_btn_selectL.clicked.connect(self._on_edit_selectL)
-        self.edit_btn_selectR = QtGui.QToolButton(self.main_frame)
-        self.edit_btn_selectR.setArrowType(QtCore.Qt.RightArrow)
-        self.edit_btn_selectR.clicked.connect(self._on_edit_selectR)
+        self.edit_btn_toggle = QtGui.QPushButton('Toggle', self.main_frame)
+        self.edit_btn_toggle.clicked.connect(self._on_edit_toggle)
+        self.edit_btn_cursorL = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_cursorL.setArrowType(QtCore.Qt.LeftArrow)
+        self.edit_btn_cursorL.clicked.connect(self._on_edit_cursorL)
+        self.edit_btn_cursorR = QtGui.QToolButton(self.main_frame)
+        self.edit_btn_cursorR.setArrowType(QtCore.Qt.RightArrow)
+        self.edit_btn_cursorR.clicked.connect(self._on_edit_cursorR)
+        self.edit_btn_activate_all = QtGui.QPushButton('All', self.main_frame)
+        self.edit_btn_activate_all.clicked.connect(self._on_edit_activate_all)
+        self.edit_btn_deactivate_all = QtGui.QPushButton('None', self.main_frame)
+        self.edit_btn_deactivate_all.clicked.connect(self._on_edit_deactivate_all)
 
         self.set_tooltips()
 
@@ -344,19 +363,21 @@ class Driver(QtGui.QMainWindow):
         self.vs_slider0.setToolTip(self.doc.vs_slider0())
         self.edit_btn_undo.setToolTip('Undo the last change')
         self.edit_btn_add.setToolTip('Add a finger (if there is space to add fingers)')
-        self.edit_btn_del.setToolTip('Delete the active finger')
-        self.edit_move_label.setToolTip('Moves the active finger')
-        self.edit_btn_moveL.setToolTip('Move active finger to left 1 interval')
-        self.edit_btn_moveR.setToolTip('Move active finger to right 1 interval')
+        self.edit_btn_del.setToolTip('Delete the active fingers')
+        self.edit_move_label.setToolTip('Moves the active fingers')
+        self.edit_btn_moveL.setToolTip('Move active fingers to left 1 increment')
+        self.edit_btn_moveR.setToolTip('Move active fingers to right 1 increment')
         self.edit_widen_label.setToolTip('Widens the active finger')
-        self.edit_btn_widenL.setToolTip('Widen active finger 1 interval on left side')
-        self.edit_btn_widenR.setToolTip('Widen active finger 1 interval on right side')
-        self.edit_trim_label.setToolTip('Trims the active finger')
-        self.edit_btn_trimL.setToolTip('Trim active finger 1 interval on left side')
-        self.edit_btn_trimR.setToolTip('Trim active finger 1 interval on right side')
-        self.edit_select_label.setToolTip('Selects the active finger')
-        self.edit_btn_selectL.setToolTip('Move active finger to left')
-        self.edit_btn_selectR.setToolTip('Move active finger to right')
+        self.edit_btn_widenL.setToolTip('Widen active fingers 1 increment on left side')
+        self.edit_btn_widenR.setToolTip('Widen active fingers 1 increment on right side')
+        self.edit_trim_label.setToolTip('Trims the active fingers')
+        self.edit_btn_trimL.setToolTip('Trim active fingers 1 increment on left side')
+        self.edit_btn_trimR.setToolTip('Trim active fingers 1 increment on right side')
+        self.edit_btn_toggle.setToolTip('Toggles the finger at cursor between active and deactive')
+        self.edit_btn_cursorL.setToolTip('Move finger cursor to left')
+        self.edit_btn_cursorR.setToolTip('Move finger cursor to right')
+        self.edit_btn_activate_all.setToolTip('Set all fingers to be active')
+        self.edit_btn_deactivate_all.setToolTip('Set no fingers to be active')
 
     def layout_widgets(self):
         '''
@@ -431,40 +452,44 @@ class Driver(QtGui.QMainWindow):
         # Create the layout of the edit spacing controls
         self.hbox_edit = QtGui.QHBoxLayout()
         self.grid_edit = QtGui.QGridLayout()
-        vline = QtGui.QFrame()
-        vline.setFrameStyle(QtGui.QFrame.VLine)
-        vline.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.grid_edit.addWidget(vline, 0, 0, 2, 1)
-        self.grid_edit.addWidget(self.edit_move_label, 0, 1, 1, 2, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_btn_moveL, 1, 1)
-        self.grid_edit.addWidget(self.edit_btn_moveR, 1, 2)
-        vline2 = QtGui.QFrame()
-        vline2.setFrameStyle(QtGui.QFrame.VLine)
-        vline2.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.grid_edit.addWidget(vline2, 0, 3, 2, 1)
-        self.grid_edit.addWidget(self.edit_widen_label, 0, 4, 1, 2, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_btn_widenL, 1, 4)
-        self.grid_edit.addWidget(self.edit_btn_widenR, 1, 5)
-        vline3 = QtGui.QFrame()
-        vline3.setFrameStyle(QtGui.QFrame.VLine)
-        vline3.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.grid_edit.addWidget(vline3, 0, 6, 2, 1)
-        self.grid_edit.addWidget(self.edit_trim_label, 0, 7, 1, 2, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_btn_trimL, 1, 7)
-        self.grid_edit.addWidget(self.edit_btn_trimR, 1, 8)
-        vline4 = QtGui.QFrame()
-        vline4.setFrameStyle(QtGui.QFrame.VLine)
-        vline4.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.grid_edit.addWidget(vline4, 0, 9, 2, 1)
-        self.grid_edit.addWidget(self.edit_select_label, 0, 10, 1, 2, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_btn_selectL, 1, 10)
-        self.grid_edit.addWidget(self.edit_btn_selectR, 1, 11)
-        vline5 = QtGui.QFrame()
-        vline5.setFrameStyle(QtGui.QFrame.VLine)
-        vline5.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.grid_edit.addWidget(vline5, 0, 12, 2, 1)
-        self.grid_edit.addWidget(self.edit_btn_add, 0, 13)
-        self.grid_edit.addWidget(self.edit_btn_del, 1, 13)
+        hline = create_hline()
+        self.grid_edit.addWidget(hline, 0, 0, 1, 16)
+        hline2 = create_hline()
+        self.grid_edit.addWidget(hline2, 2, 0, 1, 16)
+        vline = create_vline()
+        self.grid_edit.addWidget(vline, 0, 0, 6, 1)
+        self.grid_edit.addWidget(QtGui.QLabel('Active Finger Select'), 1, 1, 1, 3,  QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_btn_toggle, 3, 1, 1, 2, QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_btn_cursorL, 4, 1, QtCore.Qt.AlignRight)
+        self.grid_edit.addWidget(self.edit_btn_cursorR, 4, 2, QtCore.Qt.AlignLeft)
+        self.grid_edit.addWidget(self.edit_btn_activate_all, 3, 3)
+        self.grid_edit.addWidget(self.edit_btn_deactivate_all, 4, 3)
+        vline2 = create_vline()
+        self.grid_edit.addWidget(vline2, 0, 4, 6, 1)
+        self.grid_edit.addWidget(QtGui.QLabel('Active Finger Operators'), 1, 5, 1, 10,  QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_move_label, 3, 5, 1, 2, QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_btn_moveL, 4, 5, QtCore.Qt.AlignRight)
+        self.grid_edit.addWidget(self.edit_btn_moveR, 4, 6, QtCore.Qt.AlignLeft)
+        vline3 = create_vline()
+        self.grid_edit.addWidget(vline3, 2, 7, 4, 1)
+        self.grid_edit.addWidget(self.edit_widen_label, 3, 8, 1, 2, QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_btn_widenL, 4, 8, QtCore.Qt.AlignRight)
+        self.grid_edit.addWidget(self.edit_btn_widenR, 4, 9, QtCore.Qt.AlignLeft)
+        vline4 = create_vline()
+        self.grid_edit.addWidget(vline4, 2, 10, 4, 1)
+        self.grid_edit.addWidget(self.edit_trim_label, 3, 11, 1, 2, QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(self.edit_btn_trimL, 4, 11, QtCore.Qt.AlignRight)
+        self.grid_edit.addWidget(self.edit_btn_trimR, 4, 12, QtCore.Qt.AlignLeft)
+        vline5 = create_vline()
+        self.grid_edit.addWidget(vline5, 2, 13, 4, 1)
+        self.grid_edit.addWidget(self.edit_btn_add, 3, 14)
+        self.grid_edit.addWidget(self.edit_btn_del, 4, 14)
+        vline6 = create_vline()
+        self.grid_edit.addWidget(vline6, 0, 15, 6, 1)
+        hline3 = create_hline()
+        self.grid_edit.addWidget(hline3, 5, 0, 1, 16)
+        self.grid_edit.setSpacing(5)
+
         self.hbox_edit.addLayout(self.grid_edit)
         self.hbox_edit.addStretch(1)
         self.hbox_edit.addWidget(self.edit_btn_undo)
@@ -799,9 +824,9 @@ class Driver(QtGui.QMainWindow):
         self.board.change_units(self.units)
         self.bit.change_units(self.units)
         self.doc.change_units(self.units)
-        self.tb_board_width.setText(self.units.intervals_to_string(self.board.width))
-        self.tb_bit_width.setText(self.units.intervals_to_string(self.bit.width))
-        self.tb_bit_depth.setText(self.units.intervals_to_string(self.bit.depth))
+        self.tb_board_width.setText(self.units.increments_to_string(self.board.width))
+        self.tb_bit_width.setText(self.units.increments_to_string(self.bit.width))
+        self.tb_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.reinit_spacing()
         self.set_tooltips()
         self.draw()
@@ -885,20 +910,47 @@ class Driver(QtGui.QMainWindow):
         self.draw()
 
     @QtCore.pyqtSlot()
-    def _on_edit_selectL(self):
-        '''Handles select left event'''
+    def _on_edit_toggle(self):
+        '''Handles edit toggle event'''
         if DEBUG:
-            print('_on_edit_selectL')
-        msg = self.spacing.finger_increment_active(-1)
+            print('_on_edit_toggle')
+        msg = self.spacing.finger_toggle()
         self.statusbar.showMessage(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
-    def _on_edit_selectR(self):
-        '''Handles select right event'''
+    def _on_edit_cursorL(self):
+        '''Handles cursor left event'''
         if DEBUG:
-            print('_on_edit_selectR')
-        msg = self.spacing.finger_increment_active(1)
+            print('_on_edit_cursorL')
+        msg = self.spacing.finger_increment_cursor(-1)
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_cursorR(self):
+        '''Handles toggle right event'''
+        if DEBUG:
+            print('_on_edit_cursorR')
+        msg = self.spacing.finger_increment_cursor(1)
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_activate_all(self):
+        '''Handles edit activate all event'''
+        if DEBUG:
+            print('_on_edit_activate_all')
+        msg = self.spacing.finger_all_active()
+        self.statusbar.showMessage(msg)
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_edit_deactivate_all(self):
+        '''Handles edit deactivate all event'''
+        if DEBUG:
+            print('_on_edit_deactivate_all')
+        msg = self.spacing.finger_all_not_active()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -963,13 +1015,28 @@ class Driver(QtGui.QMainWindow):
             self.spacing.undo()
             msg = 'Undo'
             self.draw()
+        elif event.key() == QtCore.Qt.Key_A:
+            msg = self.spacing.finger_all_active()
+            self.draw()
+        elif event.key() == QtCore.Qt.Key_N:
+            msg = self.spacing.finger_all_not_active()
+            self.draw()
+        elif event.key() == QtCore.Qt.Key_Return:
+            msg = self.spacing.finger_toggle()
+            self.draw()
+        elif event.key() == QtCore.Qt.Key_Minus:
+            msg = self.spacing.finger_delete_active()
+            self.draw()
+        elif event.key() == QtCore.Qt.Key_Plus:
+            msg = self.spacing.finger_add()
+            self.draw()
         elif event.key() == QtCore.Qt.Key_Left:
             if self.shift_key:
                 msg = self.spacing.finger_widen_left()
             elif self.control_key:
                 msg = self.spacing.finger_trim_left()
             elif self.alt_key:
-                msg = self.spacing.finger_increment_active(-1)
+                msg = self.spacing.finger_increment_cursor(-1)
             else:
                 msg = self.spacing.finger_move_left()
             self.draw()
@@ -979,15 +1046,9 @@ class Driver(QtGui.QMainWindow):
             elif self.control_key:
                 msg = self.spacing.finger_trim_right()
             elif self.alt_key:
-                msg = self.spacing.finger_increment_active(1)
+                msg = self.spacing.finger_increment_cursor(1)
             else:
                 msg = self.spacing.finger_move_right()
-            self.draw()
-        elif event.key() == QtCore.Qt.Key_Minus:
-            msg = self.spacing.finger_delete_active()
-            self.draw()
-        elif event.key() == QtCore.Qt.Key_Plus:
-            msg = self.spacing.finger_add()
             self.draw()
         else:
             msg = 'You pressed an unrecognized key: '

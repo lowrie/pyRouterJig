@@ -106,7 +106,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.fig_height = -1
         self.set_fig_dimensions(template, board)
         # if subsequent passes are less than this value, don't label
-        # the pass (in intervals)
+        # the pass (in increments)
         self.sep_annotate = 4
         self.geom = None
         self.background = QtGui.QBrush(QtGui.QColor(240, 231, 201))
@@ -126,7 +126,7 @@ class Qt_Plotter(QtGui.QWidget):
     def set_fig_dimensions(self, template, board):
         '''
         Computes the figure dimension attributes, fig_width and fig_height, in
-        intervals.
+        increments.
         Returns True if the dimensions changed.
         '''
         # Try default margins, but reset if the template is too small for margins
@@ -153,7 +153,7 @@ class Qt_Plotter(QtGui.QWidget):
             dimensions_changed = True
 
         # The 1200 here is effectively a dpi for the screen
-        scale = 1200 * board.units.intervals_to_inches(1)
+        scale = 1200 * board.units.increments_to_inches(1)
         self.window_width = int(scale * fig_width)
         self.window_height = int(scale * fig_height)
 
@@ -239,7 +239,7 @@ class Qt_Plotter(QtGui.QWidget):
         else:
             # Scale so that the image is the correct size on the page
             painter.translate(0, window_height)
-            scale = float(dpi) / self.geom.board.units.intervals_per_inch
+            scale = float(dpi) / self.geom.board.units.increments_per_inch
         painter.scale(scale, -scale)
         self.transform = painter.transform()
 
@@ -344,44 +344,68 @@ class Qt_Plotter(QtGui.QWidget):
         p = (self.geom.board_B.xMid(), self.geom.board_B.yB)
         paint_text(painter, 'B', p, flags, (0, -3), fill=self.background)
 
+    def finger_polygon(self, c):
+        xLT = self.geom.board_B.xL + c.xmin
+        xRT = xLT + c.xmax - c.xmin
+        xLB = xLT
+        xRB = xRT
+        if xLT > self.geom.board_B.xL:
+            xLB += self.geom.bit.offset
+        if xRT < self.geom.board_B.xR():
+            xRB -= self.geom.bit.offset
+        yT = self.geom.board_B.yT()
+        yB = yT - self.geom.bit.depth
+        poly = QtGui.QPolygonF()
+        poly.append(QtCore.QPointF(xLT, yT))
+        poly.append(QtCore.QPointF(xRT, yT))
+        poly.append(QtCore.QPointF(xRB, yB))
+        poly.append(QtCore.QPointF(xLB, yB))
+        poly.append(QtCore.QPointF(xLT, yT))
+        return poly
+
     def draw_active_fingers(self, painter):
         '''
         If the spacing supports it, highlight the active fingers and
         draw their limits
         '''
+        # draw the perimeter of the cursor finger
+        f = self.geom.spacing.cursor_finger
+        if f is None:
+            return
+        poly = self.finger_polygon(self.geom.aCuts[f])
         painter.save()
+        pen = QtGui.QPen(QtCore.Qt.blue)
+        pen.setWidth(1)
+        painter.setPen(pen)
+        painter.drawPolyline(poly)
+        painter.restore()
+
+        # initialize limits
+        xminG = self.geom.board.width
+        xmaxG = 0
+
+        # draw the active fingers filled, and track the limits
+        painter.save()
+        brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 75))
+        painter.setBrush(brush)
         for f in self.geom.spacing.active_fingers:
-            # highlight the finger rectangle
-            c = self.geom.aCuts[f]
-            xLT = self.geom.board_B.xL + c.xmin
-            xRT = xLT + c.xmax - c.xmin
-            xLB = xLT
-            xRB = xRT
-            if xLT > self.geom.board_B.xL:
-                xLB += self.geom.bit.offset
-            if xRT < self.geom.board_B.xR():
-                xRB -= self.geom.bit.offset
-            yT = self.geom.board_B.yT()
-            yB = yT - self.geom.bit.depth
-            poly = QtGui.QPolygonF()
-            poly.append(QtCore.QPointF(xLT, yT))
-            poly.append(QtCore.QPointF(xRT, yT))
-            poly.append(QtCore.QPointF(xRB, yB))
-            poly.append(QtCore.QPointF(xLB, yB))
-            brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 75))
-            painter.setBrush(brush)
+            poly = self.finger_polygon(self.geom.aCuts[f])
             painter.drawPolygon(poly)
-            painter.setPen(QtCore.Qt.red)
-            painter.drawPolyline(poly)
-            # draw the limits
+            # keep track of the limits
             (xmin, xmax) = self.geom.spacing.get_limits(f)
-            xmin += self.geom.board_B.xL
-            xmax += self.geom.board_B.xL
-            yB = self.geom.board_B.yB
-            yT = self.geom.board_B.yT()
-            painter.setPen(QtCore.Qt.green)
-            painter.drawLine(xmin, yB, xmin, yT)
-            painter.drawLine(xmax, yB, xmax, yT)
+            xminG = min(xminG, xmin)
+            xmaxG = max(xmaxG, xmax)
+        painter.restore()
+
+        # draw the limits
+        painter.save()
+        xminG += self.geom.board_B.xL
+        xmaxG += self.geom.board_B.xL
+        yB = self.geom.board_B.yB
+        yT = self.geom.board_B.yT()
+        painter.setPen(QtCore.Qt.green)
+        painter.drawLine(xminG, yB, xminG, yT)
+        painter.drawLine(xmaxG, yB, xmaxG, yT)
         painter.restore()
 
     def draw_title(self, painter):
@@ -391,16 +415,16 @@ class Qt_Plotter(QtGui.QWidget):
         units = self.geom.board.units
         title = self.geom.spacing.description
         title += '\nBoard width: '
-        title += units.intervals_to_string(self.geom.board.width, True)
+        title += units.increments_to_string(self.geom.board.width, True)
         title += '    Bit: '
         if self.geom.bit.angle > 0:
             title += '%.1f deg. dovetail' % self.geom.bit.angle
         else:
             title += 'straight'
         title += ', width: '
-        title += units.intervals_to_string(self.geom.bit.width, True)
+        title += units.increments_to_string(self.geom.bit.width, True)
         title += ', depth: '
-        title += units.intervals_to_string(self.geom.bit.depth, True)
+        title += units.increments_to_string(self.geom.bit.depth, True)
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         p = (self.geom.board_T.xMid(), self.margins.bottom)
         paint_text(painter, title, p, flags, (0, 5))
@@ -432,11 +456,11 @@ class Qt_Plotter(QtGui.QWidget):
     def mousePressEvent(self, QMouseEvent):
         '''
         This is a placeholder for mouse events, and maps the clicked
-        coordinate to the interval coordinate system.
+        coordinate to the increment coordinate system.
         '''
         pos = QMouseEvent.pos() # in pixel coordinates
         (inverted, invertable) = self.transform.inverted()
-        # map pixel coordinates to interval coords
+        # map pixel coordinates to increment coords
         posM = inverted.map(pos)
         #print('posM', posM)
 
