@@ -1036,9 +1036,9 @@ class Driver(QtGui.QMainWindow):
             elif self.control_key:
                 msg = self.spacing.finger_trim_left()
             elif self.alt_key:
-                msg = self.spacing.finger_increment_cursor(-1)
-            else:
                 msg = self.spacing.finger_move_left()
+            else:
+                msg = self.spacing.finger_increment_cursor(-1)
             self.draw()
         elif event.key() == QtCore.Qt.Key_Right:
             if self.shift_key:
@@ -1046,9 +1046,9 @@ class Driver(QtGui.QMainWindow):
             elif self.control_key:
                 msg = self.spacing.finger_trim_right()
             elif self.alt_key:
-                msg = self.spacing.finger_increment_cursor(1)
-            else:
                 msg = self.spacing.finger_move_right()
+            else:
+                msg = self.spacing.finger_increment_cursor(1)
             self.draw()
         else:
             msg = 'You pressed an unrecognized key: '
