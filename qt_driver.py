@@ -94,9 +94,9 @@ class Driver(QtGui.QMainWindow):
         # because we assume that that the user does not want the default joint saved.
         self.file_saved = True
 
-        # The working_dir is where we save screenshots and files.  We start
-        # with the user home directory.  Ideally, if using the script to
-        # start the program, then we'd use the cwd, but that's complicated.
+        # The working_dir is where we save files.  We start with the user home
+        # directory.  Ideally, if using the script to start the program, then
+        # we'd use the cwd, but that's complicated.
         self.working_dir = os.path.expanduser('~')
 
         # We form the screenshot filename from this index
@@ -371,7 +371,7 @@ class Driver(QtGui.QMainWindow):
         self.edit_move_label.setToolTip('Moves the active fingers')
         self.edit_btn_moveL.setToolTip('Move active fingers to left 1 increment')
         self.edit_btn_moveR.setToolTip('Move active fingers to right 1 increment')
-        self.edit_widen_label.setToolTip('Widens the active finger')
+        self.edit_widen_label.setToolTip('Widens the active fingers')
         self.edit_btn_widenL.setToolTip('Widen active fingers 1 increment on left side')
         self.edit_btn_widenR.setToolTip('Widen active fingers 1 increment on right side')
         self.edit_trim_label.setToolTip('Trims the active fingers')
