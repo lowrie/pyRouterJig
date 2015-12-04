@@ -105,6 +105,7 @@ class Driver(QtGui.QMainWindow):
         self.control_key = False
         self.shift_key = False
         self.alt_key = False
+        self.spacing_index = None
 
     def exception_hook(self, etype, value, trace):
         '''
@@ -461,7 +462,8 @@ class Driver(QtGui.QMainWindow):
         self.grid_edit.addWidget(hline2, 2, 0, 1, 16)
         vline = create_vline()
         self.grid_edit.addWidget(vline, 0, 0, 6, 1)
-        self.grid_edit.addWidget(QtGui.QLabel('Active Finger Select'), 1, 1, 1, 3,  QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(QtGui.QLabel('Active Finger Select'), \
+                                 1, 1, 1, 3, QtCore.Qt.AlignHCenter)
         self.grid_edit.addWidget(self.edit_btn_toggle, 3, 1, 1, 2, QtCore.Qt.AlignHCenter)
         self.grid_edit.addWidget(self.edit_btn_cursorL, 4, 1, QtCore.Qt.AlignRight)
         self.grid_edit.addWidget(self.edit_btn_cursorR, 4, 2, QtCore.Qt.AlignLeft)
@@ -469,7 +471,8 @@ class Driver(QtGui.QMainWindow):
         self.grid_edit.addWidget(self.edit_btn_deactivate_all, 4, 3)
         vline2 = create_vline()
         self.grid_edit.addWidget(vline2, 0, 4, 6, 1)
-        self.grid_edit.addWidget(QtGui.QLabel('Active Finger Operators'), 1, 5, 1, 10,  QtCore.Qt.AlignHCenter)
+        self.grid_edit.addWidget(QtGui.QLabel('Active Finger Operators'),\
+                                 1, 5, 1, 10, QtCore.Qt.AlignHCenter)
         self.grid_edit.addWidget(self.edit_move_label, 3, 5, 1, 2, QtCore.Qt.AlignHCenter)
         self.grid_edit.addWidget(self.edit_btn_moveL, 4, 5, QtCore.Qt.AlignRight)
         self.grid_edit.addWidget(self.edit_btn_moveR, 4, 6, QtCore.Qt.AlignLeft)
@@ -634,8 +637,11 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to spacing algorithm'''
         if DEBUG:
             print('_on_tabs_spacing')
-        if self.spacing_index == self.edit_spacing and index != self.edit_spacing and self.spacing.changes_made():
-            msg = 'You are exiting the Editor, which will discard any changes made in the Editor.  Are you sure you want to do this?'
+        if self.spacing_index == self.edit_spacing and index != self.edit_spacing and \
+                    self.spacing.changes_made():
+            msg = 'You are exiting the Editor, which will discard'\
+                  ' any changes made in the Editor.'\
+                  '\n\nAre you sure you want to do this?'
             reply = QtGui.QMessageBox.question(self, 'Message', msg,
                                                QtGui.QMessageBox.Yes,
                                                QtGui.QMessageBox.No)
@@ -831,7 +837,8 @@ class Driver(QtGui.QMainWindow):
 
         # Get the file name
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open file', \
-                                                     self.working_dir, 'Portable Network Graphics (*.png)')
+                                                     self.working_dir, \
+                                                     'Portable Network Graphics (*.png)')
         filename = str(filename).strip()
         if len(filename) == 0:
             self.status_message('File open aborted')
@@ -1118,7 +1125,7 @@ class Driver(QtGui.QMainWindow):
         if self.tabs_spacing.currentIndex() != self.edit_spacing_id:
             event.ignore()
             return
-        
+
         msg = None
         if event.key() == QtCore.Qt.Key_Shift:
             self.shift_key = True
@@ -1183,7 +1190,7 @@ class Driver(QtGui.QMainWindow):
         if self.tabs_spacing.currentIndex() != self.edit_spacing_id:
             event.ignore()
             return
-            
+
         if event.key() == QtCore.Qt.Key_Shift:
             self.shift_key = False
         elif event.key() == QtCore.Qt.Key_Control:

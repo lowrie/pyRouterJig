@@ -68,9 +68,9 @@ class Base_Spacing(object):
     bit: A Router_Bit object.
     board: A Board object.
     cuts: A list of Cut objects, which represent the female fingers in Board-A.
-    cursor_finger: Finger index to highlight perimeter.  Index is with respect to 
+    cursor_finger: Finger index to highlight perimeter.  Index is with respect to
                    female fingers in Board-A.
-    active_fingers: Finger indices to highlight with fill.  Index is with respect to 
+    active_fingers: Finger indices to highlight with fill.  Index is with respect to
                     female fingers in Board-A.
     labels: list of labels for the Spacing_Params
     id: Unique integer identifier for each concrete class
@@ -121,6 +121,9 @@ class Equally_Spaced(Base_Spacing):
             self.params[self.keys[i]] = t[i]
 
     def set_cuts(self):
+        '''
+        Sets the cuts to make the joint
+        '''
         b_spacing = self.params[self.keys[0]].v
         width = self.params[self.keys[1]].v
         centered = self.params[self.keys[2]].v
@@ -205,8 +208,10 @@ class Variable_Spaced(Base_Spacing):
         self.params = {'Fingers':Spacing_Param(self.mMin, self.mMax, self.mDefault)}
 
     def set_cuts(self):
+        '''
+        Sets the cuts to make the joint
+        '''
         m = self.params['Fingers'].v
-        units = self.bit.units
         self.labels = [self.keys[0] + ': %d' % m]
         self.description = 'Variable Spaced (' + self.labels[0] + ')'
         # c is the ideal center-cut width
@@ -410,7 +415,7 @@ class Edit_Spaced(Base_Spacing):
                 self.cuts[f] = c
                 op.append(f)
             else:
-                noop.append(F)
+                noop.append(f)
         if len(op) > 0:
             self.undo_cuts.append(cuts_save)
             msg = 'Widened finger indices ' + `op` + ' on left 1 increment'

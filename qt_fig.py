@@ -345,6 +345,9 @@ class Qt_Plotter(QtGui.QWidget):
         paint_text(painter, 'B', p, flags, (0, -3), fill=self.background)
 
     def finger_polygon(self, c):
+        '''
+        Forms the polygon for the finger corresponding to the cut c
+        '''
         xLT = self.geom.board_B.xL + c.xmin
         xRT = xLT + c.xmax - c.xmin
         xLB = xLT
@@ -452,15 +455,4 @@ class Qt_Plotter(QtGui.QWidget):
             label = '%d' % (c.xmax - c.xmin)
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill=self.background)
-
-    def mousePressEvent(self, QMouseEvent):
-        '''
-        This is a placeholder for mouse events, and maps the clicked
-        coordinate to the increment coordinate system.
-        '''
-        pos = QMouseEvent.pos() # in pixel coordinates
-        (inverted, invertable) = self.transform.inverted()
-        # map pixel coordinates to increment coords
-        posM = inverted.map(pos)
-        #print('posM', posM)
 

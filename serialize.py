@@ -22,15 +22,12 @@
 Contains serialization capability
 '''
 from __future__ import print_function
-from future.utils import lrange
 
 import pickle, StringIO
 from options import OPTIONS
 import router
 import utils
 import spacing
-
-spacing_idmap = {'Equa':0, 'Vari':1, 'Edit':2}
 
 def serialize(bit, board, sp):
     '''
@@ -75,30 +72,22 @@ def unserialize(s):
     u = pickle.Unpickler(inp)
     version = u.load()
     if OPTIONS['debug']:
-        print('unserialized version', version)
+        print('unserialized version:', version)
     # form the units
     metric = u.load()
     if metric:
-        if OPTIONS['debug']:
-            print('unserialized metric')
         units = utils.Units(metric=True)
     else:
         ipi = u.load()
-        if OPTIONS['debug']:
-            print('unserialized increments_per_inch', ipi)
         units = utils.Units(ipi)
     # form the bit
     width = u.load()
     depth = u.load()
     angle = u.load()
-    if OPTIONS['debug']:
-        print('unserialized bit w,d,a', width, depth, angle)
     bit = router.Router_Bit(units, width, depth, angle)
     # form the board
     width = u.load()
     board = router.Board(bit, width)
-    if OPTIONS['debug']:
-        print('unserialized board width', width)
     # form the spacing
     sp_type = u.load()
     if sp_type == 'Edit':
