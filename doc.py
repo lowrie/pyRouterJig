@@ -91,10 +91,10 @@ class Doc(object):
     def bit_angle(self):
         return self._bit_angle
     def es_slider0(self):
-        return self._es_slider0 % spacing.Equally_Spaced.labels[0]
+        return self._es_slider0 % spacing.Equally_Spaced.keys[0]
     def es_slider1(self):
-        return self._es_slider1 % spacing.Equally_Spaced.labels[1]
+        return self._es_slider1 % spacing.Equally_Spaced.keys[1]
     def es_centered(self):
-        return self._es_centered % spacing.Equally_Spaced.labels[2]
+        return self._es_centered % spacing.Equally_Spaced.keys[2]
     def vs_slider0(self):
-        return self._vs_slider0 % spacing.Variable_Spaced.labels[0]
+        return self._vs_slider0 % spacing.Variable_Spaced.keys[0]

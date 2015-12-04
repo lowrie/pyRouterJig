@@ -31,6 +31,7 @@ import router
 import spacing
 import utils
 import doc
+import serialize
 from options import OPTIONS
 
 from PyQt4 import QtCore, QtGui
@@ -66,7 +67,9 @@ class Driver(QtGui.QMainWindow):
         self.units = utils.Units(increments_per_inch=32)
         self.doc = doc.Doc(self.units)
 
-        # Create an initial joint
+        # Create an initial joint.  Even though another joint may be opened
+        # later, we do this now so that the initial widget layout may be
+        # created.
         self.bit = router.Router_Bit(self.units, 16, 24)
         self.board = router.Board(self.bit, width=self.units.inches_to_increments(7.5))
         self.template = router.Incra_Template(self.units, self.board)
@@ -133,17 +136,23 @@ class Driver(QtGui.QMainWindow):
 
         self.file_menu = self.menubar.addMenu('File')
 
+        open_action = QtGui.QAction('&Open File...', self)
+        open_action.setShortcut('Ctrl+O')
+        open_action.setStatusTip('Opens a previously saved image of joint')
+        open_action.triggered.connect(self._on_open)
+        self.file_menu.addAction(open_action)
+
+        save_action = QtGui.QAction('&Save File...', self)
+        save_action.setShortcut('Ctrl+S')
+        save_action.setStatusTip('Saves an image of the joint to a file')
+        save_action.triggered.connect(self._on_save)
+        self.file_menu.addAction(save_action)
+
         print_action = QtGui.QAction('&Print', self)
         print_action.setShortcut('Ctrl+P')
         print_action.setStatusTip('Print the figure')
         print_action.triggered.connect(self._on_print)
         self.file_menu.addAction(print_action)
-
-        screenshot_action = QtGui.QAction('&Screenshot', self)
-        screenshot_action.setShortcut('Ctrl+S')
-        screenshot_action.setStatusTip('Screenshot of window')
-        screenshot_action.triggered.connect(self._on_screenshot)
-        self.file_menu.addAction(screenshot_action)
 
         exit_action = QtGui.QAction('&Quit', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -239,19 +248,17 @@ class Driver(QtGui.QMainWindow):
 
         # Equal spacing widgets
 
-        params = self.equal_spacing.get_params()
-        labels = self.equal_spacing.full_labels
-        self.es_cut_values = [0] * 3
+        params = self.equal_spacing.params
+        labels = self.equal_spacing.labels
 
         # ...first slider
-        p = params[0]
-        self.es_cut_values[0] = p.vInit
+        p = params['B-spacing']
         self.es_slider0_label = QtGui.QLabel(labels[0])
         self.es_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
         self.es_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.es_slider0.setMinimum(p.vMin)
         self.es_slider0.setMaximum(p.vMax)
-        self.es_slider0.setValue(p.vInit)
+        self.es_slider0.setValue(p.v)
         self.es_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
         if p.vMax - p.vMin < 10:
             self.es_slider0.setTickInterval(1)
@@ -259,14 +266,13 @@ class Driver(QtGui.QMainWindow):
         self.es_slider0.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
         # ...second slider
-        p = params[1]
-        self.es_cut_values[1] = p.vInit
+        p = params['Width']
         self.es_slider1_label = QtGui.QLabel(labels[1])
         self.es_slider1 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
         self.es_slider1.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.es_slider1.setMinimum(p.vMin)
         self.es_slider1.setMaximum(p.vMax)
-        self.es_slider1.setValue(p.vInit)
+        self.es_slider1.setValue(p.v)
         self.es_slider1.setTickPosition(QtGui.QSlider.TicksBelow)
         if p.vMax - p.vMin < 10:
             self.es_slider1.setTickInterval(1)
@@ -274,27 +280,24 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
         # ...check box for centering
-        p = params[2]
-        self.es_cut_values[2] = p.vInit
+        p = params['Centered']
         self.cb_es_centered = QtGui.QCheckBox(labels[2], self.main_frame)
         self.cb_es_centered.setChecked(True)
         self.cb_es_centered.stateChanged.connect(self._on_cb_es_centered)
 
         # Variable spacing widgets
 
-        params = self.var_spacing.get_params()
-        labels = self.var_spacing.full_labels
-        self.vs_cut_values = [0] * 2
+        params = self.var_spacing.params
+        labels = self.var_spacing.labels
 
         # ...slider
-        p = params[0]
-        self.vs_cut_values[0] = p.vInit
+        p = params['Fingers']
         self.vs_slider0_label = QtGui.QLabel(labels[0])
         self.vs_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
         self.vs_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.vs_slider0.setMinimum(p.vMin)
         self.vs_slider0.setMaximum(p.vMax)
-        self.vs_slider0.setValue(p.vInit)
+        self.vs_slider0.setValue(p.v)
         self.vs_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
         if p.vMax - p.vMin < 10:
             self.vs_slider0.setTickInterval(1)
@@ -508,7 +511,13 @@ class Driver(QtGui.QMainWindow):
         self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
         tip = 'These tabs specify the layout algorithm for the fingers.'
         self.tabs_spacing.setToolTip(tip)
-        self.spacing_index = 0 # default is Equal
+
+        # The tab indices should be set in the order they're defined, but this ensures it
+        self.equal_spacing_id = self.tabs_spacing.indexOf(self.tab_es)
+        self.var_spacing_id = self.tabs_spacing.indexOf(self.tab_vs)
+        self.edit_spacing_id = self.tabs_spacing.indexOf(self.tab_edit)
+        # set default spacing tab to Equal
+        self.spacing_index = self.equal_spacing_id
         self.tabs_spacing.setCurrentIndex(self.spacing_index)
 
         # either add the spacing Tabs to the bottom
@@ -544,16 +553,29 @@ class Driver(QtGui.QMainWindow):
         Re-initializes the joint spacing objects.  This must be called
         when the router bit or board change dimensions.
         '''
-
-        # The ordering of the index is the same order that the tabs
-        # were created in create main frame
         self.spacing_index = self.tabs_spacing.currentIndex()
 
+        # Re-create the spacings objects
+        if self.spacing_index == self.equal_spacing_id:
+            self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
+        elif self.spacing_index == self.var_spacing_id:
+            self.var_spacing = spacing.Variable_Spaced(self.bit, self.board)
+        elif self.spacing_index == self.edit_spacing_id:
+            self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board)
+        else:
+            raise ValueError('Bad value for spacing_index %d' % self.spacing_index)
+
+        self.set_spacing_widgets()
+
+    def set_spacing_widgets(self):
+        '''
+        Sets the spacing widget parameters
+        '''
         # enable/disable editing of line edit boxes, depending upon spacing
         # algorithm
         tbs = [self.tb_board_width, self.tb_bit_width, self.tb_bit_depth,\
                self.tb_bit_angle]
-        if self.spacing_index == 2:
+        if self.spacing_index == self.edit_spacing_id:
             for tb in tbs:
                 tb.setEnabled(False)
                 tb.setStyleSheet("color: gray;")
@@ -562,53 +584,46 @@ class Driver(QtGui.QMainWindow):
                 tb.setEnabled(True)
                 tb.setStyleSheet("color: black;")
 
-        # Set up the widgets for each spacing algorithm
-        if self.spacing_index == 0:
-            # do the equal spacing parameters.  Preserve the centered option.
-            self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
-            params = self.equal_spacing.get_params()
-            p = params[0]
+        if self.spacing_index == self.equal_spacing_id:
+            # Equal spacing widgets
+            params = self.equal_spacing.params
+            p = params['B-spacing']
             self.es_slider0.blockSignals(True)
             self.es_slider0.setMinimum(p.vMin)
             self.es_slider0.setMaximum(p.vMax)
-            self.es_slider0.setValue(p.vInit)
+            self.es_slider0.setValue(p.v)
             self.es_slider0.blockSignals(False)
-            self.es_cut_values[0] = p.vInit
-            p = params[1]
+            p = params['Width']
             self.es_slider1.blockSignals(True)
             self.es_slider1.setMinimum(p.vMin)
             self.es_slider1.setMaximum(p.vMax)
-            self.es_slider1.setValue(p.vInit)
+            self.es_slider1.setValue(p.v)
             self.es_slider1.blockSignals(False)
-            self.es_cut_values[1] = p.vInit
-            p = params[2]
-            centered = self.es_cut_values[2]
+            p = params['Centered']
+            centered = p.v
             self.cb_es_centered.blockSignals(True)
             self.cb_es_centered.setChecked(centered)
             self.cb_es_centered.blockSignals(False)
-            self.equal_spacing.set_cuts(self.es_cut_values)
-            self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
-            self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
+
+            self.equal_spacing.set_cuts()
+            self.es_slider0_label.setText(self.equal_spacing.labels[0])
+            self.es_slider1_label.setText(self.equal_spacing.labels[1])
             self.spacing = self.equal_spacing
-        elif self.spacing_index == 1:
-            # do the variable spacing parameters
-            self.var_spacing = spacing.Variable_Spaced(self.bit, self.board)
-            params = self.var_spacing.get_params()
-            p = params[0]
+        elif self.spacing_index == self.var_spacing_id:
+            # Variable spacing widgets
+            params = self.var_spacing.params
+            p = params['Fingers']
             self.vs_slider0.blockSignals(True)
             self.vs_slider0.setMinimum(p.vMin)
             self.vs_slider0.setMaximum(p.vMax)
-            self.vs_slider0.setValue(p.vInit)
+            self.vs_slider0.setValue(p.v)
             self.vs_slider0.blockSignals(False)
-            self.vs_cut_values[0] = p.vInit
-            self.var_spacing.set_cuts(self.vs_cut_values)
-            self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
+            self.var_spacing.set_cuts()
+            self.vs_slider0_label.setText(self.var_spacing.labels[0])
             self.spacing = self.var_spacing
-        elif self.spacing_index == 2:
-            # Do the edit spacing parameters.  Currently, this has no
-            # parameters, and uses as a starting spacing whatever the previous
-            # spacing set.
-            self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board)
+        elif self.spacing_index == self.edit_spacing_id:
+            # Edit spacing parameters.  Currently, this has no parameters, and
+            # uses as a starting spacing whatever the previous spacing set.
             self.edit_spacing.set_cuts(self.spacing.cuts)
             self.spacing = self.edit_spacing
         else:
@@ -619,7 +634,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to spacing algorithm'''
         if DEBUG:
             print('_on_tabs_spacing')
-        if self.spacing_index == 2 and index != 2 and self.spacing.changes_made():
+        if self.spacing_index == self.edit_spacing and index != self.edit_spacing and self.spacing.changes_made():
             msg = 'You are exiting the Editor, which will discard any changes made in the Editor.  Are you sure you want to do this?'
             reply = QtGui.QMessageBox.question(self, 'Message', msg,
                                                QtGui.QMessageBox.Yes,
@@ -703,9 +718,9 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to the equally-spaced slider B-spacing'''
         if DEBUG:
             print('_on_es_slider0', value)
-        self.es_cut_values[0] = value
-        self.equal_spacing.set_cuts(self.es_cut_values)
-        self.es_slider0_label.setText(self.equal_spacing.full_labels[0])
+        self.equal_spacing.params['B-spacing'].v = value
+        self.equal_spacing.set_cuts()
+        self.es_slider0_label.setText(self.equal_spacing.labels[0])
         self.draw()
         self.status_message('Changed slider %s' % str(self.es_slider0_label.text()))
         self.file_saved = False
@@ -715,9 +730,9 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to the equally-spaced slider Width'''
         if DEBUG:
             print('_on_es_slider1', value)
-        self.es_cut_values[1] = value
-        self.equal_spacing.set_cuts(self.es_cut_values)
-        self.es_slider1_label.setText(self.equal_spacing.full_labels[1])
+        self.equal_spacing.params['Width'].v = value
+        self.equal_spacing.set_cuts()
+        self.es_slider1_label.setText(self.equal_spacing.labels[1])
         self.draw()
         self.status_message('Changed slider %s' % str(self.es_slider1_label.text()))
         self.file_saved = False
@@ -727,10 +742,10 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to centered checkbox'''
         if DEBUG:
             print('_on_cb_es_centered')
-        self.es_cut_values[2] = self.cb_es_centered.isChecked()
-        self.equal_spacing.set_cuts(self.es_cut_values)
+        self.equal_spacing.params['Centered'].v = self.cb_es_centered.isChecked()
+        self.equal_spacing.set_cuts()
         self.draw()
-        if self.es_cut_values[2]:
+        if self.equal_spacing.params['Centered'].v:
             self.status_message('Checked Centered.')
         else:
             self.status_message('Unchecked Centered.')
@@ -741,12 +756,124 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to the variable-spaced slider Fingers'''
         if DEBUG:
             print('_on_vs_slider0', value)
-        self.vs_cut_values[0] = value
-        self.var_spacing.set_cuts(self.vs_cut_values)
-        self.vs_slider0_label.setText(self.var_spacing.full_labels[0])
+        self.var_spacing.params['Fingers'].v = value
+        self.var_spacing.set_cuts()
+        self.vs_slider0_label.setText(self.var_spacing.labels[0])
         self.draw()
         self.status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
         self.file_saved = False
+
+    @QtCore.pyqtSlot()
+    def _on_save(self):
+        '''
+        Handles save file events.   The file format is  PNG, with metadata
+        to support recreating the joint.
+        '''
+        if DEBUG:
+            print('_on_save')
+
+        # Get the file name.  The default name is indexed on the number
+        # of times this function is called.
+        defname = os.path.join(self.working_dir,
+                               'screenshot_%d.png' % (self.screenshot_index))
+
+        # This is the simple approach to set the filename, but doesn't allow
+        # us to update the working_dir, if the user changes it.
+        #filename = QtGui.QFileDialog.getSaveFileName(self, 'Save file', \
+        #                                             defname, 'Portable Network Graphics (*.png)')
+        # ... so here is now we do it:
+        dialog = QtGui.QFileDialog(self, 'Save file', defname, \
+                                   'Portable Network Graphics (*.png)')
+        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+        filename = None
+        if dialog.exec_():
+            filenames = dialog.selectedFiles()
+            self.working_dir = str(dialog.directory().path())
+            filename = str(filenames[0]).strip()
+        if filename is None:
+            self.status_message('File not saved')
+            return
+
+        # Save the file with metadata
+        image = QtGui.QPixmap.grabWindow(self.winId()).toImage()
+        s = serialize.serialize(self.bit, self.board, self.spacing)
+        image.setText('pyRouterJig', s)
+        r = image.save(filename, 'png')
+        if r:
+            self.status_message('Saved to file %s' % filename)
+            self.screenshot_index += 1
+            self.file_saved = True
+        else:
+            self.status_message('Unable to save to file %s' % filename)
+
+    @QtCore.pyqtSlot()
+    def _on_open(self):
+        '''
+        Handles open file events.  The file format is  PNG, with metadata
+        to support recreating the joint.  In other words, the file must
+        have been saved using _on_save().
+        '''
+        if DEBUG:
+            print('_on_open')
+
+        # Make sure changes are not lost
+        if not self.file_saved:
+            msg = 'Current joint not saved.'\
+                  ' Opening a new file will overwrite the current joint.'\
+                  '\n\nAre you sure you want to do this?'
+            reply = QtGui.QMessageBox.question(self, 'Message', msg,
+                                               QtGui.QMessageBox.Yes,
+                                               QtGui.QMessageBox.No)
+
+            if reply == QtGui.QMessageBox.No:
+                return
+
+        # Get the file name
+        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open file', \
+                                                     self.working_dir, 'Portable Network Graphics (*.png)')
+        filename = str(filename).strip()
+        if len(filename) == 0:
+            self.status_message('File open aborted')
+            return
+
+        # From the image file, parse the metadata.  Maintain the board icon
+        # from its current value, rather than reading it from the file.
+        image = QtGui.QImage(filename)
+        s = image.text('pyRouterJig') # see setText in _on_save
+        if len(s) == 0:
+            msg = 'File %s does not contain pyRouterJig data.  The PNG file'\
+                  ' must have been saved using pyRouterJig.' % filename
+            QtGui.QMessageBox.warning(self, 'Error', msg)
+            return
+        icon = self.board.icon
+        (self.bit, self.board, sp, sp_type) = serialize.unserialize(s)
+        self.board.set_icon(icon)
+
+        # Reset the dependent data
+        self.units = self.bit.units
+        self.template = router.Incra_Template(self.units, self.board)
+        if sp_type == 'Equa':
+            sp.set_cuts()
+            self.equal_spacing = sp
+            self.spacing_index = self.equal_spacing_id
+        elif sp_type == 'Vari':
+            sp.set_cuts()
+            self.var_spacing = sp
+            self.spacing_index = self.var_spacing_id
+        elif sp_type == 'Edit':
+            self.edit_spacing = sp
+            self.spacing_index = self.edit_spacing_id
+        self.spacing = sp
+        self.tabs_spacing.blockSignals(True)
+        self.tabs_spacing.setCurrentIndex(self.spacing_index)
+        self.tabs_spacing.blockSignals(False)
+        self.tb_board_width.setText(self.units.increments_to_string(self.board.width))
+        self.tb_bit_width.setText(self.units.increments_to_string(self.bit.width))
+        self.tb_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
+        self.tb_bit_angle.setText(`self.bit.angle`)
+        self.set_spacing_widgets()
+        self.draw()
 
     @QtCore.pyqtSlot()
     def _on_print(self):
@@ -756,21 +883,9 @@ class Driver(QtGui.QMainWindow):
 
         r = self.fig.print(self.template, self.board, self.bit, self.spacing)
         if r:
-            self.status_message("Figure printed")
+            self.status_message('Figure printed')
         else:
-            self.status_message("Figure not printed")
-
-    @QtCore.pyqtSlot()
-    def _on_screenshot(self):
-        '''Handles screenshot events'''
-        if DEBUG:
-            print('_on_screenshot')
-        filetype = 'png'
-        filename = os.path.join(self.working_dir,
-                                'screenshot_%d.%s' % (self.screenshot_index, filetype))
-        QtGui.QPixmap.grabWindow(self.winId()).save(filename, filetype)
-        self.status_message("Saved screenshot to %s" % filename)
-        self.screenshot_index += 1
+            self.status_message('Figure not printed')
 
     @QtCore.pyqtSlot()
     def _on_exit(self):
@@ -1000,7 +1115,7 @@ class Driver(QtGui.QMainWindow):
         Handles key press events
         '''
         # return if not edit spacing
-        if self.tabs_spacing.currentIndex() != 2:
+        if self.tabs_spacing.currentIndex() != self.edit_spacing_id:
             event.ignore()
             return
         
@@ -1065,7 +1180,7 @@ class Driver(QtGui.QMainWindow):
         Handles key release events
         '''
         # return if not edit spacing
-        if self.tabs_spacing.currentIndex() != 2:
+        if self.tabs_spacing.currentIndex() != self.edit_spacing_id:
             event.ignore()
             return
             

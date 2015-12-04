@@ -29,6 +29,6 @@ OPTIONS['woods'] = {'Cherry':'black-cherry-sealed.png',\
 # Set debug to True to turn on debugging.  This will print a lot of output to
 # stdout during a pyRouterJig session.  This option is typically only useful
 # for developers.
-#OPTIONS['debug'] = False
-OPTIONS['debug'] = True
+OPTIONS['debug'] = False
+#OPTIONS['debug'] = True
 
