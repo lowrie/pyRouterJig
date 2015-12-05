@@ -149,6 +149,12 @@ class Driver(QtGui.QMainWindow):
         save_action.triggered.connect(self._on_save)
         self.file_menu.addAction(save_action)
 
+        screenshot_action = QtGui.QAction('Screenshot...', self)
+        screenshot_action.setShortcut('Ctrl+W')
+        screenshot_action.setStatusTip('Saves an image of the pyRouterJig window to a file')
+        screenshot_action.triggered.connect(self._on_screenshot)
+        self.file_menu.addAction(screenshot_action)
+
         print_action = QtGui.QAction('&Print', self)
         print_action.setShortcut('Ctrl+P')
         print_action.setStatusTip('Print the figure')
@@ -770,9 +776,18 @@ class Driver(QtGui.QMainWindow):
         self.file_saved = False
 
     @QtCore.pyqtSlot()
-    def _on_save(self):
+    def _on_screenshot(self):
         '''
-        Handles save file events.   The file format is  PNG, with metadata
+        Handles screenshot events.
+        '''
+        if DEBUG:
+            print('_on_screenshot')
+        self._on_save(True)
+
+    @QtCore.pyqtSlot()
+    def _on_save(self, do_screenshot=False):
+        '''
+        Handles save file events. The file format is PNG, with metadata
         to support recreating the joint.
         '''
         if DEBUG:
@@ -802,7 +817,11 @@ class Driver(QtGui.QMainWindow):
             return
 
         # Save the file with metadata
-        image = QtGui.QPixmap.grabWindow(self.winId()).toImage()
+        if do_screenshot:
+            image = QtGui.QPixmap.grabWindow(self.winId()).toImage()
+        else:
+            image = self.fig.image(self.template, self.board, self.bit, self.spacing)
+
         s = serialize.serialize(self.bit, self.board, self.spacing)
         image.setText('pyRouterJig', s)
         r = image.save(filename, 'png')

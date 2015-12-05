@@ -96,6 +96,12 @@ class Qt_Fig(object):
         '''
         return self.canvas.print_fig(template, board, bit, spacing)
 
+    def image(self, template, board, bit, spacing):
+        '''
+        Prints the figure to an image
+        '''
+        return self.canvas.image_fig(template, board, bit, spacing)
+
 class Qt_Plotter(QtGui.QWidget):
     '''
     Plots the template and boards using Qt.
@@ -183,6 +189,22 @@ class Qt_Plotter(QtGui.QWidget):
         pdialog.setModal(True)
         pdialog.paintRequested.connect(self.preview_requested)
         return pdialog.exec_()
+
+    def image_fig(self, template, board, bit, spacing):
+        '''
+        Prints the figure to a QImage object
+        '''
+        self.set_fig_dimensions(template, board)
+        self.geom = router.Joint_Geometry(template, board, bit, spacing, self.margins)
+
+        image = QtGui.QImage(self.size(), QtGui.QImage.Format_RGB16)
+        painter = QtGui.QPainter()
+        painter.begin(image)
+        size = image.size()
+        painter.fillRect(0, 0, size.width(), size.height(), self.background)
+        self.paint_all(painter)
+        painter.end()
+        return image
 
     def preview_requested(self, printer):
         '''
