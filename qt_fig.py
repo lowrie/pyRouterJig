@@ -56,6 +56,15 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
     painter.resetTransform()
     painter.translate(x, y)
     painter.rotate(angle)
+    # Scale the font to be consistently 3 increments large.  We do this so
+    # that a) labels fit in the template, and b) so that fonts are the same
+    # size relative to the geometry, across output devices (screen, printer,
+    # etc.)
+    font = painter.font()
+    (xx, yy) = transform.map(3, 3)
+    xx -= transform.dx()
+    font.setPixelSize(my_round(xx))
+    painter.setFont(font)
     # Create a large rectangle and use it to find the bounding rectangle around the text.
     # Find the origin of the rectangle based on the alignment.
     big = 5000
@@ -328,13 +337,13 @@ class Qt_Plotter(QtGui.QWidget):
         pen = QtGui.QPen(QtCore.Qt.black)
         pen.setWidthF(0)
         painter.setPen(pen)
-        if self.geom.board.icon is None:
+        if type(self.geom.board.icon) == type(QtCore.Qt.DiagCrossPattern):
             brush = QtGui.QBrush(QtCore.Qt.black, \
-                                 QtCore.Qt.DiagCrossPattern)
+                                 self.geom.board.icon)
             (inverted, invertable) = self.transform.inverted()
             brush.setMatrix(inverted.toAffine())
         else:
-            brush = QtGui.QBrush(QtGui.QPixmap(':' + self.geom.board.icon))
+            brush = QtGui.QBrush(QtGui.QPixmap(self.geom.board.icon))
         painter.setBrush(brush)
         n = len(x)
         poly = QtGui.QPolygonF()
