@@ -41,7 +41,7 @@ separation = top_margin
 
 # Define the wood types used to color the boards.
 # This list is used to build the Wood menu.
-wood_dir = os.path.os.path.join(os.path.expanduser('~'), 'woods')
+wood_dir = os.path.join(os.path.expanduser('~'), 'woods')
 woods = {'Cherry':'black-cherry-sealed.png',\
          'Maple':'hard-maple.png',\
          'Walnut':'black-walnut-sealed.png'}
