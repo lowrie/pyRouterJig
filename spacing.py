@@ -29,8 +29,7 @@ import math
 import copy
 from operator import attrgetter
 import router
-from utils import my_round
-from options import OPTIONS
+import utils
 
 class Spacing_Exception(Exception):
     '''
@@ -136,7 +135,7 @@ class Equally_Spaced(Base_Spacing):
         self.description = 'Equally spaced (' + self.labels[0] + \
                            ', ' + self.labels[1] + ')'
         self.cuts = [] # return value
-        neck_width = my_round(self.bit.neck + width - self.bit.width + b_spacing)
+        neck_width = utils.my_round(self.bit.neck + width - self.bit.width + b_spacing)
         if neck_width < 1:
             raise Spacing_Exception('Specified bit paramters give a zero'
                                     ' or negative cut width (%d increments) at'
@@ -155,14 +154,14 @@ class Equally_Spaced(Base_Spacing):
         i = left - neck_width
         while i > 0:
             li = max(i - width, 0)
-            if i - li > OPTIONS['min_finger_width']:
+            if i - li > utils.CONFIG.min_finger_width:
                 self.cuts.append(router.Cut(li, i))
             i = li - neck_width
         # do right side of self.board
         i = right + neck_width
         while i < self.board.width:
             ri = min(i + width, self.board.width)
-            if ri - i > OPTIONS['min_finger_width']:
+            if ri - i > utils.CONFIG.min_finger_width:
                 self.cuts.append(router.Cut(i, ri))
             i = ri + neck_width
         # If we have only one cut the entire width of the board, then
@@ -191,12 +190,12 @@ class Variable_Spaced(Base_Spacing):
         Base_Spacing.__init__(self, bit, board)
         # eff_width is the effective width, an average of the bit width
         # and the neck width
-        self.eff_width = my_round(0.5 * (self.bit.width + self.bit.neck))
+        self.eff_width = utils.my_round(0.5 * (self.bit.width + self.bit.neck))
         self.wb = self.board.width // self.eff_width
         self.alpha = (self.wb + 1) % 2
         # min and max number of fingers
-        self.mMin = max(3 - self.alpha, my_round(math.ceil(math.sqrt(self.wb))))
-        self.mMax = my_round((self.wb - 1.0 + self.alpha) // 2)
+        self.mMin = max(3 - self.alpha, utils.my_round(math.ceil(math.sqrt(self.wb))))
+        self.mMax = utils.my_round((self.wb - 1.0 + self.alpha) // 2)
         if self.mMax < self.mMin:
             raise Spacing_Exception('Unable to compute a variable-spaced'\
                                     ' joint for the board and bit parameters'\
@@ -235,11 +234,11 @@ class Variable_Spaced(Base_Spacing):
             # so reset it to the adjacent increment and get rid of a finger.
             increments[0] = increments[1]
             m -= 1
-        if OPTIONS['debug']:
+        if utils.CONFIG.debug:
             print('increments', increments)
         # Adjustments for dovetails
         deltaP = self.bit.width - self.eff_width
-        deltaM = my_round(self.eff_width - self.bit.neck)
+        deltaM = utils.my_round(self.eff_width - self.bit.neck)
         # put a cut at the center of the board
         xMid = self.board.width // 2
         width = increments[0] + deltaP
@@ -299,7 +298,7 @@ class Edit_Spaced(Base_Spacing):
         '''
         xmin = 0
         xmax = self.board.width
-        neck_width = my_round(self.bit.neck)
+        neck_width = utils.my_round(self.bit.neck)
         if f > 0:
             xmin = self.cuts[f - 1].xmax + neck_width
         if f < len(self.cuts) - 1:
@@ -579,11 +578,11 @@ class Edit_Spaced(Base_Spacing):
         Adds a finger to the first location possible, searching from the left.
         The active finger is set the the new finger.
         '''
-        neck_width = my_round(self.bit.neck)
+        neck_width = utils.my_round(self.bit.neck)
         index = None
         cuts_save = copy.deepcopy(self.cuts)
         if self.cuts[0].xmin > self.bit.neck:
-            if OPTIONS['debug']:
+            if utils.CONFIG.debug:
                 print('add at left')
             index = 0
             xmin = 0
@@ -592,14 +591,14 @@ class Edit_Spaced(Base_Spacing):
         wdelta = self.bit.width - neck_width
         for i in lrange(1, len(self.cuts)):
             if self.cuts[i].xmin - self.cuts[i - 1].xmax + wdelta >= wadd:
-                if OPTIONS['debug']:
+                if utils.CONFIG.debug:
                     print('add in finger')
                 index = i
                 xmin = self.cuts[i - 1].xmax + neck_width
                 xmax = xmin + self.bit.width
                 break
             elif self.cuts[i].xmax - self.cuts[i].xmin >= wadd:
-                if OPTIONS['debug']:
+                if utils.CONFIG.debug:
                     print('add in cut')
                 index = i + 1
                 xmin = self.cuts[i].xmax - self.bit.width
@@ -608,7 +607,7 @@ class Edit_Spaced(Base_Spacing):
                 break
         if index is None and \
            self.cuts[-1].xmax < self.board.width - self.bit.neck:
-            if OPTIONS['debug']:
+            if utils.CONFIG.debug:
                 print('add at right')
             index = len(self.cuts)
             xmax = self.board.width

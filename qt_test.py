@@ -25,8 +25,8 @@ from builtins import str
 
 import sys
 import unittest
+import utils
 from qt_driver import Driver
-from options import OPTIONS
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4.QtTest import QTest
@@ -43,7 +43,7 @@ class Driver_Test(unittest.TestCase):
         self.d.raise_()
         QTest.qWaitForWindowShown(self.d)
     def test_options(self):
-        self.assertFalse(OPTIONS['debug'])
+        self.assertFalse(utils.CONFIG.debug)
     def test_defaults(self):
         self.assertEqual(str(self.d.tb_board_width.text()), '7 1/2')
         self.assertEqual(str(self.d.tb_bit_width.text()), '1/2')

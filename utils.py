@@ -23,9 +23,19 @@ This module contains base utilitities for pyRouterJig
 '''
 from __future__ import division
 
-import math, fractions
+import math, fractions, imp, os
 
 VERSION = '0.5.0'
+
+CONFIG_FILENAME = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
+CONFIG = None # set by read_config
+
+def read_config():
+    '''
+    Reads the configuration file
+    '''
+    global CONFIG
+    CONFIG = imp.load_source('', CONFIG_FILENAME)
 
 def my_round(f):
     '''
@@ -222,7 +232,7 @@ class Margins(object):
     botoom: Bottom margin
     top: Top margin
     '''
-    def __init__(self, default, sep=None, left=None, right=None, bottom=None, 
+    def __init__(self, default, sep=None, left=None, right=None, bottom=None,
                  top=None):
         '''
         If any value is left unspecified, it's value is set to sep.

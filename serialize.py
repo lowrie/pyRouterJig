@@ -24,7 +24,6 @@ Contains serialization capability
 from __future__ import print_function
 
 import pickle, StringIO
-from options import OPTIONS
 import router
 import utils
 import spacing
@@ -51,7 +50,7 @@ def serialize(bit, board, sp):
     p.dump(board.width)
     # Save the spacing
     sp_type = sp.description[0:4]
-    if OPTIONS['debug']:
+    if utils.CONFIG.debug:
         print('serialize', sp_type)
     p.dump(sp_type)
     if sp_type == 'Edit':
@@ -60,7 +59,7 @@ def serialize(bit, board, sp):
         p.dump(sp.params)
     s = out.getvalue()
     out.close()
-    if OPTIONS['debug']:
+    if utils.CONFIG.debug:
         print('size of pickle', len(s))
     return s
 
@@ -71,7 +70,7 @@ def unserialize(s):
     inp = StringIO.StringIO(s)
     u = pickle.Unpickler(inp)
     version = u.load()
-    if OPTIONS['debug']:
+    if utils.CONFIG.debug:
         print('unserialized version:', version)
     # form the units
     metric = u.load()
@@ -91,7 +90,7 @@ def unserialize(s):
     # form the spacing
     sp_type = u.load()
     if sp_type == 'Edit':
-        if OPTIONS['debug']:
+        if utils.CONFIG.debug:
             print('unserialized edit spacing')
         cuts = u.load()
         sp = spacing.Edit_Spaced(bit, board)
@@ -102,7 +101,7 @@ def unserialize(s):
         else:
             sp = spacing.Variable_Spaced(bit, board)
         sp.params = u.load()
-        if OPTIONS['debug']:
+        if utils.CONFIG.debug:
             print('unserialized ', sp_type, `sp.params`)
         sp.set_cuts()
     return (bit, board, sp, sp_type)

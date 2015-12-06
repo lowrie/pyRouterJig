@@ -37,6 +37,7 @@ top_margin = 8
 left_margin = top_margin
 right_margin = top_margin
 bottom_margin = 16
+separation = top_margin
 
 # Define the wood types used to color the boards.
 # This list is used to build the Wood menu.
@@ -49,6 +50,6 @@ default_wood = 'Cherry'
 # Set debug to True to turn on debugging.  This will print a lot of output to
 # stdout during a pyRouterJig session.  This option is typically only useful
 # for developers.
-# debug = False
-debug = True
+debug = False
+#debug = True
 

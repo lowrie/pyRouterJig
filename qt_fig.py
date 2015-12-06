@@ -26,9 +26,8 @@ from __future__ import division
 from future.utils import lrange
 
 import copy
-from options import OPTIONS
 import router
-from utils import my_round
+import utils
 
 from PyQt4 import QtCore, QtGui
 #from PySide import QtCore, QtGui
@@ -54,15 +53,6 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
     painter.resetTransform()
     painter.translate(x, y)
     painter.rotate(angle)
-    # Scale the font to be consistently 3 increments large.  We do this so
-    # that a) labels fit in the template, and b) so that fonts are the same
-    # size relative to the geometry, across output devices (screen, printer,
-    # etc.)
-    font = painter.font()
-    (xx, yy) = transform.map(3, 3)
-    xx -= transform.dx()
-    font.setPixelSize(my_round(xx))
-    painter.setFont(font)
     # Create a large rectangle and use it to find the bounding rectangle around the text.
     # Find the origin of the rectangle based on the alignment.
     big = 5000
@@ -143,7 +133,11 @@ class Qt_Plotter(QtGui.QWidget):
         Returns True if the dimensions changed.
         '''
         # Try default margins, but reset if the template is too small for margins
-        self.margins = copy.deepcopy(OPTIONS['margins'])
+        self.margins = utils.Margins(8, utils.CONFIG.separation,\
+                                     utils.CONFIG.left_margin,\
+                                     utils.CONFIG.right_margin,\
+                                     utils.CONFIG.bottom_margin,\
+                                     utils.CONFIG.top_margin)
 
         # Set the figure dimensions
         fig_width = template.length + self.margins.left + self.margins.right
@@ -258,11 +252,11 @@ class Qt_Plotter(QtGui.QWidget):
             window_ar = float(window_width) / window_height
             fig_ar = float(self.fig_width) / self.fig_height
             if fig_ar < window_ar:
-                w = my_round(fig_ar * window_height)
+                w = utils.my_round(fig_ar * window_height)
                 painter.translate((window_width - w) // 2, window_height)
                 scale = float(window_height) / self.fig_height
             else:
-                h = my_round(window_width / fig_ar)
+                h = utils.my_round(window_width / fig_ar)
                 painter.translate(0, (window_height + h) // 2)
                 scale = float(window_width) / self.fig_width
         else:
@@ -273,6 +267,16 @@ class Qt_Plotter(QtGui.QWidget):
         self.transform = painter.transform()
 
         painter.setPen(QtCore.Qt.black)
+
+        # Scale the font to be consistently 3/32" large.  We do this so that
+        # a) labels fit in the template, and b) so that fonts are the same
+        # size relative to the geometry, across output devices (screen,
+        # printer, etc.)
+        font_inches = 3 / 32.0 * self.geom.board.units.increments_per_inch
+        font = painter.font()
+        xx = self.transform.map(font_inches, 0)[0] - self.transform.dx()
+        font.setPixelSize(utils.my_round(xx))
+        painter.setFont(font)
 
         # draw the objects
         self.draw_template(painter)
