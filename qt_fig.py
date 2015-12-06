@@ -30,8 +30,6 @@ from options import OPTIONS
 import router
 from utils import my_round
 
-import pyRouterJig_rc
-
 from PyQt4 import QtCore, QtGui
 #from PySide import QtCore, QtGui
 

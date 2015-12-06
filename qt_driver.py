@@ -27,6 +27,7 @@ from builtins import str
 import os, sys, traceback, webbrowser, imp
 
 import qt_fig
+import pyRouterJig_rc
 import router
 import spacing
 import utils
@@ -36,6 +37,8 @@ import config_file
 
 from PyQt4 import QtCore, QtGui
 #from PySide import QtCore, QtGui
+
+config_filename = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
 
 def create_vline():
     '''Creates a vertical line'''
@@ -60,9 +63,16 @@ class Driver(QtGui.QMainWindow):
         sys.excepthook = self.exception_hook
         self.except_handled = False
 
+        # Create the config file if it does not exist
+        if not os.path.exists(config_filename):
+            qfile = QtCore.QFile(':pyrouterjig_config.py')
+            qfile.copy(config_filename)
+            msg = 'Configuration file %s created' % config_filename
+        else:
+            msg = 'Read configuration file %s' % config_filename
+
         # Read the config file
-        (self.config, msg) = config_file.read_config_file()
-        print('debug', self.config.debug, self.config.bottom_margin)
+        self.config = imp.load_source('', config_filename)
 
         # Default is English units, 1/32" resolution
         self.units = utils.Units(self.config.increments_per_inch, self.config.metric)

@@ -1,7 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-  <file>woods/black-cherry-sealed.png</file>
-  <file>woods/black-walnut-sealed.png</file>
-  <file>woods/hard-maple.png</file>
+  <file>pyrouterjig_config.py</file>
 </qresource>
 </RCC>
