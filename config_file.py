@@ -56,10 +56,11 @@ bit_angle = 0
 # Specified in increments.
 min_finger_width = 2
 
-# The folder which contains the wood image files
+# The folder which contains wood grain image files
 wood_images = '%s'
 
-# This is either one wood names, or the following Qt fill patterns:
+# This is either a wood name (the file prefix of an image file in wood_images),
+# or the following Qt fill patterns:
 # DiagCrossPattern, BDiagPattern, FDiagPattern, Dense1Pattern, Dense5Pattern
 default_wood = 'DiagCrossPattern'
 
@@ -81,11 +82,13 @@ separation = top_margin
 # Colors are specified as a mix of three values between 0 and 255, as
 #     (red, green, blue)
 # Examples:
-# (255, 0, 0) is red
-# (0, 255, 0) is green
-# (0, 0, 255) is blue
-# (255, 255, 255) is white
-# (0, 0, 0) is black
+# (255, 0, 0) red
+# (0, 255, 0) green
+# (0, 0, 255) blue
+# (255, 255, 255) white
+# (0, 0, 0) black
+#
+# Useful site: http://www.colorpicker.com/
 
 # Background color
 background_color = (240, 231, 201)
