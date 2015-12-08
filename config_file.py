@@ -56,10 +56,10 @@ bit_angle = 0
 # Specified in increments.
 min_finger_width = 2
 
-# The folder which contains the *.png files in woods
+# The folder which contains the wood image files
 wood_images = '%s'
 
-# This is either one wood names (e.g., Cherry), or the Qt fill patterns:
+# This is either one wood names, or the following Qt fill patterns:
 # DiagCrossPattern, BDiagPattern, FDiagPattern, Dense1Pattern, Dense5Pattern
 default_wood = 'DiagCrossPattern'
 
@@ -77,6 +77,18 @@ left_margin = top_margin
 right_margin = top_margin
 bottom_margin = 16
 separation = top_margin
+
+# Colors are specified as a mix of three values between 0 and 255, as
+#     (red, green, blue)
+# Examples:
+# (255, 0, 0) is red
+# (0, 255, 0) is green
+# (0, 0, 255) is blue
+# (255, 255, 255) is white
+# (0, 0, 0) is black
+
+# Background color
+background_color = (240, 231, 201)
 '''
 
 def read_config():

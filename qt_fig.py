@@ -113,7 +113,8 @@ class Qt_Plotter(QtGui.QWidget):
         # the pass (in increments)
         self.sep_annotate = 4
         self.geom = None
-        self.background = QtGui.QBrush(QtGui.QColor(240, 231, 201))
+        (r, g, b) = config.background_color
+        self.background = QtGui.QBrush(QtGui.QColor(r, g, b))
 
     def minimumSizeHint(self):
         '''
