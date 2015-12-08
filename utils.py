@@ -19,23 +19,13 @@
 ###########################################################################
 
 '''
-This module contains base utilitities for pyRouterJig
+This module contains base utilities for pyRouterJig
 '''
 from __future__ import division
 
-import math, fractions, imp, os
+import math, fractions, os, glob
 
 VERSION = '0.5.0'
-
-CONFIG_FILENAME = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
-CONFIG = None # set by read_config
-
-def read_config():
-    '''
-    Reads the configuration file
-    '''
-    global CONFIG
-    CONFIG = imp.load_source('', CONFIG_FILENAME)
 
 def my_round(f):
     '''
@@ -257,3 +247,23 @@ class Margins(object):
             self.top = default
         else:
             self.top = top
+
+def create_wood_dict(wood_images):
+    '''
+    Creates a dictionary {wood_name : wood_image_filename} by parsing the
+    directory wood_images.  The wood_name is formed by taking the prefix of the
+    wood_image_filename.
+    '''
+    d = {}
+    if not os.path.isdir(wood_images):
+        return d
+    globber = os.path.join(wood_images, '*')
+    files = glob.glob(globber)
+    for f in files:
+        name = os.path.basename(f)
+        i = name.rfind('.')
+        if i > 0:
+            name = name[0:i]
+        path = os.path.abspath(f)
+        d[name] = path
+    return d

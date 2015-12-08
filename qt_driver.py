@@ -24,10 +24,10 @@ Contains the main driver, using pySide or pyQt.
 from __future__ import print_function
 from builtins import str
 
-import os, sys, traceback, webbrowser, imp
+import os, sys, traceback, webbrowser
 
 import qt_fig
-import pyRouterJig_rc
+import pyrouterjig_config
 import router
 import spacing
 import utils
@@ -60,35 +60,26 @@ class Driver(QtGui.QMainWindow):
         sys.excepthook = self.exception_hook
         self.except_handled = False
 
-        # Create the config file if it does not exist.  We wait until the end
-        # of this init to print the status message, because we need it to be
-        # created first.
-        if not os.path.exists(utils.CONFIG_FILENAME):
-            qfile = QtCore.QFile(':pyrouterjig_config.py')
-            qfile.copy(utils.CONFIG_FILENAME)
-            msg = 'Configuration file %s created' % utils.CONFIG_FILENAME
-        else:
-            msg = 'Read configuration file %s' % utils.CONFIG_FILENAME
-
-        # Read the config file
-        utils.read_config()
+        # Read the config file.  We wait until the end of this init to print
+        # the status message, because we need it to be created first.
+        (self.config, msg) = pyrouterjig_config.read_config()
 
         # Default is English units, 1/32" resolution
-        self.units = utils.Units(utils.CONFIG.increments_per_inch, utils.CONFIG.metric)
+        self.units = utils.Units(self.config.increments_per_inch, self.config.metric)
         self.doc = doc.Doc(self.units)
 
         # Create an initial joint.  Even though another joint may be opened
         # later, we do this now so that the initial widget layout may be
         # created.
-        self.bit = router.Router_Bit(self.units, utils.CONFIG.bit_width,\
-                                     utils.CONFIG.bit_depth, utils.CONFIG.bit_angle)
-        self.board = router.Board(self.bit, width=utils.CONFIG.board_width)
+        self.bit = router.Router_Bit(self.units, self.config.bit_width,\
+                                     self.config.bit_depth, self.config.bit_angle)
+        self.board = router.Board(self.bit, width=self.config.board_width)
         self.template = router.Incra_Template(self.units, self.board)
-        self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
+        self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board, self.config)
         self.equal_spacing.set_cuts()
-        self.var_spacing = spacing.Variable_Spaced(self.bit, self.board)
+        self.var_spacing = spacing.Variable_Spaced(self.bit, self.board, self.config)
         self.var_spacing.set_cuts()
-        self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board)
+        self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board, self.config)
         self.edit_spacing.set_cuts(self.equal_spacing.cuts)
         self.spacing = self.equal_spacing # the default
         self.spacing_index = None # to be set in layout_widgets()
@@ -130,7 +121,7 @@ class Driver(QtGui.QMainWindow):
             return
 
         self.except_handled = True
-        if utils.CONFIG.debug:
+        if self.config.debug:
             tmp = traceback.format_exception(etype, value, trace)
         else:
             tmp = traceback.format_exception_only(etype, value)
@@ -198,11 +189,11 @@ class Driver(QtGui.QMainWindow):
 
         self.wood_menu = self.menubar.addMenu('Wood')
         ag = QtGui.QActionGroup(self, exclusive=True)
-        # Add woods from config file, which are image files
-        skeys = sorted(utils.CONFIG.woods.keys())
         self.wood_actions = {}
+        # Add woods from config file, which are image files
+        self.woods = utils.create_wood_dict(self.config.wood_images)
+        skeys = sorted(self.woods.keys())
         for k in skeys:
-            utils.CONFIG.woods[k] = os.path.join(utils.CONFIG.wood_dir, utils.CONFIG.woods[k])
             self.wood_actions[k] = QtGui.QAction(k, self, checkable=True)
             self.wood_menu.addAction(ag.addAction(self.wood_actions[k]))
             self.wood_actions[k].triggered.connect(self._on_wood)
@@ -210,19 +201,21 @@ class Driver(QtGui.QMainWindow):
             self.wood_menu.addSeparator()
         # Next add patterns
         patterns = {'DiagCrossPattern':QtCore.Qt.DiagCrossPattern,\
-                    'CrossPattern':QtCore.Qt.CrossPattern}
+                    'BDiagPattern':QtCore.Qt.BDiagPattern,\
+                    'FDiagPattern':QtCore.Qt.FDiagPattern,\
+                    'Dense1Pattern':QtCore.Qt.Dense1Pattern,\
+                    'Dense5Pattern':QtCore.Qt.Dense5Pattern}
         skeys = sorted(patterns.keys())
         for k in skeys:
-            utils.CONFIG.woods[k] = patterns[k]
+            self.woods[k] = patterns[k]
             self.wood_actions[k] = QtGui.QAction(k, self, checkable=True)
             self.wood_menu.addAction(ag.addAction(self.wood_actions[k]))
             self.wood_actions[k].triggered.connect(self._on_wood)
-        self.wood_actions[utils.CONFIG.default_wood].setChecked(True)
-        filename = utils.CONFIG.wood_dir + utils.CONFIG.woods[utils.CONFIG.default_wood]
-        if os.path.exists(filename):
-            self.board.set_icon(filename)
-        else:
-            self.board.set_icon(utils.CONFIG.woods[utils.CONFIG.default_wood])
+        defwood = 'DiagCrossPattern'
+        if self.config.default_wood in self.woods.keys():
+            defwood = self.config.default_wood
+        self.wood_actions[defwood].setChecked(True)
+        self.board.set_icon(self.woods[defwood])
 
         # Add the help menu
 
@@ -248,7 +241,7 @@ class Driver(QtGui.QMainWindow):
         lineEditWidth = 80
 
         # Create the figure canvas, using mpl interface
-        self.fig = qt_fig.Qt_Fig(self.template, self.board)
+        self.fig = qt_fig.Qt_Fig(self.template, self.board, self.config)
         self.fig.canvas.setParent(self.main_frame)
         self.fig.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.fig.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -582,7 +575,7 @@ class Driver(QtGui.QMainWindow):
 
     def draw(self):
         '''(Re)draws the template and boards'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('draw')
         self.template = router.Incra_Template(self.units, self.board)
         self.fig.draw(self.template, self.board, self.bit, self.spacing)
@@ -596,11 +589,11 @@ class Driver(QtGui.QMainWindow):
 
         # Re-create the spacings objects
         if self.spacing_index == self.equal_spacing_id:
-            self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board)
+            self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board, self.config)
         elif self.spacing_index == self.var_spacing_id:
-            self.var_spacing = spacing.Variable_Spaced(self.bit, self.board)
+            self.var_spacing = spacing.Variable_Spaced(self.bit, self.board, self.config)
         elif self.spacing_index == self.edit_spacing_id:
-            self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board)
+            self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board, self.config)
         else:
             raise ValueError('Bad value for spacing_index %d' % self.spacing_index)
 
@@ -671,7 +664,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot(int)
     def _on_tabs_spacing(self, index):
         '''Handles changes to spacing algorithm'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_tabs_spacing')
         if self.spacing_index == self.edit_spacing and index != self.edit_spacing and \
                     self.spacing.changes_made():
@@ -694,7 +687,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_bit_width(self):
         '''Handles changes to bit width'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_bit_width')
         # With editingFinished, we also need to check whether the
         # value actually changed. This is because editingFinished gets
@@ -703,7 +696,7 @@ class Driver(QtGui.QMainWindow):
         # in the middle of an exception, etc.  This logic also avoids
         # unnecessary redraws.
         if self.tb_bit_width.isModified():
-            if utils.CONFIG.debug:
+            if self.config.debug:
                 print(' bit_width modified')
             self.tb_bit_width.setModified(False)
             text = str(self.tb_bit_width.text())
@@ -716,7 +709,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_bit_depth(self):
         '''Handles changes to bit depth'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_bit_depth')
         if self.tb_bit_depth.isModified():
             self.tb_bit_depth.setModified(False)
@@ -730,7 +723,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_bit_angle(self):
         '''Handles changes to bit angle'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_bit_angle')
         if self.tb_bit_angle.isModified():
             self.tb_bit_angle.setModified(False)
@@ -744,7 +737,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_board_width(self):
         '''Handles changes to board width'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_board_width')
         if self.tb_board_width.isModified():
             self.tb_board_width.setModified(False)
@@ -758,7 +751,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot(int)
     def _on_es_slider0(self, value):
         '''Handles changes to the equally-spaced slider B-spacing'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_es_slider0', value)
         self.equal_spacing.params['B-spacing'].v = value
         self.equal_spacing.set_cuts()
@@ -770,7 +763,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot(int)
     def _on_es_slider1(self, value):
         '''Handles changes to the equally-spaced slider Width'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_es_slider1', value)
         self.equal_spacing.params['Width'].v = value
         self.equal_spacing.set_cuts()
@@ -782,7 +775,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_cb_es_centered(self):
         '''Handles changes to centered checkbox'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_cb_es_centered')
         self.equal_spacing.params['Centered'].v = self.cb_es_centered.isChecked()
         self.equal_spacing.set_cuts()
@@ -796,7 +789,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot(int)
     def _on_vs_slider0(self, value):
         '''Handles changes to the variable-spaced slider Fingers'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_vs_slider0', value)
         self.var_spacing.params['Fingers'].v = value
         self.var_spacing.set_cuts()
@@ -810,7 +803,7 @@ class Driver(QtGui.QMainWindow):
         '''
         Handles screenshot events.
         '''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_screenshot')
         self._on_save(True)
 
@@ -820,7 +813,7 @@ class Driver(QtGui.QMainWindow):
         Handles save file events. The file format is PNG, with metadata
         to support recreating the joint.
         '''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_save')
 
         # Get the file name.  The default name is indexed on the number
@@ -852,7 +845,8 @@ class Driver(QtGui.QMainWindow):
         else:
             image = self.fig.image(self.template, self.board, self.bit, self.spacing)
 
-        s = serialize.serialize(self.bit, self.board, self.spacing)
+        s = serialize.serialize(self.bit, self.board, self.spacing, \
+                                self.config.debug)
         image.setText('pyRouterJig', s)
         r = image.save(filename, 'png')
         if r:
@@ -869,7 +863,7 @@ class Driver(QtGui.QMainWindow):
         to support recreating the joint.  In other words, the file must
         have been saved using _on_save().
         '''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_open')
 
         # Make sure changes are not lost
@@ -903,7 +897,7 @@ class Driver(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, 'Error', msg)
             return
         icon = self.board.icon
-        (self.bit, self.board, sp, sp_type) = serialize.unserialize(s)
+        (self.bit, self.board, sp, sp_type) = serialize.unserialize(s, self.config.debug)
         self.board.set_icon(icon)
 
         # Reset the dependent data
@@ -934,7 +928,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_print(self):
         '''Handles print events'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_print')
 
         r = self.fig.print(self.template, self.board, self.bit, self.spacing)
@@ -946,7 +940,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_exit(self):
         '''Handles code exit events'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_exit')
         if self.file_saved:
             QtGui.qApp.quit()
@@ -962,7 +956,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_about(self):
         '''Handles about dialog event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_about')
 
         box = QtGui.QMessageBox(self)
@@ -975,7 +969,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_doclink(self):
         '''Handles doclink event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_doclink')
 
         webbrowser.open('http://lowrie.github.io/pyRouterJig/documentation.html')
@@ -983,7 +977,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_units(self):
         '''Handles changes in units'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_units')
         do_metric = self.metric_action.isChecked()
         if self.metric == do_metric:
@@ -1005,19 +999,19 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_wood(self):
         '''Handles changes in wood'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_wood')
         for k, v in self.wood_actions.items():
             if v.isChecked():
                 wood = k
                 break
-        self.board.set_icon(utils.CONFIG.woods[wood])
+        self.board.set_icon(self.woods[wood])
         self.draw()
 
     @QtCore.pyqtSlot()
     def _on_edit_undo(self):
         '''Handles undo event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_undo')
         self.spacing.undo()
         self.statusbar.showMessage('Undo')
@@ -1026,7 +1020,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_moveL(self):
         '''Handles move left event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_moveL')
         msg = self.spacing.finger_move_left()
         self.statusbar.showMessage(msg)
@@ -1035,7 +1029,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_moveR(self):
         '''Handles move right event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_moveR')
         msg = self.spacing.finger_move_right()
         self.statusbar.showMessage(msg)
@@ -1044,7 +1038,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_widenL(self):
         '''Handles widen left event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_widenL')
         msg = self.spacing.finger_widen_left()
         self.statusbar.showMessage(msg)
@@ -1053,7 +1047,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_widenR(self):
         '''Handles widen right event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_widenR')
         msg = self.spacing.finger_widen_right()
         self.statusbar.showMessage(msg)
@@ -1062,7 +1056,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_trimL(self):
         '''Handles trim left event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_trimL')
         msg = self.spacing.finger_trim_left()
         self.statusbar.showMessage(msg)
@@ -1071,7 +1065,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_trimR(self):
         '''Handles trim right event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_trimR')
         msg = self.spacing.finger_trim_right()
         self.statusbar.showMessage(msg)
@@ -1080,7 +1074,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_toggle(self):
         '''Handles edit toggle event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_toggle')
         msg = self.spacing.finger_toggle()
         self.statusbar.showMessage(msg)
@@ -1089,7 +1083,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_cursorL(self):
         '''Handles cursor left event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_cursorL')
         msg = self.spacing.finger_increment_cursor(-1)
         self.statusbar.showMessage(msg)
@@ -1098,7 +1092,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_cursorR(self):
         '''Handles toggle right event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_cursorR')
         msg = self.spacing.finger_increment_cursor(1)
         self.statusbar.showMessage(msg)
@@ -1107,7 +1101,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_activate_all(self):
         '''Handles edit activate all event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_activate_all')
         msg = self.spacing.finger_all_active()
         self.statusbar.showMessage(msg)
@@ -1116,7 +1110,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_deactivate_all(self):
         '''Handles edit deactivate all event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_deactivate_all')
         msg = self.spacing.finger_all_not_active()
         self.statusbar.showMessage(msg)
@@ -1125,7 +1119,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_add(self):
         '''Handles add finger event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_add')
         msg = self.spacing.finger_add()
         self.statusbar.showMessage(msg)
@@ -1134,7 +1128,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_edit_del(self):
         '''Handles delete fingers event'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_edit_del')
         msg = self.spacing.finger_delete_active()
         self.statusbar.showMessage(msg)
@@ -1143,7 +1137,7 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_flash_status_off(self):
         '''Handles event to turn off statusbar message'''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('_on_flash_status_off')
         self.statusbar.showMessage('')
 
@@ -1158,7 +1152,7 @@ class Driver(QtGui.QMainWindow):
         For closeEvents (user closes window or presses Ctrl-Q), ignore and call
         _on_exit()
         '''
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('closeEvent')
         self._on_exit()
         event.ignore()
@@ -1244,7 +1238,7 @@ class Driver(QtGui.QMainWindow):
         elif event.key() == QtCore.Qt.Key_Alt:
             self.alt_key = False
         else:
-            if utils.CONFIG.debug:
+            if self.config.debug:
                 print('you released %x' % event.key())
 
 def run():

@@ -78,10 +78,11 @@ class Base_Spacing(object):
     '''
     labels = []
 
-    def __init__(self, bit, board):
+    def __init__(self, bit, board, config):
         self.description = 'NONE'
         self.bit = bit
         self.board = board
+        self.config = config
         self.cursor_finger = None
         self.active_fingers = []
         self.cuts = []
@@ -108,8 +109,8 @@ class Equally_Spaced(Base_Spacing):
     '''
     keys = ['B-spacing', 'Width', 'Centered']
 
-    def __init__(self, bit, board):
-        Base_Spacing.__init__(self, bit, board)
+    def __init__(self, bit, board, config):
+        Base_Spacing.__init__(self, bit, board, config)
 
         t = [Spacing_Param(0, self.board.width // 4, 0),\
              Spacing_Param(self.bit.width, self.board.width // 2,\
@@ -154,14 +155,14 @@ class Equally_Spaced(Base_Spacing):
         i = left - neck_width
         while i > 0:
             li = max(i - width, 0)
-            if i - li > utils.CONFIG.min_finger_width:
+            if i - li > self.config.min_finger_width:
                 self.cuts.append(router.Cut(li, i))
             i = li - neck_width
         # do right side of self.board
         i = right + neck_width
         while i < self.board.width:
             ri = min(i + width, self.board.width)
-            if ri - i > utils.CONFIG.min_finger_width:
+            if ri - i > self.config.min_finger_width:
                 self.cuts.append(router.Cut(i, ri))
             i = ri + neck_width
         # If we have only one cut the entire width of the board, then
@@ -186,8 +187,8 @@ class Variable_Spaced(Base_Spacing):
     '''
     keys = ['Fingers']
 
-    def __init__(self, bit, board):
-        Base_Spacing.__init__(self, bit, board)
+    def __init__(self, bit, board, config):
+        Base_Spacing.__init__(self, bit, board, config)
         # eff_width is the effective width, an average of the bit width
         # and the neck width
         self.eff_width = utils.my_round(0.5 * (self.bit.width + self.bit.neck))
@@ -234,7 +235,7 @@ class Variable_Spaced(Base_Spacing):
             # so reset it to the adjacent increment and get rid of a finger.
             increments[0] = increments[1]
             m -= 1
-        if utils.CONFIG.debug:
+        if self.config.debug:
             print('increments', increments)
         # Adjustments for dovetails
         deltaP = self.bit.width - self.eff_width
@@ -270,8 +271,8 @@ class Edit_Spaced(Base_Spacing):
     '''
     keys = []
 
-    def __init__(self, bit, board):
-        Base_Spacing.__init__(self, bit, board)
+    def __init__(self, bit, board, config):
+        Base_Spacing.__init__(self, bit, board, config)
         self.undo_cuts = [] # list of cuts to undo
         self.params = []
 
@@ -582,7 +583,7 @@ class Edit_Spaced(Base_Spacing):
         index = None
         cuts_save = copy.deepcopy(self.cuts)
         if self.cuts[0].xmin > self.bit.neck:
-            if utils.CONFIG.debug:
+            if self.config.debug:
                 print('add at left')
             index = 0
             xmin = 0
@@ -591,14 +592,14 @@ class Edit_Spaced(Base_Spacing):
         wdelta = self.bit.width - neck_width
         for i in lrange(1, len(self.cuts)):
             if self.cuts[i].xmin - self.cuts[i - 1].xmax + wdelta >= wadd:
-                if utils.CONFIG.debug:
+                if self.config.debug:
                     print('add in finger')
                 index = i
                 xmin = self.cuts[i - 1].xmax + neck_width
                 xmax = xmin + self.bit.width
                 break
             elif self.cuts[i].xmax - self.cuts[i].xmin >= wadd:
-                if utils.CONFIG.debug:
+                if self.config.debug:
                     print('add in cut')
                 index = i + 1
                 xmin = self.cuts[i].xmax - self.bit.width
@@ -607,7 +608,7 @@ class Edit_Spaced(Base_Spacing):
                 break
         if index is None and \
            self.cuts[-1].xmax < self.board.width - self.bit.neck:
-            if utils.CONFIG.debug:
+            if self.config.debug:
                 print('add at right')
             index = len(self.cuts)
             xmax = self.board.width

@@ -41,9 +41,10 @@ class Driver_Test(unittest.TestCase):
         self.d = Driver()
         self.d.show()
         self.d.raise_()
+        self.debug = self.d.config.debug
         QTest.qWaitForWindowShown(self.d)
     def test_options(self):
-        self.assertFalse(utils.CONFIG.debug)
+        self.assertFalse(self.debug)
     def test_defaults(self):
         self.assertEqual(str(self.d.tb_board_width.text()), '7 1/2')
         self.assertEqual(str(self.d.tb_bit_width.text()), '1/2')

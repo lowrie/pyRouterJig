@@ -77,8 +77,8 @@ class Qt_Fig(object):
     '''
     Interface to the qt_driver, using Qt to draw the boards and template.
     '''
-    def __init__(self, template, board):
-        self.canvas = Qt_Plotter(template, board)
+    def __init__(self, template, board, config):
+        self.canvas = Qt_Plotter(template, board, config)
         self.transform = None
 
     def draw(self, template, board, bit, spacing):
@@ -103,8 +103,9 @@ class Qt_Plotter(QtGui.QWidget):
     '''
     Plots the template and boards using Qt.
     '''
-    def __init__(self, template, board):
+    def __init__(self, template, board, config):
         QtGui.QWidget.__init__(self)
+        self.config = config
         self.fig_width = -1
         self.fig_height = -1
         self.set_fig_dimensions(template, board)
@@ -133,11 +134,11 @@ class Qt_Plotter(QtGui.QWidget):
         Returns True if the dimensions changed.
         '''
         # Try default margins, but reset if the template is too small for margins
-        self.margins = utils.Margins(8, utils.CONFIG.separation,\
-                                     utils.CONFIG.left_margin,\
-                                     utils.CONFIG.right_margin,\
-                                     utils.CONFIG.bottom_margin,\
-                                     utils.CONFIG.top_margin)
+        self.margins = utils.Margins(8, self.config.separation,\
+                                     self.config.left_margin,\
+                                     self.config.right_margin,\
+                                     self.config.bottom_margin,\
+                                     self.config.top_margin)
 
         # Set the figure dimensions
         fig_width = template.length + self.margins.left + self.margins.right
