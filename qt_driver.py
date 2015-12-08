@@ -27,7 +27,7 @@ from builtins import str
 import os, sys, traceback, webbrowser
 
 import qt_fig
-import pyrouterjig_config
+import config_file
 import router
 import spacing
 import utils
@@ -62,7 +62,7 @@ class Driver(QtGui.QMainWindow):
 
         # Read the config file.  We wait until the end of this init to print
         # the status message, because we need it to be created first.
-        (self.config, msg) = pyrouterjig_config.read_config()
+        (self.config, msg) = config_file.read_config()
 
         # Default is English units, 1/32" resolution
         self.units = utils.Units(self.config.increments_per_inch, self.config.metric)
