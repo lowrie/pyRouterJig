@@ -141,53 +141,53 @@ class Driver(QtGui.QMainWindow):
 
         # Add the file menu
 
-        self.file_menu = self.menubar.addMenu('File')
+        file_menu = self.menubar.addMenu('File')
 
         open_action = QtGui.QAction('&Open File...', self)
         open_action.setShortcut('Ctrl+O')
         open_action.setStatusTip('Opens a previously saved image of joint')
         open_action.triggered.connect(self._on_open)
-        self.file_menu.addAction(open_action)
+        file_menu.addAction(open_action)
 
         save_action = QtGui.QAction('&Save File...', self)
         save_action.setShortcut('Ctrl+S')
         save_action.setStatusTip('Saves an image of the joint to a file')
         save_action.triggered.connect(self._on_save)
-        self.file_menu.addAction(save_action)
+        file_menu.addAction(save_action)
 
         screenshot_action = QtGui.QAction('Screenshot...', self)
         screenshot_action.setShortcut('Ctrl+W')
         screenshot_action.setStatusTip('Saves an image of the pyRouterJig window to a file')
         screenshot_action.triggered.connect(self._on_screenshot)
-        self.file_menu.addAction(screenshot_action)
+        file_menu.addAction(screenshot_action)
 
         print_action = QtGui.QAction('&Print', self)
         print_action.setShortcut('Ctrl+P')
         print_action.setStatusTip('Print the figure')
         print_action.triggered.connect(self._on_print)
-        self.file_menu.addAction(print_action)
+        file_menu.addAction(print_action)
 
         exit_action = QtGui.QAction('&Quit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit pyRouterJig')
         exit_action.triggered.connect(self._on_exit)
-        self.file_menu.addAction(exit_action)
+        file_menu.addAction(exit_action)
 
         # Add units menu
 
-        self.units_menu = self.menubar.addMenu('Units')
+        units_menu = self.menubar.addMenu('Units')
         ag = QtGui.QActionGroup(self, exclusive=True)
-        self.english_action = QtGui.QAction('English', self, checkable=True)
-        self.units_menu.addAction(ag.addAction(self.english_action))
+        english_action = QtGui.QAction('English', self, checkable=True)
+        units_menu.addAction(ag.addAction(english_action))
         self.metric_action = QtGui.QAction('Metric', self, checkable=True)
-        self.units_menu.addAction(ag.addAction(self.metric_action))
-        self.english_action.setChecked(True)
-        self.english_action.triggered.connect(self._on_units)
+        units_menu.addAction(ag.addAction(self.metric_action))
+        english_action.setChecked(True)
+        english_action.triggered.connect(self._on_units)
         self.metric_action.triggered.connect(self._on_units)
 
         # Add wood menu
 
-        self.wood_menu = self.menubar.addMenu('Wood')
+        wood_menu = self.menubar.addMenu('Wood')
         ag = QtGui.QActionGroup(self, exclusive=True)
         self.wood_actions = {}
         # Add woods from config file, which are image files
@@ -195,10 +195,10 @@ class Driver(QtGui.QMainWindow):
         skeys = sorted(self.woods.keys())
         for k in skeys:
             self.wood_actions[k] = QtGui.QAction(k, self, checkable=True)
-            self.wood_menu.addAction(ag.addAction(self.wood_actions[k]))
+            wood_menu.addAction(ag.addAction(self.wood_actions[k]))
             self.wood_actions[k].triggered.connect(self._on_wood)
         if len(skeys) > 0:
-            self.wood_menu.addSeparator()
+            wood_menu.addSeparator()
         # Next add patterns
         patterns = {'DiagCrossPattern':QtCore.Qt.DiagCrossPattern,\
                     'BDiagPattern':QtCore.Qt.BDiagPattern,\
@@ -209,7 +209,7 @@ class Driver(QtGui.QMainWindow):
         for k in skeys:
             self.woods[k] = patterns[k]
             self.wood_actions[k] = QtGui.QAction(k, self, checkable=True)
-            self.wood_menu.addAction(ag.addAction(self.wood_actions[k]))
+            wood_menu.addAction(ag.addAction(self.wood_actions[k]))
             self.wood_actions[k].triggered.connect(self._on_wood)
         defwood = 'DiagCrossPattern'
         if self.config.default_wood in self.woods.keys():
@@ -219,18 +219,18 @@ class Driver(QtGui.QMainWindow):
 
         # Add the help menu
 
-        self.help_menu = self.menubar.addMenu('Help')
+        help_menu = self.menubar.addMenu('Help')
 
         about_action = QtGui.QAction('&About', self)
         about_action.setShortcut('Ctrl+A')
         about_action.setStatusTip('About this program')
         about_action.triggered.connect(self._on_about)
-        self.help_menu.addAction(about_action)
+        help_menu.addAction(about_action)
 
         doclink_action = QtGui.QAction('&Documentation', self)
         doclink_action.setStatusTip('Opens documentation page in web browser')
         doclink_action.triggered.connect(self._on_doclink)
-        self.help_menu.addAction(doclink_action)
+        help_menu.addAction(doclink_action)
 
     def create_widgets(self):
         '''
@@ -419,150 +419,152 @@ class Driver(QtGui.QMainWindow):
 
         # vbox contains all of the widgets in the main frame, positioned
         # vertically
-        self.vbox = QtGui.QVBoxLayout()
+        vbox = QtGui.QVBoxLayout()
 
         # Add the figure canvas to the top
-        self.vbox.addWidget(self.fig.canvas)
+        vbox.addWidget(self.fig.canvas)
 
         # hbox contains all of the control widgets
         # (everything but the canvas)
-        self.hbox = QtGui.QHBoxLayout()
+        hbox = QtGui.QHBoxLayout()
 
         # Add the board width label, board width input text box,
         # all stacked vertically on the left side.
-        self.vbox_board_width = QtGui.QVBoxLayout()
-        self.vbox_board_width.addWidget(self.tb_board_width_label)
-        self.vbox_board_width.addWidget(self.tb_board_width)
-        self.vbox_board_width.addStretch(1)
-        self.hbox.addLayout(self.vbox_board_width)
+        vbox_board_width = QtGui.QVBoxLayout()
+        vbox_board_width.addWidget(self.tb_board_width_label)
+        vbox_board_width.addWidget(self.tb_board_width)
+        vbox_board_width.addStretch(1)
+        hbox.addLayout(vbox_board_width)
 
         # Add the bit width label and its text box
-        self.vbox_bit_width = QtGui.QVBoxLayout()
-        self.vbox_bit_width.addWidget(self.tb_bit_width_label)
-        self.vbox_bit_width.addWidget(self.tb_bit_width)
-        self.vbox_bit_width.addStretch(1)
-        self.hbox.addLayout(self.vbox_bit_width)
+        vbox_bit_width = QtGui.QVBoxLayout()
+        vbox_bit_width.addWidget(self.tb_bit_width_label)
+        vbox_bit_width.addWidget(self.tb_bit_width)
+        vbox_bit_width.addStretch(1)
+        hbox.addLayout(vbox_bit_width)
 
         # Add the bit depth label and its text box
-        self.vbox_bit_depth = QtGui.QVBoxLayout()
-        self.vbox_bit_depth.addWidget(self.tb_bit_depth_label)
-        self.vbox_bit_depth.addWidget(self.tb_bit_depth)
-        self.vbox_bit_depth.addStretch(1)
-        self.hbox.addLayout(self.vbox_bit_depth)
+        vbox_bit_depth = QtGui.QVBoxLayout()
+        vbox_bit_depth.addWidget(self.tb_bit_depth_label)
+        vbox_bit_depth.addWidget(self.tb_bit_depth)
+        vbox_bit_depth.addStretch(1)
+        hbox.addLayout(vbox_bit_depth)
 
         # Add the bit angle label and its text box
-        self.vbox_bit_angle = QtGui.QVBoxLayout()
-        self.vbox_bit_angle.addWidget(self.tb_bit_angle_label)
-        self.vbox_bit_angle.addWidget(self.tb_bit_angle)
-        self.vbox_bit_angle.addStretch(1)
-        self.hbox.addLayout(self.vbox_bit_angle)
+        vbox_bit_angle = QtGui.QVBoxLayout()
+        vbox_bit_angle.addWidget(self.tb_bit_angle_label)
+        vbox_bit_angle.addWidget(self.tb_bit_angle)
+        vbox_bit_angle.addStretch(1)
+        hbox.addLayout(vbox_bit_angle)
 
         # Create the layout of the Equal spacing controls
-        self.hbox_es = QtGui.QHBoxLayout()
+        hbox_es = QtGui.QHBoxLayout()
 
-        self.vbox_es_slider0 = QtGui.QVBoxLayout()
-        self.vbox_es_slider0.addWidget(self.es_slider0_label)
-        self.vbox_es_slider0.addWidget(self.es_slider0)
-        self.hbox_es.addLayout(self.vbox_es_slider0)
+        vbox_es_slider0 = QtGui.QVBoxLayout()
+        vbox_es_slider0.addWidget(self.es_slider0_label)
+        vbox_es_slider0.addWidget(self.es_slider0)
+        hbox_es.addLayout(vbox_es_slider0)
 
-        self.vbox_es_slider1 = QtGui.QVBoxLayout()
-        self.vbox_es_slider1.addWidget(self.es_slider1_label)
-        self.vbox_es_slider1.addWidget(self.es_slider1)
-        self.hbox_es.addLayout(self.vbox_es_slider1)
+        vbox_es_slider1 = QtGui.QVBoxLayout()
+        vbox_es_slider1.addWidget(self.es_slider1_label)
+        vbox_es_slider1.addWidget(self.es_slider1)
+        hbox_es.addLayout(vbox_es_slider1)
 
-        self.hbox_es.addWidget(self.cb_es_centered)
+        hbox_es.addWidget(self.cb_es_centered)
 
         # Create the layout of the Variable spacing controls.  Given only one
         # item, this is overkill, but the coding allows us to add additional
         # controls later.
-        self.hbox_vs = QtGui.QHBoxLayout()
+        hbox_vs = QtGui.QHBoxLayout()
 
-        self.vbox_vs_slider0 = QtGui.QVBoxLayout()
-        self.vbox_vs_slider0.addWidget(self.vs_slider0_label)
-        self.vbox_vs_slider0.addWidget(self.vs_slider0)
-        self.hbox_vs.addLayout(self.vbox_vs_slider0)
+        vbox_vs_slider0 = QtGui.QVBoxLayout()
+        vbox_vs_slider0.addWidget(self.vs_slider0_label)
+        vbox_vs_slider0.addWidget(self.vs_slider0)
+        hbox_vs.addLayout(vbox_vs_slider0)
 
         # Create the layout of the edit spacing controls
-        self.hbox_edit = QtGui.QHBoxLayout()
-        self.grid_edit = QtGui.QGridLayout()
+        hbox_edit = QtGui.QHBoxLayout()
+        grid_edit = QtGui.QGridLayout()
         hline = create_hline()
-        self.grid_edit.addWidget(hline, 0, 0, 1, 16)
+        grid_edit.addWidget(hline, 0, 0, 1, 16)
         hline2 = create_hline()
-        self.grid_edit.addWidget(hline2, 2, 0, 1, 16)
+        grid_edit.addWidget(hline2, 2, 0, 1, 16)
         vline = create_vline()
-        self.grid_edit.addWidget(vline, 0, 0, 6, 1)
-        self.grid_edit.addWidget(QtGui.QLabel('Active Finger Select'), \
-                                 1, 1, 1, 3, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_btn_toggle, 3, 1, 1, 2, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_btn_cursorL, 4, 1, QtCore.Qt.AlignRight)
-        self.grid_edit.addWidget(self.edit_btn_cursorR, 4, 2, QtCore.Qt.AlignLeft)
-        self.grid_edit.addWidget(self.edit_btn_activate_all, 3, 3)
-        self.grid_edit.addWidget(self.edit_btn_deactivate_all, 4, 3)
+        grid_edit.addWidget(vline, 0, 0, 6, 1)
+        label_active_finger_select = QtGui.QLabel('Active Finger Select')
+        label_active_finger_select.setToolTip('Tools that select the active fingers')
+        grid_edit.addWidget(label_active_finger_select, 1, 1, 1, 3, QtCore.Qt.AlignHCenter)
+        grid_edit.addWidget(self.edit_btn_toggle, 3, 1, 1, 2, QtCore.Qt.AlignHCenter)
+        grid_edit.addWidget(self.edit_btn_cursorL, 4, 1, QtCore.Qt.AlignRight)
+        grid_edit.addWidget(self.edit_btn_cursorR, 4, 2, QtCore.Qt.AlignLeft)
+        grid_edit.addWidget(self.edit_btn_activate_all, 3, 3)
+        grid_edit.addWidget(self.edit_btn_deactivate_all, 4, 3)
         vline2 = create_vline()
-        self.grid_edit.addWidget(vline2, 0, 4, 6, 1)
-        self.grid_edit.addWidget(QtGui.QLabel('Active Finger Operators'),\
-                                 1, 5, 1, 10, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_move_label, 3, 5, 1, 2, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_btn_moveL, 4, 5, QtCore.Qt.AlignRight)
-        self.grid_edit.addWidget(self.edit_btn_moveR, 4, 6, QtCore.Qt.AlignLeft)
+        grid_edit.addWidget(vline2, 0, 4, 6, 1)
+        label_active_finger_ops = QtGui.QLabel('Active Finger Operators')
+        label_active_finger_ops.setToolTip('Edit operations applied to active fingers')
+        grid_edit.addWidget(label_active_finger_ops, 1, 5, 1, 10, QtCore.Qt.AlignHCenter)
+        grid_edit.addWidget(self.edit_move_label, 3, 5, 1, 2, QtCore.Qt.AlignHCenter)
+        grid_edit.addWidget(self.edit_btn_moveL, 4, 5, QtCore.Qt.AlignRight)
+        grid_edit.addWidget(self.edit_btn_moveR, 4, 6, QtCore.Qt.AlignLeft)
         vline3 = create_vline()
-        self.grid_edit.addWidget(vline3, 2, 7, 4, 1)
-        self.grid_edit.addWidget(self.edit_widen_label, 3, 8, 1, 2, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_btn_widenL, 4, 8, QtCore.Qt.AlignRight)
-        self.grid_edit.addWidget(self.edit_btn_widenR, 4, 9, QtCore.Qt.AlignLeft)
+        grid_edit.addWidget(vline3, 2, 7, 4, 1)
+        grid_edit.addWidget(self.edit_widen_label, 3, 8, 1, 2, QtCore.Qt.AlignHCenter)
+        grid_edit.addWidget(self.edit_btn_widenL, 4, 8, QtCore.Qt.AlignRight)
+        grid_edit.addWidget(self.edit_btn_widenR, 4, 9, QtCore.Qt.AlignLeft)
         vline4 = create_vline()
-        self.grid_edit.addWidget(vline4, 2, 10, 4, 1)
-        self.grid_edit.addWidget(self.edit_trim_label, 3, 11, 1, 2, QtCore.Qt.AlignHCenter)
-        self.grid_edit.addWidget(self.edit_btn_trimL, 4, 11, QtCore.Qt.AlignRight)
-        self.grid_edit.addWidget(self.edit_btn_trimR, 4, 12, QtCore.Qt.AlignLeft)
+        grid_edit.addWidget(vline4, 2, 10, 4, 1)
+        grid_edit.addWidget(self.edit_trim_label, 3, 11, 1, 2, QtCore.Qt.AlignHCenter)
+        grid_edit.addWidget(self.edit_btn_trimL, 4, 11, QtCore.Qt.AlignRight)
+        grid_edit.addWidget(self.edit_btn_trimR, 4, 12, QtCore.Qt.AlignLeft)
         vline5 = create_vline()
-        self.grid_edit.addWidget(vline5, 2, 13, 4, 1)
-        self.grid_edit.addWidget(self.edit_btn_add, 3, 14)
-        self.grid_edit.addWidget(self.edit_btn_del, 4, 14)
+        grid_edit.addWidget(vline5, 2, 13, 4, 1)
+        grid_edit.addWidget(self.edit_btn_add, 3, 14)
+        grid_edit.addWidget(self.edit_btn_del, 4, 14)
         vline6 = create_vline()
-        self.grid_edit.addWidget(vline6, 0, 15, 6, 1)
+        grid_edit.addWidget(vline6, 0, 15, 6, 1)
         hline3 = create_hline()
-        self.grid_edit.addWidget(hline3, 5, 0, 1, 16)
-        self.grid_edit.setSpacing(5)
+        grid_edit.addWidget(hline3, 5, 0, 1, 16)
+        grid_edit.setSpacing(5)
 
-        self.hbox_edit.addLayout(self.grid_edit)
-        self.hbox_edit.addStretch(1)
-        self.hbox_edit.addWidget(self.edit_btn_undo)
+        hbox_edit.addLayout(grid_edit)
+        hbox_edit.addStretch(1)
+        hbox_edit.addWidget(self.edit_btn_undo)
 
         # Add the spacing layouts as Tabs
         self.tabs_spacing = QtGui.QTabWidget()
-        self.tab_es = QtGui.QWidget()
-        self.tab_es.setLayout(self.hbox_es)
-        self.tabs_spacing.addTab(self.tab_es, 'Equal')
-        self.tab_vs = QtGui.QWidget()
-        self.tab_vs.setLayout(self.hbox_vs)
-        self.tabs_spacing.addTab(self.tab_vs, 'Variable')
-        self.tab_edit = QtGui.QWidget()
-        self.tab_edit.setLayout(self.hbox_edit)
-        self.tabs_spacing.addTab(self.tab_edit, 'Editor')
+        tab_es = QtGui.QWidget()
+        tab_es.setLayout(hbox_es)
+        self.tabs_spacing.addTab(tab_es, 'Equal')
+        tab_vs = QtGui.QWidget()
+        tab_vs.setLayout(hbox_vs)
+        self.tabs_spacing.addTab(tab_vs, 'Variable')
+        tab_edit = QtGui.QWidget()
+        tab_edit.setLayout(hbox_edit)
+        self.tabs_spacing.addTab(tab_edit, 'Editor')
         self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
         tip = 'These tabs specify the layout algorithm for the fingers.'
         self.tabs_spacing.setToolTip(tip)
 
         # The tab indices should be set in the order they're defined, but this ensures it
-        self.equal_spacing_id = self.tabs_spacing.indexOf(self.tab_es)
-        self.var_spacing_id = self.tabs_spacing.indexOf(self.tab_vs)
-        self.edit_spacing_id = self.tabs_spacing.indexOf(self.tab_edit)
+        self.equal_spacing_id = self.tabs_spacing.indexOf(tab_es)
+        self.var_spacing_id = self.tabs_spacing.indexOf(tab_vs)
+        self.edit_spacing_id = self.tabs_spacing.indexOf(tab_edit)
         # set default spacing tab to Equal
         self.spacing_index = self.equal_spacing_id
         self.tabs_spacing.setCurrentIndex(self.spacing_index)
 
         # either add the spacing Tabs to the bottom
-        #self.vbox.addLayout(self.hbox)
-        #self.vbox.addWidget(self.tabs_spacing)
+        #vbox.addLayout(hbox)
+        #vbox.addWidget(self.tabs_spacing)
         # ... or to the right of the text boxes
-        self.hbox.addWidget(self.tabs_spacing)
-        self.vbox.addStretch(1)
-        self.vbox.addLayout(self.hbox)
-#        self.vbox.setSizeConstraint(QtGui.QLayout.SetFixedSize)
+        hbox.addWidget(self.tabs_spacing)
+        vbox.addStretch(1)
+        vbox.addLayout(hbox)
+#        vbox.setSizeConstraint(QtGui.QLayout.SetFixedSize)
 
         # Lay it all out
-        self.main_frame.setLayout(self.vbox)
+        self.main_frame.setLayout(vbox)
         self.setCentralWidget(self.main_frame)
 
     def create_status_bar(self):
