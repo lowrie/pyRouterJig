@@ -407,9 +407,12 @@ class Driver(QtGui.QMainWindow):
         self.tb_bit_width.setToolTip(self.doc.bit_width())
         self.tb_bit_depth.setToolTip(self.doc.bit_depth())
         self.tb_bit_angle.setToolTip(self.doc.bit_angle())
+        self.es_slider0_label.setToolTip(self.doc.es_slider0())
         self.es_slider0.setToolTip(self.doc.es_slider0())
+        self.es_slider1_label.setToolTip(self.doc.es_slider1())
         self.es_slider1.setToolTip(self.doc.es_slider1())
         self.cb_es_centered.setToolTip(self.doc.es_centered())
+        self.vs_slider0_label.setToolTip(self.doc.vs_slider0())
         self.vs_slider0.setToolTip(self.doc.vs_slider0())
 
     def layout_widgets(self):
