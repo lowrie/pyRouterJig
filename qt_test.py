@@ -46,19 +46,19 @@ class Driver_Test(unittest.TestCase):
     def test_options(self):
         self.assertFalse(self.debug)
     def test_defaults(self):
-        self.assertEqual(str(self.d.tb_board_width.text()), '7 1/2')
-        self.assertEqual(str(self.d.tb_bit_width.text()), '1/2')
-        self.assertEqual(str(self.d.tb_bit_depth.text()), '3/4')
-        self.assertEqual(str(self.d.tb_bit_angle.text()), '0')
+        self.assertEqual(str(self.d.le_board_width.text()), '7 1/2')
+        self.assertEqual(str(self.d.le_bit_width.text()), '1/2')
+        self.assertEqual(str(self.d.le_bit_depth.text()), '3/4')
+        self.assertEqual(str(self.d.le_bit_angle.text()), '0')
     def test_screenshots(self):
         self.d._on_screenshot()
-        self.d.tb_bit_width.clear()
-        QTest.keyClicks(self.d.tb_bit_width, "1/4")
-        QTest.keyPress(self.d.tb_bit_width, QtCore.Qt.Key_Tab)
+        self.d.le_bit_width.clear()
+        QTest.keyClicks(self.d.le_bit_width, "1/4")
+        QTest.keyPress(self.d.le_bit_width, QtCore.Qt.Key_Tab)
         self.d._on_bit_width()
         QTest.qWaitForWindowShown(self.d)
         QTest.qWait(1000)
-        self.assertEqual(str(self.d.tb_bit_width.text()), '1/4')
+        self.assertEqual(str(self.d.le_bit_width.text()), '1/4')
         self.d._on_screenshot()
 
 if __name__ == '__main__':

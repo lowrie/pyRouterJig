@@ -247,34 +247,34 @@ class Driver(QtGui.QMainWindow):
         self.fig.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.fig.canvas.setFocus()
 
-        # Board width text box
-        self.tb_board_width_label = QtGui.QLabel('Board Width')
-        self.tb_board_width = QtGui.QLineEdit(self.main_frame)
-        self.tb_board_width.setFixedWidth(lineEditWidth)
-        self.tb_board_width.setText(self.units.increments_to_string(self.board.width))
-        self.tb_board_width.editingFinished.connect(self._on_board_width)
-        self.tb_board_width.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        # Board width line edit
+        self.le_board_width_label = QtGui.QLabel('Board Width')
+        self.le_board_width = QtGui.QLineEdit(self.main_frame)
+        self.le_board_width.setFixedWidth(lineEditWidth)
+        self.le_board_width.setText(self.units.increments_to_string(self.board.width))
+        self.le_board_width.editingFinished.connect(self._on_board_width)
+        self.le_board_width.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
 
-        # Bit width text box
-        self.tb_bit_width_label = QtGui.QLabel('Bit Width')
-        self.tb_bit_width = QtGui.QLineEdit(self.main_frame)
-        self.tb_bit_width.setFixedWidth(lineEditWidth)
-        self.tb_bit_width.setText(self.units.increments_to_string(self.bit.width))
-        self.tb_bit_width.editingFinished.connect(self._on_bit_width)
+        # Bit width line edit
+        self.le_bit_width_label = QtGui.QLabel('Bit Width')
+        self.le_bit_width = QtGui.QLineEdit(self.main_frame)
+        self.le_bit_width.setFixedWidth(lineEditWidth)
+        self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
+        self.le_bit_width.editingFinished.connect(self._on_bit_width)
 
-        # Bit depth text box
-        self.tb_bit_depth_label = QtGui.QLabel('Bit Depth')
-        self.tb_bit_depth = QtGui.QLineEdit(self.main_frame)
-        self.tb_bit_depth.setFixedWidth(lineEditWidth)
-        self.tb_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
-        self.tb_bit_depth.editingFinished.connect(self._on_bit_depth)
+        # Bit depth line edit
+        self.le_bit_depth_label = QtGui.QLabel('Bit Depth')
+        self.le_bit_depth = QtGui.QLineEdit(self.main_frame)
+        self.le_bit_depth.setFixedWidth(lineEditWidth)
+        self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
+        self.le_bit_depth.editingFinished.connect(self._on_bit_depth)
 
-        # Bit angle text box
-        self.tb_bit_angle_label = QtGui.QLabel('Bit Angle')
-        self.tb_bit_angle = QtGui.QLineEdit(self.main_frame)
-        self.tb_bit_angle.setFixedWidth(lineEditWidth)
-        self.tb_bit_angle.setText('%g' % self.bit.angle)
-        self.tb_bit_angle.editingFinished.connect(self._on_bit_angle)
+        # Bit angle line edit
+        self.le_bit_angle_label = QtGui.QLabel('Bit Angle')
+        self.le_bit_angle = QtGui.QLineEdit(self.main_frame)
+        self.le_bit_angle.setFixedWidth(lineEditWidth)
+        self.le_bit_angle.setText('%g' % self.bit.angle)
+        self.le_bit_angle.editingFinished.connect(self._on_bit_angle)
 
         # Equal spacing widgets
 
@@ -403,10 +403,10 @@ class Driver(QtGui.QMainWindow):
         '''
         [Re]sets the tool tips for the widgets
         '''
-        self.tb_board_width.setToolTip(self.doc.board_width())
-        self.tb_bit_width.setToolTip(self.doc.bit_width())
-        self.tb_bit_depth.setToolTip(self.doc.bit_depth())
-        self.tb_bit_angle.setToolTip(self.doc.bit_angle())
+        self.le_board_width.setToolTip(self.doc.board_width())
+        self.le_bit_width.setToolTip(self.doc.bit_width())
+        self.le_bit_depth.setToolTip(self.doc.bit_depth())
+        self.le_bit_angle.setToolTip(self.doc.bit_angle())
         self.es_slider0_label.setToolTip(self.doc.es_slider0())
         self.es_slider0.setToolTip(self.doc.es_slider0())
         self.es_slider1_label.setToolTip(self.doc.es_slider1())
@@ -431,32 +431,32 @@ class Driver(QtGui.QMainWindow):
         # (everything but the canvas)
         hbox = QtGui.QHBoxLayout()
 
-        # Add the board width label, board width input text box,
+        # Add the board width label, board width input line edit,
         # all stacked vertically on the left side.
         vbox_board_width = QtGui.QVBoxLayout()
-        vbox_board_width.addWidget(self.tb_board_width_label)
-        vbox_board_width.addWidget(self.tb_board_width)
+        vbox_board_width.addWidget(self.le_board_width_label)
+        vbox_board_width.addWidget(self.le_board_width)
         vbox_board_width.addStretch(1)
         hbox.addLayout(vbox_board_width)
 
-        # Add the bit width label and its text box
+        # Add the bit width label and its line edit
         vbox_bit_width = QtGui.QVBoxLayout()
-        vbox_bit_width.addWidget(self.tb_bit_width_label)
-        vbox_bit_width.addWidget(self.tb_bit_width)
+        vbox_bit_width.addWidget(self.le_bit_width_label)
+        vbox_bit_width.addWidget(self.le_bit_width)
         vbox_bit_width.addStretch(1)
         hbox.addLayout(vbox_bit_width)
 
-        # Add the bit depth label and its text box
+        # Add the bit depth label and its line edit
         vbox_bit_depth = QtGui.QVBoxLayout()
-        vbox_bit_depth.addWidget(self.tb_bit_depth_label)
-        vbox_bit_depth.addWidget(self.tb_bit_depth)
+        vbox_bit_depth.addWidget(self.le_bit_depth_label)
+        vbox_bit_depth.addWidget(self.le_bit_depth)
         vbox_bit_depth.addStretch(1)
         hbox.addLayout(vbox_bit_depth)
 
-        # Add the bit angle label and its text box
+        # Add the bit angle label and its line edit
         vbox_bit_angle = QtGui.QVBoxLayout()
-        vbox_bit_angle.addWidget(self.tb_bit_angle_label)
-        vbox_bit_angle.addWidget(self.tb_bit_angle)
+        vbox_bit_angle.addWidget(self.le_bit_angle_label)
+        vbox_bit_angle.addWidget(self.le_bit_angle)
         vbox_bit_angle.addStretch(1)
         hbox.addLayout(vbox_bit_angle)
 
@@ -560,7 +560,7 @@ class Driver(QtGui.QMainWindow):
         # either add the spacing Tabs to the bottom
         #vbox.addLayout(hbox)
         #vbox.addWidget(self.tabs_spacing)
-        # ... or to the right of the text boxes
+        # ... or to the right of the line edits
         hbox.addWidget(self.tabs_spacing)
         vbox.addStretch(1)
         vbox.addLayout(hbox)
@@ -610,8 +610,8 @@ class Driver(QtGui.QMainWindow):
         '''
         # enable/disable editing of line edit boxes, depending upon spacing
         # algorithm
-        tbs = [self.tb_board_width, self.tb_bit_width, self.tb_bit_depth,\
-               self.tb_bit_angle]
+        tbs = [self.le_board_width, self.le_bit_width, self.le_bit_depth,\
+               self.le_bit_angle]
         if self.spacing_index == self.edit_spacing_id:
             for tb in tbs:
                 tb.setEnabled(False)
@@ -700,11 +700,11 @@ class Driver(QtGui.QMainWindow):
         # times when an exception is thrown, or user tries to quit
         # in the middle of an exception, etc.  This logic also avoids
         # unnecessary redraws.
-        if self.tb_bit_width.isModified():
+        if self.le_bit_width.isModified():
             if self.config.debug:
                 print(' bit_width modified')
-            self.tb_bit_width.setModified(False)
-            text = str(self.tb_bit_width.text())
+            self.le_bit_width.setModified(False)
+            text = str(self.le_bit_width.text())
             self.bit.set_width_from_string(text)
             self.reinit_spacing()
             self.draw()
@@ -716,9 +716,9 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to bit depth'''
         if self.config.debug:
             print('_on_bit_depth')
-        if self.tb_bit_depth.isModified():
-            self.tb_bit_depth.setModified(False)
-            text = str(self.tb_bit_depth.text())
+        if self.le_bit_depth.isModified():
+            self.le_bit_depth.setModified(False)
+            text = str(self.le_bit_depth.text())
             self.bit.set_depth_from_string(text)
             self.board.set_height(self.bit)
             self.draw()
@@ -730,9 +730,9 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to bit angle'''
         if self.config.debug:
             print('_on_bit_angle')
-        if self.tb_bit_angle.isModified():
-            self.tb_bit_angle.setModified(False)
-            text = str(self.tb_bit_angle.text())
+        if self.le_bit_angle.isModified():
+            self.le_bit_angle.setModified(False)
+            text = str(self.le_bit_angle.text())
             self.bit.set_angle_from_string(text)
             self.reinit_spacing()
             self.draw()
@@ -744,9 +744,9 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to board width'''
         if self.config.debug:
             print('_on_board_width')
-        if self.tb_board_width.isModified():
-            self.tb_board_width.setModified(False)
-            text = str(self.tb_board_width.text())
+        if self.le_board_width.isModified():
+            self.le_board_width.setModified(False)
+            text = str(self.le_board_width.text())
             self.board.set_width_from_string(text)
             self.reinit_spacing()
             self.draw()
@@ -923,10 +923,10 @@ class Driver(QtGui.QMainWindow):
         self.tabs_spacing.blockSignals(True)
         self.tabs_spacing.setCurrentIndex(self.spacing_index)
         self.tabs_spacing.blockSignals(False)
-        self.tb_board_width.setText(self.units.increments_to_string(self.board.width))
-        self.tb_bit_width.setText(self.units.increments_to_string(self.bit.width))
-        self.tb_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
-        self.tb_bit_angle.setText(`self.bit.angle`)
+        self.le_board_width.setText(self.units.increments_to_string(self.board.width))
+        self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
+        self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
+        self.le_bit_angle.setText(`self.bit.angle`)
         self.set_spacing_widgets()
         self.draw()
 
@@ -994,9 +994,9 @@ class Driver(QtGui.QMainWindow):
         self.board.change_units(self.units)
         self.bit.change_units(self.units)
         self.doc.change_units(self.units)
-        self.tb_board_width.setText(self.units.increments_to_string(self.board.width))
-        self.tb_bit_width.setText(self.units.increments_to_string(self.bit.width))
-        self.tb_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
+        self.le_board_width.setText(self.units.increments_to_string(self.board.width))
+        self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
+        self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.reinit_spacing()
         self.update_tooltips()
         self.draw()
