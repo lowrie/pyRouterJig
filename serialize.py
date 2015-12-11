@@ -22,13 +22,14 @@
 Contains serialization capability
 '''
 from __future__ import print_function
+from future.utils import lrange
 
 import pickle, StringIO
 import router
 import utils
 import spacing
 
-def serialize(bit, board, sp, debug):
+def serialize(bit, boards, sp, config):
     '''
     Serializes the arguments. Returns the serialized string, which can
     later be used to reconstruct the arguments using unserialize_joint()
@@ -46,11 +47,13 @@ def serialize(bit, board, sp, debug):
     p.dump(bit.width)
     p.dump(bit.depth)
     p.dump(bit.angle)
-    # Save the board
-    p.dump(board.width)
+    # Save the board info
+    nb = len(boards)
+    p.dump(nb)
+    p.dump(boards[0].width)
     # Save the spacing
     sp_type = sp.description[0:4]
-    if debug:
+    if config.debug:
         print('serialize', sp_type)
     p.dump(sp_type)
     if sp_type == 'Edit':
@@ -59,18 +62,18 @@ def serialize(bit, board, sp, debug):
         p.dump(sp.params)
     s = out.getvalue()
     out.close()
-    if debug:
+    if config.debug:
         print('size of pickle', len(s))
     return s
 
-def unserialize(s, debug):
+def unserialize(s, config):
     '''
-    Unserializes the string s, and returns the tuple (bit, board, spacing)
+    Unserializes the string s, and returns the tuple (bit, boards, spacing)
     '''
     inp = StringIO.StringIO(s)
     u = pickle.Unpickler(inp)
     version = u.load()
-    if debug:
+    if config.debug:
         print('unserialized version:', version)
     # form the units
     metric = u.load()
@@ -84,24 +87,27 @@ def unserialize(s, debug):
     depth = u.load()
     angle = u.load()
     bit = router.Router_Bit(units, width, depth, angle)
-    # form the board
+    # form the boards
+    nb = u.load()
     width = u.load()
-    board = router.Board(bit, width)
+    boards = []
+    for i in lrange(nb):
+        boards.append(router.Board(bit, width))
     # form the spacing
     sp_type = u.load()
     if sp_type == 'Edit':
-        if debug:
+        if config.debug:
             print('unserialized edit spacing')
         cuts = u.load()
-        sp = spacing.Edit_Spaced(bit, board)
+        sp = spacing.Edit_Spaced(bit, boards, config)
         sp.set_cuts(cuts)
     else:
         if sp_type == 'Equa':
-            sp = spacing.Equally_Spaced(bit, board)
+            sp = spacing.Equally_Spaced(bit, boards, config)
         else:
-            sp = spacing.Variable_Spaced(bit, board)
+            sp = spacing.Variable_Spaced(bit, boards, config)
         sp.params = u.load()
-        if debug:
+        if config.debug:
             print('unserialized ', sp_type, `sp.params`)
         sp.set_cuts()
-    return (bit, board, sp, sp_type)
+    return (bit, boards, sp, sp_type)

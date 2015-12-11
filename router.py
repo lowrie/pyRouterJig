@@ -48,7 +48,7 @@ class Incra_Template(object):
     margin: Dimension in x-coordinate placed on each end of template
     length: total length of template
     '''
-    def __init__(self, units, board, margin=None, length=None):
+    def __init__(self, units, boards, margin=None, length=None):
         # incra uses 1/2" high templates
         self.height = units.inches_to_increments(0.5)
         if margin is None:
@@ -56,7 +56,7 @@ class Incra_Template(object):
         else:
             self.margin = margin
         if length is None:
-            self.length = board.width + 2 * self.margin
+            self.length = boards[0].width + 2 * self.margin
         else:
             self.length = length
 
@@ -222,10 +222,10 @@ class Board(My_Rectangle):
     units: Units object
     width: Dimension of routed edge (along x-axis)
     height: Dimension perpendicular to routed edge (along y-axis)
-    thickness: Dimension into paper or screen (not used)
+    thickness: Dimension into paper or screen (not used yet)
     icon: Icon image used for fill
 
-    Dimentions are in increment units.
+    Dimensions are in increment units.
     '''
     def __init__(self, bit, width, thickness=32, icon=None):
         My_Rectangle.__init__(self, 0, 0, width, 32)
@@ -435,21 +435,21 @@ class Joint_Geometry(object):
     '''
     Computes and stores all of the geometry attributes of the joint.
     '''
-    def __init__(self, template, board, bit, spacing, margins):
+    def __init__(self, template, boards, bit, spacing, margins):
         self.template = template
-        self.board = board
+        self.boards = boards
         self.bit = bit
         self.spacing = spacing
 
         # determine b-cuts from the a-cuts
         self.aCuts = spacing.cuts
-        self.bCuts = adjoining_cuts(self.aCuts, bit, board)
+        self.bCuts = adjoining_cuts(self.aCuts, bit, boards[0])
 
         # determine the router passes for the cuts
         for c in self.aCuts:
-            c.make_router_passes(bit, board)
+            c.make_router_passes(bit, boards[0])
         for c in self.bCuts:
-            c.make_router_passes(bit, board)
+            c.make_router_passes(bit, boards[0])
 
         # Create the corners of the template
         self.rect_T = My_Rectangle(margins.left, margins.bottom,
@@ -458,14 +458,14 @@ class Joint_Geometry(object):
         # The sub-rectangle in the template of the board's width
         # (no template margines)
         self.board_T = My_Rectangle(self.rect_T.xL + template.margin, self.rect_T.yB, \
-                                    board.width, template.height)
+                                    boards[0].width, template.height)
 
         # Determine board-B coordinates
-        self.board_B = copy.deepcopy(board)
+        self.board_B = copy.deepcopy(boards[0])
         self.board_B.shift(self.board_T.xL, self.rect_T.yT() + margins.sep)
         (self.xB, self.yB) = board_coords(self.board_B, self.bCuts, bit, 'top')
 
         # Determine board-A coordinates
         self.board_A = copy.deepcopy(self.board_B)
-        self.board_A.shift(0, board.height + margins.sep)
+        self.board_A.shift(0, boards[0].height + margins.sep)
         (self.xA, self.yA) = board_coords(self.board_A, self.aCuts, bit, 'bottom')

@@ -22,6 +22,7 @@
 Contains the main driver, using pySide or pyQt.
 '''
 from __future__ import print_function
+from future.utils import lrange
 from builtins import str
 
 import os, sys, traceback, webbrowser
@@ -73,13 +74,15 @@ class Driver(QtGui.QMainWindow):
         # created.
         self.bit = router.Router_Bit(self.units, self.config.bit_width,\
                                      self.config.bit_depth, self.config.bit_angle)
-        self.board = router.Board(self.bit, width=self.config.board_width)
-        self.template = router.Incra_Template(self.units, self.board)
-        self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board, self.config)
+        self.boards = []
+        self.boards.append(router.Board(self.bit, width=self.config.board_width))
+        self.boards.append(router.Board(self.bit, width=self.config.board_width))
+        self.template = router.Incra_Template(self.units, self.boards)
+        self.equal_spacing = spacing.Equally_Spaced(self.bit, self.boards, self.config)
         self.equal_spacing.set_cuts()
-        self.var_spacing = spacing.Variable_Spaced(self.bit, self.board, self.config)
+        self.var_spacing = spacing.Variable_Spaced(self.bit, self.boards, self.config)
         self.var_spacing.set_cuts()
-        self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board, self.config)
+        self.edit_spacing = spacing.Edit_Spaced(self.bit, self.boards, self.config)
         self.edit_spacing.set_cuts(self.equal_spacing.cuts)
         self.spacing = self.equal_spacing # the default
         self.spacing_index = None # to be set in layout_widgets()
@@ -214,7 +217,8 @@ class Driver(QtGui.QMainWindow):
         if self.config.default_wood in self.woods.keys():
             defwood = self.config.default_wood
         self.wood_actions[defwood].setChecked(True)
-        self.board.set_icon(self.woods[defwood])
+        for b in self.boards:
+            b.set_icon(self.woods[defwood])
 
         # Add the help menu
 
@@ -240,7 +244,7 @@ class Driver(QtGui.QMainWindow):
         lineEditWidth = 80
 
         # Create the figure canvas, using mpl interface
-        self.fig = qt_fig.Qt_Fig(self.template, self.board, self.config)
+        self.fig = qt_fig.Qt_Fig(self.template, self.boards, self.config)
         self.fig.canvas.setParent(self.main_frame)
         self.fig.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.fig.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -250,7 +254,7 @@ class Driver(QtGui.QMainWindow):
         self.le_board_width_label = QtGui.QLabel('Board Width')
         self.le_board_width = QtGui.QLineEdit(self.main_frame)
         self.le_board_width.setFixedWidth(lineEditWidth)
-        self.le_board_width.setText(self.units.increments_to_string(self.board.width))
+        self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
         self.le_board_width.editingFinished.connect(self._on_board_width)
         self.le_board_width.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
 
@@ -584,8 +588,8 @@ class Driver(QtGui.QMainWindow):
         '''(Re)draws the template and boards'''
         if self.config.debug:
             print('draw')
-        self.template = router.Incra_Template(self.units, self.board)
-        self.fig.draw(self.template, self.board, self.bit, self.spacing)
+        self.template = router.Incra_Template(self.units, self.boards)
+        self.fig.draw(self.template, self.boards, self.bit, self.spacing)
 
     def reinit_spacing(self):
         '''
@@ -596,11 +600,11 @@ class Driver(QtGui.QMainWindow):
 
         # Re-create the spacings objects
         if self.spacing_index == self.equal_spacing_id:
-            self.equal_spacing = spacing.Equally_Spaced(self.bit, self.board, self.config)
+            self.equal_spacing = spacing.Equally_Spaced(self.bit, self.boards, self.config)
         elif self.spacing_index == self.var_spacing_id:
-            self.var_spacing = spacing.Variable_Spaced(self.bit, self.board, self.config)
+            self.var_spacing = spacing.Variable_Spaced(self.bit, self.boards, self.config)
         elif self.spacing_index == self.edit_spacing_id:
-            self.edit_spacing = spacing.Edit_Spaced(self.bit, self.board, self.config)
+            self.edit_spacing = spacing.Edit_Spaced(self.bit, self.boards, self.config)
         else:
             raise ValueError('Bad value for spacing_index %d' % self.spacing_index)
 
@@ -722,7 +726,8 @@ class Driver(QtGui.QMainWindow):
             self.le_bit_depth.setModified(False)
             text = str(self.le_bit_depth.text())
             self.bit.set_depth_from_string(text)
-            self.board.set_height(self.bit)
+            for b in self.boards:
+                b.set_height(self.bit)
             self.draw()
             self.status_message('Changed bit depth to ' + text)
             self.file_saved = False
@@ -749,7 +754,9 @@ class Driver(QtGui.QMainWindow):
         if self.le_board_width.isModified():
             self.le_board_width.setModified(False)
             text = str(self.le_board_width.text())
-            self.board.set_width_from_string(text)
+            self.boards[0].set_width_from_string(text)
+            for b in self.boards[1:]:
+                b.width = self.boards[0].width
             self.reinit_spacing()
             self.draw()
             self.status_message('Changed board width to ' + text)
@@ -850,10 +857,10 @@ class Driver(QtGui.QMainWindow):
         if do_screenshot:
             image = QtGui.QPixmap.grabWindow(self.winId()).toImage()
         else:
-            image = self.fig.image(self.template, self.board, self.bit, self.spacing)
+            image = self.fig.image(self.template, self.boards, self.bit, self.spacing)
 
-        s = serialize.serialize(self.bit, self.board, self.spacing, \
-                                self.config.debug)
+        s = serialize.serialize(self.bit, self.boards, self.spacing, \
+                                self.config)
         image.setText('pyRouterJig', s)
         r = image.save(filename, 'png')
         if r:
@@ -903,13 +910,16 @@ class Driver(QtGui.QMainWindow):
                   ' must have been saved using pyRouterJig.' % filename
             QtGui.QMessageBox.warning(self, 'Error', msg)
             return
-        icon = self.board.icon
-        (self.bit, self.board, sp, sp_type) = serialize.unserialize(s, self.config.debug)
-        self.board.set_icon(icon)
+        icons = []
+        for b in self.boards:
+            icons.append(b.icon)
+        (self.bit, self.boards, sp, sp_type) = serialize.unserialize(s, self.config)
+        for i in lrange(len(self.boards)):
+            self.boards[i].set_icon(icons[i])
 
         # Reset the dependent data
         self.units = self.bit.units
-        self.template = router.Incra_Template(self.units, self.board)
+        self.template = router.Incra_Template(self.units, self.boards)
         if sp_type == 'Equa':
             sp.set_cuts()
             self.equal_spacing = sp
@@ -925,7 +935,7 @@ class Driver(QtGui.QMainWindow):
         self.tabs_spacing.blockSignals(True)
         self.tabs_spacing.setCurrentIndex(self.spacing_index)
         self.tabs_spacing.blockSignals(False)
-        self.le_board_width.setText(self.units.increments_to_string(self.board.width))
+        self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
         self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
         self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.le_bit_angle.setText(`self.bit.angle`)
@@ -938,7 +948,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_print')
 
-        r = self.fig.print(self.template, self.board, self.bit, self.spacing)
+        r = self.fig.print(self.template, self.boards, self.bit, self.spacing)
         if r:
             self.status_message('Figure printed')
         else:
@@ -993,10 +1003,11 @@ class Driver(QtGui.QMainWindow):
             self.units = utils.Units(metric=True)
         else:
             self.units = utils.Units(32)
-        self.board.change_units(self.units)
+        for b in self.boards:
+            b.change_units(self.units)
         self.bit.change_units(self.units)
         self.doc.change_units(self.units)
-        self.le_board_width.setText(self.units.increments_to_string(self.board.width))
+        self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
         self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
         self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.reinit_spacing()
@@ -1012,7 +1023,8 @@ class Driver(QtGui.QMainWindow):
             if v.isChecked():
                 wood = k
                 break
-        self.board.set_icon(self.woods[wood])
+        for b in self.boards:
+            b.set_icon(self.woods[wood])
         self.draw()
 
     @QtCore.pyqtSlot()

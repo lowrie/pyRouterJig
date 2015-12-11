@@ -77,38 +77,38 @@ class Qt_Fig(object):
     '''
     Interface to the qt_driver, using Qt to draw the boards and template.
     '''
-    def __init__(self, template, board, config):
-        self.canvas = Qt_Plotter(template, board, config)
+    def __init__(self, template, boards, config):
+        self.canvas = Qt_Plotter(template, boards, config)
         self.transform = None
 
-    def draw(self, template, board, bit, spacing):
+    def draw(self, template, boards, bit, spacing):
         '''
         Draws the template and boards
         '''
-        self.canvas.draw(template, board, bit, spacing)
+        self.canvas.draw(template, boards, bit, spacing)
 
-    def print(self, template, board, bit, spacing):
+    def print(self, template, boards, bit, spacing):
         '''
         Prints the figure
         '''
-        return self.canvas.print_fig(template, board, bit, spacing)
+        return self.canvas.print_fig(template, boards, bit, spacing)
 
-    def image(self, template, board, bit, spacing):
+    def image(self, template, boards, bit, spacing):
         '''
         Prints the figure to an image
         '''
-        return self.canvas.image_fig(template, board, bit, spacing)
+        return self.canvas.image_fig(template, boards, bit, spacing)
 
 class Qt_Plotter(QtGui.QWidget):
     '''
     Plots the template and boards using Qt.
     '''
-    def __init__(self, template, board, config):
+    def __init__(self, template, boards, config):
         QtGui.QWidget.__init__(self)
         self.config = config
         self.fig_width = -1
         self.fig_height = -1
-        self.set_fig_dimensions(template, board)
+        self.set_fig_dimensions(template, boards)
         # if subsequent passes are less than this value, don't label
         # the pass (in increments)
         self.sep_annotate = 4
@@ -128,12 +128,14 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         return QtCore.QSize(self.window_width, self.window_height)
 
-    def set_fig_dimensions(self, template, board):
+    def set_fig_dimensions(self, template, boards):
         '''
         Computes the figure dimension attributes, fig_width and fig_height, in
         increments.
         Returns True if the dimensions changed.
         '''
+        board = boards[0]
+
         # Try default margins, but reset if the template is too small for margins
         self.margins = utils.Margins(8, self.config.separation,\
                                      self.config.left_margin,\
@@ -168,22 +170,22 @@ class Qt_Plotter(QtGui.QWidget):
 
         return dimensions_changed
 
-    def draw(self, template, board, bit, spacing):
+    def draw(self, template, boards, bit, spacing):
         '''
         Draws the figure
         '''
         # Generate the new geometry layout
-        self.set_fig_dimensions(template, board)
-        self.geom = router.Joint_Geometry(template, board, bit, spacing, self.margins)
+        self.set_fig_dimensions(template, boards)
+        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
         self.update()
 
-    def print_fig(self, template, board, bit, spacing):
+    def print_fig(self, template, boards, bit, spacing):
         '''
         Prints the figure
         '''
         # Generate the new geometry layout
-        self.set_fig_dimensions(template, board)
-        self.geom = router.Joint_Geometry(template, board, bit, spacing, self.margins)
+        self.set_fig_dimensions(template, boards)
+        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
 
         # Print through the preview dialog
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
@@ -193,12 +195,12 @@ class Qt_Plotter(QtGui.QWidget):
         pdialog.paintRequested.connect(self.preview_requested)
         return pdialog.exec_()
 
-    def image_fig(self, template, board, bit, spacing):
+    def image_fig(self, template, boards, bit, spacing):
         '''
         Prints the figure to a QImage object
         '''
-        self.set_fig_dimensions(template, board)
-        self.geom = router.Joint_Geometry(template, board, bit, spacing, self.margins)
+        self.set_fig_dimensions(template, boards)
+        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
 
         image = QtGui.QImage(self.size(), QtGui.QImage.Format_RGB16)
         painter = QtGui.QPainter()
@@ -247,6 +249,7 @@ class Qt_Plotter(QtGui.QWidget):
         rw = painter.window()
         window_width = rw.width()
         window_height = rw.height()
+        units = self.geom.bit.units
 
         if dpi is None:
             # transform the painter to maintain the figure aspect ratio in the current
@@ -264,7 +267,7 @@ class Qt_Plotter(QtGui.QWidget):
         else:
             # Scale so that the image is the correct size on the page
             painter.translate(0, window_height)
-            scale = float(dpi) / self.geom.board.units.increments_per_inch
+            scale = float(dpi) / units.increments_per_inch
         painter.scale(scale, -scale)
         self.transform = painter.transform()
 
@@ -274,7 +277,7 @@ class Qt_Plotter(QtGui.QWidget):
         # a) labels fit in the template, and b) so that fonts are the same
         # size relative to the geometry, across output devices (screen,
         # printer, etc.)
-        font_inches = 3 / 32.0 * self.geom.board.units.increments_per_inch
+        font_inches = 3 / 32.0 * units.increments_per_inch
         font = painter.font()
         xx = self.transform.map(font_inches, 0)[0] - self.transform.dx()
         font.setPixelSize(utils.my_round(xx))
@@ -333,7 +336,7 @@ class Qt_Plotter(QtGui.QWidget):
                 painter.drawLine(xp, rect_T.yMid(), xp, rect_T.yT())
                 if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
                     paint_text(painter, label, (xp, rect_T.yMid()), flags, shift, -90)
-    def draw_one_board(self, painter, x, y):
+    def draw_one_board(self, painter, board, x, y):
         '''
         Draws a single board
         '''
@@ -341,13 +344,12 @@ class Qt_Plotter(QtGui.QWidget):
         pen = QtGui.QPen(QtCore.Qt.black)
         pen.setWidthF(0)
         painter.setPen(pen)
-        if type(self.geom.board.icon) == type(QtCore.Qt.DiagCrossPattern):
-            brush = QtGui.QBrush(QtCore.Qt.black, \
-                                 self.geom.board.icon)
+        if type(board.icon) == type(QtCore.Qt.DiagCrossPattern):
+            brush = QtGui.QBrush(QtCore.Qt.black, board.icon)
             (inverted, invertable) = self.transform.inverted()
             brush.setMatrix(inverted.toAffine())
         else:
-            brush = QtGui.QBrush(QtGui.QPixmap(self.geom.board.icon))
+            brush = QtGui.QBrush(QtGui.QPixmap(board.icon))
         painter.setBrush(brush)
         n = len(x)
         poly = QtGui.QPolygonF()
@@ -367,8 +369,9 @@ class Qt_Plotter(QtGui.QWidget):
         painter.setPen(QtCore.Qt.SolidLine)
 
         # Draw the A and B boards
-        self.draw_one_board(painter, self.geom.xA, self.geom.yA)
-        self.draw_one_board(painter, self.geom.xB, self.geom.yB)
+        board = self.geom.boards[0]
+        self.draw_one_board(painter, board, self.geom.xA, self.geom.yA)
+        self.draw_one_board(painter, board, self.geom.xB, self.geom.yB)
 
         # Label the boards
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
@@ -419,7 +422,7 @@ class Qt_Plotter(QtGui.QWidget):
         painter.restore()
 
         # initialize limits
-        xminG = self.geom.board.width
+        xminG = self.geom.boards[0].width
         xmaxG = 0
 
         # draw the active fingers filled, and track the limits
@@ -450,10 +453,10 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         Draws the title
         '''
-        units = self.geom.board.units
+        units = self.geom.bit.units
         title = self.geom.spacing.description
         title += '\nBoard width: '
-        title += units.increments_to_string(self.geom.board.width, True)
+        title += units.increments_to_string(self.geom.boards[0].width, True)
         title += '    Bit: '
         if self.geom.bit.angle > 0:
             title += '%.1f deg. dovetail' % self.geom.bit.angle
