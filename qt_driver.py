@@ -25,7 +25,7 @@ from __future__ import print_function
 from future.utils import lrange
 from builtins import str
 
-import os, sys, traceback, webbrowser
+import os, sys, traceback, webbrowser, copy
 
 import qt_fig
 import config_file
@@ -77,6 +77,7 @@ class Driver(QtGui.QMainWindow):
         self.boards = []
         self.boards.append(router.Board(self.bit, width=self.config.board_width))
         self.boards.append(router.Board(self.bit, width=self.config.board_width))
+        self.m_thickness = [4, 4]
         self.template = router.Incra_Template(self.units, self.boards)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.boards, self.config)
         self.equal_spacing.set_cuts()
@@ -187,39 +188,6 @@ class Driver(QtGui.QMainWindow):
         english_action.triggered.connect(self._on_units)
         self.metric_action.triggered.connect(self._on_units)
 
-        # Add wood menu
-
-        wood_menu = self.menubar.addMenu('Wood')
-        ag = QtGui.QActionGroup(self, exclusive=True)
-        self.wood_actions = {}
-        # Add woods from config file, which are image files
-        self.woods = utils.create_wood_dict(self.config.wood_images)
-        skeys = sorted(self.woods.keys())
-        for k in skeys:
-            self.wood_actions[k] = QtGui.QAction(k, self, checkable=True)
-            wood_menu.addAction(ag.addAction(self.wood_actions[k]))
-            self.wood_actions[k].triggered.connect(self._on_wood)
-        if len(skeys) > 0:
-            wood_menu.addSeparator()
-        # Next add patterns
-        patterns = {'DiagCrossPattern':QtCore.Qt.DiagCrossPattern,\
-                    'BDiagPattern':QtCore.Qt.BDiagPattern,\
-                    'FDiagPattern':QtCore.Qt.FDiagPattern,\
-                    'Dense1Pattern':QtCore.Qt.Dense1Pattern,\
-                    'Dense5Pattern':QtCore.Qt.Dense5Pattern}
-        skeys = sorted(patterns.keys())
-        for k in skeys:
-            self.woods[k] = patterns[k]
-            self.wood_actions[k] = QtGui.QAction(k, self, checkable=True)
-            wood_menu.addAction(ag.addAction(self.wood_actions[k]))
-            self.wood_actions[k].triggered.connect(self._on_wood)
-        defwood = 'DiagCrossPattern'
-        if self.config.default_wood in self.woods.keys():
-            defwood = self.config.default_wood
-        self.wood_actions[defwood].setChecked(True)
-        for b in self.boards:
-            b.set_icon(self.woods[defwood])
-
         # Add the help menu
 
         help_menu = self.menubar.addMenu('Help')
@@ -234,6 +202,36 @@ class Driver(QtGui.QMainWindow):
         doclink_action.setStatusTip('Opens documentation page in web browser')
         doclink_action.triggered.connect(self._on_doclink)
         help_menu.addAction(doclink_action)
+
+    def create_wood_combo_box(self, woods, patterns, has_none=False):
+        '''
+        Creates a wood selection combox box
+        '''
+        cb = QtGui.QComboBox(self)
+        # Set the default wood.
+        if has_none:
+            # If adding NONE, make that the default
+            cb.addItem('NONE')
+            defwood = 'NONE'
+        else:
+            defwood = 'DiagCrossPattern'
+            if self.config.default_wood in self.woods.keys():
+                defwood = self.config.default_wood
+        # Add the woods in the wood_images directory
+        skeys = sorted(woods.keys())
+        for k in skeys:
+            cb.addItem(k)
+        # Next add patterns
+        cb.insertSeparator(len(skeys))
+        skeys = sorted(patterns.keys())
+        for k in skeys:
+            cb.addItem(k)
+        # Set the index to the default wood
+        i = cb.findText(defwood)
+        cb.setCurrentIndex(i)
+        # Don't let the user change the text for each selection
+        cb.setEditable(False)
+        return cb
 
     def create_widgets(self):
         '''
@@ -278,6 +276,48 @@ class Driver(QtGui.QMainWindow):
         self.le_bit_angle.setFixedWidth(lineEditWidth)
         self.le_bit_angle.setText('%g' % self.bit.angle)
         self.le_bit_angle.editingFinished.connect(self._on_bit_angle)
+
+        # Board M thicknesses
+        self.le_boardm_label = [0]*2
+        self.le_boardm = [0]*2
+        for i in lrange(2):
+            self.le_boardm_label[i] = QtGui.QLabel('Thickness')
+            self.le_boardm[i] = QtGui.QLineEdit(self.main_frame)
+            self.le_boardm[i].setFixedWidth(lineEditWidth)
+            self.le_boardm[i].setText(self.units.increments_to_string(self.m_thickness[i]))
+        self.le_boardm[0].editingFinished.connect(self._on_boardm0)
+        self.le_boardm[1].editingFinished.connect(self._on_boardm1)
+
+        # Wood combo boxes
+        woods = utils.create_wood_dict(self.config.wood_images)
+        patterns = {'DiagCrossPattern':QtCore.Qt.DiagCrossPattern,\
+                    'BDiagPattern':QtCore.Qt.BDiagPattern,\
+                    'FDiagPattern':QtCore.Qt.FDiagPattern,\
+                    'Dense1Pattern':QtCore.Qt.Dense1Pattern,\
+                    'Dense5Pattern':QtCore.Qt.Dense5Pattern}
+        # ... combine the wood images and patterns
+        self.woods = copy.deepcopy(woods)
+        self.woods.update(patterns)
+        # ... create the combo boxes and their labels
+        self.cb_wood = [0]*4
+        self.cb_wood[0] = self.create_wood_combo_box(woods, patterns)
+        self.cb_wood[1] = self.create_wood_combo_box(woods, patterns)
+        self.cb_wood[2] = self.create_wood_combo_box(woods, patterns, True)
+        self.cb_wood[3] = self.create_wood_combo_box(woods, patterns, True)
+        self.cb_wood_label = [0]*4
+        self.cb_wood_label[0] = QtGui.QLabel('Board-A')
+        self.cb_wood_label[1] = QtGui.QLabel('Board-B')
+        self.cb_wood_label[2] = QtGui.QLabel('Board-M0')
+        self.cb_wood_label[3] = QtGui.QLabel('Board-M1')
+        self.cb_wood[0].activated.connect(self._on_wood0)
+        self.cb_wood[1].activated.connect(self._on_wood1)
+        self.cb_wood[2].activated.connect(self._on_wood2)
+        self.cb_wood[3].activated.connect(self._on_wood3)
+        # ... set the wood to whatever the current setting is
+        self._on_wood(0)
+        self._on_wood(1)
+        self._on_wood(2)
+        self._on_wood(3)
 
         # Equal spacing widgets
 
@@ -417,34 +457,46 @@ class Driver(QtGui.QMainWindow):
         # (everything but the canvas)
         hbox = QtGui.QHBoxLayout()
 
+        # this grid contains all the lower-left input stuff
+        grid = QtGui.QGridLayout()
+
         # Add the board width label, board width input line edit,
         # all stacked vertically on the left side.
-        vbox_board_width = QtGui.QVBoxLayout()
-        vbox_board_width.addWidget(self.le_board_width_label)
-        vbox_board_width.addWidget(self.le_board_width)
-        vbox_board_width.addStretch(1)
-        hbox.addLayout(vbox_board_width)
+        grid.addWidget(self.le_board_width_label, 0, 0)
+        grid.addWidget(self.le_board_width, 1, 0)
 
         # Add the bit width label and its line edit
         vbox_bit_width = QtGui.QVBoxLayout()
-        vbox_bit_width.addWidget(self.le_bit_width_label)
-        vbox_bit_width.addWidget(self.le_bit_width)
-        vbox_bit_width.addStretch(1)
-        hbox.addLayout(vbox_bit_width)
+        grid.addWidget(self.le_bit_width_label, 0, 1)
+        grid.addWidget(self.le_bit_width, 1, 1)
 
         # Add the bit depth label and its line edit
-        vbox_bit_depth = QtGui.QVBoxLayout()
-        vbox_bit_depth.addWidget(self.le_bit_depth_label)
-        vbox_bit_depth.addWidget(self.le_bit_depth)
-        vbox_bit_depth.addStretch(1)
-        hbox.addLayout(vbox_bit_depth)
+        grid.addWidget(self.le_bit_depth_label, 0, 2)
+        grid.addWidget(self.le_bit_depth, 1, 2)
 
         # Add the bit angle label and its line edit
-        vbox_bit_angle = QtGui.QVBoxLayout()
-        vbox_bit_angle.addWidget(self.le_bit_angle_label)
-        vbox_bit_angle.addWidget(self.le_bit_angle)
-        vbox_bit_angle.addStretch(1)
-        hbox.addLayout(vbox_bit_angle)
+        grid.addWidget(self.le_bit_angle_label, 0, 3)
+        grid.addWidget(self.le_bit_angle, 1, 3)
+
+        grid.setRowStretch(2, 10)
+
+        # Add the wood combo boxes
+        grid.addWidget(self.cb_wood_label[0], 3, 0)
+        grid.addWidget(self.cb_wood_label[1], 3, 1)
+        grid.addWidget(self.cb_wood_label[2], 3, 2)
+        grid.addWidget(self.cb_wood_label[3], 3, 3)
+        grid.addWidget(self.cb_wood[0], 4, 0)
+        grid.addWidget(self.cb_wood[1], 4, 1)
+        grid.addWidget(self.cb_wood[2], 4, 2)
+        grid.addWidget(self.cb_wood[3], 4, 3)
+
+        # Add Board-M thickness line edits
+        grid.addWidget(self.le_boardm_label[0], 5, 2)
+        grid.addWidget(self.le_boardm_label[1], 5, 3)
+        grid.addWidget(self.le_boardm[0], 6, 2)
+        grid.addWidget(self.le_boardm[1], 6, 3)
+
+        hbox.addLayout(grid)
 
         # Create the layout of the Equal spacing controls
         hbox_es = QtGui.QHBoxLayout()
@@ -474,12 +526,9 @@ class Driver(QtGui.QMainWindow):
         # Create the layout of the edit spacing controls
         hbox_edit = QtGui.QHBoxLayout()
         grid_edit = QtGui.QGridLayout()
-        hline = create_hline()
-        grid_edit.addWidget(hline, 0, 0, 1, 16)
-        hline2 = create_hline()
-        grid_edit.addWidget(hline2, 2, 0, 1, 16)
-        vline = create_vline()
-        grid_edit.addWidget(vline, 0, 0, 6, 1)
+        grid_edit.addWidget(create_hline(), 0, 0, 1, 16)
+        grid_edit.addWidget(create_hline(), 2, 0, 1, 16)
+        grid_edit.addWidget(create_vline(), 0, 0, 6, 1)
         label_active_finger_select = QtGui.QLabel('Active Finger Select')
         label_active_finger_select.setToolTip('Tools that select the active fingers')
         grid_edit.addWidget(label_active_finger_select, 1, 1, 1, 3, QtCore.Qt.AlignHCenter)
@@ -488,32 +537,26 @@ class Driver(QtGui.QMainWindow):
         grid_edit.addWidget(edit_btn_cursorR, 4, 2, QtCore.Qt.AlignLeft)
         grid_edit.addWidget(edit_btn_activate_all, 3, 3)
         grid_edit.addWidget(edit_btn_deactivate_all, 4, 3)
-        vline2 = create_vline()
-        grid_edit.addWidget(vline2, 0, 4, 6, 1)
+        grid_edit.addWidget(create_vline(), 0, 4, 6, 1)
         label_active_finger_ops = QtGui.QLabel('Active Finger Operators')
         label_active_finger_ops.setToolTip('Edit operations applied to active fingers')
         grid_edit.addWidget(label_active_finger_ops, 1, 5, 1, 10, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_move_label, 3, 5, 1, 2, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_moveL, 4, 5, QtCore.Qt.AlignRight)
         grid_edit.addWidget(edit_btn_moveR, 4, 6, QtCore.Qt.AlignLeft)
-        vline3 = create_vline()
-        grid_edit.addWidget(vline3, 2, 7, 4, 1)
+        grid_edit.addWidget(create_vline(), 2, 7, 4, 1)
         grid_edit.addWidget(edit_widen_label, 3, 8, 1, 2, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_widenL, 4, 8, QtCore.Qt.AlignRight)
         grid_edit.addWidget(edit_btn_widenR, 4, 9, QtCore.Qt.AlignLeft)
-        vline4 = create_vline()
-        grid_edit.addWidget(vline4, 2, 10, 4, 1)
+        grid_edit.addWidget(create_vline(), 2, 10, 4, 1)
         grid_edit.addWidget(edit_trim_label, 3, 11, 1, 2, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_trimL, 4, 11, QtCore.Qt.AlignRight)
         grid_edit.addWidget(edit_btn_trimR, 4, 12, QtCore.Qt.AlignLeft)
-        vline5 = create_vline()
-        grid_edit.addWidget(vline5, 2, 13, 4, 1)
+        grid_edit.addWidget(create_vline(), 2, 13, 4, 1)
         grid_edit.addWidget(edit_btn_add, 3, 14)
         grid_edit.addWidget(edit_btn_del, 4, 14)
-        vline6 = create_vline()
-        grid_edit.addWidget(vline6, 0, 15, 6, 1)
-        hline3 = create_hline()
-        grid_edit.addWidget(hline3, 5, 0, 1, 16)
+        grid_edit.addWidget(create_vline(), 0, 15, 6, 1)
+        grid_edit.addWidget(create_hline(), 5, 0, 1, 16)
         grid_edit.setSpacing(5)
 
         hbox_edit.addLayout(grid_edit)
@@ -1014,17 +1057,55 @@ class Driver(QtGui.QMainWindow):
         self.update_tooltips()
         self.draw()
 
-    @QtCore.pyqtSlot()
-    def _on_wood(self):
-        '''Handles changes in wood'''
+    def _on_wood(self, index):
+        '''Handles all changes in wood'''
         if self.config.debug:
-            print('_on_wood')
-        for k, v in self.wood_actions.items():
-            if v.isChecked():
-                wood = k
-                break
-        for b in self.boards:
-            b.set_icon(self.woods[wood])
+            print('_on_wood', index)
+        s = str(self.cb_wood[index].currentText())
+        if s != 'NONE':
+            self.boards[index].set_icon(self.woods[s])
+            self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_wood0(self):
+        '''Handles changes in wood index 0'''
+        if self.config.debug:
+            print('_on_wood0')
+        self._on_wood(0)
+
+    @QtCore.pyqtSlot()
+    def _on_wood1(self):
+        '''Handles changes in wood index 1'''
+        if self.config.debug:
+            print('_on_wood1')
+        self._on_wood(1)
+
+    @QtCore.pyqtSlot()
+    def _on_wood2(self):
+        '''Handles changes in wood index 2'''
+        if self.config.debug:
+            print('_on_wood2')
+        self._on_wood(2)
+
+    @QtCore.pyqtSlot()
+    def _on_wood3(self):
+        '''Handles changes in wood index 3'''
+        if self.config.debug:
+            print('_on_wood3')
+        self._on_wood(3)
+
+    @QtCore.pyqtSlot()
+    def _on_boardm0(self):
+        '''Handles changes board-M0 thickness'''
+        if self.config.debug:
+            print('_on_boardm0')
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_boardm1(self):
+        '''Handles changes board-M1 thickness'''
+        if self.config.debug:
+            print('_on_boardm1')
         self.draw()
 
     @QtCore.pyqtSlot()

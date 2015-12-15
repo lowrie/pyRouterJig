@@ -369,9 +369,8 @@ class Qt_Plotter(QtGui.QWidget):
         painter.setPen(QtCore.Qt.SolidLine)
 
         # Draw the A and B boards
-        board = self.geom.boards[0]
-        self.draw_one_board(painter, board, self.geom.xA, self.geom.yA)
-        self.draw_one_board(painter, board, self.geom.xB, self.geom.yB)
+        self.draw_one_board(painter, self.geom.boards[0], self.geom.xA, self.geom.yA)
+        self.draw_one_board(painter, self.geom.boards[1], self.geom.xB, self.geom.yB)
 
         # Label the boards
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
