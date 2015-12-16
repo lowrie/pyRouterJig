@@ -321,6 +321,13 @@ class Driver(QtGui.QMainWindow):
         self._on_wood(2)
         self._on_wood(3)
 
+        # Disable M-boards, for now
+        self.le_boardm[0].setEnabled(False)
+        self.le_boardm[1].setEnabled(False)
+        self.le_boardm[0].setStyleSheet("color: gray;")
+        self.le_boardm[1].setStyleSheet("color: gray;")
+        self.cb_wood[3].setEnabled(False)
+
         # Equal spacing widgets
 
         params = self.equal_spacing.params
@@ -1087,6 +1094,19 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes in wood index 2'''
         if self.config.debug:
             print('_on_wood2')
+        s = str(self.cb_wood[2].currentText())
+        if s == 'NONE':
+            i = self.cb_wood[3].findText('NONE')
+            self.cb_wood[3].setCurrentIndex(i)
+            self.cb_wood[3].setEnabled(False)
+            self.boards[2].set_active(False)
+            self.boards[3].set_active(False)
+            self.le_boardm[0].setStyleSheet("color: gray;")
+            self.le_boardm[1].setStyleSheet("color: gray;")
+        else:
+            self.cb_wood[3].setEnabled(True)
+            self.boards[2].set_active(True)
+            self.le_boardm[0].setStyleSheet("color: black;")
         self._on_wood(2)
 
     @QtCore.pyqtSlot()
@@ -1094,6 +1114,13 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes in wood index 3'''
         if self.config.debug:
             print('_on_wood3')
+        s = str(self.cb_wood[3].currentText())
+        if s == 'NONE':
+            self.boards[3].set_active(False)
+            self.le_boardm[1].setStyleSheet("color: gray;")
+        else:
+            self.boards[3].set_active(True)
+            self.le_boardm[1].setStyleSheet("color: black;")
         self._on_wood(3)
 
     @QtCore.pyqtSlot()

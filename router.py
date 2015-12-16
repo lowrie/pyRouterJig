@@ -465,13 +465,16 @@ class Joint_Geometry(object):
         # (no template margines)
         self.board_T = My_Rectangle(self.rect_T.xL + template.margin, self.rect_T.yB, \
                                     boards[0].width, template.height)
+        x = self.board_T.xL
+        y = self.rect_T.yT()
 
         # Determine board-B coordinates
         self.board_B = copy.deepcopy(self.boards[0])
-        self.board_B.shift(self.board_T.xL, self.rect_T.yT() + margins.sep)
+        self.board_B.shift(x, y + margins.sep)
         (self.xB, self.yB) = self.board_B.board_coords(self.bCuts, bit, 'top')
+        y = self.board_B.yT()
 
         # Determine board-A coordinates
         self.board_A = copy.deepcopy(self.boards[1])
-        self.board_A.shift(self.board_T.xL, self.board_B.yT() + margins.sep)
+        self.board_A.shift(x, y + margins.sep)
         (self.xA, self.yA) = self.board_A.board_coords(self.aCuts, bit, 'bottom')
