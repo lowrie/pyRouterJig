@@ -75,8 +75,10 @@ class Driver(QtGui.QMainWindow):
         self.bit = router.Router_Bit(self.units, self.config.bit_width,\
                                      self.config.bit_depth, self.config.bit_angle)
         self.boards = []
-        self.boards.append(router.Board(self.bit, width=self.config.board_width))
-        self.boards.append(router.Board(self.bit, width=self.config.board_width))
+        for i in lrange(4):
+            self.boards.append(router.Board(self.bit, width=self.config.board_width))
+        self.boards[2].set_active(False)
+        self.boards[3].set_active(False)
         self.m_thickness = [4, 4]
         self.template = router.Incra_Template(self.units, self.boards)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.boards, self.config)
