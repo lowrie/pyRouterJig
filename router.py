@@ -274,62 +274,63 @@ class Board(My_Rectangle):
         self.height = my_round(self.height * s)
         self.thickness = my_round(self.thickness * s)
         self.units = new_units
-    def board_coords(self, cuts, bit, joint_edge):
-        '''
-        Compute the perimeter coordinates of a board with a routed edge.
-
-        board: A board object
-        cuts: An array of Cut objects, representing the routed edge.
-        bit: A Router_Bit object.
-        joint_edge: Edge that is routed.  So far, valid values are 'top'
-                    and 'bottom'.
-        '''
-        # Set the starting point (xOrg, yOrg) as the lower-left coordinate
-        # the joint on the top and the upper-right for the botoom.
-        # sign is used so that this algorithm works for both 'top' and 'bottom'
-        # For sign+, we'll go clockwise and sign-, counter-clockwise.
-        # The idea is to traverse the routed edge always in the +x direction.
-        xOrg = self.xL
-        if joint_edge == 'top':
-            sign = 1
-            yOrg = self.yB
-        else:
-            sign = -1
-            yOrg = self.yT()
-        # determine the 2 left-edge points, accounting for whether the first cut
-        # includes this edge or not.
-        x = [xOrg, xOrg]
-        y = [yOrg]
-        yNocut = y[0] + sign * self.height # y-location of uncut edge
-        yCut = yNocut - sign * bit.depth   # y-location of routed edge
+    def _do_cuts(self, bit, cuts, y_nocut, y_cut):
+        x = [self.xL]
         if cuts[0].xmin > 0:
-            y.append(yNocut)
+            y = [y_nocut]
         else:
-            y.append(yCut)
+            y = [y_cut]
         # loop through the cuts and add them to the perimeter
         for c in cuts:
             if c.xmin > 0:
                 # on the surface, start of cut
-                x.append(c.xmin + xOrg + bit.offset)
-                y.append(yNocut)
+                x.append(c.xmin + x[0] + bit.offset)
+                y.append(y_nocut)
             # at the cut depth, start of cut
-            x.append(c.xmin + xOrg)
-            y.append(yCut)
+            x.append(c.xmin + x[0])
+            y.append(y_cut)
             # at the cut depth, end of cut
-            x.append(c.xmax + xOrg)
-            y.append(yCut)
+            x.append(c.xmax + x[0])
+            y.append(y_cut)
             if c.xmax < self.width:
                 # at the surface, end of cut
-                x.append(c.xmax + xOrg - bit.offset)
-                y.append(yNocut)
+                x.append(c.xmax + x[0] - bit.offset)
+                y.append(y_nocut)
         # add the last point on the top and bottom, at the right edge,
         # accounting for whether the last cut includes this edge or not.
         if cuts[-1].xmax < self.width:
-            x.append(xOrg + self.width)
-            y.append(yNocut)
-        # add the right-most corner point, on the unrouted edge
-        x.append(xOrg + self.width)
-        y.append(y[0])
+            x.append(x[0] + self.width)
+            y.append(y_nocut)
+        return (x, y)
+    def board_coords(self, bit, cuts_top=None, cuts_bottom=None):
+        '''
+        Compute the perimeter coordinates of the board.
+
+        bit: A Router_Bit object.
+        cuts_top: An array of Cut objects, representing the routed edge on the board top
+        cuts_bottom: An array of Cut objects, representing the routed edge on the board bottom
+        '''
+        # Do the top edge
+        y_nocut = self.yT() # y-location of uncut edge
+        if cuts_top is None:
+            x = [self.xL, self.xR()]
+            y = [y_nocut, y_nocut]
+        else:
+            y_cut = y_nocut - bit.depth   # y-location of routed edge
+            (x, y) = self._do_cuts(bit, cuts_top, y_nocut, y_cut)
+        # Do the bottom edge
+        y_nocut = self.yB # y-location of uncut edge
+        if cuts_bottom is None:
+            xb = [self.xL, self.xR()]
+            yb = [y_nocut, y_nocut]
+        else:
+            y_cut = y_nocut + bit.depth   # y-location of routed edge
+            (xb, yb) = self._do_cuts(bit, cuts_bottom, y_nocut, y_cut)
+        # merge the top and bottom
+        xb.reverse()
+        yb.reverse()
+        x.extend(xb)
+        y.extend(yb)
         # close the polygon by adding the first point
         x.append(x[0])
         y.append(y[0])
@@ -471,10 +472,10 @@ class Joint_Geometry(object):
         # Determine board-B coordinates
         self.board_B = copy.deepcopy(self.boards[0])
         self.board_B.shift(x, y + margins.sep)
-        (self.xB, self.yB) = self.board_B.board_coords(self.bCuts, bit, 'top')
+        (self.xB, self.yB) = self.board_B.board_coords(bit, cuts_top=self.bCuts)
         y = self.board_B.yT()
 
         # Determine board-A coordinates
         self.board_A = copy.deepcopy(self.boards[1])
         self.board_A.shift(x, y + margins.sep)
-        (self.xA, self.yA) = self.board_A.board_coords(self.aCuts, bit, 'bottom')
+        (self.xA, self.yA) = self.board_A.board_coords(bit, cuts_bottom=self.aCuts)
