@@ -111,10 +111,12 @@ class Qt_Plotter(QtGui.QWidget):
         self.set_fig_dimensions(template, boards)
         # if subsequent passes are less than this value, don't label
         # the pass (in increments)
-        self.sep_annotate = 4
+        #self.sep_annotate = 4
+        self.sep_annotate = 0
         self.geom = None
         (r, g, b) = config.background_color
         self.background = QtGui.QBrush(QtGui.QColor(r, g, b))
+        self.labels = ['B', 'C', 'D', 'E', 'F']
 
     def minimumSizeHint(self):
         '''
@@ -314,30 +316,61 @@ class Qt_Plotter(QtGui.QWidget):
         painter.drawRect(rect_T.xL(), rect_T.yB(), rect_T.width, rect_T.height)
 
         # Draw the router passes
-        # ... do the B passes
-        ip = 0
-        flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
-        shift = (0, -2)
-        for c in self.geom.boards[1].top_cuts[::-1]:
-            for p in lrange(len(c.passes) - 1, -1, -1):
-                xp = c.passes[p] + board_T.xL()
-                ip += 1
-                label = '%dB' % ip
-                painter.drawLine(xp, rect_T.yB(), xp, rect_T.yMid())
-                if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    paint_text(painter, label, (xp, rect_T.yMid()), flags, shift, -90)
-       # ... do the A passes
+        # ... do the top passes
         ip = 0
         flags = QtCore.Qt.AlignLeft | QtCore.Qt.AlignBottom
         shift = (0, 2)
+        y1 = rect_T.yT()
+        y2 = rect_T.yMid()
         for c in self.geom.boards[0].bottom_cuts[::-1]:
             for p in lrange(len(c.passes) - 1, -1, -1):
                 xp = c.passes[p] + board_T.xL()
                 ip += 1
                 label = '%dA' % ip
-                painter.drawLine(xp, rect_T.yMid(), xp, rect_T.yT())
+                painter.drawLine(xp, y1, xp, y2)
                 if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    paint_text(painter, label, (xp, rect_T.yMid()), flags, shift, -90)
+                    paint_text(painter, label, (xp, y2), flags, shift, -90)
+        # Do double passes
+        i = 0
+        if self.geom.boards[2].active:
+            ip = 0
+            for c in self.geom.boards[2].top_cuts[::-1]:
+                for p in lrange(len(c.passes) - 1, -1, -1):
+                    xp = c.passes[p] + board_T.xL()
+                    ip += 1
+                    label = '%d%s' % (ip, self.labels[i])
+                    painter.drawLine(xp, y1, xp, y2)
+                    if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
+                        paint_text(painter, label, (xp, y2), flags, shift, -90)
+            ip = 0
+            flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
+            shift = (0, -2)
+            y1 = rect_T.yB()
+            y2 = rect_T.yMid()
+            for c in self.geom.boards[2].bottom_cuts[::-1]:
+                for p in lrange(len(c.passes) - 1, -1, -1):
+                    xp = c.passes[p] + board_T.xL()
+                    ip += 1
+                    label = '%d%s' % (ip, self.labels[i + 1])
+                    painter.drawLine(xp, y1, xp, y2)
+                    if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
+                        paint_text(painter, label, (xp, y2), flags, shift, -90)
+            i += 2
+
+        # ... do the bottom passes
+        ip = 0
+        flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
+        shift = (0, -2)
+        y1 = rect_T.yB()
+        y2 = rect_T.yMid()
+        for c in self.geom.boards[1].top_cuts[::-1]:
+            for p in lrange(len(c.passes) - 1, -1, -1):
+                xp = c.passes[p] + board_T.xL()
+                ip += 1
+                label = '%d%s' % (ip, self.labels[i])
+                painter.drawLine(xp, y1, xp, y2)
+                if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
+                    paint_text(painter, label, (xp, y2), flags, shift, -90)
     def draw_one_board(self, painter, board, bit):
         '''
         Draws a single board
@@ -378,13 +411,30 @@ class Qt_Plotter(QtGui.QWidget):
             self.draw_one_board(painter, self.geom.boards[i], self.geom.bit)
 
         # Label the boards
-        flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
-        p = (self.geom.boards[0].xMid(), self.geom.boards[0].yT())
-        paint_text(painter, 'A', p, flags, (0, 3), fill=self.background)
+        xL = self.geom.boards[0].xL()
+        flags_top = QtCore.Qt.AlignRight | QtCore.Qt.AlignTop
+        flags_bot = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
 
-        flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
-        p = (self.geom.boards[1].xMid(), self.geom.boards[1].yB())
-        paint_text(painter, 'B', p, flags, (0, -3), fill=self.background)
+        p = (xL, self.geom.boards[0].yB())
+        paint_text(painter, 'A', p, flags_bot, (-3, 0))
+
+        i = 0 # index in self.labels
+
+        if self.geom.boards[3].active:
+            p = (xL, self.geom.boards[3].yT())
+            paint_text(painter, 'B', p, flags_top, (-3, 0))
+            p = (xL, self.geom.boards[3].yB())
+            paint_text(painter, 'C', p, flags_bot, (-3, 0))
+            i = 2
+        if self.geom.boards[2].active:
+            p = (xL, self.geom.boards[2].yT())
+            paint_text(painter, self.labels[i], p, flags_top, (-3, 0))
+            p = (xL, self.geom.boards[2].yB())
+            paint_text(painter, self.labels[i + 1], p, flags_bot, (-3, 0))
+            i += 2
+
+        p = (xL, self.geom.boards[1].yT())
+        paint_text(painter, self.labels[i], p, flags_top, (-3, 0))
 
     def finger_polygon(self, c):
         '''

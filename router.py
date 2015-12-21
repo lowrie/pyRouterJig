@@ -494,7 +494,7 @@ class Joint_Geometry(object):
             last = adjoining_cuts(top, bit, boards[2])
             self.boards[2].set_bottom_cuts(last, bit)
         
-        # make the top cuts on board-B
+        # make the top cuts on the bottom board
         top = adjoining_cuts(last, bit, boards[1])
         self.boards[1].set_top_cuts(top, bit)
 
@@ -509,11 +509,11 @@ class Joint_Geometry(object):
         x = self.board_T.xL()
         y = self.rect_T.yT() + margins.sep
 
-        # Determine board-B coordinates
+        # Set bottom board origin
         self.boards[1].set_origin(x, y)
         y = self.boards[1].yT() + margins.sep
 
-        # Determine board-M coordinates
+        # Set double and double-double origins
         if self.boards[2].active:
             self.boards[2].set_origin(x, y)
             y = self.boards[2].yT() + margins.sep
@@ -521,5 +521,5 @@ class Joint_Geometry(object):
                 self.boards[3].set_origin(x, y)
                 y = self.boards[3].yT() + margins.sep
 
-        # Determine board-A coordinates
+        # Set top board origin
         self.boards[0].set_origin(x, y)
