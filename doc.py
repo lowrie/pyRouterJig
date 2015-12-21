@@ -71,7 +71,7 @@ class Doc(object):
     fingers. At its minimum value, the width of the center finger is \
     maximized. At its maximum value, the width of the center finger is \
     minimized, and the result is the roughly the same as equally-spaced \
-    with, zero "B-spacing", zero "Width", and the "Centered" option \
+    with, zero "A-spacing", zero "Width", and the "Centered" option \
     checked.'
 
     def __init__(self, units):

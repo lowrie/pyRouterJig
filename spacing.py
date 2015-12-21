@@ -88,6 +88,12 @@ class Base_Spacing(object):
         self.cuts = []
         self.labels = []
 
+        self.dhtot = 0
+        if boards[2].active:
+            self.dhtot += boards[2].dheight
+            if boards[3].active:
+                self.dhtot += boards[3].dheight
+
     def write(self, fd):
         '''Writes the class to a file'''
 
@@ -98,8 +104,8 @@ class Equally_Spaced(Base_Spacing):
 
     Parameters that control the spacing are:
 
-    b_spacing: Extra spacing, beyond the bit width  added between the fingers
-               of the B-board.  Default is 0.  The reported b_spacing has the
+    a_spacing: Extra spacing, beyond the bit width added between the cuts
+               of the A-board.  Default is 0.  The reported a_spacing has the
                bit width added on to this value.
 
     width: Width of fingers.  Default is the bit width.
@@ -107,14 +113,14 @@ class Equally_Spaced(Base_Spacing):
     centered: If true, then a finger is centered on the board width.  If Always
     true for dovetail bits.  Default is true.
     '''
-    keys = ['B-spacing', 'Width', 'Centered']
+    keys = ['A-spacing', 'Width', 'Centered']
 
     def __init__(self, bit, boards, config):
         Base_Spacing.__init__(self, bit, boards, config)
 
-        t = [Spacing_Param(0, self.boards[0].width // 4, 0),\
-             Spacing_Param(self.bit.width, self.boards[0].width // 2,\
-                           self.bit.width),\
+        t = [Spacing_Param(self.dhtot, self.boards[0].width // 4, 0),\
+             Spacing_Param(self.bit.width + 2 * self.dhtot, self.boards[0].width // 2,\
+                           self.bit.width + 2 * self.dhtot),\
              Spacing_Param(None, None, True)]
         self.params = {}
         for i in lrange(len(t)):
@@ -124,20 +130,21 @@ class Equally_Spaced(Base_Spacing):
         '''
         Sets the cuts to make the joint
         '''
-        b_spacing = self.params[self.keys[0]].v
+        a_spacing = self.params[self.keys[0]].v
         width = self.params[self.keys[1]].v
+        print('width', width)
         centered = self.params[self.keys[2]].v
 
         board_width = self.boards[0].width
         units = self.bit.units
-        label = units.increments_to_string(2 * width + b_spacing, True)
+        label = units.increments_to_string(2 * width + a_spacing, True)
         self.labels = self.keys[:]
         self.labels[0] += ': ' + label
         self.labels[1] += ': ' + units.increments_to_string(width, True)
         self.description = 'Equally spaced (' + self.labels[0] + \
                            ', ' + self.labels[1] + ')'
         self.cuts = [] # return value
-        neck_width = utils.my_round(self.bit.neck + width - self.bit.width + b_spacing)
+        neck_width = utils.my_round(self.bit.neck + width - self.bit.width + a_spacing)
         if neck_width < 1:
             raise Spacing_Exception('Specified bit paramters give a zero'
                                     ' or negative cut width (%d increments) at'
@@ -192,7 +199,7 @@ class Variable_Spaced(Base_Spacing):
         Base_Spacing.__init__(self, bit, boards, config)
         # eff_width is the effective width, an average of the bit width
         # and the neck width
-        self.eff_width = utils.my_round(0.5 * (self.bit.width + self.bit.neck))
+        self.eff_width = utils.my_round(0.5 * (self.bit.width + self.bit.neck)) + 2 * self.dhtot
         self.wb = self.boards[0].width // self.eff_width
         self.alpha = (self.wb + 1) % 2
         # min and max number of fingers
@@ -240,8 +247,8 @@ class Variable_Spaced(Base_Spacing):
         if self.config.debug:
             print('increments', increments)
         # Adjustments for dovetails
-        deltaP = self.bit.width - self.eff_width
-        deltaM = utils.my_round(self.eff_width - self.bit.neck)
+        deltaP = self.bit.width + 2 * self.dhtot - self.eff_width
+        deltaM = utils.my_round(self.eff_width - self.bit.neck - 2 * self.dhtot)
         # put a cut at the center of the board
         xMid = board_width // 2
         width = increments[0] + deltaP

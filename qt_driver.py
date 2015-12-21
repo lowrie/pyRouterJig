@@ -74,12 +74,14 @@ class Driver(QtGui.QMainWindow):
         # created.
         self.bit = router.Router_Bit(self.units, self.config.bit_width,\
                                      self.config.bit_depth, self.config.bit_angle)
+        self.m_thickness = [4, 4] # initial thickness of M0 and M1 boards
         self.boards = []
         for i in lrange(4):
             self.boards.append(router.Board(self.bit, width=self.config.board_width))
         self.boards[2].set_active(False)
         self.boards[3].set_active(False)
-        self.m_thickness = [4, 4]
+        self.boards[2].set_height(self.bit, self.m_thickness[0])
+        self.boards[3].set_height(self.bit, self.m_thickness[1])
         self.template = router.Incra_Template(self.units, self.boards)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.boards, self.config)
         self.equal_spacing.set_cuts()
@@ -315,11 +317,6 @@ class Driver(QtGui.QMainWindow):
         self.cb_wood[1].activated.connect(self._on_wood1)
         self.cb_wood[2].activated.connect(self._on_wood2)
         self.cb_wood[3].activated.connect(self._on_wood3)
-        # ... set the wood to whatever the current setting is
-        self._on_wood(0)
-        self._on_wood(1)
-        self._on_wood(2)
-        self._on_wood(3)
 
         # Disable M-boards, for now
         self.le_boardm[0].setEnabled(False)
@@ -334,7 +331,7 @@ class Driver(QtGui.QMainWindow):
         labels = self.equal_spacing.labels
 
         # ...first slider
-        p = params['B-spacing']
+        p = params['A-spacing']
         self.es_slider0_label = QtGui.QLabel(labels[0])
         self.es_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
         self.es_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -604,6 +601,12 @@ class Driver(QtGui.QMainWindow):
         vbox.addLayout(hbox)
 #        vbox.setSizeConstraint(QtGui.QLayout.SetFixedSize)
 
+        # Set the wood to whatever the current setting is
+        self._on_wood(0)
+        self._on_wood(1)
+        self._on_wood(2)
+        self._on_wood(3)
+
         # Lay it all out
         self.main_frame.setLayout(vbox)
         self.setCentralWidget(self.main_frame)
@@ -682,7 +685,7 @@ class Driver(QtGui.QMainWindow):
         if self.spacing_index == self.equal_spacing_id:
             # Equal spacing widgets
             params = self.equal_spacing.params
-            p = params['B-spacing']
+            p = params['A-spacing']
             self.es_slider0.blockSignals(True)
             self.es_slider0.setMinimum(p.vMin)
             self.es_slider0.setMaximum(p.vMax)
@@ -816,10 +819,10 @@ class Driver(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot(int)
     def _on_es_slider0(self, value):
-        '''Handles changes to the equally-spaced slider B-spacing'''
+        '''Handles changes to the equally-spaced slider A-spacing'''
         if self.config.debug:
             print('_on_es_slider0', value)
-        self.equal_spacing.params['B-spacing'].v = value
+        self.equal_spacing.params['A-spacing'].v = value
         self.equal_spacing.set_cuts()
         self.es_slider0_label.setText(self.equal_spacing.labels[0])
         self.draw()
@@ -1073,7 +1076,9 @@ class Driver(QtGui.QMainWindow):
         s = str(self.cb_wood[index].currentText())
         if s != 'NONE':
             self.boards[index].set_icon(self.woods[s])
-            self.draw()
+        self.reinit_spacing()
+        self.draw()
+        self.file_saved = False
 
     @QtCore.pyqtSlot()
     def _on_wood0(self):
@@ -1101,11 +1106,14 @@ class Driver(QtGui.QMainWindow):
             self.cb_wood[3].setEnabled(False)
             self.boards[2].set_active(False)
             self.boards[3].set_active(False)
+            self.le_boardm[0].setEnabled(False)
+            self.le_boardm[1].setEnabled(False)
             self.le_boardm[0].setStyleSheet("color: gray;")
             self.le_boardm[1].setStyleSheet("color: gray;")
         else:
             self.cb_wood[3].setEnabled(True)
             self.boards[2].set_active(True)
+            self.le_boardm[0].setEnabled(True)
             self.le_boardm[0].setStyleSheet("color: black;")
         self._on_wood(2)
 
@@ -1117,25 +1125,37 @@ class Driver(QtGui.QMainWindow):
         s = str(self.cb_wood[3].currentText())
         if s == 'NONE':
             self.boards[3].set_active(False)
+            self.le_boardm[1].setEnabled(False)
             self.le_boardm[1].setStyleSheet("color: gray;")
         else:
             self.boards[3].set_active(True)
+            self.le_boardm[1].setEnabled(True)
             self.le_boardm[1].setStyleSheet("color: black;")
         self._on_wood(3)
 
+    def _on_boardm(self, i):
+        '''Handles changes board-M height changes'''
+        if self.le_boardm[i].isModified():
+            if self.config.debug:
+                print('_on_boardm', i)
+            self.le_boardm[i].setModified(False)
+            text = str(self.le_boardm[i].text())
+            self.boards[i + 2].set_height_from_string(self.bit, text)
+            self.reinit_spacing()
+            self.draw()
+            self.status_message(('Changed Board-M%d thickness to ' + text) % i)
+            self.reinit_spacing()
+            self.file_saved = False
+
     @QtCore.pyqtSlot()
     def _on_boardm0(self):
-        '''Handles changes board-M0 thickness'''
-        if self.config.debug:
-            print('_on_boardm0')
-        self.draw()
+        '''Handles changes board-M0 height'''
+        self._on_boardm(0)
 
     @QtCore.pyqtSlot()
     def _on_boardm1(self):
-        '''Handles changes board-M1 thickness'''
-        if self.config.debug:
-            print('_on_boardm1')
-        self.draw()
+        '''Handles changes board-M1 height'''
+        self._on_boardm(1)
 
     @QtCore.pyqtSlot()
     def _on_edit_undo(self):

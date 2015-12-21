@@ -22,6 +22,7 @@
 Contains the router, board, template and their geometry properties.
 '''
 from __future__ import division
+from __future__ import print_function
 from future.utils import lrange
 
 import math
@@ -180,39 +181,37 @@ class My_Rectangle(object):
     '''
     Stores a rectangle geometry
     '''
-    def __init__(self, xL, yB, width, height):
+    def __init__(self, xOrg, yOrg, width, height):
         '''
-        xL: left x-coordinate
-        yB: bottom y-coordinate
+        (xOrg, yOrg): Bottom-left coordinate (origin)
         width: Extent in s
         height: Extent in y
         '''
-        self.xL = xL
-        self.yB = yB
+        self.set_origin(xOrg, yOrg)
         self.width = width
         self.height = height
     def xMid(self):
         '''Returns the x-coordinate of the midpoint.'''
-        return self.xL + self.width // 2
+        return self.xOrg + self.width // 2
     def yMid(self):
         '''Returns the y-coordinate of the midpoint.'''
-        return self.yB + self.height // 2
-    def xAll(self):
-        '''Returns the x-coordinates of a closed polygon of the rectangle.'''
-        return (self.xL, self.xR(), self.xR(), self.xL, self.xL)
-    def yAll(self):
-        '''Returns the y-coordinates of a closed polygon of the rectangle.'''
-        return (self.yB, self.yB, self.yT(), self.yT(), self.yB)
+        return self.yOrg + self.height // 2
+    def xL(self):
+        '''Returns the left (min) x-coordindate'''
+        return self.xOrg
     def xR(self):
         '''Returns the right (max) x-coordindate'''
-        return self.xL + self.width
+        return self.xOrg + self.width
+    def yB(self):
+        '''Returns the bottom (min) y-coordindate'''
+        return self.yOrg
     def yT(self):
         '''Returns the top (max) y-coordindate'''
-        return self.yB + self.height
-    def shift(self, xs, ys):
-        '''Shift the rectangle by the distances xs and ys'''
-        self.xL += xs
-        self.yB += ys
+        return self.yOrg + self.height
+    def set_origin(self, xOrg, yOrg):
+        '''Sets the origin to xs, ys'''
+        self.xOrg = xOrg
+        self.yOrg = yOrg
 
 class Board(My_Rectangle):
     '''
@@ -235,6 +234,8 @@ class Board(My_Rectangle):
         self.icon = None
         self.active = True
         self.set_height(bit)
+        self.bottom_cuts = None
+        self.top_cuts = None
     def set_icon(self, icon):
         self.icon = icon
     def set_active(self, active=True):
@@ -257,14 +258,35 @@ class Board(My_Rectangle):
             raise
         if self.width <= 0:
             raise Router_Exception(msg)
-    def set_height(self, bit=None, height=None):
+    def set_height(self, bit, dheight=None):
         '''
         Sets the height from the router bit depth of cut
         '''
-        if height is None:
+        if dheight is None:
+            self.dheight = 0
             self.height = my_round(1.5 * bit.depth)
         else:
-            self.height = height
+            self.dheight = dheight
+            self.height = bit.depth + dheight
+    def set_height_from_string(self, bit, s):
+        '''
+        Sets the height from the string s, following requirements from units.string_to_increments().
+        '''
+        msg = 'Board height increment is %s\n' % s
+        if self.units.metric:
+            msg += 'Set to a postive integer value, such as 5'
+        else:
+            msg += 'Set to a postive value, such as 1/2'
+        try:
+            t = self.units.string_to_increments(s)
+        except ValueError as e:
+            msg = 'ValueError setting board thickness increment: %s\n\n' % (e) + msg
+            raise Router_Exception(msg)
+        except:
+            raise
+        if t <= 0:
+            raise Router_Exception(msg)
+        self.set_height(bit, t)
     def change_units(self, new_units):
         '''Changes units to new_units'''
         s = self.units.get_scaling(new_units)
@@ -274,8 +296,16 @@ class Board(My_Rectangle):
         self.height = my_round(self.height * s)
         self.thickness = my_round(self.thickness * s)
         self.units = new_units
+    def set_bottom_cuts(self, cuts, bit):
+        for c in cuts:
+            c.make_router_passes(bit, self)
+        self.bottom_cuts = cuts
+    def set_top_cuts(self, cuts, bit):
+        for c in cuts:
+            c.make_router_passes(bit, self)
+        self.top_cuts = cuts
     def _do_cuts(self, bit, cuts, y_nocut, y_cut):
-        x = [self.xL]
+        x = [self.xL()]
         if cuts[0].xmin > 0:
             y = [y_nocut]
         else:
@@ -302,30 +332,28 @@ class Board(My_Rectangle):
             x.append(x[0] + self.width)
             y.append(y_nocut)
         return (x, y)
-    def board_coords(self, bit, cuts_top=None, cuts_bottom=None):
+    def perimeter(self, bit):
         '''
         Compute the perimeter coordinates of the board.
 
         bit: A Router_Bit object.
-        cuts_top: An array of Cut objects, representing the routed edge on the board top
-        cuts_bottom: An array of Cut objects, representing the routed edge on the board bottom
         '''
         # Do the top edge
         y_nocut = self.yT() # y-location of uncut edge
-        if cuts_top is None:
-            x = [self.xL, self.xR()]
+        if self.top_cuts is None:
+            x = [self.xL(), self.xR()]
             y = [y_nocut, y_nocut]
         else:
             y_cut = y_nocut - bit.depth   # y-location of routed edge
-            (x, y) = self._do_cuts(bit, cuts_top, y_nocut, y_cut)
+            (x, y) = self._do_cuts(bit, self.top_cuts, y_nocut, y_cut)
         # Do the bottom edge
-        y_nocut = self.yB # y-location of uncut edge
-        if cuts_bottom is None:
-            xb = [self.xL, self.xR()]
+        y_nocut = self.yB() # y-location of uncut edge
+        if self.bottom_cuts is None:
+            xb = [self.xL(), self.xR()]
             yb = [y_nocut, y_nocut]
         else:
             y_cut = y_nocut + bit.depth   # y-location of routed edge
-            (xb, yb) = self._do_cuts(bit, cuts_bottom, y_nocut, y_cut)
+            (xb, yb) = self._do_cuts(bit, self.bottom_cuts, y_nocut, y_cut)
         # merge the top and bottom
         xb.reverse()
         yb.reverse()
@@ -422,20 +450,22 @@ def adjoining_cuts(cuts, bit, board):
     # adjoining cut that includes the left edge
     if cuts[0].xmin > 0:
         left = 0
-        right = my_round(cuts[0].xmin + bit.offset)
-        adjCuts = [Cut(left, right)]
+        right = my_round(cuts[0].xmin + bit.offset) - board.dheight
+        if right - left >= board.dheight:
+            adjCuts.append(Cut(left, right))
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
     for i in lrange(1, nc):
-        left = my_round(cuts[i-1].xmax - bit.offset)
-        right = max(left + bit.width, my_round(cuts[i].xmin + bit.offset))
+        left = my_round(cuts[i-1].xmax - bit.offset + board.dheight)
+        right = max(left + bit.width, my_round(cuts[i].xmin + bit.offset) - board.dheight)
         adjCuts.append(Cut(left, right))
     # if the right-most input cut does not include the right edge, add an
     # adjoining cut that includes this edge
     if cuts[-1].xmax < board.width:
-        left = my_round(cuts[-1].xmax - bit.offset)
+        left = my_round(cuts[-1].xmax - bit.offset) + board.dheight
         right = board.width
-        adjCuts.append(Cut(left, right))
+        if right - left >= board.dheight:
+            adjCuts.append(Cut(left, right))
     return adjCuts
 
 class Joint_Geometry(object):
@@ -448,15 +478,25 @@ class Joint_Geometry(object):
         self.bit = bit
         self.spacing = spacing
 
-        # determine b-cuts from the a-cuts
-        self.aCuts = spacing.cuts
-        self.bCuts = adjoining_cuts(self.aCuts, bit, boards[0])
-
-        # determine the router passes for the cuts
-        for c in self.aCuts:
-            c.make_router_passes(bit, boards[0])
-        for c in self.bCuts:
-            c.make_router_passes(bit, boards[0])
+        # determine all the cuts from the a-cuts (index 0)
+        last = spacing.cuts
+        self.boards[0].set_bottom_cuts(last, bit)
+        if self.boards[3].active:
+            # double-double case
+            top = adjoining_cuts(last, bit, boards[0])
+            self.boards[3].set_top_cuts(top, bit)
+            last = adjoining_cuts(top, bit, boards[3])
+            self.boards[3].set_bottom_cuts(last, bit)
+        if self.boards[2].active:
+            # double and double-double
+            top = adjoining_cuts(last, bit, boards[0])
+            self.boards[2].set_top_cuts(top, bit)
+            last = adjoining_cuts(top, bit, boards[2])
+            self.boards[2].set_bottom_cuts(last, bit)
+        
+        # make the top cuts on board-B
+        top = adjoining_cuts(last, bit, boards[1])
+        self.boards[1].set_top_cuts(top, bit)
 
         # Create the corners of the template
         self.rect_T = My_Rectangle(margins.left, margins.bottom,
@@ -464,18 +504,22 @@ class Joint_Geometry(object):
 
         # The sub-rectangle in the template of the board's width
         # (no template margines)
-        self.board_T = My_Rectangle(self.rect_T.xL + template.margin, self.rect_T.yB, \
+        self.board_T = My_Rectangle(self.rect_T.xL() + template.margin, self.rect_T.yB(), \
                                     boards[0].width, template.height)
-        x = self.board_T.xL
-        y = self.rect_T.yT()
+        x = self.board_T.xL()
+        y = self.rect_T.yT() + margins.sep
 
         # Determine board-B coordinates
-        self.board_B = copy.deepcopy(self.boards[0])
-        self.board_B.shift(x, y + margins.sep)
-        (self.xB, self.yB) = self.board_B.board_coords(bit, cuts_top=self.bCuts)
-        y = self.board_B.yT()
+        self.boards[1].set_origin(x, y)
+        y = self.boards[1].yT() + margins.sep
+
+        # Determine board-M coordinates
+        if self.boards[2].active:
+            self.boards[2].set_origin(x, y)
+            y = self.boards[2].yT() + margins.sep
+            if self.boards[3].active:
+                self.boards[3].set_origin(x, y)
+                y = self.boards[3].yT() + margins.sep
 
         # Determine board-A coordinates
-        self.board_A = copy.deepcopy(self.boards[1])
-        self.board_A.shift(x, y + margins.sep)
-        (self.xA, self.yA) = self.board_A.board_coords(bit, cuts_bottom=self.aCuts)
+        self.boards[0].set_origin(x, y)

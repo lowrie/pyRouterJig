@@ -145,8 +145,10 @@ class Qt_Plotter(QtGui.QWidget):
 
         # Set the figure dimensions
         fig_width = template.length + self.margins.left + self.margins.right
-        fig_height = template.height + 2 * (board.height + self.margins.sep) + \
-                     self.margins.bottom + self.margins.top
+        fig_height = template.height + self.margins.bottom + self.margins.top
+        for i in lrange(4):
+            if boards[i].active:
+                fig_height += boards[i].height + self.margins.sep
 
         min_width = 64
         if fig_width < min_width:
@@ -299,47 +301,50 @@ class Qt_Plotter(QtGui.QWidget):
         board_T = self.geom.board_T
 
         # Fill the entire template as white
-        painter.fillRect(rect_T.xL, rect_T.yB, rect_T.width, rect_T.height, QtCore.Qt.white)
+        painter.fillRect(rect_T.xL(), rect_T.yB(), rect_T.width, rect_T.height, QtCore.Qt.white)
 
         # Fill the template margins with a grayshade
         brush = QtGui.QBrush(QtGui.QColor(220, 220, 220))
-        painter.fillRect(rect_T.xL, rect_T.yB, board_T.xL - rect_T.xL,
+        painter.fillRect(rect_T.xL(), rect_T.yB(), board_T.xL() - rect_T.xL(),
                          rect_T.height, brush)
-        painter.fillRect(board_T.xR(), rect_T.yB, rect_T.xR() - board_T.xR(),
+        painter.fillRect(board_T.xR(), rect_T.yB(), rect_T.xR() - board_T.xR(),
                          rect_T.height, brush)
 
         # Draw the template bounding box
-        painter.drawRect(rect_T.xL, rect_T.yB, rect_T.width, rect_T.height)
+        painter.drawRect(rect_T.xL(), rect_T.yB(), rect_T.width, rect_T.height)
 
         # Draw the router passes
         # ... do the B passes
         ip = 0
         flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
         shift = (0, -2)
-        for c in self.geom.bCuts[::-1]:
+        for c in self.geom.boards[1].top_cuts[::-1]:
             for p in lrange(len(c.passes) - 1, -1, -1):
-                xp = c.passes[p] + board_T.xL
+                xp = c.passes[p] + board_T.xL()
                 ip += 1
                 label = '%dB' % ip
-                painter.drawLine(xp, rect_T.yB, xp, rect_T.yMid())
+                painter.drawLine(xp, rect_T.yB(), xp, rect_T.yMid())
                 if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
                     paint_text(painter, label, (xp, rect_T.yMid()), flags, shift, -90)
        # ... do the A passes
         ip = 0
         flags = QtCore.Qt.AlignLeft | QtCore.Qt.AlignBottom
         shift = (0, 2)
-        for c in self.geom.aCuts[::-1]:
+        for c in self.geom.boards[0].bottom_cuts[::-1]:
             for p in lrange(len(c.passes) - 1, -1, -1):
-                xp = c.passes[p] + board_T.xL
+                xp = c.passes[p] + board_T.xL()
                 ip += 1
                 label = '%dA' % ip
                 painter.drawLine(xp, rect_T.yMid(), xp, rect_T.yT())
                 if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
                     paint_text(painter, label, (xp, rect_T.yMid()), flags, shift, -90)
-    def draw_one_board(self, painter, board, x, y):
+    def draw_one_board(self, painter, board, bit):
         '''
         Draws a single board
         '''
+        if not board.active:
+            return
+        (x, y) = board.perimeter(bit)
         painter.save()
         pen = QtGui.QPen(QtCore.Qt.black)
         pen.setWidthF(0)
@@ -364,36 +369,36 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         # Plot the board center
         painter.setPen(QtCore.Qt.DashLine)
-        painter.drawLine(self.geom.board_T.xMid(), self.geom.rect_T.yB, \
-                         self.geom.board_T.xMid(), self.geom.board_A.yT())
+        painter.drawLine(self.geom.board_T.xMid(), self.geom.rect_T.yB(), \
+                         self.geom.board_T.xMid(), self.geom.boards[0].yT())
         painter.setPen(QtCore.Qt.SolidLine)
 
         # Draw the A and B boards
-        self.draw_one_board(painter, self.geom.boards[0], self.geom.xA, self.geom.yA)
-        self.draw_one_board(painter, self.geom.boards[1], self.geom.xB, self.geom.yB)
+        for i in lrange(4):
+            self.draw_one_board(painter, self.geom.boards[i], self.geom.bit)
 
         # Label the boards
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
-        p = (self.geom.board_A.xMid(), self.geom.board_A.yT())
+        p = (self.geom.boards[0].xMid(), self.geom.boards[0].yT())
         paint_text(painter, 'A', p, flags, (0, 3), fill=self.background)
 
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
-        p = (self.geom.board_B.xMid(), self.geom.board_B.yB)
+        p = (self.geom.boards[1].xMid(), self.geom.boards[1].yB())
         paint_text(painter, 'B', p, flags, (0, -3), fill=self.background)
 
     def finger_polygon(self, c):
         '''
         Forms the polygon for the finger corresponding to the cut c
         '''
-        xLT = self.geom.board_B.xL + c.xmin
+        xLT = self.geom.boards[1].xL() + c.xmin
         xRT = xLT + c.xmax - c.xmin
         xLB = xLT
         xRB = xRT
-        if xLT > self.geom.board_B.xL:
+        if xLT > self.geom.boards[1].xL():
             xLB += self.geom.bit.offset
-        if xRT < self.geom.board_B.xR():
+        if xRT < self.geom.boards[1].xR():
             xRB -= self.geom.bit.offset
-        yT = self.geom.board_B.yT()
+        yT = self.geom.boards[1].yT()
         yB = yT - self.geom.bit.depth
         poly = QtGui.QPolygonF()
         poly.append(QtCore.QPointF(xLT, yT))
@@ -412,7 +417,7 @@ class Qt_Plotter(QtGui.QWidget):
         f = self.geom.spacing.cursor_finger
         if f is None:
             return
-        poly = self.finger_polygon(self.geom.aCuts[f])
+        poly = self.finger_polygon(self.geom.boards[0].bottom_cuts[f])
         painter.save()
         pen = QtGui.QPen(QtCore.Qt.blue)
         pen.setWidth(1)
@@ -429,7 +434,7 @@ class Qt_Plotter(QtGui.QWidget):
         brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 75))
         painter.setBrush(brush)
         for f in self.geom.spacing.active_fingers:
-            poly = self.finger_polygon(self.geom.aCuts[f])
+            poly = self.finger_polygon(self.geom.boards[0].bottom_cuts[f])
             painter.drawPolygon(poly)
             # keep track of the limits
             (xmin, xmax) = self.geom.spacing.get_limits(f)
@@ -439,10 +444,10 @@ class Qt_Plotter(QtGui.QWidget):
 
         # draw the limits
         painter.save()
-        xminG += self.geom.board_B.xL
-        xmaxG += self.geom.board_B.xL
-        yB = self.geom.board_B.yB
-        yT = self.geom.board_B.yT()
+        xminG += self.geom.boards[1].xL()
+        xmaxG += self.geom.boards[1].xL()
+        yB = self.geom.boards[1].yB()
+        yT = self.geom.boards[1].yT()
         painter.setPen(QtCore.Qt.green)
         painter.drawLine(xminG, yB, xminG, yT)
         painter.drawLine(xmaxG, yB, xmaxG, yT)
@@ -473,22 +478,31 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         Annotates the finger sizes on each board
         '''
+        # Determine the cuts that are adjacent to board-A and board-B
+        acuts = self.geom.boards[1].top_cuts
+        bcuts = self.geom.boards[0].bottom_cuts
+        if self.geom.boards[2].active:
+            bcuts = self.geom.boards[2].bottom_cuts
+            if self.geom.boards[3].active:
+                acuts = self.geom.boards[3].top_cuts
+            else:
+                acuts = self.geom.boards[2].top_cuts
         # Draw the router passes
-        # ... do the B fingers, which correspond to a-Cuts
+        # ... do the B fingers
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         shift = (0, 8)
-        for c in self.geom.aCuts:
-            x = self.geom.board_B.xL + (c.xmin + c.xmax) // 2
-            y = self.geom.board_B.yT()
+        for c in bcuts:
+            x = self.geom.boards[1].xL() + (c.xmin + c.xmax) // 2
+            y = self.geom.boards[1].yT()
             label = '%d' % (c.xmax - c.xmin)
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill=self.background)
-        # ... do the A fingers, which correspond to b-Cuts
+        # ... do the A fingers
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         shift = (0, -8)
-        for c in self.geom.bCuts:
-            x = self.geom.board_A.xL + (c.xmin + c.xmax) // 2
-            y = self.geom.board_A.yB
+        for c in acuts:
+            x = self.geom.boards[0].xL() + (c.xmin + c.xmax) // 2
+            y = self.geom.boards[0].yB()
             label = '%d' % (c.xmax - c.xmin)
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill=self.background)
