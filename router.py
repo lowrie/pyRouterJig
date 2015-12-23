@@ -233,6 +233,7 @@ class Board(My_Rectangle):
         self.thickness = thickness
         self.icon = None
         self.active = True
+        self.dheight = 0
         self.set_height(bit)
         self.bottom_cuts = None
         self.top_cuts = None
@@ -263,14 +264,18 @@ class Board(My_Rectangle):
         Sets the height from the router bit depth of cut
         '''
         if dheight is None:
-            self.dheight = 0
-            self.height = my_round(1.5 * bit.depth)
+            if self.dheight > 0:
+                h = self.dheight
+            else:
+                h = my_round(0.5 * bit.depth)
         else:
             self.dheight = dheight
-            self.height = bit.depth + dheight
+            h = dheight
+        self.height = bit.depth + h
     def set_height_from_string(self, bit, s):
         '''
         Sets the height from the string s, following requirements from units.string_to_increments().
+        This sets the attribute dheight, which is the increment above the bit depth.
         '''
         msg = 'Board height increment is %s\n' % s
         if self.units.metric:
@@ -404,37 +409,41 @@ class Cut(object):
         if bit.width % 2 != 0:
             Router_Exception('Router-bit width must be even!')
         self.validate(bit, board)
-        # Make the middle pass, centered (within an increment) on the cut
-        if self.xmin == 0:
-            mid_pass = self.xmax - bit.halfwidth
-            xL = max(0, self.xmax - bit.width)
-            xR = self.xmax
-        elif self.xmax == board.width:
-            mid_pass = self.xmin + bit.halfwidth
-            xL = self.xmin
-            xR = min(board.width, self.xmin + bit.width)
-        else:
-            mid_pass = (self.xmin + self.xmax) // 2
-            xL = mid_pass - bit.halfwidth
-            if xL < self.xmin: # cut width must be odd
-                xL = self.xmin
-                mid_pass = self.xmin + bit.halfwidth
-            xR = min(xL + bit.width, board.width)
-        if xL < self.xmin and self.xmin > 0:
-            Router_Exception('Exceeded left part of a cut!')
-        if xR > self.xmax and self.xmax < board.width:
-            Router_Exception('Exceeded right part of a cut!')
-        self.passes = [mid_pass]
-        # Finish passes to left of the middle pass
-        while xL > self.xmin:
-            xL = max(xL - bit.width, self.xmin)
-            self.passes.append(xL + bit.halfwidth)
-        # Finish passes to right of the middle pass
-        while xR < self.xmax:
-            xR = min(xR + bit.width, self.xmax)
-            self.passes.append(xR - bit.halfwidth)
+        # set current extents of the uncut region
+        xL = self.xmin
+        xR = self.xmax
+        # alternate between the left and right sides of the overall cut to make the passes
+        remainder = xR - xL
+        self.passes = []
+        while remainder > 0:
+            # start with a pass on the right side of cut
+            p = xR - bit.halfwidth
+            if p - bit.halfwidth >= self.xmin or self.xmin == 0:
+                self.passes.append(p)
+                xR -= bit.width
+            # if anything to cut remains, do a pass on the far left side
+            remainder = xR - xL
+            if remainder > 0:
+                p = xL + bit.halfwidth
+                if p + bit.halfwidth <= self.xmax or self.xmax == board.width:
+                    self.passes.append(p)
+                    xL += bit.width
+                    remainder = xR - xL
+                    # at this stage, we've done the same number of left and right passes, so if
+                    # there's only one more pass needed, center it.
+                    if remainder > 0 and remainder <= bit.width:
+                        p = (xL + xR) // 2
+                        self.passes.append(p)
+                        remainder = 0
         # Sort the passes
         self.passes = sorted(self.passes)
+        # Error checking:
+        for p in self.passes:
+            if (self.xmin > 0 and p - bit.halfwidth < self.xmin) or \
+               (self.xmax < board.width and p + bit.halfwidth > self.xmax):
+                raise Router_Exception('cut xmin = %d, xmax = %d, pass = %d: '\
+                                       'Bit width (%d) too large for this cut!'\
+                                       % (self.xmin, self.xmax, p, bit.width))
 
 def adjoining_cuts(cuts, bit, board):
     '''
@@ -503,7 +512,7 @@ class Joint_Geometry(object):
                                    template.length, template.height)
 
         # The sub-rectangle in the template of the board's width
-        # (no template margines)
+        # (no template margins)
         self.board_T = My_Rectangle(self.rect_T.xL() + template.margin, self.rect_T.yB(), \
                                     boards[0].width, template.height)
         x = self.board_T.xL()
@@ -523,3 +532,10 @@ class Joint_Geometry(object):
 
         # Set top board origin
         self.boards[0].set_origin(x, y)
+        y = self.boards[0].yT() + margins.sep
+
+        # Template stuff for double-double cases
+        self.rect_TDD = My_Rectangle(margins.left, y,
+                                     template.length, template.height)
+        self.board_TDD = My_Rectangle(self.rect_TDD.xL() + template.margin, y, \
+                                      boards[0].width, template.height)

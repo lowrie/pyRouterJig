@@ -64,6 +64,8 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
         xorg = -big // 2
     if flags & QtCore.Qt.AlignBottom:
         yorg = -big
+    elif flags & QtCore.Qt.AlignVCenter:
+        yorg = -big // 2
     rect = QtCore.QRect(xorg, yorg, big, big)
     rect = painter.boundingRect(rect, flags, text)
     # Draw the text
@@ -117,6 +119,8 @@ class Qt_Plotter(QtGui.QWidget):
         (r, g, b) = config.background_color
         self.background = QtGui.QBrush(QtGui.QColor(r, g, b))
         self.labels = ['B', 'C', 'D', 'E', 'F']
+        # font sizes are in 1/32" of an inch
+        self.font_size = {'title':4, 'fingers':3, 'template':2, 'boards':4}
 
     def minimumSizeHint(self):
         '''
@@ -151,6 +155,9 @@ class Qt_Plotter(QtGui.QWidget):
         for i in lrange(4):
             if boards[i].active:
                 fig_height += boards[i].height + self.margins.sep
+
+        if boards[3].active:
+            fig_height += template.height + self.margins.sep
 
         min_width = 64
         if fig_width < min_width:
@@ -242,6 +249,13 @@ class Qt_Plotter(QtGui.QWidget):
         self.draw_active_fingers(painter)
         painter.end()
 
+    def set_font_size(self, painter, size):
+        font_inches = self.font_size[size] / 32.0 * self.geom.bit.units.increments_per_inch
+        font = painter.font()
+        xx = self.transform.map(font_inches, 0)[0] - self.transform.dx()
+        font.setPixelSize(utils.my_round(xx))
+        painter.setFont(font)
+
     def paint_all(self, painter, dpi=None):
         '''
         Paints all the objects.
@@ -277,16 +291,6 @@ class Qt_Plotter(QtGui.QWidget):
 
         painter.setPen(QtCore.Qt.black)
 
-        # Scale the font to be consistently 3/32" large.  We do this so that
-        # a) labels fit in the template, and b) so that fonts are the same
-        # size relative to the geometry, across output devices (screen,
-        # printer, etc.)
-        font_inches = 3 / 32.0 * units.increments_per_inch
-        font = painter.font()
-        xx = self.transform.map(font_inches, 0)[0] - self.transform.dx()
-        font.setPixelSize(utils.my_round(xx))
-        painter.setFont(font)
-
         # draw the objects
         self.draw_template(painter)
         self.draw_boards(painter)
@@ -295,82 +299,98 @@ class Qt_Plotter(QtGui.QWidget):
 
         return (window_width, window_height)
 
-    def draw_template(self, painter):
-        '''
-        Draws the Incra template
-        '''
-        rect_T = self.geom.rect_T
+    def draw_passes(self, painter, blabel, cuts, y1, y2, flags):
         board_T = self.geom.board_T
+        # brush = QtGui.QBrush(QtCore.Qt.white)
+        brush = None
+        ip = 0
+        shift = (0, 0)
+        self.set_font_size(painter, 'template')
+        for c in cuts[::-1]:
+            for p in lrange(len(c.passes) - 1, -1, -1):
+                xp = c.passes[p] + board_T.xL()
+                ip += 1
+                label = '%d%s' % (ip, blabel)
+                painter.drawLine(xp, y1, xp, y2)
+                if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
+                    paint_text(painter, label, (xp, y1), flags, shift, -90, fill=brush)
 
+    def draw_template_rectangle(self, painter, r, b):
         # Fill the entire template as white
-        painter.fillRect(rect_T.xL(), rect_T.yB(), rect_T.width, rect_T.height, QtCore.Qt.white)
+        painter.fillRect(r.xL(), r.yB(), r.width, r.height, QtCore.Qt.white)
 
         # Fill the template margins with a grayshade
         brush = QtGui.QBrush(QtGui.QColor(220, 220, 220))
-        painter.fillRect(rect_T.xL(), rect_T.yB(), board_T.xL() - rect_T.xL(),
-                         rect_T.height, brush)
-        painter.fillRect(board_T.xR(), rect_T.yB(), rect_T.xR() - board_T.xR(),
-                         rect_T.height, brush)
+        painter.fillRect(r.xL(), r.yB(), b.xL() - r.xL(), r.height, brush)
+        painter.fillRect(b.xR(), r.yB(), r.xR() - b.xR(), r.height, brush)
 
         # Draw the template bounding box
-        painter.drawRect(rect_T.xL(), rect_T.yB(), rect_T.width, rect_T.height)
+        painter.drawRect(r.xL(), r.yB(), r.width, r.height)
 
+    def draw_template(self, painter):
+        '''
+        Draws the Incra templates
+        '''
+        rect_T = self.geom.rect_T
+        board_T = self.geom.board_T
+        rect_TDD = self.geom.rect_TDD
+        board_TDD = self.geom.board_TDD
+        boards = self.geom.boards
+
+        self.draw_template_rectangle(painter, rect_T, board_T)
+        if boards[3].active:
+            self.draw_template_rectangle(painter, rect_TDD, board_TDD)
+            rect_top = rect_TDD
+        else:
+            rect_top = rect_T
+
+        frac_depth = 0.95 * self.geom.bit.depth
         # Draw the router passes
-        # ... do the top passes
-        ip = 0
-        flags = QtCore.Qt.AlignLeft | QtCore.Qt.AlignBottom
-        shift = (0, 2)
-        y1 = rect_T.yT()
-        y2 = rect_T.yMid()
-        for c in self.geom.boards[0].bottom_cuts[::-1]:
-            for p in lrange(len(c.passes) - 1, -1, -1):
-                xp = c.passes[p] + board_T.xL()
-                ip += 1
-                label = '%dA' % ip
-                painter.drawLine(xp, y1, xp, y2)
-                if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    paint_text(painter, label, (xp, y2), flags, shift, -90)
-        # Do double passes
+        flagsL = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        flagsR = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+        # ... do the top board passes
+        y1 = boards[0].yB()
+        y2 = y1 + frac_depth
+        self.draw_passes(painter, 'A', boards[0].bottom_cuts, rect_top.yMid(), rect_top.yT(), flagsR)
+        self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2, flagsR)
         i = 0
-        if self.geom.boards[2].active:
-            ip = 0
-            for c in self.geom.boards[2].top_cuts[::-1]:
-                for p in lrange(len(c.passes) - 1, -1, -1):
-                    xp = c.passes[p] + board_T.xL()
-                    ip += 1
-                    label = '%d%s' % (ip, self.labels[i])
-                    painter.drawLine(xp, y1, xp, y2)
-                    if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                        paint_text(painter, label, (xp, y2), flags, shift, -90)
-            ip = 0
-            flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
-            shift = (0, -2)
-            y1 = rect_T.yB()
-            y2 = rect_T.yMid()
-            for c in self.geom.boards[2].bottom_cuts[::-1]:
-                for p in lrange(len(c.passes) - 1, -1, -1):
-                    xp = c.passes[p] + board_T.xL()
-                    ip += 1
-                    label = '%d%s' % (ip, self.labels[i + 1])
-                    painter.drawLine(xp, y1, xp, y2)
-                    if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                        paint_text(painter, label, (xp, y2), flags, shift, -90)
+        # Do double-double passes
+        if boards[3].active:
+            painter.setPen(QtCore.Qt.DashLine)
+            y1 = boards[3].yT()
+            y2 = y1 - frac_depth
+            self.draw_passes(painter, self.labels[i], boards[3].top_cuts, rect_TDD.yMid(), \
+                             rect_TDD.yT(), flagsR)
+            self.draw_passes(painter, self.labels[i], boards[3].top_cuts, y1, y2, flagsL)
+            painter.setPen(QtCore.Qt.SolidLine)
+            y1 = boards[3].yB()
+            y2 = y1 + frac_depth
+            self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(), \
+                             rect_TDD.yB(), flagsL)
+            self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2, flagsR)
+            i += 2
+        # Do double passes
+        if boards[2].active:
+            painter.setPen(QtCore.Qt.DashLine)
+            y1 = boards[2].yT()
+            y2 = y1 - frac_depth
+            self.draw_passes(painter, self.labels[i], boards[2].top_cuts, rect_T.yMid(), \
+                             rect_T.yT(), flagsR)
+            self.draw_passes(painter, self.labels[i], boards[2].top_cuts, y1, y2, flagsL)
+            y1 = boards[2].yB()
+            y2 = y1 + frac_depth
+            self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, rect_T.yMid(), \
+                             rect_T.yB(), flagsL)
+            self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2, flagsR)
+            painter.setPen(QtCore.Qt.SolidLine)
             i += 2
 
-        # ... do the bottom passes
-        ip = 0
-        flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
-        shift = (0, -2)
-        y1 = rect_T.yB()
-        y2 = rect_T.yMid()
-        for c in self.geom.boards[1].top_cuts[::-1]:
-            for p in lrange(len(c.passes) - 1, -1, -1):
-                xp = c.passes[p] + board_T.xL()
-                ip += 1
-                label = '%d%s' % (ip, self.labels[i])
-                painter.drawLine(xp, y1, xp, y2)
-                if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    paint_text(painter, label, (xp, y2), flags, shift, -90)
+        # ... do the bottom board passes
+        y1 = boards[1].yT()
+        y2 = y1 - frac_depth
+        self.draw_passes(painter, self.labels[i], boards[1].top_cuts, rect_T.yMid(), \
+                         rect_T.yB(), flagsL)
+        self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2, flagsL)
     def draw_one_board(self, painter, board, bit):
         '''
         Draws a single board
@@ -401,10 +421,10 @@ class Qt_Plotter(QtGui.QWidget):
         Draws all the boards
         '''
         # Plot the board center
-        painter.setPen(QtCore.Qt.DashLine)
-        painter.drawLine(self.geom.board_T.xMid(), self.geom.rect_T.yB(), \
-                         self.geom.board_T.xMid(), self.geom.boards[0].yT())
-        painter.setPen(QtCore.Qt.SolidLine)
+#        painter.setPen(QtCore.Qt.DashLine)
+#        painter.drawLine(self.geom.board_T.xMid(), self.geom.rect_T.yB(), \
+#                         self.geom.board_T.xMid(), self.geom.boards[0].yT())
+#        painter.setPen(QtCore.Qt.SolidLine)
 
         # Draw the A and B boards
         for i in lrange(4):
@@ -414,6 +434,7 @@ class Qt_Plotter(QtGui.QWidget):
         xL = self.geom.boards[0].xL()
         flags_top = QtCore.Qt.AlignRight | QtCore.Qt.AlignTop
         flags_bot = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
+        self.set_font_size(painter, 'boards')
 
         p = (xL, self.geom.boards[0].yB())
         paint_text(painter, 'A', p, flags_bot, (-3, 0))
@@ -507,6 +528,7 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         Draws the title
         '''
+        self.set_font_size(painter, 'title')
         units = self.geom.bit.units
         title = self.geom.spacing.description
         title += '\nBoard width: '
@@ -528,6 +550,7 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         Annotates the finger sizes on each board
         '''
+        self.set_font_size(painter, 'fingers')
         # Determine the cuts that are adjacent to board-A and board-B
         acuts = self.geom.boards[1].top_cuts
         bcuts = self.geom.boards[0].bottom_cuts

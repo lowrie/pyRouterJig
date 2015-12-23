@@ -1074,11 +1074,14 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_wood', index)
         s = str(self.cb_wood[index].currentText())
+        label = str(self.cb_wood_label[index].text())
         if s != 'NONE':
             self.boards[index].set_icon(self.woods[s])
         self.reinit_spacing()
         self.draw()
         self.file_saved = False
+        msg = 'Changed %s to %s' % (label, s)
+        self.statusbar.showMessage(msg)
 
     @QtCore.pyqtSlot()
     def _on_wood0(self):
@@ -1143,7 +1146,8 @@ class Driver(QtGui.QMainWindow):
             self.boards[i + 2].set_height_from_string(self.bit, text)
             self.reinit_spacing()
             self.draw()
-            self.status_message(('Changed Board-M%d thickness to ' + text) % i)
+            labels = ['Double', 'Double-Double']
+            self.status_message(('Changed %s Board thickness to ' + text) % labels[i])
             self.reinit_spacing()
             self.file_saved = False
 
