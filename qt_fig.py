@@ -461,15 +461,21 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         Forms the polygon for the finger corresponding to the cut c
         '''
-        xLT = self.geom.boards[1].xL() + c.xmin
-        xRT = xLT + c.xmax - c.xmin
+        boards = self.geom.boards
+        delta = 0
+        if boards[2].active:
+            delta += boards[2].dheight
+        if boards[3].active:
+            delta += boards[3].dheight
+        xLT = boards[1].xL() + c.xmin + delta
+        xRT = xLT + c.xmax - c.xmin - 2 * delta
         xLB = xLT
         xRB = xRT
-        if xLT > self.geom.boards[1].xL():
+        if xLT > boards[1].xL():
             xLB += self.geom.bit.offset
-        if xRT < self.geom.boards[1].xR():
+        if xRT < boards[1].xR():
             xRB -= self.geom.bit.offset
-        yT = self.geom.boards[1].yT()
+        yT = boards[1].yT()
         yB = yT - self.geom.bit.depth
         poly = QtGui.QPolygonF()
         poly.append(QtCore.QPointF(xLT, yT))
