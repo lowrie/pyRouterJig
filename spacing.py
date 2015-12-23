@@ -113,7 +113,7 @@ class Equally_Spaced(Base_Spacing):
     centered: If true, then a finger is centered on the board width.  If Always
     true for dovetail bits.  Default is true.
     '''
-    keys = ['A-spacing', 'Width', 'Centered']
+    keys = ['Spacing', 'Width', 'Centered']
 
     def __init__(self, bit, boards, config):
         Base_Spacing.__init__(self, bit, boards, config)
@@ -130,21 +130,21 @@ class Equally_Spaced(Base_Spacing):
         '''
         Sets the cuts to make the joint
         '''
-        a_spacing = self.params[self.keys[0]].v
-        width = self.params[self.keys[1]].v
+        spacing = self.params['Spacing'].v
+        width = self.params['Width'].v
         print('width', width)
-        centered = self.params[self.keys[2]].v
+        centered = self.params['Centered'].v
 
         board_width = self.boards[0].width
         units = self.bit.units
-        label = units.increments_to_string(2 * width + a_spacing, True)
+        label = units.increments_to_string(spacing, True)
         self.labels = self.keys[:]
         self.labels[0] += ': ' + label
         self.labels[1] += ': ' + units.increments_to_string(width, True)
         self.description = 'Equally spaced (' + self.labels[0] + \
                            ', ' + self.labels[1] + ')'
         self.cuts = [] # return value
-        neck_width = utils.my_round(self.bit.neck + width - self.bit.width + a_spacing)
+        neck_width = utils.my_round(self.bit.neck + width - self.bit.width + spacing)
         if neck_width < 1:
             raise Spacing_Exception('Specified bit paramters give a zero'
                                     ' or negative cut width (%d increments) at'

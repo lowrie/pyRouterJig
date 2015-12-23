@@ -331,7 +331,7 @@ class Driver(QtGui.QMainWindow):
         labels = self.equal_spacing.labels
 
         # ...first slider
-        p = params['A-spacing']
+        p = params['Spacing']
         self.es_slider0_label = QtGui.QLabel(labels[0])
         self.es_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
         self.es_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -685,7 +685,7 @@ class Driver(QtGui.QMainWindow):
         if self.spacing_index == self.equal_spacing_id:
             # Equal spacing widgets
             params = self.equal_spacing.params
-            p = params['A-spacing']
+            p = params['Spacing']
             self.es_slider0.blockSignals(True)
             self.es_slider0.setMinimum(p.vMin)
             self.es_slider0.setMaximum(p.vMax)
@@ -819,10 +819,10 @@ class Driver(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot(int)
     def _on_es_slider0(self, value):
-        '''Handles changes to the equally-spaced slider A-spacing'''
+        '''Handles changes to the equally-spaced slider spacing'''
         if self.config.debug:
             print('_on_es_slider0', value)
-        self.equal_spacing.params['A-spacing'].v = value
+        self.equal_spacing.params['Spacing'].v = value
         self.equal_spacing.set_cuts()
         self.es_slider0_label.setText(self.equal_spacing.labels[0])
         self.draw()

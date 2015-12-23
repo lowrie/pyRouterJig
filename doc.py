@@ -59,10 +59,10 @@ class Doc(object):
     bit for dovetail bits.  Set to zero for straight bits.'
 
     _es_slider0 = '<b>%s</b> slider allows you to specify additional \
-    spacing between the Board-B fingers'
+    spacing between the fingers'
 
     _es_slider1 = '<b>%s</b> slider allows you to specify additional \
-    width added to both Board-A and Board-B fingers.'
+    width added to the fingers.'
 
     _es_centered = 'Check <b>%s</b> to force a finger to be centered on \
     the board.'
@@ -71,7 +71,7 @@ class Doc(object):
     fingers. At its minimum value, the width of the center finger is \
     maximized. At its maximum value, the width of the center finger is \
     minimized, and the result is the roughly the same as equally-spaced \
-    with, zero "A-spacing", zero "Width", and the "Centered" option \
+    with, zero "Spacing", zero "Width", and the "Centered" option \
     checked.'
 
     def __init__(self, units):
