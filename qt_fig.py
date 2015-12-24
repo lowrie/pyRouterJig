@@ -83,23 +83,23 @@ class Qt_Fig(object):
         self.canvas = Qt_Plotter(template, boards, config)
         self.transform = None
 
-    def draw(self, template, boards, bit, spacing):
+    def draw(self, template, boards, bit, spacing, woods):
         '''
         Draws the template and boards
         '''
-        self.canvas.draw(template, boards, bit, spacing)
+        self.canvas.draw(template, boards, bit, spacing, woods)
 
-    def print(self, template, boards, bit, spacing):
+    def print(self, template, boards, bit, spacing, woods):
         '''
         Prints the figure
         '''
-        return self.canvas.print_fig(template, boards, bit, spacing)
+        return self.canvas.print_fig(template, boards, bit, spacing, woods)
 
-    def image(self, template, boards, bit, spacing):
+    def image(self, template, boards, bit, spacing, woods):
         '''
         Prints the figure to an image
         '''
-        return self.canvas.image_fig(template, boards, bit, spacing)
+        return self.canvas.image_fig(template, boards, bit, spacing, woods)
 
 class Qt_Plotter(QtGui.QWidget):
     '''
@@ -181,19 +181,22 @@ class Qt_Plotter(QtGui.QWidget):
 
         return dimensions_changed
 
-    def draw(self, template, boards, bit, spacing):
+    def draw(self, template, boards, bit, spacing, woods):
         '''
         Draws the figure
         '''
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
+        self.woods = woods
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
         self.update()
 
-    def print_fig(self, template, boards, bit, spacing):
+    def print_fig(self, template, boards, bit, spacing, woods):
         '''
         Prints the figure
         '''
+        self.woods = woods
+
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
@@ -206,10 +209,11 @@ class Qt_Plotter(QtGui.QWidget):
         pdialog.paintRequested.connect(self.preview_requested)
         return pdialog.exec_()
 
-    def image_fig(self, template, boards, bit, spacing):
+    def image_fig(self, template, boards, bit, spacing, woods):
         '''
         Prints the figure to a QImage object
         '''
+        self.woods = woods
         self.set_fig_dimensions(template, boards)
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
 
@@ -402,12 +406,13 @@ class Qt_Plotter(QtGui.QWidget):
         pen = QtGui.QPen(QtCore.Qt.black)
         pen.setWidthF(0)
         painter.setPen(pen)
-        if type(board.icon) == type(QtCore.Qt.DiagCrossPattern):
-            brush = QtGui.QBrush(QtCore.Qt.black, board.icon)
+        icon = self.woods[board.wood]
+        if type(icon) == type('a string'):
+            brush = QtGui.QBrush(QtGui.QPixmap(icon))
+        else:
+            brush = QtGui.QBrush(QtCore.Qt.black, icon)
             (inverted, invertable) = self.transform.inverted()
             brush.setMatrix(inverted.toAffine())
-        else:
-            brush = QtGui.QBrush(QtGui.QPixmap(board.icon))
         painter.setBrush(brush)
         n = len(x)
         poly = QtGui.QPolygonF()

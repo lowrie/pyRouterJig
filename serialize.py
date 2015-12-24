@@ -50,7 +50,12 @@ def serialize(bit, boards, sp, config):
     # Save the board info
     nb = len(boards)
     p.dump(nb)
-    p.dump(boards[0].width)
+    for b in boards:
+        p.dump(b.width)
+        p.dump(b.height)
+        p.dump(b.wood)
+        p.dump(b.active)
+        p.dump(b.dheight)
     # Save the spacing
     sp_type = sp.description[0:4]
     if config.debug:
@@ -89,10 +94,15 @@ def unserialize(s, config):
     bit = router.Router_Bit(units, width, depth, angle)
     # form the boards
     nb = u.load()
-    width = u.load()
     boards = []
     for i in lrange(nb):
-        boards.append(router.Board(bit, width))
+        boards.append(router.Board(bit, 10)) # dummy width argument, for now
+    for b in boards:
+        b.width = u.load()
+        b.height = u.load()
+        b.wood = u.load()
+        b.active = u.load()
+        b.dheight = u.load()
     # form the spacing
     sp_type = u.load()
     if sp_type == 'Edit':

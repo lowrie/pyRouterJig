@@ -222,7 +222,7 @@ class Board(My_Rectangle):
     width: Dimension of routed edge (along x-axis)
     height: Dimension perpendicular to routed edge (along y-axis)
     thickness: Dimension into paper or screen (not used yet)
-    icon: Icon image used for fill
+    wood: Wood image used for fill
     active: If true, this board is active
 
     Dimensions are in increment units.
@@ -231,14 +231,14 @@ class Board(My_Rectangle):
         My_Rectangle.__init__(self, 0, 0, width, 32)
         self.units = bit.units
         self.thickness = thickness
-        self.icon = None
+        self.wood = None
         self.active = True
         self.dheight = 0
         self.set_height(bit)
         self.bottom_cuts = None
         self.top_cuts = None
-    def set_icon(self, icon):
-        self.icon = icon
+    def set_wood(self, wood):
+        self.wood = wood
     def set_active(self, active=True):
         self.active = active
     def set_width_from_string(self, s):

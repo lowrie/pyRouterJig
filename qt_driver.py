@@ -644,7 +644,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('draw')
         self.template = router.Incra_Template(self.units, self.boards)
-        self.fig.draw(self.template, self.boards, self.bit, self.spacing)
+        self.fig.draw(self.template, self.boards, self.bit, self.spacing, self.woods)
 
     def reinit_spacing(self):
         '''
@@ -912,7 +912,7 @@ class Driver(QtGui.QMainWindow):
         if do_screenshot:
             image = QtGui.QPixmap.grabWindow(self.winId()).toImage()
         else:
-            image = self.fig.image(self.template, self.boards, self.bit, self.spacing)
+            image = self.fig.image(self.template, self.boards, self.bit, self.spacing, self.woods)
 
         s = serialize.serialize(self.bit, self.boards, self.spacing, \
                                 self.config)
@@ -956,8 +956,7 @@ class Driver(QtGui.QMainWindow):
             self.status_message('File open aborted')
             return
 
-        # From the image file, parse the metadata.  Maintain the board icon
-        # from its current value, rather than reading it from the file.
+        # From the image file, parse the metadata.
         image = QtGui.QImage(filename)
         s = image.text('pyRouterJig') # see setText in _on_save
         if len(s) == 0:
@@ -965,16 +964,46 @@ class Driver(QtGui.QMainWindow):
                   ' must have been saved using pyRouterJig.' % filename
             QtGui.QMessageBox.warning(self, 'Error', msg)
             return
-        icons = []
-        for b in self.boards:
-            icons.append(b.icon)
         (self.bit, self.boards, sp, sp_type) = serialize.unserialize(s, self.config)
-        for i in lrange(len(self.boards)):
-            self.boards[i].set_icon(icons[i])
 
         # Reset the dependent data
         self.units = self.bit.units
         self.template = router.Incra_Template(self.units, self.boards)
+
+        # ... set the wood selection for each board.  If the wood does not
+        # exist, set to a wood we know exists.  This can happen if the wood
+        # image files don't exist across users.
+        for i in lrange(4):
+            if self.boards[i].wood not in self.woods.keys():
+                self.boards[i].set_wood('DiagCrossPattern')
+            j = self.cb_wood[i].findText(self.boards[i].wood)
+            self.cb_wood[i].setCurrentIndex(j)
+
+        if self.boards[2].active:
+            self.cb_wood[3].setEnabled(True)
+            self.le_boardm[0].setEnabled(True)
+            self.le_boardm[0].setStyleSheet("color: black;")
+            self.le_boardm[0].setText(self.units.increments_to_string(self.boards[2].dheight))
+            if self.boards[3].active:
+                self.boards[3].set_active(True)
+                self.le_boardm[1].setEnabled(True)
+                self.le_boardm[1].setStyleSheet("color: black;")
+                self.le_boardm[1].setText(self.units.increments_to_string(self.boards[3].dheight))
+            else:
+                self.boards[3].set_active(False)
+                self.le_boardm[1].setEnabled(False)
+                self.le_boardm[1].setStyleSheet("color: gray;")
+        else:
+            i = self.cb_wood[3].findText('NONE')
+            self.cb_wood[3].setCurrentIndex(i)
+            self.cb_wood[3].setEnabled(False)
+            self.boards[2].set_active(False)
+            self.boards[3].set_active(False)
+            self.le_boardm[0].setEnabled(False)
+            self.le_boardm[1].setEnabled(False)
+            self.le_boardm[0].setStyleSheet("color: gray;")
+            self.le_boardm[1].setStyleSheet("color: gray;")
+
         if sp_type == 'Equa':
             sp.set_cuts()
             self.equal_spacing = sp
@@ -986,6 +1015,7 @@ class Driver(QtGui.QMainWindow):
         elif sp_type == 'Edit':
             self.edit_spacing = sp
             self.spacing_index = self.edit_spacing_id
+ 
         self.spacing = sp
         self.tabs_spacing.blockSignals(True)
         self.tabs_spacing.setCurrentIndex(self.spacing_index)
@@ -994,6 +1024,7 @@ class Driver(QtGui.QMainWindow):
         self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
         self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.le_bit_angle.setText(`self.bit.angle`)
+
         self.set_spacing_widgets()
         self.draw()
 
@@ -1003,7 +1034,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_print')
 
-        r = self.fig.print(self.template, self.boards, self.bit, self.spacing)
+        r = self.fig.print(self.template, self.boards, self.bit, self.spacing, self.woods)
         if r:
             self.status_message('Figure printed')
         else:
@@ -1076,7 +1107,7 @@ class Driver(QtGui.QMainWindow):
         s = str(self.cb_wood[index].currentText())
         label = str(self.cb_wood_label[index].text())
         if s != 'NONE':
-            self.boards[index].set_icon(self.woods[s])
+            self.boards[index].set_wood(s)
         self.reinit_spacing()
         self.draw()
         self.file_saved = False

@@ -132,7 +132,6 @@ class Equally_Spaced(Base_Spacing):
         '''
         spacing = self.params['Spacing'].v
         width = self.params['Width'].v
-        print('width', width)
         centered = self.params['Centered'].v
 
         board_width = self.boards[0].width
