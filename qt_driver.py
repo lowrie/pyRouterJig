@@ -669,19 +669,32 @@ class Driver(QtGui.QMainWindow):
         '''
         Sets the spacing widget parameters
         '''
-        # enable/disable editing of line edit boxes, depending upon spacing
-        # algorithm
-        tbs = [self.le_board_width, self.le_bit_width, self.le_bit_depth,\
+        # enable/disable changing parameters, depending upon spacing algorithm
+        les = [self.le_board_width, self.le_bit_width, self.le_bit_depth,\
                self.le_bit_angle]
+        les.extend(self.le_boardm)
         if self.spacing_index == self.edit_spacing_id:
-            for tb in tbs:
-                tb.setEnabled(False)
-                tb.setStyleSheet("color: gray;")
+            for le in les:
+                le.setEnabled(False)
+                le.setStyleSheet("color: gray;")
+            for cb in self.cb_wood:
+                cb.setEnabled(False)
         else:
-            for tb in tbs:
-                tb.setEnabled(True)
-                tb.setStyleSheet("color: black;")
+            for le in les:
+                le.setEnabled(True)
+                le.setStyleSheet("color: black;")
+            for cb in self.cb_wood:
+                cb.setEnabled(True)
+            if not self.boards[2].active:
+                self.cb_wood[3].setEnabled(False)
+                for le in self.le_boardm:
+                    le.setEnabled(False)
+                    le.setStyleSheet("color: gray;")
+            if not self.boards[3].active:
+                self.le_boardm[1].setEnabled(False)
+                self.le_boardm[1].setStyleSheet("color: gray;")
 
+        # Set up the various widgets for each spacing option
         if self.spacing_index == self.equal_spacing_id:
             # Equal spacing widgets
             params = self.equal_spacing.params
@@ -974,36 +987,24 @@ class Driver(QtGui.QMainWindow):
         # exist, set to a wood we know exists.  This can happen if the wood
         # image files don't exist across users.
         for i in lrange(4):
-            if self.boards[i].wood not in self.woods.keys():
+            if self.boards[i].wood is None:
+                self.boards[i].set_wood('NONE')
+            elif self.boards[i].wood not in self.woods.keys():
                 self.boards[i].set_wood('DiagCrossPattern')
             j = self.cb_wood[i].findText(self.boards[i].wood)
             self.cb_wood[i].setCurrentIndex(j)
 
+        # ... set double* board input parameters.  The double* inputs are
+        # activated/deactivated in set_spacing_parameters(), called below
         if self.boards[2].active:
-            self.cb_wood[3].setEnabled(True)
-            self.le_boardm[0].setEnabled(True)
-            self.le_boardm[0].setStyleSheet("color: black;")
             self.le_boardm[0].setText(self.units.increments_to_string(self.boards[2].dheight))
             if self.boards[3].active:
-                self.boards[3].set_active(True)
-                self.le_boardm[1].setEnabled(True)
-                self.le_boardm[1].setStyleSheet("color: black;")
                 self.le_boardm[1].setText(self.units.increments_to_string(self.boards[3].dheight))
-            else:
-                self.boards[3].set_active(False)
-                self.le_boardm[1].setEnabled(False)
-                self.le_boardm[1].setStyleSheet("color: gray;")
         else:
             i = self.cb_wood[3].findText('NONE')
             self.cb_wood[3].setCurrentIndex(i)
-            self.cb_wood[3].setEnabled(False)
-            self.boards[2].set_active(False)
-            self.boards[3].set_active(False)
-            self.le_boardm[0].setEnabled(False)
-            self.le_boardm[1].setEnabled(False)
-            self.le_boardm[0].setStyleSheet("color: gray;")
-            self.le_boardm[1].setStyleSheet("color: gray;")
 
+        # ... set spacing cuts and tabs
         if sp_type == 'Equa':
             sp.set_cuts()
             self.equal_spacing = sp
@@ -1020,12 +1021,14 @@ class Driver(QtGui.QMainWindow):
         self.tabs_spacing.blockSignals(True)
         self.tabs_spacing.setCurrentIndex(self.spacing_index)
         self.tabs_spacing.blockSignals(False)
+
+        # ... set line edit parameters
         self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
         self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
         self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.le_bit_angle.setText(`self.bit.angle`)
-
         self.set_spacing_widgets()
+
         self.draw()
 
     @QtCore.pyqtSlot()
