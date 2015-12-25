@@ -88,6 +88,7 @@ class Base_Spacing(object):
         self.cuts = []
         self.labels = []
 
+        # compute the increase in effective bit width from the double* boards
         self.dhtot = 0
         if boards[2].active:
             self.dhtot += boards[2].dheight

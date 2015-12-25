@@ -550,6 +550,12 @@ class Qt_Plotter(QtGui.QWidget):
         title = self.geom.spacing.description
         title += '\nBoard width: '
         title += units.increments_to_string(self.geom.boards[0].width, True)
+        if self.geom.boards[2].active:
+            title += '   Double Thickness: '
+            title += units.increments_to_string(self.geom.boards[2].dheight, True)
+            if self.geom.boards[3].active:
+                title += ', '
+                title += units.increments_to_string(self.geom.boards[2].dheight, True)
         title += '    Bit: '
         if self.geom.bit.angle > 0:
             title += '%.1f deg. dovetail' % self.geom.bit.angle
