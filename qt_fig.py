@@ -436,7 +436,7 @@ class Qt_Plotter(QtGui.QWidget):
             self.draw_one_board(painter, self.geom.boards[i], self.geom.bit)
 
         # Label the boards
-        xL = self.geom.boards[0].xL()
+        xL = self.geom.boards[0].xL() - self.geom.bit.width // 2
         flags_top = QtCore.Qt.AlignRight | QtCore.Qt.AlignTop
         flags_bot = QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom
         self.set_font_size(painter, 'boards')
@@ -472,8 +472,14 @@ class Qt_Plotter(QtGui.QWidget):
             delta += boards[2].dheight
         if boards[3].active:
             delta += boards[3].dheight
-        xLT = boards[1].xL() + c.xmin + delta
-        xRT = xLT + c.xmax - c.xmin - 2 * delta
+        xLT = boards[1].xL() + c.xmin
+        if c.xmin > 0:
+            xLT += delta
+        xRT = boards[1].xL() + c.xmax
+        if c.xmax < boards[1].width:
+            xRT -= delta
+        xLT = max(min(xLT, boards[1].xR()), boards[1].xL())
+        xRT = max(min(xRT, boards[1].xR()), boards[1].xL())
         xLB = xLT
         xRB = xRT
         if xLT > boards[1].xL():

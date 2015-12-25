@@ -309,9 +309,9 @@ class Edit_Spaced(Base_Spacing):
         xmax = self.boards[0].width
         neck_width = utils.my_round(self.bit.neck)
         if f > 0:
-            xmin = self.cuts[f - 1].xmax + neck_width
+            xmin = self.cuts[f - 1].xmax + neck_width + self.dhtot
         if f < len(self.cuts) - 1:
-            xmax = self.cuts[f + 1].xmin - neck_width
+            xmax = self.cuts[f + 1].xmin - neck_width - self.dhtot
         return (xmin, xmax)
 
     def undo(self):
@@ -338,7 +338,7 @@ class Edit_Spaced(Base_Spacing):
             if c.xmin == 0:
                 w -= 1
             else:
-                w = max(w, self.bit.width)
+                w = max(w, self.bit.width + 2 * self.dhtot)
             if w == 0:
                 # note its possible for only one finger to be deleted
                 delete_finger = True
@@ -381,7 +381,7 @@ class Edit_Spaced(Base_Spacing):
             if c.xmax == self.boards[0].width:
                 w -= 1
             else:
-                w = max(w, self.bit.width)
+                w = max(w, self.bit.width + 2 * self.dhtot)
             if w == 0:
                 # note its possible for only one finger to be deleted
                 delete_finger = True
@@ -467,7 +467,7 @@ class Edit_Spaced(Base_Spacing):
         noop = []
         for f in self.active_fingers:
             c = self.cuts[f]
-            wmin = self.bit.width
+            wmin = self.bit.width + 2 * self.dhtot
             if c.xmax == self.boards[0].width:
                 wmin = 1
             if c.xmax - c.xmin <= wmin:
@@ -494,7 +494,7 @@ class Edit_Spaced(Base_Spacing):
         noop = []
         for f in self.active_fingers:
             c = self.cuts[f]
-            wmin = self.bit.width
+            wmin = self.bit.width + 2 * self.dhtot
             if c.xmin == 0:
                 wmin = 1
             if c.xmax - c.xmin <= wmin:
