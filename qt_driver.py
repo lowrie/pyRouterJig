@@ -446,8 +446,6 @@ class Driver(QtGui.QMainWindow):
         edit_btn_deactivate_all.clicked.connect(self._on_edit_deactivate_all)
         edit_btn_deactivate_all.setToolTip('Set no fingers to be active')
 
-        self.update_tooltips()
-
         ######################################################################
         # Layout widgets in the main frame
         ######################################################################
@@ -610,19 +608,47 @@ class Driver(QtGui.QMainWindow):
         # Lay it all out
         self.main_frame.setLayout(vbox)
         self.setCentralWidget(self.main_frame)
+        self.update_tooltips()
 
     def update_tooltips(self):
         '''
         [Re]sets the tool tips for widgets whose tips depend on user settings
         '''
-        self.le_board_width_label.setToolTip(self.doc.board_width())
-        self.le_board_width.setToolTip(self.doc.board_width())
-        self.le_bit_width_label.setToolTip(self.doc.bit_width())
-        self.le_bit_width.setToolTip(self.doc.bit_width())
-        self.le_bit_depth_label.setToolTip(self.doc.bit_depth())
-        self.le_bit_depth.setToolTip(self.doc.bit_depth())
-        self.le_bit_angle_label.setToolTip(self.doc.bit_angle())
-        self.le_bit_angle.setToolTip(self.doc.bit_angle())
+
+        disable = ''
+        if self.spacing_index == self.edit_spacing_id:
+            disable = '  <b>CANNOT CHANGE IF IN EDITOR MODE.</b>'
+
+        disable_double = disable
+        if not self.boards[2].active:
+            disable_double = '  <b>CANNOT CHANGE UNLESS DOUBLE BOARD IS NOT NONE.</b>'
+        disable_dd = disable
+        if not self.boards[3].active:
+            disable_dd = '  <b>CANNOT CHANGE UNLESS DOUBLE-DOUBLE BOARD IS NOT NONE.</b>'
+
+        self.le_board_width_label.setToolTip(self.doc.board_width() + disable)
+        self.le_board_width.setToolTip(self.doc.board_width() + disable)
+        self.le_bit_width_label.setToolTip(self.doc.bit_width() + disable)
+        self.le_bit_width.setToolTip(self.doc.bit_width() + disable)
+        self.le_bit_depth_label.setToolTip(self.doc.bit_depth() + disable)
+        self.le_bit_depth.setToolTip(self.doc.bit_depth() + disable)
+        self.le_bit_angle_label.setToolTip(self.doc.bit_angle() + disable)
+        self.le_bit_angle.setToolTip(self.doc.bit_angle() + disable)
+
+        self.cb_wood_label[0].setToolTip(self.doc.top_board() + disable)
+        self.cb_wood[0].setToolTip(self.doc.top_board() + disable)
+        self.cb_wood_label[1].setToolTip(self.doc.bottom_board() + disable)
+        self.cb_wood[1].setToolTip(self.doc.bottom_board() + disable)
+        self.cb_wood_label[2].setToolTip(self.doc.double_board() + disable)
+        self.cb_wood[2].setToolTip(self.doc.double_board() + disable)
+        self.cb_wood_label[3].setToolTip(self.doc.dd_board() + disable_double)
+        self.cb_wood[3].setToolTip(self.doc.dd_board() + disable_double)
+
+        self.le_boardm_label[0].setToolTip(self.doc.double_thickness() + disable_double)
+        self.le_boardm[0].setToolTip(self.doc.double_thickness() + disable_double)
+        self.le_boardm_label[1].setToolTip(self.doc.dd_thickness() + disable_dd)
+        self.le_boardm[1].setToolTip(self.doc.dd_thickness() + disable_dd)
+
         self.es_slider0_label.setToolTip(self.doc.es_slider0())
         self.es_slider0.setToolTip(self.doc.es_slider0())
         self.es_slider1_label.setToolTip(self.doc.es_slider1())
@@ -739,6 +765,8 @@ class Driver(QtGui.QMainWindow):
             self.spacing = self.edit_spacing
         else:
             raise ValueError('Bad value for spacing_index %d' % self.spacing_index)
+
+        self.update_tooltips()
 
     @QtCore.pyqtSlot(int)
     def _on_tabs_spacing(self, index):

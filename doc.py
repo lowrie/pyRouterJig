@@ -58,6 +58,20 @@ class Doc(object):
     _bit_angle = '<b>Bit Angle</b> is the angle (in degrees) of the router \
     bit for dovetail bits.  Set to zero for straight bits.'
 
+    _top_board = '<b>Top Board</b> is the wood image to use for the top board.'
+
+    _bottom_board = '<b>Bottom Board</b> is the wood image to use for the bottom board.'
+
+    _double_board = '<b>Double Board</b> is the wood image to use for the double board. \
+    If NONE, there is no double board.'
+
+    _dd_board = '<b>Double-Double Board</b> is the wood image to use for the double-double board. \
+    If NONE, there is no double-double board.'
+
+    _double_thickness = '<b>Thickness</b> is the thickness (in%s) of the double board.'
+
+    _dd_thickness = '<b>Thickness</b> is the thickness (in%s) of the double-double board.'
+
     _es_slider0 = '<b>%s</b> slider allows you to specify additional \
     spacing between the fingers'
 
@@ -90,6 +104,18 @@ class Doc(object):
         return self._bit_depth % self.sunits
     def bit_angle(self):
         return self._bit_angle
+    def top_board(self):
+        return self._top_board
+    def bottom_board(self):
+        return self._bottom_board
+    def double_board(self):
+        return self._double_board
+    def dd_board(self):
+        return self._dd_board
+    def double_thickness(self):
+        return self._double_thickness % self.sunits
+    def dd_thickness(self):
+        return self._dd_thickness % self.sunits
     def es_slider0(self):
         return self._es_slider0 % spacing.Equally_Spaced.keys[0]
     def es_slider1(self):
