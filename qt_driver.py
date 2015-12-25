@@ -390,61 +390,61 @@ class Driver(QtGui.QMainWindow):
         edit_btn_undo.setToolTip('Undo the last change')
         edit_btn_add = QtGui.QPushButton('Add', self.main_frame)
         edit_btn_add.clicked.connect(self._on_edit_add)
-        edit_btn_add.setToolTip('Add a finger (if there is space to add fingers)')
+        edit_btn_add.setToolTip('Add a cut (if there is space to add cuts)')
         edit_btn_del = QtGui.QPushButton('Delete', self.main_frame)
         edit_btn_del.clicked.connect(self._on_edit_del)
-        edit_btn_del.setToolTip('Delete the active fingers')
+        edit_btn_del.setToolTip('Delete the active cuts')
 
         edit_move_label = QtGui.QLabel('Move')
-        edit_move_label.setToolTip('Moves the active fingers')
+        edit_move_label.setToolTip('Moves the active cuts')
         edit_btn_moveL = QtGui.QToolButton(self.main_frame)
         edit_btn_moveL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_moveL.clicked.connect(self._on_edit_moveL)
-        edit_btn_moveL.setToolTip('Move active fingers to left 1 increment')
+        edit_btn_moveL.setToolTip('Move active cuts to left 1 increment')
         edit_btn_moveR = QtGui.QToolButton(self.main_frame)
         edit_btn_moveR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_moveR.clicked.connect(self._on_edit_moveR)
-        edit_btn_moveR.setToolTip('Move active fingers to right 1 increment')
+        edit_btn_moveR.setToolTip('Move active cuts to right 1 increment')
 
         edit_widen_label = QtGui.QLabel('Widen')
-        edit_widen_label.setToolTip('Widens the active fingers')
+        edit_widen_label.setToolTip('Widens the active cuts')
         edit_btn_widenL = QtGui.QToolButton(self.main_frame)
         edit_btn_widenL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_widenL.clicked.connect(self._on_edit_widenL)
-        edit_btn_widenL.setToolTip('Widen active fingers 1 increment on left side')
+        edit_btn_widenL.setToolTip('Widen active cuts 1 increment on left side')
         edit_btn_widenR = QtGui.QToolButton(self.main_frame)
         edit_btn_widenR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_widenR.clicked.connect(self._on_edit_widenR)
-        edit_btn_widenR.setToolTip('Widen active fingers 1 increment on right side')
+        edit_btn_widenR.setToolTip('Widen active cuts 1 increment on right side')
 
         edit_trim_label = QtGui.QLabel('Trim')
-        edit_trim_label.setToolTip('Trims the active fingers')
+        edit_trim_label.setToolTip('Trims the active cuts')
         edit_btn_trimL = QtGui.QToolButton(self.main_frame)
         edit_btn_trimL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_trimL.clicked.connect(self._on_edit_trimL)
-        edit_btn_trimL.setToolTip('Trim active fingers 1 increment on left side')
+        edit_btn_trimL.setToolTip('Trim active cuts 1 increment on left side')
         edit_btn_trimR = QtGui.QToolButton(self.main_frame)
         edit_btn_trimR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_trimR.clicked.connect(self._on_edit_trimR)
-        edit_btn_trimR.setToolTip('Trim active fingers 1 increment on right side')
+        edit_btn_trimR.setToolTip('Trim active cuts 1 increment on right side')
 
         edit_btn_toggle = QtGui.QPushButton('Toggle', self.main_frame)
         edit_btn_toggle.clicked.connect(self._on_edit_toggle)
-        edit_btn_toggle.setToolTip('Toggles the finger at cursor between active and deactive')
+        edit_btn_toggle.setToolTip('Toggles the cut at cursor between active and deactive')
         edit_btn_cursorL = QtGui.QToolButton(self.main_frame)
         edit_btn_cursorL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_cursorL.clicked.connect(self._on_edit_cursorL)
-        edit_btn_cursorL.setToolTip('Move finger cursor to left')
+        edit_btn_cursorL.setToolTip('Move cut cursor to left')
         edit_btn_cursorR = QtGui.QToolButton(self.main_frame)
         edit_btn_cursorR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_cursorR.clicked.connect(self._on_edit_cursorR)
-        edit_btn_cursorR.setToolTip('Move finger cursor to right')
+        edit_btn_cursorR.setToolTip('Move cut cursor to right')
         edit_btn_activate_all = QtGui.QPushButton('All', self.main_frame)
         edit_btn_activate_all.clicked.connect(self._on_edit_activate_all)
-        edit_btn_activate_all.setToolTip('Set all fingers to be active')
+        edit_btn_activate_all.setToolTip('Set all cuts to be active')
         edit_btn_deactivate_all = QtGui.QPushButton('None', self.main_frame)
         edit_btn_deactivate_all.clicked.connect(self._on_edit_deactivate_all)
-        edit_btn_deactivate_all.setToolTip('Set no fingers to be active')
+        edit_btn_deactivate_all.setToolTip('Set no cuts to be active')
 
         ######################################################################
         # Layout widgets in the main frame
@@ -544,18 +544,18 @@ class Driver(QtGui.QMainWindow):
         grid_edit.addWidget(create_hline(), 0, 0, 1, 16)
         grid_edit.addWidget(create_hline(), 2, 0, 1, 16)
         grid_edit.addWidget(create_vline(), 0, 0, 6, 1)
-        label_active_finger_select = QtGui.QLabel('Active Finger Select')
-        label_active_finger_select.setToolTip('Tools that select the active fingers')
-        grid_edit.addWidget(label_active_finger_select, 1, 1, 1, 3, QtCore.Qt.AlignHCenter)
+        label_active_cut_select = QtGui.QLabel('Active Cut Select')
+        label_active_cut_select.setToolTip('Tools that select the active cuts')
+        grid_edit.addWidget(label_active_cut_select, 1, 1, 1, 3, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_toggle, 3, 1, 1, 2, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_cursorL, 4, 1, QtCore.Qt.AlignRight)
         grid_edit.addWidget(edit_btn_cursorR, 4, 2, QtCore.Qt.AlignLeft)
         grid_edit.addWidget(edit_btn_activate_all, 3, 3)
         grid_edit.addWidget(edit_btn_deactivate_all, 4, 3)
         grid_edit.addWidget(create_vline(), 0, 4, 6, 1)
-        label_active_finger_ops = QtGui.QLabel('Active Finger Operators')
-        label_active_finger_ops.setToolTip('Edit operations applied to active fingers')
-        grid_edit.addWidget(label_active_finger_ops, 1, 5, 1, 10, QtCore.Qt.AlignHCenter)
+        label_active_cut_ops = QtGui.QLabel('Active Cut Operators')
+        label_active_cut_ops.setToolTip('Edit operations applied to active cuts')
+        grid_edit.addWidget(label_active_cut_ops, 1, 5, 1, 10, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_move_label, 3, 5, 1, 2, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_moveL, 4, 5, QtCore.Qt.AlignRight)
         grid_edit.addWidget(edit_btn_moveR, 4, 6, QtCore.Qt.AlignLeft)
@@ -590,7 +590,7 @@ class Driver(QtGui.QMainWindow):
         tab_edit.setLayout(hbox_edit)
         self.tabs_spacing.addTab(tab_edit, 'Editor')
         self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
-        tip = 'These tabs specify the layout algorithm for the fingers.'
+        tip = 'These tabs specify the layout algorithm for the cuts.'
         self.tabs_spacing.setToolTip(tip)
 
         # The tab indices should be set in the order they're defined, but this ensures it
@@ -1256,7 +1256,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles move left event'''
         if self.config.debug:
             print('_on_edit_moveL')
-        msg = self.spacing.finger_move_left()
+        msg = self.spacing.cut_move_left()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1265,7 +1265,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles move right event'''
         if self.config.debug:
             print('_on_edit_moveR')
-        msg = self.spacing.finger_move_right()
+        msg = self.spacing.cut_move_right()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1274,7 +1274,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles widen left event'''
         if self.config.debug:
             print('_on_edit_widenL')
-        msg = self.spacing.finger_widen_left()
+        msg = self.spacing.cut_widen_left()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1283,7 +1283,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles widen right event'''
         if self.config.debug:
             print('_on_edit_widenR')
-        msg = self.spacing.finger_widen_right()
+        msg = self.spacing.cut_widen_right()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1292,7 +1292,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles trim left event'''
         if self.config.debug:
             print('_on_edit_trimL')
-        msg = self.spacing.finger_trim_left()
+        msg = self.spacing.cut_trim_left()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1301,7 +1301,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles trim right event'''
         if self.config.debug:
             print('_on_edit_trimR')
-        msg = self.spacing.finger_trim_right()
+        msg = self.spacing.cut_trim_right()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1310,7 +1310,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles edit toggle event'''
         if self.config.debug:
             print('_on_edit_toggle')
-        msg = self.spacing.finger_toggle()
+        msg = self.spacing.cut_toggle()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1319,7 +1319,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles cursor left event'''
         if self.config.debug:
             print('_on_edit_cursorL')
-        msg = self.spacing.finger_increment_cursor(-1)
+        msg = self.spacing.cut_increment_cursor(-1)
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1328,7 +1328,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles toggle right event'''
         if self.config.debug:
             print('_on_edit_cursorR')
-        msg = self.spacing.finger_increment_cursor(1)
+        msg = self.spacing.cut_increment_cursor(1)
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1337,7 +1337,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles edit activate all event'''
         if self.config.debug:
             print('_on_edit_activate_all')
-        msg = self.spacing.finger_all_active()
+        msg = self.spacing.cut_all_active()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1346,25 +1346,25 @@ class Driver(QtGui.QMainWindow):
         '''Handles edit deactivate all event'''
         if self.config.debug:
             print('_on_edit_deactivate_all')
-        msg = self.spacing.finger_all_not_active()
+        msg = self.spacing.cut_all_not_active()
         self.statusbar.showMessage(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
     def _on_edit_add(self):
-        '''Handles add finger event'''
+        '''Handles add cut event'''
         if self.config.debug:
             print('_on_edit_add')
-        msg = self.spacing.finger_add()
+        msg = self.spacing.cut_add()
         self.statusbar.showMessage(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
     def _on_edit_del(self):
-        '''Handles delete fingers event'''
+        '''Handles delete cuts event'''
         if self.config.debug:
             print('_on_edit_del')
-        msg = self.spacing.finger_delete_active()
+        msg = self.spacing.cut_delete_active()
         self.statusbar.showMessage(msg)
         self.draw()
 
@@ -1412,39 +1412,39 @@ class Driver(QtGui.QMainWindow):
             msg = 'Undo'
             self.draw()
         elif event.key() == QtCore.Qt.Key_A:
-            msg = self.spacing.finger_all_active()
+            msg = self.spacing.cut_all_active()
             self.draw()
         elif event.key() == QtCore.Qt.Key_N:
-            msg = self.spacing.finger_all_not_active()
+            msg = self.spacing.cut_all_not_active()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Return:
-            msg = self.spacing.finger_toggle()
+            msg = self.spacing.cut_toggle()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Minus:
-            msg = self.spacing.finger_delete_active()
+            msg = self.spacing.cut_delete_active()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Plus:
-            msg = self.spacing.finger_add()
+            msg = self.spacing.cut_add()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Left:
             if self.shift_key:
-                msg = self.spacing.finger_widen_left()
+                msg = self.spacing.cut_widen_left()
             elif self.control_key:
-                msg = self.spacing.finger_trim_left()
+                msg = self.spacing.cut_trim_left()
             elif self.alt_key:
-                msg = self.spacing.finger_move_left()
+                msg = self.spacing.cut_move_left()
             else:
-                msg = self.spacing.finger_increment_cursor(-1)
+                msg = self.spacing.cut_increment_cursor(-1)
             self.draw()
         elif event.key() == QtCore.Qt.Key_Right:
             if self.shift_key:
-                msg = self.spacing.finger_widen_right()
+                msg = self.spacing.cut_widen_right()
             elif self.control_key:
-                msg = self.spacing.finger_trim_right()
+                msg = self.spacing.cut_trim_right()
             elif self.alt_key:
-                msg = self.spacing.finger_move_right()
+                msg = self.spacing.cut_move_right()
             else:
-                msg = self.spacing.finger_increment_cursor(1)
+                msg = self.spacing.cut_increment_cursor(1)
             self.draw()
         else:
             msg = 'You pressed an unrecognized key: '

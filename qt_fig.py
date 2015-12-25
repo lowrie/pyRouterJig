@@ -249,8 +249,8 @@ class Qt_Plotter(QtGui.QWidget):
         painter.fillRect(0, 0, size.width(), size.height(), self.background)
         # paint all of the objects
         self.window_width, self.window_height = self.paint_all(painter)
-        # on the screen, highlight the active fingers
-        self.draw_active_fingers(painter)
+        # on the screen, highlight the active cuts
+        self.draw_active_cuts(painter)
         painter.end()
 
     def set_font_size(self, painter, size):
@@ -299,7 +299,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.draw_template(painter)
         self.draw_boards(painter)
         self.draw_title(painter)
-        self.draw_finger_sizes(painter)
+        self.draw_cut_sizes(painter)
 
         return (window_width, window_height)
 
@@ -462,32 +462,21 @@ class Qt_Plotter(QtGui.QWidget):
         p = (xL, self.geom.boards[1].yT())
         paint_text(painter, self.labels[i], p, flags_top, (-3, 0))
 
-    def finger_polygon(self, c):
+    def cut_polygon(self, c):
         '''
-        Forms the polygon for the finger corresponding to the cut c
+        Forms the polygon for the cut corresponding to the cut c
         '''
         boards = self.geom.boards
-        delta = 0
-        if boards[2].active:
-            delta += boards[2].dheight
-        if boards[3].active:
-            delta += boards[3].dheight
-        xLT = boards[1].xL() + c.xmin
-        if c.xmin > 0:
-            xLT += delta
-        xRT = boards[1].xL() + c.xmax
-        if c.xmax < boards[1].width:
-            xRT -= delta
-        xLT = max(min(xLT, boards[1].xR()), boards[1].xL())
-        xRT = max(min(xRT, boards[1].xR()), boards[1].xL())
+        xLT = boards[0].xL() + c.xmin
+        xRT = boards[0].xL() + c.xmax
         xLB = xLT
         xRB = xRT
-        if xLT > boards[1].xL():
+        if c.xmin > 0:
             xLB += self.geom.bit.offset
-        if xRT < boards[1].xR():
+        if c.xmax < self.geom.boards[0].width:
             xRB -= self.geom.bit.offset
-        yT = boards[1].yT()
-        yB = yT - self.geom.bit.depth
+        yB = boards[0].yB()
+        yT = yB + self.geom.bit.depth
         poly = QtGui.QPolygonF()
         poly.append(QtCore.QPointF(xLT, yT))
         poly.append(QtCore.QPointF(xRT, yT))
@@ -496,16 +485,16 @@ class Qt_Plotter(QtGui.QWidget):
         poly.append(QtCore.QPointF(xLT, yT))
         return poly
 
-    def draw_active_fingers(self, painter):
+    def draw_active_cuts(self, painter):
         '''
-        If the spacing supports it, highlight the active fingers and
+        If the spacing supports it, highlight the active cuts and
         draw their limits
         '''
-        # draw the perimeter of the cursor finger
-        f = self.geom.spacing.cursor_finger
+        # draw the perimeter of the cursor cut
+        f = self.geom.spacing.cursor_cut
         if f is None:
             return
-        poly = self.finger_polygon(self.geom.boards[0].bottom_cuts[f])
+        poly = self.cut_polygon(self.geom.boards[0].bottom_cuts[f])
         painter.save()
         pen = QtGui.QPen(QtCore.Qt.blue)
         pen.setWidth(1)
@@ -517,12 +506,12 @@ class Qt_Plotter(QtGui.QWidget):
         xminG = self.geom.boards[0].width
         xmaxG = 0
 
-        # draw the active fingers filled, and track the limits
+        # draw the active cuts filled, and track the limits
         painter.save()
         brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 75))
         painter.setBrush(brush)
-        for f in self.geom.spacing.active_fingers:
-            poly = self.finger_polygon(self.geom.boards[0].bottom_cuts[f])
+        for f in self.geom.spacing.active_cuts:
+            poly = self.cut_polygon(self.geom.boards[0].bottom_cuts[f])
             painter.drawPolygon(poly)
             # keep track of the limits
             (xmin, xmax) = self.geom.spacing.get_limits(f)
@@ -532,10 +521,10 @@ class Qt_Plotter(QtGui.QWidget):
 
         # draw the limits
         painter.save()
-        xminG += self.geom.boards[1].xL()
-        xmaxG += self.geom.boards[1].xL()
-        yB = self.geom.boards[1].yB()
-        yT = self.geom.boards[1].yT()
+        xminG += self.geom.boards[0].xL()
+        xmaxG += self.geom.boards[0].xL()
+        yB = self.geom.boards[0].yB()
+        yT = self.geom.boards[0].yT()
         painter.setPen(QtCore.Qt.green)
         painter.drawLine(xminG, yB, xminG, yT)
         painter.drawLine(xmaxG, yB, xmaxG, yT)
@@ -569,9 +558,9 @@ class Qt_Plotter(QtGui.QWidget):
         p = (self.geom.board_T.xMid(), self.margins.bottom)
         paint_text(painter, title, p, flags, (0, 5))
 
-    def draw_finger_sizes(self, painter):
+    def draw_cut_sizes(self, painter):
         '''
-        Annotates the finger sizes on each board
+        Annotates the cut sizes on each board
         '''
         self.set_font_size(painter, 'fingers')
         # Determine the cuts that are adjacent to board-A and board-B
@@ -584,7 +573,7 @@ class Qt_Plotter(QtGui.QWidget):
             else:
                 acuts = self.geom.boards[2].top_cuts
         # Draw the router passes
-        # ... do the B fingers
+        # ... do the B cuts
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         shift = (0, 8)
         for c in bcuts:
@@ -593,7 +582,7 @@ class Qt_Plotter(QtGui.QWidget):
             label = '%d' % (c.xmax - c.xmin)
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill=self.background)
-        # ... do the A fingers
+        # ... do the A cuts
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         shift = (0, -8)
         for c in acuts:
