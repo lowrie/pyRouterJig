@@ -464,41 +464,52 @@ class Driver(QtGui.QMainWindow):
         # this grid contains all the lower-left input stuff
         grid = QtGui.QGridLayout()
 
+        grid.addWidget(create_hline(), 0, 0, 1, 9)
+        grid.addWidget(create_vline(), 0, 0, 9, 1)
+
         # Add the board width label, board width input line edit,
         # all stacked vertically on the left side.
-        grid.addWidget(self.le_board_width_label, 0, 0)
-        grid.addWidget(self.le_board_width, 1, 0)
+        grid.addWidget(self.le_board_width_label, 1, 1)
+        grid.addWidget(self.le_board_width, 2, 1)
+        grid.addWidget(create_vline(), 0, 2, 9, 1)
 
         # Add the bit width label and its line edit
         vbox_bit_width = QtGui.QVBoxLayout()
-        grid.addWidget(self.le_bit_width_label, 0, 1)
-        grid.addWidget(self.le_bit_width, 1, 1)
+        grid.addWidget(self.le_bit_width_label, 1, 3)
+        grid.addWidget(self.le_bit_width, 2, 3)
+        grid.addWidget(create_vline(), 0, 4, 9, 1)
 
         # Add the bit depth label and its line edit
-        grid.addWidget(self.le_bit_depth_label, 0, 2)
-        grid.addWidget(self.le_bit_depth, 1, 2)
+        grid.addWidget(self.le_bit_depth_label, 1, 5)
+        grid.addWidget(self.le_bit_depth, 2, 5)
+        grid.addWidget(create_vline(), 0, 6, 9, 1)
 
         # Add the bit angle label and its line edit
-        grid.addWidget(self.le_bit_angle_label, 0, 3)
-        grid.addWidget(self.le_bit_angle, 1, 3)
+        grid.addWidget(self.le_bit_angle_label, 1, 7)
+        grid.addWidget(self.le_bit_angle, 2, 7)
+        grid.addWidget(create_vline(), 0, 8, 9, 1)
+
+        grid.addWidget(create_hline(), 3, 0, 1, 9)
 
         grid.setRowStretch(2, 10)
 
         # Add the wood combo boxes
-        grid.addWidget(self.cb_wood_label[0], 3, 0)
-        grid.addWidget(self.cb_wood_label[1], 3, 1)
-        grid.addWidget(self.cb_wood_label[2], 3, 2)
-        grid.addWidget(self.cb_wood_label[3], 3, 3)
-        grid.addWidget(self.cb_wood[0], 4, 0)
-        grid.addWidget(self.cb_wood[1], 4, 1)
-        grid.addWidget(self.cb_wood[2], 4, 2)
-        grid.addWidget(self.cb_wood[3], 4, 3)
+        grid.addWidget(self.cb_wood_label[0], 4, 1)
+        grid.addWidget(self.cb_wood_label[1], 4, 3)
+        grid.addWidget(self.cb_wood_label[2], 4, 5)
+        grid.addWidget(self.cb_wood_label[3], 4, 7)
+        grid.addWidget(self.cb_wood[0], 5, 1)
+        grid.addWidget(self.cb_wood[1], 5, 3)
+        grid.addWidget(self.cb_wood[2], 5, 5)
+        grid.addWidget(self.cb_wood[3], 5, 7)
 
-        # Add Board-M thickness line edits
-        grid.addWidget(self.le_boardm_label[0], 5, 2)
-        grid.addWidget(self.le_boardm_label[1], 5, 3)
-        grid.addWidget(self.le_boardm[0], 6, 2)
-        grid.addWidget(self.le_boardm[1], 6, 3)
+        # Add double* thickness line edits
+        grid.addWidget(self.le_boardm_label[0], 6, 5)
+        grid.addWidget(self.le_boardm_label[1], 6, 7)
+        grid.addWidget(self.le_boardm[0], 7, 5)
+        grid.addWidget(self.le_boardm[1], 7, 7)
+
+        grid.addWidget(create_hline(), 8, 0, 1, 9)
 
         hbox.addLayout(grid)
 
@@ -590,24 +601,22 @@ class Driver(QtGui.QMainWindow):
         self.spacing_index = self.equal_spacing_id
         self.tabs_spacing.setCurrentIndex(self.spacing_index)
 
-        # either add the spacing Tabs to the bottom
-        #vbox.addLayout(hbox)
-        #vbox.addWidget(self.tabs_spacing)
-        # ... or to the right of the line edits
-        hbox.addWidget(self.tabs_spacing)
-        vbox.addStretch(1)
+        # either add the spacing Tabs to the right of the line edits
+        vbox_tabs = QtGui.QVBoxLayout()
+        vbox_tabs.addWidget(self.tabs_spacing)
+        vbox_tabs.addStretch(1)
+        hbox.addLayout(vbox_tabs)
         vbox.addLayout(hbox)
-#        vbox.setSizeConstraint(QtGui.QLayout.SetFixedSize)
-
-        # Set the wood to whatever the current setting is
-        self._on_wood(0)
-        self._on_wood(1)
-        self._on_wood(2)
-        self._on_wood(3)
 
         # Lay it all out
         self.main_frame.setLayout(vbox)
         self.setCentralWidget(self.main_frame)
+
+        # Finalize some settings
+        self._on_wood(0)
+        self._on_wood(1)
+        self._on_wood(2)
+        self._on_wood(3)
         self.update_tooltips()
 
     def update_tooltips(self):
@@ -696,9 +705,14 @@ class Driver(QtGui.QMainWindow):
         Sets the spacing widget parameters
         '''
         # enable/disable changing parameters, depending upon spacing algorithm
-        les = [self.le_board_width, self.le_bit_width, self.le_bit_depth,\
-               self.le_bit_angle]
+        les = [self.le_board_width, self.le_board_width_label,\
+               self.le_bit_width, self.le_bit_width_label,\
+               self.le_bit_depth, self.le_bit_depth_label,\
+               self.le_bit_angle, self.le_bit_angle_label]
+        les.extend(self.cb_wood)
+        les.extend(self.cb_wood_label)
         les.extend(self.le_boardm)
+        les.extend(self.le_boardm_label)
         if self.spacing_index == self.edit_spacing_id:
             for le in les:
                 le.setEnabled(False)
@@ -712,13 +726,18 @@ class Driver(QtGui.QMainWindow):
             for cb in self.cb_wood:
                 cb.setEnabled(True)
             if not self.boards[2].active:
-                self.cb_wood[3].setEnabled(False)
-                for le in self.le_boardm:
+                disable = self.le_boardm
+                disable.extend(self.le_boardm_label)
+                disable.append(self.cb_wood[3])
+                disable.append(self.cb_wood_label[3])
+                for le in disable:
                     le.setEnabled(False)
                     le.setStyleSheet("color: gray;")
             if not self.boards[3].active:
-                self.le_boardm[1].setEnabled(False)
-                self.le_boardm[1].setStyleSheet("color: gray;")
+                disable = [self.le_boardm[1], self.le_boardm_label[1]]
+                for le in disable:
+                    le.setEnabled(False)
+                    le.setStyleSheet("color: gray;")
 
         # Set up the various widgets for each spacing option
         if self.spacing_index == self.equal_spacing_id:
