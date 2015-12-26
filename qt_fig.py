@@ -140,8 +140,6 @@ class Qt_Plotter(QtGui.QWidget):
         increments.
         Returns True if the dimensions changed.
         '''
-        board = boards[0]
-
         # Try default margins, but reset if the template is too small for margins
         self.margins = utils.Margins(8, self.config.separation,\
                                      self.config.left_margin,\
@@ -175,7 +173,7 @@ class Qt_Plotter(QtGui.QWidget):
             dimensions_changed = True
 
         # The 1200 here is effectively a dpi for the screen
-        scale = 1200 * board.units.increments_to_inches(1)
+        scale = 1200 * boards[0].units.increments_to_inches(1)
         self.window_width = int(scale * fig_width)
         self.window_height = int(scale * fig_height)
 
@@ -217,7 +215,18 @@ class Qt_Plotter(QtGui.QWidget):
         self.set_fig_dimensions(template, boards)
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
 
-        image = QtGui.QImage(self.size(), QtGui.QImage.Format_RGB16)
+        min_width = 2800
+        s = self.size()
+        window_ar = float(s.width()) / s.height()
+        fig_ar = float(self.fig_width) / self.fig_height
+        if window_ar < fig_ar:
+            w = max(min_width, s.width())
+        else:
+            w = max(min_width, int(s.height() * fig_ar))
+        h = utils.my_round(w / fig_ar)
+        sNew = QtCore.QSize(w, h)
+
+        image = QtGui.QImage(sNew, QtGui.QImage.Format_RGB16)
         painter = QtGui.QPainter()
         painter.begin(image)
         size = image.size()

@@ -605,6 +605,7 @@ class Driver(QtGui.QMainWindow):
         vbox_tabs = QtGui.QVBoxLayout()
         vbox_tabs.addWidget(self.tabs_spacing)
         vbox_tabs.addStretch(1)
+        hbox.addStretch(1)
         hbox.addLayout(vbox_tabs)
         vbox.addLayout(hbox)
 
@@ -948,7 +949,7 @@ class Driver(QtGui.QMainWindow):
         # Get the file name.  The default name is indexed on the number
         # of times this function is called.
         defname = os.path.join(self.working_dir,
-                               'screenshot_%d.png' % (self.screenshot_index))
+                               'pyrouterjig_%d.png' % (self.screenshot_index))
 
         # This is the simple approach to set the filename, but doesn't allow
         # us to update the working_dir, if the user changes it.
