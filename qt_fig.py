@@ -118,6 +118,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.geom = None
         (r, g, b) = config.background_color
         self.background = QtGui.QBrush(QtGui.QColor(r, g, b))
+        self.current_background = self.background
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
         self.font_size = {'title':4, 'fingers':3, 'template':2, 'boards':4}
@@ -187,6 +188,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.set_fig_dimensions(template, boards)
         self.woods = woods
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
+        self.current_background = self.background
         self.update()
 
     def print_fig(self, template, boards, bit, spacing, woods):
@@ -194,6 +196,7 @@ class Qt_Plotter(QtGui.QWidget):
         Prints the figure
         '''
         self.woods = woods
+        self.current_background = None
 
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
@@ -214,6 +217,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.woods = woods
         self.set_fig_dimensions(template, boards)
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
+        self.current_background = self.background
 
         s = self.size()
         window_ar = float(s.width()) / s.height()
@@ -627,7 +631,7 @@ class Qt_Plotter(QtGui.QWidget):
             y = self.geom.boards[1].yT()
             label = '%d' % (c.xmax - c.xmin)
             p = (x, y)
-            paint_text(painter, label, p, flags, shift, fill=self.background)
+            paint_text(painter, label, p, flags, shift, fill=self.current_background)
         # ... do the A cuts
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         shift = (0, -8)
@@ -636,5 +640,5 @@ class Qt_Plotter(QtGui.QWidget):
             y = self.geom.boards[0].yB()
             label = '%d' % (c.xmax - c.xmin)
             p = (x, y)
-            paint_text(painter, label, p, flags, shift, fill=self.background)
+            paint_text(painter, label, p, flags, shift, fill=self.current_background)
 
