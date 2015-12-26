@@ -122,9 +122,10 @@ class Equally_Spaced(Base_Spacing):
     def __init__(self, bit, boards, config):
         Base_Spacing.__init__(self, bit, boards, config)
 
-        t = [Spacing_Param(self.dhtot, self.boards[0].width // 4, 0),\
-             Spacing_Param(self.bit.width + 2 * self.dhtot, self.boards[0].width // 2,\
-                           self.bit.width + 2 * self.dhtot),\
+        dh2 = 2 * self.dhtot
+        t = [Spacing_Param(0, self.boards[0].width // 4 + dh2, 0),\
+             Spacing_Param(self.bit.width + dh2, self.boards[0].width // 2 + dh2,\
+                           self.bit.width + dh2),\
              Spacing_Param(None, None, True)]
         self.params = {}
         for i in lrange(len(t)):
@@ -134,7 +135,7 @@ class Equally_Spaced(Base_Spacing):
         '''
         Sets the cuts to make the joint
         '''
-        spacing = self.params['Spacing'].v
+        spacing = self.params['Spacing'].v - 2 * self.dhtot
         width = self.params['Width'].v
         centered = self.params['Centered'].v
 
