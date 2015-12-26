@@ -95,11 +95,11 @@ class Qt_Fig(object):
         '''
         return self.canvas.print_fig(template, boards, bit, spacing, woods)
 
-    def image(self, template, boards, bit, spacing, woods):
+    def image(self, template, boards, bit, spacing, woods, min_width):
         '''
         Prints the figure to an image
         '''
-        return self.canvas.image_fig(template, boards, bit, spacing, woods)
+        return self.canvas.image_fig(template, boards, bit, spacing, woods, min_width)
 
 class Qt_Plotter(QtGui.QWidget):
     '''
@@ -207,7 +207,7 @@ class Qt_Plotter(QtGui.QWidget):
         pdialog.paintRequested.connect(self.preview_requested)
         return pdialog.exec_()
 
-    def image_fig(self, template, boards, bit, spacing, woods):
+    def image_fig(self, template, boards, bit, spacing, woods, min_width):
         '''
         Prints the figure to a QImage object
         '''
@@ -215,7 +215,6 @@ class Qt_Plotter(QtGui.QWidget):
         self.set_fig_dimensions(template, boards)
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
 
-        min_width = 2800
         s = self.size()
         window_ar = float(s.width()) / s.height()
         fig_ar = float(self.fig_width) / self.fig_height

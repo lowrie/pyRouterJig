@@ -56,6 +56,9 @@ bit_angle = 0
 # Specified in increments.
 min_finger_width = 2
 
+# On save image, minimum width of image in pixels.  Does not apply to screenshots.
+min_image_width = 2048
+
 # The folder which contains wood grain image files
 wood_images = '%s'
 
@@ -115,7 +118,3 @@ def read_config():
 
     config = imp.load_source('', filename)
     return (config, msg)
-
-
-
-

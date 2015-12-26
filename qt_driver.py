@@ -979,7 +979,8 @@ class Driver(QtGui.QMainWindow):
         if do_screenshot:
             image = QtGui.QPixmap.grabWindow(self.winId()).toImage()
         else:
-            image = self.fig.image(self.template, self.boards, self.bit, self.spacing, self.woods)
+            image = self.fig.image(self.template, self.boards, self.bit, self.spacing, self.woods,\
+                                   self.config.min_image_width)
 
         s = serialize.serialize(self.bit, self.boards, self.spacing, \
                                 self.config)
