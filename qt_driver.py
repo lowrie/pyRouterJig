@@ -174,6 +174,12 @@ class Driver(QtGui.QMainWindow):
         print_action.triggered.connect(self._on_print)
         file_menu.addAction(print_action)
 
+        fullscreen_action = QtGui.QAction('&Fullscreen', self)
+        fullscreen_action.setShortcut('Ctrl+F')
+        fullscreen_action.setStatusTip('Toggle full-screen mode')
+        fullscreen_action.triggered.connect(self._on_fullscreen)
+        file_menu.addAction(fullscreen_action)
+
         exit_action = QtGui.QAction('&Quit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit pyRouterJig')
@@ -1387,6 +1393,18 @@ class Driver(QtGui.QMainWindow):
             print('_on_flash_status_off')
         self.statusbar.showMessage('')
 
+    @QtCore.pyqtSlot()
+    def _on_fullscreen(self):
+        '''Handles toggling full-screen mode'''
+        if self.config.debug:
+            print('_on_fullscreen')
+        if self.windowState() & QtCore.Qt.WindowFullScreen:
+            self.showNormal()
+            self.status_message('Exited full-screen mode.')
+        else:
+            self.showFullScreen()
+            self.status_message('Entered full-screen mode.')
+
     def status_message(self, msg, flash_len_ms=None):
         '''Flashes a status message to the status bar'''
         self.statusbar.showMessage(msg)
@@ -1407,15 +1425,6 @@ class Driver(QtGui.QMainWindow):
         '''
         Handles key press events
         '''
-        if event.key() == QtCore.Qt.Key_F:
-            if self.windowState() & QtCore.Qt.WindowFullScreen:
-                self.showNormal()
-                self.status_message('Exit full-screen mode.  Press F to enter full-screen mode.')
-            else:
-                self.showFullScreen()
-                self.status_message('Full-screen mode.  Press F key again to exit.')
-            return
-
         # return if not edit spacing
         if self.tabs_spacing.currentIndex() != self.edit_spacing_id:
             event.ignore()
