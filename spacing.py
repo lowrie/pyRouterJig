@@ -105,13 +105,12 @@ class Equally_Spaced(Base_Spacing):
 
     Parameters that control the spacing are:
 
-    a_spacing: Extra spacing, beyond the bit width added between the cuts
-               of the A-board.  Default is 0.  The reported a_spacing has the
-               bit width added on to this value.
+    spacing: Extra spacing, beyond the bit width added between the cuts
+             of the board.  Default is 0.
 
     width: Width of fingers.  Default is the bit width.
 
-    centered: If true, then a finger is centered on the board width.  If Always
+    centered: If true, then a finger is centered on the board width.  Always
     true for dovetail bits.  Default is true.
     '''
     keys = ['Spacing', 'Width', 'Centered']

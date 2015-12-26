@@ -318,7 +318,7 @@ class Driver(QtGui.QMainWindow):
         self.cb_wood[2].activated.connect(self._on_wood2)
         self.cb_wood[3].activated.connect(self._on_wood3)
 
-        # Disable M-boards, for now
+        # Disable double* boards, for now
         self.le_boardm[0].setEnabled(False)
         self.le_boardm[1].setEnabled(False)
         self.le_boardm[0].setStyleSheet("color: gray;")
@@ -626,14 +626,14 @@ class Driver(QtGui.QMainWindow):
 
         disable = ''
         if self.spacing_index == self.edit_spacing_id:
-            disable = '  <b>CANNOT CHANGE IF IN EDITOR MODE.</b>'
+            disable = '  <b>Cannot change if in editor mode.</b>'
 
         disable_double = disable
         if not self.boards[2].active:
-            disable_double = '  <b>CANNOT CHANGE UNLESS DOUBLE BOARD IS NOT NONE.</b>'
+            disable_double = '  <b>Cannot change unless "Double Board" is not none.</b>'
         disable_dd = disable
         if not self.boards[3].active:
-            disable_dd = '  <b>CANNOT CHANGE UNLESS DOUBLE-DOUBLE BOARD IS NOT NONE.</b>'
+            disable_dd = '  <b>cannot change unless "Double-Double Board" is not none.</b>'
 
         self.le_board_width_label.setToolTip(self.doc.board_width() + disable)
         self.le_board_width.setToolTip(self.doc.board_width() + disable)
