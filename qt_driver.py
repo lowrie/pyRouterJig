@@ -1396,6 +1396,15 @@ class Driver(QtGui.QMainWindow):
         '''
         Handles key press events
         '''
+        if event.key() == QtCore.Qt.Key_F:
+            if self.windowState() & QtCore.Qt.WindowFullScreen:
+                self.showNormal()
+                self.status_message('Exit full-screen mode.  Press F to enter full-screen mode.')
+            else:
+                self.showFullScreen()
+                self.status_message('Full-screen mode.  Press F key again to exit.')
+            return
+
         # return if not edit spacing
         if self.tabs_spacing.currentIndex() != self.edit_spacing_id:
             event.ignore()
