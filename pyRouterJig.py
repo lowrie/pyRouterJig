@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 ###########################################################################
 #
 # Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
@@ -17,7 +18,6 @@
 # pyRouterJig; see the file LICENSE. If not, see <http://www.gnu.org/licenses/>.
 #
 ###########################################################################
-#!/usr/bin/env python
 
 import qt_driver
 qt_driver.run()

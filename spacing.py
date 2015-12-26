@@ -31,6 +31,10 @@ from operator import attrgetter
 import router
 import utils
 
+def dump_cuts(cuts):
+    for c in cuts:
+        print(c.xmin, c.xmax)
+
 class Spacing_Exception(Exception):
     '''
     Exception handler for spacings
@@ -160,16 +164,17 @@ class Equally_Spaced(Base_Spacing):
         self.cuts.append(router.Cut(left, right))
         # do left side of board
         i = left - neck_width
+        min_interior = utils.my_round(self.dhtot + self.bit.offset)
         while i > 0:
             li = max(i - width, 0)
-            if i - li > self.config.min_finger_width:
+            if i - li > self.config.min_finger_width and i > min_interior:
                 self.cuts.append(router.Cut(li, i))
             i = li - neck_width
         # do right side of board
         i = right + neck_width
         while i < board_width:
             ri = min(i + width, board_width)
-            if ri - i > self.config.min_finger_width:
+            if ri - i > self.config.min_finger_width and board_width - i  > min_interior:
                 self.cuts.append(router.Cut(i, ri))
             i = ri + neck_width
         # If we have only one cut the entire width of the board, then
@@ -182,6 +187,9 @@ class Equally_Spaced(Base_Spacing):
                                     ' bit width specified.')
         # sort the cuts in increasing x
         self.cuts = sorted(self.cuts, key=attrgetter('xmin'))
+        if self.config.debug:
+            print('e-s cuts:')
+            dump_cuts(self.cuts)
 
 class Variable_Spaced(Base_Spacing):
     '''
