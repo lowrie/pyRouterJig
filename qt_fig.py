@@ -340,6 +340,43 @@ class Qt_Plotter(QtGui.QWidget):
         # Draw the template bounding box
         painter.drawRect(r.xL(), r.yB(), r.width, r.height)
 
+    def draw_alignment(self, painter):
+        '''
+        Draws the alignment lines on 2 templates
+        '''
+        board_T = self.geom.board_T
+        board_TDD = self.geom.board_TDD
+        boards = self.geom.boards
+
+        # accumulate and sort all passes
+        passes = []
+        for b in boards:
+            for cuts in [b.top_cuts, b.bottom_cuts]:
+                if cuts is not None:
+                    for c in cuts:
+                        passes.extend(c.passes)
+        passes = sorted(passes)
+
+        # find the biggest gap in the passes
+        iMax = -1
+        pMax = -1
+        for i in lrange(1, len(passes)):
+            d = passes[i] - passes[i-1]
+            if d > pMax:
+                pMax = d
+                iMax = i
+
+        # draw the alignment lines on both templates
+        x = board_T.xL() + passes[iMax] - pMax // 2
+        painter.setPen(QtCore.Qt.DotLine)
+        label = 'ALIGN'
+        flags = QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter
+        for b in [board_T, board_TDD]:
+            y1 = b.yB()
+            y2 = b.yT()
+            painter.drawLine(x, y1, x, y2)
+            paint_text(painter, label, (x, (y1 + y2) // 2), flags, (0,0), -90)
+
     def draw_template(self, painter):
         '''
         Draws the Incra templates
@@ -381,6 +418,7 @@ class Qt_Plotter(QtGui.QWidget):
             self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(), \
                              rect_TDD.yB(), flagsL)
             self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2, flagsR)
+            self.draw_alignment(painter)
             i += 2
         # Do double passes
         if boards[2].active:
