@@ -1151,7 +1151,7 @@ class Driver(QtGui.QMainWindow):
         self.update_tooltips()
         self.draw()
 
-    def _on_wood(self, index):
+    def _on_wood(self, index, reinit=False):
         '''Handles all changes in wood'''
         if self.config.debug:
             print('_on_wood', index)
@@ -1159,7 +1159,8 @@ class Driver(QtGui.QMainWindow):
         label = str(self.cb_wood_label[index].text())
         if s != 'NONE':
             self.boards[index].set_wood(s)
-        self.reinit_spacing()
+        if reinit:
+            self.reinit_spacing()
         self.draw()
         self.file_saved = False
         msg = 'Changed %s to %s' % (label, s)
@@ -1185,7 +1186,10 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_wood2')
         s = str(self.cb_wood[2].currentText())
+        reinit = False
         if s == 'NONE':
+            if self.boards[2].active:
+                reinit = True
             i = self.cb_wood[3].findText('NONE')
             self.cb_wood[3].setCurrentIndex(i)
             self.cb_wood[3].setEnabled(False)
@@ -1196,11 +1200,13 @@ class Driver(QtGui.QMainWindow):
             self.le_boardm[0].setStyleSheet("color: gray;")
             self.le_boardm[1].setStyleSheet("color: gray;")
         else:
+            if not self.boards[2].active:
+                reinit = True
             self.cb_wood[3].setEnabled(True)
             self.boards[2].set_active(True)
             self.le_boardm[0].setEnabled(True)
             self.le_boardm[0].setStyleSheet("color: black;")
-        self._on_wood(2)
+        self._on_wood(2, reinit)
 
     @QtCore.pyqtSlot()
     def _on_wood3(self):
@@ -1208,15 +1214,20 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_wood3')
         s = str(self.cb_wood[3].currentText())
+        reinit = False
         if s == 'NONE':
+            if self.boards[3].active:
+                reinit = True
             self.boards[3].set_active(False)
             self.le_boardm[1].setEnabled(False)
             self.le_boardm[1].setStyleSheet("color: gray;")
         else:
+            if not self.boards[3].active:
+                reinit = True
             self.boards[3].set_active(True)
             self.le_boardm[1].setEnabled(True)
             self.le_boardm[1].setStyleSheet("color: black;")
-        self._on_wood(3)
+        self._on_wood(3, reinit)
 
     def _on_boardm(self, i):
         '''Handles changes board-M height changes'''
