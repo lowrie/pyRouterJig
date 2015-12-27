@@ -110,7 +110,7 @@ class Driver(QtGui.QMainWindow):
         self.working_dir = os.path.expanduser('~')
 
         # We form the screenshot and save filename from this index
-        self.screenshot_index = 0
+        self.screenshot_index = None
 
         # Initialize keyboard modifiers
         self.control_key = False
@@ -952,10 +952,16 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_save')
 
+        prefix = 'pyrouterjig_'
+        postfix = '.png'
+        if self.screenshot_index is None:
+            self.screenshot_index = utils.get_file_index(self.working_dir, prefix, postfix)
+
+        fname = prefix + `self.screenshot_index` + postfix 
+
         # Get the file name.  The default name is indexed on the number
         # of times this function is called.
-        defname = os.path.join(self.working_dir,
-                               'pyrouterjig_%d.png' % (self.screenshot_index))
+        defname = os.path.join(self.working_dir, fname)
 
         # This is the simple approach to set the filename, but doesn't allow
         # us to update the working_dir, if the user changes it.

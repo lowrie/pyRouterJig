@@ -267,3 +267,25 @@ def create_wood_dict(wood_images):
         path = os.path.abspath(f)
         d[name] = path
     return d
+
+def get_file_index(path, prefix, postfix):
+    '''
+    Finds the next index available for files that match the signature
+
+      path/prefixINDEXpostfix
+
+    where INDEX is largest integer found, plus 1.  If no files are found, zero is returned.
+    '''
+    index = -1
+    globber = os.path.join(path, prefix + '*' + postfix)
+    files = glob.glob(globber)
+    npre = len(prefix)
+    npost = len(postfix)
+    for f in files:
+        name = os.path.basename(f)
+        name = name[:-npost]
+        i = int(name[npre:])
+        if i > index:
+            index = i
+    index += 1
+    return index
