@@ -975,7 +975,11 @@ class Driver(QtGui.QMainWindow):
         filename = None
         if dialog.exec_():
             filenames = dialog.selectedFiles()
-            self.working_dir = str(dialog.directory().path())
+            d = str(dialog.directory().path())
+            # force recomputation of index, next time around, if path changed
+            if d != self.working_dir:
+                self.screenshot_index = None
+            self.working_dir = d
             filename = str(filenames[0]).strip()
         if filename is None:
             self.status_message('File not saved')
@@ -994,7 +998,8 @@ class Driver(QtGui.QMainWindow):
         r = image.save(filename, 'png')
         if r:
             self.status_message('Saved to file %s' % filename)
-            self.screenshot_index += 1
+            if self.screenshot_index is not None:
+                self.screenshot_index += 1
             self.file_saved = True
         else:
             self.status_message('Unable to save to file %s' % filename)
