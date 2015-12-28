@@ -24,13 +24,21 @@ user configuration file
 '''
 
 import os, imp
+import utils
 
 _CONFIG_INIT ='''
 ######################################################################
 # Options for pyRouterJig.  Be careful editing this file.  Any errors
 # that occur will not be friendly.
 #
-# This file is a python script.
+# This file is a python script, so for example, '#' as the first
+# character on a line is a comment.
+######################################################################
+# Do not change the version, because this tells pyRouterJig which
+# version initially created this file.
+version = '%s'
+######################################################################
+# Options below may be changed
 ######################################################################
 
 # If True, use metric units.  If False, use English units.
@@ -108,7 +116,7 @@ def read_config():
     if not os.path.exists(filename):
         # create the config file
         wood_images = os.path.join(os.path.expanduser('~'), 'wood_images')
-        content = _CONFIG_INIT % (wood_images)
+        content = _CONFIG_INIT % (utils.VERSION, wood_images)
         fd = open(filename, 'w')
         fd.write(content)
         fd.close()

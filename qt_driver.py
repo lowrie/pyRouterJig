@@ -962,31 +962,34 @@ class Driver(QtGui.QMainWindow):
 
         fname = prefix + `self.screenshot_index` + postfix 
 
-        # Get the file name.  The default name is indexed on the number
-        # of times this function is called.
+        # Get the file name.  The default name is indexed on the number of
+        # times this function is called.  If a screenshot, don't prompt for
+        # the filename and use the default name
         defname = os.path.join(self.working_dir, fname)
-
-        # This is the simple approach to set the filename, but doesn't allow
-        # us to update the working_dir, if the user changes it.
-        #filename = QtGui.QFileDialog.getSaveFileName(self, 'Save file', \
-        #                                             defname, 'Portable Network Graphics (*.png)')
-        # ... so here is now we do it:
-        dialog = QtGui.QFileDialog(self, 'Save file', defname, \
-                                   'Portable Network Graphics (*.png)')
-        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
-        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
-        filename = None
-        if dialog.exec_():
-            filenames = dialog.selectedFiles()
-            d = str(dialog.directory().path())
-            # force recomputation of index, next time around, if path changed
-            if d != self.working_dir:
-                self.screenshot_index = None
-            self.working_dir = d
-            filename = str(filenames[0]).strip()
-        if filename is None:
-            self.status_message('File not saved')
-            return
+        if do_screenshot:
+            filename = defname
+        else:
+            # This is the simple approach to set the filename, but doesn't allow
+            # us to update the working_dir, if the user changes it.
+            #filename = QtGui.QFileDialog.getSaveFileName(self, 'Save file', \
+            #                                             defname, 'Portable Network Graphics (*.png)')
+            # ... so here is now we do it:
+            dialog = QtGui.QFileDialog(self, 'Save file', defname, \
+                                       'Portable Network Graphics (*.png)')
+            dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+            dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+            filename = None
+            if dialog.exec_():
+                filenames = dialog.selectedFiles()
+                d = str(dialog.directory().path())
+                # force recomputation of index, next time around, if path changed
+                if d != self.working_dir:
+                    self.screenshot_index = None
+                self.working_dir = d
+                filename = str(filenames[0]).strip()
+            if filename is None:
+                self.status_message('File not saved')
+                return
 
         # Save the file with metadata
         if do_screenshot:
