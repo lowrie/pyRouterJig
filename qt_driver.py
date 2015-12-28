@@ -636,14 +636,14 @@ class Driver(QtGui.QMainWindow):
 
         disable = ''
         if self.spacing_index == self.edit_spacing_id:
-            disable = '  <b>Cannot change if in editor mode.</b>'
+            disable = '  <b>Cannot change if in Editor mode.</b>'
 
         disable_double = disable
         if not self.boards[2].active:
-            disable_double = '  <b>Cannot change unless "Double Board" is not none.</b>'
+            disable_double = '  <b>Cannot change unless "Double Board" is not NONE.</b>'
         disable_dd = disable
         if not self.boards[3].active:
-            disable_dd = '  <b>cannot change unless "Double-Double Board" is not none.</b>'
+            disable_dd = '  <b>Cannot change unless "Double-Double Board" is not NONE.</b>'
 
         self.le_board_width_label.setToolTip(self.doc.board_width() + disable)
         self.le_board_width.setToolTip(self.doc.board_width() + disable)
