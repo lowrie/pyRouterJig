@@ -68,12 +68,12 @@ min_finger_width = 2
 min_image_width = 2048
 
 # The folder which contains wood grain image files
-wood_images = '%s'
+wood_images = r'%s'
 
 # This is either a wood name (the file prefix of an image file in wood_images),
 # or the following Qt fill patterns:
 # DiagCrossPattern, BDiagPattern, FDiagPattern, Dense1Pattern, Dense5Pattern
-default_wood = 'DiagCrossPattern'
+default_wood = r'DiagCrossPattern'
 
 # Set debug to True to turn on debugging.  This will print a lot of output to
 # stdout during a pyRouterJig session.  This option is typically only useful
