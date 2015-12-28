@@ -51,10 +51,10 @@ class Driver_Test(unittest.TestCase):
         self.assertEqual(str(self.d.le_bit_width.text()), '1/2')
         self.assertEqual(str(self.d.le_bit_depth.text()), '3/4')
         self.assertEqual(str(self.d.le_bit_angle.text()), '0')
-    def screenshot(self):
+    def screenshot(self, do_screenshot=True):
         QTest.qWaitForWindowShown(self.d)
         QTest.qWait(100)
-        self.d._on_screenshot()
+        self.d._on_save(do_screenshot)
     def test_screenshots(self):
         # default
         self.d._on_fullscreen()
@@ -69,6 +69,18 @@ class Driver_Test(unittest.TestCase):
         QTest.keyClicks(self.d.le_bit_angle, '0')
         self.d._on_bit_angle()
         self.assertEqual(str(self.d.le_bit_angle.text()), '0')
+        # Wood selection
+        for w in [0,1]:
+            i = self.d.cb_wood[w].findText('hard-maple')
+            self.assertTrue(i >= 0)
+            self.d.cb_wood[w].setCurrentIndex(i)
+            self.d._on_wood(w)
+        self.screenshot()
+        for w in [0,1]:
+            i = self.d.cb_wood[w].findText('DiagCrossPattern')
+            self.assertTrue(i >= 0)
+            self.d.cb_wood[w].setCurrentIndex(i)
+            self.d._on_wood(w)
         # spacing slider
         self.d.es_slider0.setValue(17)
         self.screenshot()
@@ -125,6 +137,8 @@ class Driver_Test(unittest.TestCase):
         self.d.cb_wood[3].setCurrentIndex(i)
         self.d._on_wood3()
         self.screenshot()
+        # save option
+        self.screenshot(False)
 
 if __name__ == '__main__':
     unittest.main()

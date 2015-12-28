@@ -329,7 +329,10 @@ class Driver(QtGui.QMainWindow):
         self.le_boardm[1].setEnabled(False)
         self.le_boardm[0].setStyleSheet("color: gray;")
         self.le_boardm[1].setStyleSheet("color: gray;")
+        self.le_boardm_label[0].setStyleSheet("color: gray;")
+        self.le_boardm_label[1].setStyleSheet("color: gray;")
         self.cb_wood[3].setEnabled(False)
+        self.cb_wood_label[3].setStyleSheet("color: gray;")
 
         # Equal spacing widgets
 
