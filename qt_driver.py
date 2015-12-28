@@ -1495,6 +1495,7 @@ class Driver(QtGui.QMainWindow):
                 msg += s
             else:
                 msg += '%x' % event.key()
+            event.ignore()
         if msg is not None:
             self.status_message(msg)
 
@@ -1514,6 +1515,7 @@ class Driver(QtGui.QMainWindow):
         elif event.key() == QtCore.Qt.Key_Alt:
             self.alt_key = False
         else:
+            event.ignore()
             if self.config.debug:
                 print('you released %x' % event.key())
 

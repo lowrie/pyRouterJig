@@ -277,11 +277,13 @@ class Board(My_Rectangle):
         Sets the height from the string s, following requirements from units.string_to_increments().
         This sets the attribute dheight, which is the increment above the bit depth.
         '''
-        msg = 'Board height increment is %s\n' % s
+        # TODO: This is called "thickness" because we set this only for
+        # double* boards, for which we call this the thickness.
+        msg = 'Board thickness is %s\n' % s
         if self.units.metric:
-            msg += 'Set to a postive integer value, such as 5'
+            msg += 'Set to a postive integer value, such as 4'
         else:
-            msg += 'Set to a postive value, such as 1/2'
+            msg += 'Set to a postive value, such as 1/8'
         try:
             t = self.units.string_to_increments(s)
         except ValueError as e:

@@ -32,6 +32,7 @@ from PyQt4 import QtCore
 from PyQt4.QtTest import QTest
 
 app = QtGui.QApplication(sys.argv)
+app.processEvents()
 
 class Driver_Test(unittest.TestCase):
     '''
@@ -50,16 +51,80 @@ class Driver_Test(unittest.TestCase):
         self.assertEqual(str(self.d.le_bit_width.text()), '1/2')
         self.assertEqual(str(self.d.le_bit_depth.text()), '3/4')
         self.assertEqual(str(self.d.le_bit_angle.text()), '0')
-    def test_screenshots(self):
-        self.d._on_screenshot()
-        self.d.le_bit_width.clear()
-        QTest.keyClicks(self.d.le_bit_width, "1/4")
-        QTest.keyPress(self.d.le_bit_width, QtCore.Qt.Key_Tab)
-        self.d._on_bit_width()
+    def screenshot(self):
         QTest.qWaitForWindowShown(self.d)
-        QTest.qWait(1000)
-        self.assertEqual(str(self.d.le_bit_width.text()), '1/4')
+        QTest.qWait(100)
         self.d._on_screenshot()
+    def test_screenshots(self):
+        # default
+        self.d._on_fullscreen()
+        self.screenshot()
+        # dovetail
+        self.d.le_bit_angle.clear()
+        QTest.keyClicks(self.d.le_bit_angle, '7')
+        self.d._on_bit_angle()
+        self.assertEqual(str(self.d.le_bit_angle.text()), '7')
+        self.screenshot()
+        self.d.le_bit_angle.clear()
+        QTest.keyClicks(self.d.le_bit_angle, '0')
+        self.d._on_bit_angle()
+        self.assertEqual(str(self.d.le_bit_angle.text()), '0')
+        # spacing slider
+        self.d.es_slider0.setValue(17)
+        self.screenshot()
+        self.d.es_slider0.setValue(0)
+        # width slider
+        self.d.es_slider1.setValue(27)
+        self.screenshot()
+        self.d.es_slider1.setValue(16)
+        # centered checkbox
+        self.d.le_board_width.clear()
+        QTest.keyClicks(self.d.le_board_width, '7')
+        self.d._on_board_width()
+        self.assertEqual(str(self.d.le_board_width.text()), '7')
+        # mouseClick does work here:
+#        QTest.mouseClick(self.d.cb_es_centered, QtCore.Qt.LeftButton)
+#        self.d._on_cb_es_centered()
+        self.d.cb_es_centered.setChecked(False)
+        self.assertFalse(self.d.cb_es_centered.isChecked())
+        self.screenshot()
+        self.d.le_board_width.clear()
+        QTest.keyClicks(self.d.le_board_width, '7 1/2')
+        self.d._on_board_width()
+        self.assertEqual(str(self.d.le_board_width.text()), '7 1/2')
+        # ... but not here
+#        QTest.mouseClick(self.d.cb_es_centered, QtCore.Qt.LeftButton)
+#        self.d._on_cb_es_centered()
+        self.d.cb_es_centered.setChecked(True)
+        self.assertTrue(self.d.cb_es_centered.isChecked())
+        # variable spacing
+        self.d.tabs_spacing.setCurrentIndex(self.d.var_spacing_id)
+        self.screenshot()
+        # editor
+        self.d.tabs_spacing.setCurrentIndex(self.d.edit_spacing_id)
+        QTest.keyClick(self.d.fig.canvas, QtCore.Qt.Key_Right)
+        QTest.keyClick(self.d.fig.canvas, QtCore.Qt.Key_Return)
+        QTest.keyClick(self.d.fig.canvas, QtCore.Qt.Key_Right)
+        QTest.keyClick(self.d.fig.canvas, QtCore.Qt.Key_Return)
+        self.screenshot()
+        # double
+        self.d.tabs_spacing.setCurrentIndex(self.d.equal_spacing_id)
+        for w in [0,1]:
+            i = self.d.cb_wood[w].findText('hard-maple')
+            self.assertTrue(i >= 0)
+            self.d.cb_wood[w].setCurrentIndex(i)
+            self.d._on_wood(w)
+        i = self.d.cb_wood[2].findText('black-walnut')
+        self.assertTrue(i >= 0)
+        self.d.cb_wood[2].setCurrentIndex(i)
+        self.d._on_wood2()
+        self.screenshot()
+        # double-double
+        i = self.d.cb_wood[3].findText('mahogany')
+        self.assertTrue(i >= 0)
+        self.d.cb_wood[3].setCurrentIndex(i)
+        self.d._on_wood3()
+        self.screenshot()
 
 if __name__ == '__main__':
     unittest.main()
