@@ -318,9 +318,9 @@ class Edit_Spaced(Base_Spacing):
         xmax = self.boards[0].width
         neck_width = utils.my_round(self.bit.neck)
         if f > 0:
-            xmin = self.cuts[f - 1].xmax + neck_width + self.dhtot
+            xmin = self.cuts[f - 1].xmax + neck_width
         if f < len(self.cuts) - 1:
-            xmax = self.cuts[f + 1].xmin - neck_width - self.dhtot
+            xmax = self.cuts[f + 1].xmin - neck_width
         return (xmin, xmax)
 
     def undo(self):
