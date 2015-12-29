@@ -564,6 +564,8 @@ class Edit_Spaced(Base_Spacing):
         c = self.cuts[0:f]
         c.extend(self.cuts[f + 1:])
         self.cuts = c
+        if self.cursor_cut >= f and self.cursor_cut > 0:
+            self.cursor_cut -= 1
         return True
 
     def cut_delete_active(self):
@@ -580,7 +582,6 @@ class Edit_Spaced(Base_Spacing):
                 failed = True
                 break
             deleted.append(f)
-        self.cursor_cut = 0
         self.active_cuts = [self.cursor_cut]
         if len(deleted) > 0:
             msg = 'Deleted cut indices ' + `deleted`
