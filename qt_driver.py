@@ -38,18 +38,25 @@ import serialize
 from PyQt4 import QtCore, QtGui
 #from PySide import QtCore, QtGui
 
+def set_line_style(line):
+    '''Sets the style for create_vline() and create_hline()'''
+    line.setFrameShadow(QtGui.QFrame.Raised)
+    line.setLineWidth(1)
+    line.setMidLineWidth(1)
+    line.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+
 def create_vline():
     '''Creates a vertical line'''
     vline = QtGui.QFrame()
     vline.setFrameStyle(QtGui.QFrame.VLine)
-    vline.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+    set_line_style(vline)
     return vline
 
 def create_hline():
     '''Creates a horizontal line'''
     hline = QtGui.QFrame()
     hline.setFrameStyle(QtGui.QFrame.HLine)
-    hline.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+    set_line_style(hline)
     return hline
 
 class Driver(QtGui.QMainWindow):
