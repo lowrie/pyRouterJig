@@ -802,7 +802,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to spacing algorithm'''
         if self.config.debug:
             print('_on_tabs_spacing')
-        if self.spacing_index == self.edit_spacing and index != self.edit_spacing and \
+        if self.spacing_index == self.edit_spacing_id and index != self.edit_spacing_id and \
                     self.spacing.changes_made():
             msg = 'You are exiting the Editor, which will discard'\
                   ' any changes made in the Editor.'\
