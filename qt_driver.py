@@ -1571,6 +1571,7 @@ def run():
     app = QtGui.QApplication(sys.argv)
 #    app.setStyle('plastique')
 #    app.setStyle('windows')
+    app.setStyle('macintosh')
     driver = Driver()
     driver.show()
     driver.raise_()
