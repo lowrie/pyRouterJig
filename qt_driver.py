@@ -480,7 +480,7 @@ class Driver(QtGui.QMainWindow):
         # this grid contains all the lower-left input stuff
         grid = QtGui.QGridLayout()
 
-        grid.addWidget(create_hline(), 0, 0, 1, 9)
+        grid.addWidget(create_hline(), 0, 0, 2, 9, QtCore.Qt.AlignTop)
         grid.addWidget(create_vline(), 0, 0, 9, 1)
 
         # Add the board width label, board width input line edit,
@@ -505,7 +505,7 @@ class Driver(QtGui.QMainWindow):
         grid.addWidget(self.le_bit_angle, 2, 7)
         grid.addWidget(create_vline(), 0, 8, 9, 1)
 
-        grid.addWidget(create_hline(), 3, 0, 1, 9)
+        grid.addWidget(create_hline(), 3, 0, 2, 9, QtCore.Qt.AlignTop)
 
         grid.setRowStretch(2, 10)
 
@@ -525,7 +525,7 @@ class Driver(QtGui.QMainWindow):
         grid.addWidget(self.le_boardm[0], 7, 5)
         grid.addWidget(self.le_boardm[1], 7, 7)
 
-        grid.addWidget(create_hline(), 8, 0, 1, 9)
+        grid.addWidget(create_hline(), 8, 0, 2, 9, QtCore.Qt.AlignTop)
 
         hbox.addLayout(grid)
 
@@ -557,8 +557,8 @@ class Driver(QtGui.QMainWindow):
         # Create the layout of the edit spacing controls
         hbox_edit = QtGui.QHBoxLayout()
         grid_edit = QtGui.QGridLayout()
-        grid_edit.addWidget(create_hline(), 0, 0, 1, 16)
-        grid_edit.addWidget(create_hline(), 2, 0, 1, 16)
+        grid_edit.addWidget(create_hline(), 0, 0, 2, 16, QtCore.Qt.AlignTop)
+        grid_edit.addWidget(create_hline(), 2, 0, 2, 16, QtCore.Qt.AlignTop)
         grid_edit.addWidget(create_vline(), 0, 0, 6, 1)
         label_active_cut_select = QtGui.QLabel('Active Cut Select')
         label_active_cut_select.setToolTip('Tools that select the active cuts')
@@ -587,7 +587,7 @@ class Driver(QtGui.QMainWindow):
         grid_edit.addWidget(edit_btn_add, 3, 14)
         grid_edit.addWidget(edit_btn_del, 4, 14)
         grid_edit.addWidget(create_vline(), 0, 15, 6, 1)
-        grid_edit.addWidget(create_hline(), 5, 0, 1, 16)
+        grid_edit.addWidget(create_hline(), 5, 0, 2, 16, QtCore.Qt.AlignTop)
         grid_edit.setSpacing(5)
 
         hbox_edit.addLayout(grid_edit)
