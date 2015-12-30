@@ -69,8 +69,13 @@ class Driver(QtGui.QMainWindow):
         self.except_handled = False
 
         # Read the config file.  We wait until the end of this init to print
-        # the status message, because we need it to be created first.
-        (self.config, msg) = config_file.read_config()
+        # the status message, because we need the statusbar to be created first.
+        (self.config, msg, msg_level) = config_file.read_config(70)
+
+        # Ensure config file is up-to-date
+        if msg_level > 0:
+            QtGui.QMessageBox.warning(self, 'Warning', msg)
+            msg = ''
 
         # Default is English units, 1/32" resolution
         self.units = utils.Units(self.config.increments_per_inch, self.config.metric)
@@ -89,7 +94,8 @@ class Driver(QtGui.QMainWindow):
         self.boards[3].set_active(False)
         self.boards[2].set_height(self.bit, self.m_thickness[0])
         self.boards[3].set_height(self.bit, self.m_thickness[1])
-        self.template = router.Incra_Template(self.units, self.boards)
+        self.do_caul = False # if true, do caul template
+        self.template = router.Incra_Template(self.units, self.boards, self.do_caul)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.boards, self.config)
         self.equal_spacing.set_cuts()
         self.var_spacing = spacing.Variable_Spaced(self.bit, self.boards, self.config)
@@ -213,6 +219,10 @@ class Driver(QtGui.QMainWindow):
         fullscreen_action.setStatusTip('Toggle full-screen mode')
         fullscreen_action.triggered.connect(self._on_fullscreen)
         view_menu.addAction(fullscreen_action)
+        caul_action = QtGui.QAction('Caul Template', self, checkable=True)
+        caul_action.setStatusTip('Toggle caul template')
+        caul_action.triggered.connect(self._on_caul)
+        view_menu.addAction(caul_action)
 
         # Add the help menu
 
@@ -704,7 +714,7 @@ class Driver(QtGui.QMainWindow):
         '''(Re)draws the template and boards'''
         if self.config.debug:
             print('draw')
-        self.template = router.Incra_Template(self.units, self.boards)
+        self.template = router.Incra_Template(self.units, self.boards, self.do_caul)
         self.fig.draw(self.template, self.boards, self.bit, self.spacing, self.woods)
 
     def reinit_spacing(self):
@@ -1069,7 +1079,7 @@ class Driver(QtGui.QMainWindow):
 
         # Reset the dependent data
         self.units = self.bit.units
-        self.template = router.Incra_Template(self.units, self.boards)
+        self.template = router.Incra_Template(self.units, self.boards, self.do_caul)
 
         # ... set the wood selection for each board.  If the wood does not
         # exist, set to a wood we know exists.  This can happen if the wood
@@ -1438,6 +1448,19 @@ class Driver(QtGui.QMainWindow):
         else:
             self.showFullScreen()
             self.status_message('Entered full-screen mode.')
+
+    @QtCore.pyqtSlot()
+    def _on_caul(self):
+        '''Handles toggling showing caul template'''
+        if self.config.debug:
+            print('_on_caul')
+        if self.do_caul:
+            self.do_caul = False
+            self.status_message('Turned off caul template.')
+        else:
+            self.do_caul = True
+            self.status_message('Turned on caul template.')
+        self.draw()
 
     def status_message(self, msg, flash_len_ms=None):
         '''Flashes a status message to the status bar'''

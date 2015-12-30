@@ -23,7 +23,7 @@ This module contains utilities for creating and reading the
 user configuration file
 '''
 
-import os, imp
+import os, imp, shutil
 import utils
 
 _CONFIG_INIT ='''
@@ -64,16 +64,21 @@ bit_angle = 0
 # Specified in increments.
 min_finger_width = 2
 
+# Trim this amount from each side of the Top- and Bottom-board fingers to form the optional clamping cauls.
+# Specified in increments.
+caul_trim = 1
+
 # On save image, minimum width of image in pixels.  Does not apply to screenshots.
 min_image_width = 2048
 
-# The folder which contains wood grain image files
+# The folder which contains wood grain image files.  Prefix the string with the character-r to prevent
+# python from interpreting the character-\ (used in Windows file paths) as an escape.
 wood_images = r'%s'
 
 # This is either a wood name (the file prefix of an image file in wood_images),
 # or the following Qt fill patterns:
 # DiagCrossPattern, BDiagPattern, FDiagPattern, Dense1Pattern, Dense5Pattern
-default_wood = r'DiagCrossPattern'
+default_wood = 'DiagCrossPattern'
 
 # Set debug to True to turn on debugging.  This will print a lot of output to
 # stdout during a pyRouterJig session.  This option is typically only useful
@@ -105,24 +110,46 @@ separation = top_margin
 background_color = (240, 231, 201)
 '''
 
-def read_config():
+def version_number(version):
+    '''Splits the string version into its version number'''
+    vs = version.split('.')
+    return int(vs[0]) * 100 + int(vs[1]) * 10 + int(vs[2])
+
+def create_config(filename):
     '''
-    Reads the configuration file.  If it does not exist, it's created
-    
+    Creates the configuration file.
+    '''
+    wood_images = os.path.join(os.path.expanduser('~'), 'wood_images')
+    content = _CONFIG_INIT % (utils.VERSION, wood_images)
+    fd = open(filename, 'w')
+    fd.write(content)
+    fd.close()
+
+def read_config(min_version_number):
+    '''
+    Reads the configuration file.  If it does not exist, it's created.
     '''
     global _CONFIG_INIT
     filename = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
 
     if not os.path.exists(filename):
         # create the config file
-        wood_images = os.path.join(os.path.expanduser('~'), 'wood_images')
-        content = _CONFIG_INIT % (utils.VERSION, wood_images)
-        fd = open(filename, 'w')
-        fd.write(content)
-        fd.close()
+        create_config(filename)
         msg = 'Configuration file %s created' % filename
     else:
         msg = 'Read configuration file %s' % filename
 
     config = imp.load_source('', filename)
-    return (config, msg)
+    vnum = version_number(config.version)
+    msg_level = 0
+    if vnum < min_version_number:
+        msg_level = 1
+        backup = filename + config.version
+        shutil.move(filename, backup)
+        create_config(filename)
+        config = imp.load_source('', filename)
+        msg = 'Your configuration file %s was outdated and has been moved to %s.  A new configuration file'\
+              ' has been created.  Any changes you made to the old file will need to be migrated to the new file.'\
+              ' Unfortunately, we are unable to automatically migrate your old settings.' % (filename, backup)
+
+    return (config, msg, msg_level)

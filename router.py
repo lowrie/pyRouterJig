@@ -48,10 +48,12 @@ class Incra_Template(object):
     height: Dimension in y-coordinate
     margin: Dimension in x-coordinate placed on each end of template
     length: total length of template
+    do_caul: If true, create the caul template
     '''
-    def __init__(self, units, boards, margin=None, length=None):
+    def __init__(self, units, boards, do_caul = False, margin=None, length=None):
         # incra uses 1/2" high templates
         self.height = units.inches_to_increments(0.5)
+        self.do_caul = do_caul
         if margin is None:
             self.margin = units.inches_to_increments(1.0)
         else:
@@ -452,6 +454,8 @@ def adjoining_cuts(cuts, bit, board):
     Given the cuts on an edge, computes the cuts on the adjoining edge.
 
     cuts: An array of Cut objects
+    bit: A Router_Bit object
+    board: A Board object
 
     Returns an array of Cut objects
     '''
@@ -479,11 +483,32 @@ def adjoining_cuts(cuts, bit, board):
             adjCuts.append(Cut(left, right))
     return adjCuts
 
+def caul_cuts(cuts, bit, board, trim):
+    '''
+    Given the cuts on an edge, computes the cuts need to make a caul clamp.
+
+    cuts: An array of Cut objects
+    bit: A Router_Bit object
+    board: A Board object
+    trim: Amount to add to each side of cut (or "trim" from each side of finger)
+
+    Returns an array of Cut objects
+    '''
+    nc = len(cuts)
+    caul_cuts = []
+    for c in cuts:
+        xmin = max(0, c.xmin - trim)
+        xmax = min(board.width, c.xmax + trim)
+        cut = Cut(xmin, xmax)
+        cut.make_router_passes(bit, board)
+        caul_cuts.append(cut)
+    return caul_cuts
+
 class Joint_Geometry(object):
     '''
     Computes and stores all of the geometry attributes of the joint.
     '''
-    def __init__(self, template, boards, bit, spacing, margins):
+    def __init__(self, template, boards, bit, spacing, margins, caul_trim):
         self.template = template
         self.boards = boards
         self.bit = bit
@@ -537,7 +562,18 @@ class Joint_Geometry(object):
         y = self.boards[0].yT() + margins.sep
 
         # Template stuff for double-double cases
-        self.rect_TDD = My_Rectangle(margins.left, y,
-                                     template.length, template.height)
-        self.board_TDD = My_Rectangle(self.rect_TDD.xL() + template.margin, y, \
-                                      boards[0].width, template.height)
+        if self.boards[3].active:
+            self.rect_TDD = My_Rectangle(margins.left, y,
+                                         template.length, template.height)
+            self.board_TDD = My_Rectangle(self.rect_TDD.xL() + template.margin, y, \
+                                          boards[0].width, template.height)
+            y = self.board_TDD.yT() + margins.sep
+
+        # Caul template
+        if self.template.do_caul:
+            self.rect_caul = My_Rectangle(margins.left, y,
+                                          template.length, template.height)
+            self.board_caul = My_Rectangle(self.rect_caul.xL() + template.margin, y, \
+                                          boards[0].width, template.height)
+            self.caul_top = caul_cuts(self.boards[0].bottom_cuts, bit, boards[0], caul_trim)
+            self.caul_bottom = caul_cuts(self.boards[1].top_cuts, bit, boards[1], caul_trim)

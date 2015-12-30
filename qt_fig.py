@@ -158,6 +158,9 @@ class Qt_Plotter(QtGui.QWidget):
         if boards[3].active:
             fig_height += template.height + self.margins.sep
 
+        if template.do_caul:
+            fig_height += template.height + self.margins.sep
+
         min_width = 64
         if fig_width < min_width:
             fig_width = min_width
@@ -187,7 +190,8 @@ class Qt_Plotter(QtGui.QWidget):
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
         self.woods = woods
-        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
+        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,\
+                                          self.config.caul_trim)
         self.current_background = self.background
         self.update()
 
@@ -200,7 +204,8 @@ class Qt_Plotter(QtGui.QWidget):
 
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
-        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
+        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,\
+                                          self.config.caul_trim)
 
         # Print through the preview dialog
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
@@ -216,7 +221,8 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         self.woods = woods
         self.set_fig_dimensions(template, boards)
-        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins)
+        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,\
+                                          self.config.caul_trim)
         self.current_background = self.background
 
         s = self.size()
@@ -374,7 +380,7 @@ class Qt_Plotter(QtGui.QWidget):
 
         # draw the alignment lines on both templates
         x = board_T.xL() + passes[iMax] - pMax // 2
-        painter.setPen(QtCore.Qt.DotLine)
+        painter.setPen(QtCore.Qt.SolidLine)
         label = 'ALIGN'
         flags = QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter
         for b in [board_T, board_TDD]:
@@ -389,26 +395,29 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         rect_T = self.geom.rect_T
         board_T = self.geom.board_T
-        rect_TDD = self.geom.rect_TDD
-        board_TDD = self.geom.board_TDD
         boards = self.geom.boards
 
         self.draw_template_rectangle(painter, rect_T, board_T)
         if boards[3].active:
+            rect_TDD = self.geom.rect_TDD
+            board_TDD = self.geom.board_TDD
             self.draw_template_rectangle(painter, rect_TDD, board_TDD)
             rect_top = rect_TDD
         else:
             rect_top = rect_T
 
-        frac_depth = 0.95 * self.geom.bit.depth
-        # Draw the router passes
         flagsL = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
         flagsR = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+
+        frac_depth = 0.95 * self.geom.bit.depth
+        # Draw the router passes
         # ... do the top board passes
         y1 = boards[0].yB()
         y2 = y1 + frac_depth
         self.draw_passes(painter, 'A', boards[0].bottom_cuts, rect_top.yMid(), rect_top.yT(), flagsR)
         self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2, flagsR)
+        label_bottom = 'A,B'
+        label_top = None
         i = 0
         # Do double-double passes
         if boards[3].active:
@@ -425,6 +434,8 @@ class Qt_Plotter(QtGui.QWidget):
                              rect_TDD.yB(), flagsL)
             self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2, flagsR)
             self.draw_alignment(painter)
+            label_bottom = 'D,E,F'
+            label_top = 'A,B,C'
             i += 2
         # Do double passes
         if boards[2].active:
@@ -440,6 +451,8 @@ class Qt_Plotter(QtGui.QWidget):
                              rect_T.yB(), flagsL)
             self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2, flagsR)
             painter.setPen(QtCore.Qt.SolidLine)
+            if not boards[3].active:
+                label_bottom = 'A,B,C,D'
             i += 2
 
         # ... do the bottom board passes
@@ -448,6 +461,28 @@ class Qt_Plotter(QtGui.QWidget):
         self.draw_passes(painter, self.labels[i], boards[1].top_cuts, rect_T.yMid(), \
                          rect_T.yB(), flagsL)
         self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2, flagsL)
+
+        # ... draw the caul template and do its passes
+        if self.geom.template.do_caul:
+            rect_caul = self.geom.rect_caul
+            board_caul = self.geom.board_caul
+            top = self.geom.caul_top
+            bottom = self.geom.caul_bottom
+            self.draw_template_rectangle(painter, rect_caul, board_caul)
+            self.draw_passes(painter, 'A', top, rect_caul.yMid(), rect_caul.yT(), flagsR)
+            self.draw_passes(painter, self.labels[i], bottom, rect_caul.yMid(), rect_caul.yB(), flagsL)
+            self.set_font_size(painter, 'boards')
+            paint_text(painter, 'Cauls', (rect_caul.xL(), rect_caul.yMid()), flagsL, (2,0))
+            paint_text(painter, 'Cauls', (rect_caul.xR(), rect_caul.yMid()), flagsR, (-2,0))
+
+        # Label the templates
+        self.set_font_size(painter, 'boards')
+        paint_text(painter, label_bottom, (rect_T.xL(), rect_T.yMid()), flagsL, (2,0))
+        paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsR, (-2,0))
+        if label_top is not None:
+            paint_text(painter, label_top, (rect_TDD.xL(), rect_TDD.yMid()), flagsL, (2,0))
+            paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsR, (-2,0))
+
     def draw_one_board(self, painter, board, bit):
         '''
         Draws a single board
