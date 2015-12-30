@@ -205,6 +205,15 @@ class Driver(QtGui.QMainWindow):
         english_action.triggered.connect(self._on_units)
         self.metric_action.triggered.connect(self._on_units)
 
+        # Add view menu
+
+        view_menu = self.menubar.addMenu('View')
+        fullscreen_action = QtGui.QAction('&Fullscreen', self, checkable=True)
+        fullscreen_action.setShortcut('Ctrl+F')
+        fullscreen_action.setStatusTip('Toggle full-screen mode')
+        fullscreen_action.triggered.connect(self._on_fullscreen)
+        view_menu.addAction(fullscreen_action)
+
         # Add the help menu
 
         help_menu = self.menubar.addMenu('Help')
