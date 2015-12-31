@@ -360,14 +360,15 @@ class Edit_Spaced(Base_Spacing):
                     c.xmax = min(c.xmin + w, self.boards[0].width)
                     self.cuts[f] = c
                     op.append(f)
+        if len(noop) > 0:
+            self.cuts = cuts_save
+            return 'No cuts moved: unable to move indices ' + `noop` 
         if len(op) > 0 or delete_cut:
             self.undo_cuts.append(cuts_save)
         if len(op) > 0:
             msg = 'Moved cut indices ' + `op` + ' to left 1 increment'
         else:
             msg = 'Moved no cuts'
-        if len(noop) > 0:
-            msg += '; unable to move indices ' + `noop`
         if delete_cut:
             msg += '; deleted cut 0'
             self.cut_delete(0)
@@ -402,14 +403,15 @@ class Edit_Spaced(Base_Spacing):
                     c.xmin = max(c.xmax - w, 0)
                     self.cuts[f] = c
                     op.append(f)
+        if len(noop) > 0:
+            self.cuts = cuts_save
+            return 'No cuts moved: unable to move indices ' + `noop` 
         if len(op) > 0 or delete_cut:
             self.undo_cuts.append(cuts_save)
         if len(op) > 0:
             msg = 'Moved cut indices ' + `op` + ' to right 1 increment'
         else:
             msg = 'Moved no cuts'
-        if len(noop) > 0:
-            msg += '; unable to move indices ' + `noop`
         if delete_cut:
             f = len(self.cuts) - 1
             msg += '; deleted cut %d' % f
@@ -433,13 +435,14 @@ class Edit_Spaced(Base_Spacing):
                 op.append(f)
             else:
                 noop.append(f)
+        if len(noop) > 0:
+            self.cuts = cuts_save
+            return 'No cuts widened: unable to widen indices ' + `noop`
         if len(op) > 0:
             self.undo_cuts.append(cuts_save)
             msg = 'Widened cut indices ' + `op` + ' on left 1 increment'
         else:
             msg = 'Widened no cuts'
-        if len(noop) > 0:
-            msg += '; unable to widen indices ' + `noop`
         return msg
 
     def cut_widen_right(self):
@@ -458,13 +461,14 @@ class Edit_Spaced(Base_Spacing):
                 op.append(f)
             else:
                 noop.append(f)
+        if len(noop) > 0:
+            self.cuts = cuts_save
+            return 'No cuts widened: unable to widen indices ' + `noop`
         if len(op) > 0:
             self.undo_cuts.append(cuts_save)
             msg = 'Widened cut indices ' + `op` + ' on right 1 increment'
         else:
             msg = 'Widened no cuts'
-        if len(noop) > 0:
-            msg += '; unable to widen indices ' + `noop`
         return msg
 
     def cut_trim_left(self):
@@ -485,13 +489,14 @@ class Edit_Spaced(Base_Spacing):
                 c.xmin += 1
                 self.cuts[f] = c
                 op.append(f)
+        if len(noop) > 0:
+            self.cuts = cuts_save
+            return 'No cuts trimmed: unable to trim indices ' + `noop`
         if len(op) > 0:
             self.undo_cuts.append(cuts_save)
             msg = 'Trimmed cut indices ' + `op` + ' on left 1 increment'
         else:
             msg = 'Trimmed no cuts'
-        if len(noop) > 0:
-            msg += '; unable to trim indices ' + `noop`
         return msg
 
     def cut_trim_right(self):
@@ -512,13 +517,14 @@ class Edit_Spaced(Base_Spacing):
                 c.xmax -= 1
                 self.cuts[f] = c
                 op.append(f)
+        if len(noop) > 0:
+            self.cuts = cuts_save
+            return 'No cuts trimmed: unable to trim indices ' + `noop`
         if len(op) > 0:
             self.undo_cuts.append(cuts_save)
             msg = 'Trimmed cut indices ' + `op` + ' on right 1 increment'
         else:
             msg = 'Trimmed no cuts'
-        if len(noop) > 0:
-            msg += '; unable to trim indices ' + `noop`
         return msg
 
     def cut_increment_cursor(self, inc):
