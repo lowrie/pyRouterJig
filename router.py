@@ -26,7 +26,6 @@ from __future__ import print_function
 from future.utils import lrange
 
 import math
-import copy
 from utils import my_round
 
 class Router_Exception(Exception):
@@ -50,7 +49,7 @@ class Incra_Template(object):
     length: total length of template
     do_caul: If true, create the caul template
     '''
-    def __init__(self, units, boards, do_caul = False, margin=None, length=None):
+    def __init__(self, units, boards, do_caul=False, margin=None, length=None):
         # incra uses 1/2" high templates
         self.height = units.inches_to_increments(0.5)
         self.do_caul = do_caul
@@ -240,8 +239,10 @@ class Board(My_Rectangle):
         self.bottom_cuts = None
         self.top_cuts = None
     def set_wood(self, wood):
+        '''Sets attribute wood'''
         self.wood = wood
     def set_active(self, active=True):
+        '''Sets attribute active'''
         self.active = active
     def set_width_from_string(self, s):
         '''
@@ -306,14 +307,17 @@ class Board(My_Rectangle):
         self.thickness = my_round(self.thickness * s)
         self.units = new_units
     def set_bottom_cuts(self, cuts, bit):
+        '''Sets the bottom cuts for the board'''
         for c in cuts:
             c.make_router_passes(bit, self)
         self.bottom_cuts = cuts
     def set_top_cuts(self, cuts, bit):
+        '''Sets the top cuts for the board'''
         for c in cuts:
             c.make_router_passes(bit, self)
         self.top_cuts = cuts
     def _do_cuts(self, bit, cuts, y_nocut, y_cut):
+        '''Creates the perimeter coordinates for the given cuts'''
         x = [self.xL()]
         if cuts[0].xmin > 0:
             y = [y_nocut]
@@ -494,15 +498,14 @@ def caul_cuts(cuts, bit, board, trim):
 
     Returns an array of Cut objects
     '''
-    nc = len(cuts)
-    caul_cuts = []
+    new_cuts = []
     for c in cuts:
         xmin = max(0, c.xmin - trim)
         xmax = min(board.width, c.xmax + trim)
         cut = Cut(xmin, xmax)
         cut.make_router_passes(bit, board)
-        caul_cuts.append(cut)
-    return caul_cuts
+        new_cuts.append(cut)
+    return new_cuts
 
 class Joint_Geometry(object):
     '''
@@ -529,7 +532,7 @@ class Joint_Geometry(object):
             self.boards[2].set_top_cuts(top, bit)
             last = adjoining_cuts(top, bit, boards[2])
             self.boards[2].set_bottom_cuts(last, bit)
-        
+
         # make the top cuts on the bottom board
         top = adjoining_cuts(last, bit, boards[1])
         self.boards[1].set_top_cuts(top, bit)

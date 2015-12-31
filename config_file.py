@@ -26,7 +26,7 @@ user configuration file
 import os, imp, shutil
 import utils
 
-_CONFIG_INIT ='''
+_CONFIG_INIT = r'''
 ######################################################################
 # Options for pyRouterJig.  Be careful editing this file.  Any errors
 # that occur will not be friendly.
@@ -148,8 +148,10 @@ def read_config(min_version_number):
         shutil.move(filename, backup)
         create_config(filename)
         config = imp.load_source('', filename)
-        msg = 'Your configuration file %s was outdated and has been moved to %s.  A new configuration file'\
-              ' has been created.  Any changes you made to the old file will need to be migrated to the new file.'\
-              ' Unfortunately, we are unable to automatically migrate your old settings.' % (filename, backup)
+        msg = 'Your configuration file %s was outdated and has been moved to %s.'\
+              ' A new configuration file has been created.  Any changes you made'\
+              ' to the old file will need to be migrated to the new file.'\
+              ' Unfortunately, we are unable to automatically migrate your old'\
+              ' settings.' % (filename, backup)
 
     return (config, msg, msg_level)

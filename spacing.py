@@ -32,6 +32,7 @@ import router
 import utils
 
 def dump_cuts(cuts):
+    '''Dumps the cuts to the screen...this is for debugging.'''
     for c in cuts:
         print(c.xmin, c.xmax)
 
@@ -175,7 +176,7 @@ class Equally_Spaced(Base_Spacing):
         i = right + neck_width
         while i < board_width:
             ri = min(i + width, board_width)
-            if ri - i > self.config.min_finger_width and board_width - i  > min_interior:
+            if ri - i > self.config.min_finger_width and board_width - i > min_interior:
                 self.cuts.append(router.Cut(i, ri))
             i = ri + neck_width
         # If we have only one cut the entire width of the board, then
@@ -362,7 +363,7 @@ class Edit_Spaced(Base_Spacing):
                     op.append(f)
         if len(noop) > 0:
             self.cuts = cuts_save
-            return 'No cuts moved: unable to move indices ' + `noop` 
+            return 'No cuts moved: unable to move indices ' + `noop`
         if len(op) > 0 or delete_cut:
             self.undo_cuts.append(cuts_save)
         if len(op) > 0:
@@ -405,7 +406,7 @@ class Edit_Spaced(Base_Spacing):
                     op.append(f)
         if len(noop) > 0:
             self.cuts = cuts_save
-            return 'No cuts moved: unable to move indices ' + `noop` 
+            return 'No cuts moved: unable to move indices ' + `noop`
         if len(op) > 0 or delete_cut:
             self.undo_cuts.append(cuts_save)
         if len(op) > 0:

@@ -25,7 +25,6 @@ from __future__ import print_function
 from __future__ import division
 from future.utils import lrange
 
-import copy
 import router
 import utils
 
@@ -271,8 +270,11 @@ class Qt_Plotter(QtGui.QWidget):
         self.draw_active_cuts(painter)
         painter.end()
 
-    def set_font_size(self, painter, size):
-        font_inches = self.font_size[size] / 32.0 * self.geom.bit.units.increments_per_inch
+    def set_font_size(self, painter, param):
+        '''
+        Sets the font size for type param
+        '''
+        font_inches = self.font_size[param] / 32.0 * self.geom.bit.units.increments_per_inch
         font = painter.font()
         xx = self.transform.map(font_inches, 0)[0] - self.transform.dx()
         font.setPixelSize(utils.my_round(xx))
@@ -322,6 +324,9 @@ class Qt_Plotter(QtGui.QWidget):
         return (window_width, window_height)
 
     def draw_passes(self, painter, blabel, cuts, y1, y2, flags):
+        '''
+        Draws and labels the router passes on a template or board.
+        '''
         board_T = self.geom.board_T
         # brush = QtGui.QBrush(QtCore.Qt.white)
         brush = None
@@ -341,6 +346,9 @@ class Qt_Plotter(QtGui.QWidget):
                     paint_text(painter, label, (xp, y1), flags, shift, -90, fill=brush)
 
     def draw_template_rectangle(self, painter, r, b):
+        '''
+        Draws the geometry of a template
+        '''
         # Fill the entire template as white
         painter.fillRect(r.xL(), r.yB(), r.width, r.height, QtCore.Qt.white)
 
@@ -387,7 +395,7 @@ class Qt_Plotter(QtGui.QWidget):
             y1 = b.yB()
             y2 = b.yT()
             painter.drawLine(x, y1, x, y2)
-            paint_text(painter, label, (x, (y1 + y2) // 2), flags, (0,0), -90)
+            paint_text(painter, label, (x, (y1 + y2) // 2), flags, (0, 0), -90)
 
     def draw_template(self, painter):
         '''
@@ -414,7 +422,8 @@ class Qt_Plotter(QtGui.QWidget):
         # ... do the top board passes
         y1 = boards[0].yB()
         y2 = y1 + frac_depth
-        self.draw_passes(painter, 'A', boards[0].bottom_cuts, rect_top.yMid(), rect_top.yT(), flagsR)
+        self.draw_passes(painter, 'A', boards[0].bottom_cuts, rect_top.yMid(),\
+                         rect_top.yT(), flagsR)
         self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2, flagsR)
         label_bottom = 'A,B'
         label_top = None
@@ -470,18 +479,19 @@ class Qt_Plotter(QtGui.QWidget):
             bottom = self.geom.caul_bottom
             self.draw_template_rectangle(painter, rect_caul, board_caul)
             self.draw_passes(painter, 'A', top, rect_caul.yMid(), rect_caul.yT(), flagsR)
-            self.draw_passes(painter, self.labels[i], bottom, rect_caul.yMid(), rect_caul.yB(), flagsL)
+            self.draw_passes(painter, self.labels[i], bottom, rect_caul.yMid(),\
+                             rect_caul.yB(), flagsL)
             self.set_font_size(painter, 'boards')
-            paint_text(painter, 'Cauls', (rect_caul.xL(), rect_caul.yMid()), flagsL, (5,0))
-            paint_text(painter, 'Cauls', (rect_caul.xR(), rect_caul.yMid()), flagsR, (-5,0))
+            paint_text(painter, 'Cauls', (rect_caul.xL(), rect_caul.yMid()), flagsL, (5, 0))
+            paint_text(painter, 'Cauls', (rect_caul.xR(), rect_caul.yMid()), flagsR, (-5, 0))
 
         # Label the templates
         self.set_font_size(painter, 'boards')
-        paint_text(painter, label_bottom, (rect_T.xL(), rect_T.yMid()), flagsL, (5,0))
-        paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsR, (-5,0))
+        paint_text(painter, label_bottom, (rect_T.xL(), rect_T.yMid()), flagsL, (5, 0))
+        paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsR, (-5, 0))
         if label_top is not None:
-            paint_text(painter, label_top, (rect_TDD.xL(), rect_TDD.yMid()), flagsL, (5,0))
-            paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsR, (-5,0))
+            paint_text(painter, label_top, (rect_TDD.xL(), rect_TDD.yMid()), flagsL, (5, 0))
+            paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsR, (-5, 0))
 
     def draw_one_board(self, painter, board, bit):
         '''
@@ -495,7 +505,7 @@ class Qt_Plotter(QtGui.QWidget):
         pen.setWidthF(0)
         painter.setPen(pen)
         icon = self.woods[board.wood]
-        if type(icon) == type('a string'):
+        if isinstance(icon, str):
             brush = QtGui.QBrush(QtGui.QPixmap(icon))
         else:
             brush = QtGui.QBrush(QtCore.Qt.black, icon)

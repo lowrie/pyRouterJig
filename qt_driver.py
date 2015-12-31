@@ -308,11 +308,11 @@ class Driver(QtGui.QMainWindow):
         self.le_bit_angle.editingFinished.connect(self._on_bit_angle)
 
         # Board M thicknesses
-        self.le_boardm_label = [0]*2
-        self.le_boardm = [0]*2
+        self.le_boardm_label = []
+        self.le_boardm = []
         for i in lrange(2):
-            self.le_boardm_label[i] = QtGui.QLabel('Thickness')
-            self.le_boardm[i] = QtGui.QLineEdit(self.main_frame)
+            self.le_boardm_label.append(QtGui.QLabel('Thickness'))
+            self.le_boardm.append(QtGui.QLineEdit(self.main_frame))
             self.le_boardm[i].setFixedWidth(lineEditWidth)
             self.le_boardm[i].setText(self.units.increments_to_string(self.m_thickness[i]))
         self.le_boardm[0].editingFinished.connect(self._on_boardm0)
@@ -329,16 +329,16 @@ class Driver(QtGui.QMainWindow):
         self.woods = copy.deepcopy(woods)
         self.woods.update(patterns)
         # ... create the combo boxes and their labels
-        self.cb_wood = [0]*4
-        self.cb_wood[0] = self.create_wood_combo_box(woods, patterns)
-        self.cb_wood[1] = self.create_wood_combo_box(woods, patterns)
-        self.cb_wood[2] = self.create_wood_combo_box(woods, patterns, True)
-        self.cb_wood[3] = self.create_wood_combo_box(woods, patterns, True)
-        self.cb_wood_label = [0]*4
-        self.cb_wood_label[0] = QtGui.QLabel('Top Board')
-        self.cb_wood_label[1] = QtGui.QLabel('Bottom Board')
-        self.cb_wood_label[2] = QtGui.QLabel('Double Board')
-        self.cb_wood_label[3] = QtGui.QLabel('Double-Double Board')
+        self.cb_wood = []
+        self.cb_wood.append(self.create_wood_combo_box(woods, patterns))
+        self.cb_wood.append(self.create_wood_combo_box(woods, patterns))
+        self.cb_wood.append(self.create_wood_combo_box(woods, patterns, True))
+        self.cb_wood.append(self.create_wood_combo_box(woods, patterns, True))
+        self.cb_wood_label = []
+        self.cb_wood_label.append(QtGui.QLabel('Top Board'))
+        self.cb_wood_label.append(QtGui.QLabel('Bottom Board'))
+        self.cb_wood_label.append(QtGui.QLabel('Double Board'))
+        self.cb_wood_label.append(QtGui.QLabel('Double-Double Board'))
         self.cb_wood[0].activated.connect(self._on_wood0)
         self.cb_wood[1].activated.connect(self._on_wood1)
         self.cb_wood[2].activated.connect(self._on_wood2)
@@ -503,7 +503,6 @@ class Driver(QtGui.QMainWindow):
         grid.addWidget(create_vline(), 0, 2, 9, 1)
 
         # Add the bit width label and its line edit
-        vbox_bit_width = QtGui.QVBoxLayout()
         grid.addWidget(self.le_bit_width_label, 1, 3)
         grid.addWidget(self.le_bit_width, 2, 3)
         grid.addWidget(create_vline(), 0, 4, 9, 1)
@@ -980,7 +979,7 @@ class Driver(QtGui.QMainWindow):
         if self.screenshot_index is None:
             self.screenshot_index = utils.get_file_index(self.working_dir, prefix, postfix)
 
-        fname = prefix + `self.screenshot_index` + postfix 
+        fname = prefix + `self.screenshot_index` + postfix
 
         # Get the file name.  The default name is indexed on the number of
         # times this function is called.  If a screenshot, don't prompt for
@@ -992,7 +991,7 @@ class Driver(QtGui.QMainWindow):
             # This is the simple approach to set the filename, but doesn't allow
             # us to update the working_dir, if the user changes it.
             #filename = QtGui.QFileDialog.getSaveFileName(self, 'Save file', \
-            #                                             defname, 'Portable Network Graphics (*.png)')
+            #                     defname, 'Portable Network Graphics (*.png)')
             # ... so here is now we do it:
             dialog = QtGui.QFileDialog(self, 'Save file', defname, \
                                        'Portable Network Graphics (*.png)')
@@ -1108,7 +1107,7 @@ class Driver(QtGui.QMainWindow):
         elif sp_type == 'Edit':
             self.edit_spacing = sp
             self.spacing_index = self.edit_spacing_id
- 
+
         self.spacing = sp
         self.tabs_spacing.blockSignals(True)
         self.tabs_spacing.setCurrentIndex(self.spacing_index)
@@ -1454,6 +1453,7 @@ class Driver(QtGui.QMainWindow):
         else:
             self.do_caul = True
             self.status_message('Turned on caul template.')
+        self.file_saved = False
         self.draw()
 
     def status_message(self, msg, flash_len_ms=None):

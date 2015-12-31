@@ -25,14 +25,12 @@ from builtins import str
 
 import sys
 import unittest
-import utils
 from qt_driver import Driver
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4.QtTest import QTest
 
 app = QtGui.QApplication(sys.argv)
-app.processEvents()
 
 class Driver_Test(unittest.TestCase):
     '''
@@ -59,6 +57,10 @@ class Driver_Test(unittest.TestCase):
         # default
         self.d._on_fullscreen()
         self.screenshot()
+        # default with caul
+        self.d._on_caul()
+        self.screenshot()
+        self.d._on_caul()
         # dovetail
         self.d.le_bit_angle.clear()
         QTest.keyClicks(self.d.le_bit_angle, '7')
@@ -70,13 +72,13 @@ class Driver_Test(unittest.TestCase):
         self.d._on_bit_angle()
         self.assertEqual(str(self.d.le_bit_angle.text()), '0')
         # Wood selection
-        for w in [0,1]:
+        for w in [0, 1]:
             i = self.d.cb_wood[w].findText('hard-maple')
             self.assertTrue(i >= 0)
             self.d.cb_wood[w].setCurrentIndex(i)
             self.d._on_wood(w)
         self.screenshot()
-        for w in [0,1]:
+        for w in [0, 1]:
             i = self.d.cb_wood[w].findText('DiagCrossPattern')
             self.assertTrue(i >= 0)
             self.d.cb_wood[w].setCurrentIndex(i)
@@ -121,7 +123,7 @@ class Driver_Test(unittest.TestCase):
         self.screenshot()
         # double
         self.d.tabs_spacing.setCurrentIndex(self.d.equal_spacing_id)
-        for w in [0,1]:
+        for w in [0, 1]:
             i = self.d.cb_wood[w].findText('hard-maple')
             self.assertTrue(i >= 0)
             self.d.cb_wood[w].setCurrentIndex(i)
