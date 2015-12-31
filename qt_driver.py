@@ -187,12 +187,6 @@ class Driver(QtGui.QMainWindow):
         print_action.triggered.connect(self._on_print)
         file_menu.addAction(print_action)
 
-        fullscreen_action = QtGui.QAction('&Fullscreen', self)
-        fullscreen_action.setShortcut('Ctrl+F')
-        fullscreen_action.setStatusTip('Toggle full-screen mode')
-        fullscreen_action.triggered.connect(self._on_fullscreen)
-        file_menu.addAction(fullscreen_action)
-
         exit_action = QtGui.QAction('&Quit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit pyRouterJig')
