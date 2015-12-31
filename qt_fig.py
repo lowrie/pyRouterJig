@@ -472,16 +472,16 @@ class Qt_Plotter(QtGui.QWidget):
             self.draw_passes(painter, 'A', top, rect_caul.yMid(), rect_caul.yT(), flagsR)
             self.draw_passes(painter, self.labels[i], bottom, rect_caul.yMid(), rect_caul.yB(), flagsL)
             self.set_font_size(painter, 'boards')
-            paint_text(painter, 'Cauls', (rect_caul.xL(), rect_caul.yMid()), flagsL, (2,0))
-            paint_text(painter, 'Cauls', (rect_caul.xR(), rect_caul.yMid()), flagsR, (-2,0))
+            paint_text(painter, 'Cauls', (rect_caul.xL(), rect_caul.yMid()), flagsL, (5,0))
+            paint_text(painter, 'Cauls', (rect_caul.xR(), rect_caul.yMid()), flagsR, (-5,0))
 
         # Label the templates
         self.set_font_size(painter, 'boards')
-        paint_text(painter, label_bottom, (rect_T.xL(), rect_T.yMid()), flagsL, (2,0))
-        paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsR, (-2,0))
+        paint_text(painter, label_bottom, (rect_T.xL(), rect_T.yMid()), flagsL, (5,0))
+        paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsR, (-5,0))
         if label_top is not None:
-            paint_text(painter, label_top, (rect_TDD.xL(), rect_TDD.yMid()), flagsL, (2,0))
-            paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsR, (-2,0))
+            paint_text(painter, label_top, (rect_TDD.xL(), rect_TDD.yMid()), flagsL, (5,0))
+            paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsR, (-5,0))
 
     def draw_one_board(self, painter, board, bit):
         '''
