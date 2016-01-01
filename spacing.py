@@ -324,6 +324,13 @@ class Edit_Spaced(Base_Spacing):
             xmax = self.cuts[f + 1].xmin - neck_width
         return (xmin, xmax)
 
+    def check_limits(self, f):
+        '''
+        Returns True if cut index f is within its limits, False otherwise.
+        '''
+        (xmin, xmax) = self.get_limits(f)
+        return self.cuts[f].xmin >= xmin and self.cuts[f].xmax <= xmax
+
     def undo(self):
         '''
         Undoes the last change to cuts
@@ -339,40 +346,38 @@ class Edit_Spaced(Base_Spacing):
         op = []
         noop = []
         delete_cut = False
-        s = sorted(self.active_cuts)
-        for f in s:
+        for f in self.active_cuts:
             c = self.cuts[f]
-            (xmin, xmax) = self.get_limits(f)
-            xmin = max(xmin, c.xmin - 1)
-            w = c.xmax - c.xmin
-            if c.xmin == 0:
-                w -= 1
-            else:
-                w = max(w, self.bit.width + 2 * self.dhtot)
-            if w == 0:
+            c.xmin = max(0, c.xmin - 1)
+            if c.xmax == 1:
                 # note its possible for only one cut to be deleted
                 delete_cut = True
+            elif c.xmax == self.boards[0].width:
+                # if on the right end, create a new finger if it gets too wide
+                wNew = self.bit.width + 2 * self.dhtot
+                w = c.xmax - c.xmin
+                if w > wNew:
+                    c.xmax -= 1
             else:
-                if xmin == c.xmin and xmin > 0:
-                    noop.append(f)
-                    msg = 'Unable to move cut to left'
-                else:
-                    c.xmin = xmin
-                    c.xmax = min(c.xmin + w, self.boards[0].width)
-                    self.cuts[f] = c
-                    op.append(f)
+                c.xmax -= 1
+        msg = ''
+        incr = 0
+        if delete_cut:
+            self.cut_delete(0)
+            msg = 'Deleted cut 0 '
+            incr = 1
+        for f in self.active_cuts:
+            if self.check_limits(f):
+                op.append(f + incr)
+            else:
+                noop.append(f + incr)
         if len(noop) > 0:
             self.cuts = cuts_save
             return 'No cuts moved: unable to move indices ' + `noop`
         if len(op) > 0 or delete_cut:
             self.undo_cuts.append(cuts_save)
         if len(op) > 0:
-            msg = 'Moved cut indices ' + `op` + ' to left 1 increment'
-        else:
-            msg = 'Moved no cuts'
-        if delete_cut:
-            msg += '; deleted cut 0'
-            self.cut_delete(0)
+            msg += 'Moved cut indices ' + `op` + ' to left 1 increment'
         return msg
 
     def cut_move_right(self):
@@ -383,41 +388,38 @@ class Edit_Spaced(Base_Spacing):
         op = []
         noop = []
         delete_cut = False
-        s = sorted(self.active_cuts, reverse=True)
-        for f in s:
+        for f in self.active_cuts:
             c = self.cuts[f]
-            (xmin, xmax) = self.get_limits(f)
-            xmax = min(xmax, c.xmax + 1)
-            w = c.xmax - c.xmin
-            if c.xmax == self.boards[0].width:
-                w -= 1
-            else:
-                w = max(w, self.bit.width + 2 * self.dhtot)
-            if w == 0:
+            c.xmax = min(self.boards[0].width, c.xmax + 1)
+            if c.xmin == self.boards[0].width - 1:
                 # note its possible for only one cut to be deleted
                 delete_cut = True
+            elif c.xmin == 0:
+                # if on the left end, create a new finger if it gets too wide
+                wNew = self.bit.width + 2 * self.dhtot
+                w = c.xmax - c.xmin
+                if w > wNew:
+                    c.xmin = 1
             else:
-                if xmax == c.xmax and xmax < self.boards[0].width:
-                    noop.append(f)
-                else:
-                    c.xmax = xmax
-                    c.xmin = max(c.xmax - w, 0)
-                    self.cuts[f] = c
-                    op.append(f)
+                c.xmin += 1
+        msg = ''
+        incr = 0
+        if delete_cut:
+            f = len(self.cuts) - 1
+            self.cut_delete(f)
+            msg = 'Deleted cut %d ' % f
+        for f in self.active_cuts:
+            if self.check_limits(f):
+                op.append(f)
+            else:
+                noop.append(f)
         if len(noop) > 0:
             self.cuts = cuts_save
             return 'No cuts moved: unable to move indices ' + `noop`
         if len(op) > 0 or delete_cut:
             self.undo_cuts.append(cuts_save)
         if len(op) > 0:
-            msg = 'Moved cut indices ' + `op` + ' to right 1 increment'
-        else:
-            msg = 'Moved no cuts'
-        if delete_cut:
-            f = len(self.cuts) - 1
-            msg += '; deleted cut %d' % f
-            self.cut_delete(f)
-            self.active_cuts = [len(self.cuts) - 1]
+            msg += 'Moved cut indices ' + `op` + ' to right 1 increment'
         return msg
 
     def cut_widen_left(self):
@@ -566,13 +568,23 @@ class Edit_Spaced(Base_Spacing):
         Deletes cut of index f.  Returns True if able to delete the cut,
         False otherwise.
         '''
-        if len(self.cuts) < 2:
+        if len(self.cuts) < 2: # don't delete the last cut
             return False
+        # delete from the cuts list
         c = self.cuts[0:f]
         c.extend(self.cuts[f + 1:])
         self.cuts = c
+        # adjust the cursor appropriately
         if self.cursor_cut >= f and self.cursor_cut > 0:
             self.cursor_cut -= 1
+        # adjust the active cuts list
+        id = self.active_cuts.index(f)
+        c = self.active_cuts[0:id]
+        c.extend(self.active_cuts[id + 1:])
+        self.active_cuts = c
+        for i in lrange(len(self.active_cuts)):
+            if self.active_cuts[i] > f:
+                self.active_cuts[i] -= 1
         return True
 
     def cut_delete_active(self):
