@@ -234,7 +234,7 @@ class Qt_Plotter(QtGui.QWidget):
         h = utils.my_round(w / fig_ar)
         sNew = QtCore.QSize(w, h)
 
-        image = QtGui.QImage(sNew, QtGui.QImage.Format_RGB16)
+        image = QtGui.QImage(sNew, QtGui.QImage.Format_RGB32)
         painter = QtGui.QPainter()
         painter.begin(image)
         size = image.size()
