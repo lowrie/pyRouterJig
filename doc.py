@@ -81,11 +81,11 @@ class Doc(object):
     _es_centered = 'Check <b>%s</b> to force a finger to be centered on \
     the board.'
 
-    _vs_slider0 = '<b>%s</b> slider allows you to specify the number of \
+    _cb_vsfingers = '<b>%s</b> specifies the approximate number of \
     fingers. At its minimum value, the width of the center finger is \
     maximized. At its maximum value, the width of the center finger is \
     minimized, and the result is the roughly the same as equally-spaced \
-    with, zero "Spacing", zero "Width", and the "Centered" option \
+    using zero "Spacing", zero "Width", and the "Centered" option \
     checked.'
 
     def __init__(self, units):
@@ -122,5 +122,5 @@ class Doc(object):
         return self._es_slider1 % spacing.Equally_Spaced.keys[1]
     def es_centered(self):
         return self._es_centered % spacing.Equally_Spaced.keys[2]
-    def vs_slider0(self):
-        return self._vs_slider0 % spacing.Variable_Spaced.keys[0]
+    def cb_vsfingers(self):
+        return self._cb_vsfingers % spacing.Variable_Spaced.keys[0]

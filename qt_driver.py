@@ -38,6 +38,18 @@ import serialize
 from PyQt4 import QtCore, QtGui
 #from PySide import QtCore, QtGui
 
+class MyComboBox(QtGui.QComboBox):
+    '''
+    This comboxbox emits "activated" when hidePopup is called.
+    '''
+    def __init__(self, parent):
+        QtGui.QComboBox.__init__(self, parent)
+
+    def hidePopup(self):
+        print('in hidePopup')
+        QtGui.QComboBox.hidePopup(self)
+        self.activated.emit(self.currentIndex())
+
 def set_line_style(line):
     '''Sets the style for create_vline() and create_hline()'''
     line.setFrameShadow(QtGui.QFrame.Raised)
@@ -237,7 +249,8 @@ class Driver(QtGui.QMainWindow):
         '''
         Creates a wood selection combox box
         '''
-        cb = QtGui.QComboBox(self)
+#        cb = QtGui.QComboBox(self)
+        cb = MyComboBox(self)
         # Set the default wood.
         if has_none:
             # If adding NONE, make that the default
@@ -339,10 +352,6 @@ class Driver(QtGui.QMainWindow):
         self.cb_wood_label.append(QtGui.QLabel('Bottom Board'))
         self.cb_wood_label.append(QtGui.QLabel('Double Board'))
         self.cb_wood_label.append(QtGui.QLabel('Double-Double Board'))
-        self.cb_wood[0].activated.connect(self._on_wood0)
-        self.cb_wood[1].activated.connect(self._on_wood1)
-        self.cb_wood[2].activated.connect(self._on_wood2)
-        self.cb_wood[3].activated.connect(self._on_wood3)
 
         # Disable double* boards, for now
         self.le_boardm[0].setEnabled(False)
@@ -398,19 +407,12 @@ class Driver(QtGui.QMainWindow):
         params = self.var_spacing.params
         labels = self.var_spacing.labels
 
-        # ...slider
+        # ...combox box for fingers
         p = params['Fingers']
-        self.vs_slider0_label = QtGui.QLabel(labels[0])
-        self.vs_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
-        self.vs_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.vs_slider0.setMinimum(p.vMin)
-        self.vs_slider0.setMaximum(p.vMax)
-        self.vs_slider0.setValue(p.v)
-        self.vs_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
-        if p.vMax - p.vMin < 10:
-            self.vs_slider0.setTickInterval(1)
-        self.vs_slider0.valueChanged.connect(self._on_vs_slider0)
-        self.vs_slider0.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.cb_vsfingers_label = QtGui.QLabel(labels[0])
+        self.cb_vsfingers = MyComboBox(self.main_frame)
+        self.cb_vsfingers.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.update_cb_vsfingers(p.vMin, p.vMax, p.v)
 
         # Edit spacing widgets
 
@@ -560,11 +562,9 @@ class Driver(QtGui.QMainWindow):
         # item, this is overkill, but the coding allows us to add additional
         # controls later.
         hbox_vs = QtGui.QHBoxLayout()
-
-        vbox_vs_slider0 = QtGui.QVBoxLayout()
-        vbox_vs_slider0.addWidget(self.vs_slider0_label)
-        vbox_vs_slider0.addWidget(self.vs_slider0)
-        hbox_vs.addLayout(vbox_vs_slider0)
+        hbox_vs.addWidget(self.cb_vsfingers_label)
+        hbox_vs.addWidget(self.cb_vsfingers)
+        hbox_vs.addStretch(1)
 
         # Create the layout of the edit spacing controls
         hbox_edit = QtGui.QHBoxLayout()
@@ -642,11 +642,31 @@ class Driver(QtGui.QMainWindow):
         self.setCentralWidget(self.main_frame)
 
         # Finalize some settings
+        self.cb_vsfingers.activated.connect(self._on_cb_vsfingers)
+        self.cb_vsfingers.highlighted.connect(self._on_cb_vsfingers)
+        self.cb_wood[0].activated.connect(self._on_wood0)
+        self.cb_wood[1].activated.connect(self._on_wood1)
+        self.cb_wood[2].activated.connect(self._on_wood2)
+        self.cb_wood[3].activated.connect(self._on_wood3)
+        self.cb_wood[0].highlighted.connect(self._on_wood0)
+        self.cb_wood[1].highlighted.connect(self._on_wood1)
+        self.cb_wood[2].highlighted.connect(self._on_wood2)
+        self.cb_wood[3].highlighted.connect(self._on_wood3)
         self._on_wood(0)
         self._on_wood(1)
         self._on_wood(2)
         self._on_wood(3)
         self.update_tooltips()
+
+    def update_cb_vsfingers(self, vMin, vMax, value):
+        '''
+        Updates the combobox for Variable spacing Fingers.
+        '''
+        self.cb_vsfingers.clear()
+        for i in lrange(vMin, vMax + 1, 1):
+            self.cb_vsfingers.addItem(`i`)
+        i = self.cb_vsfingers.findText(`value`)
+        self.cb_vsfingers.setCurrentIndex(i)
 
     def update_tooltips(self):
         '''
@@ -692,8 +712,8 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1_label.setToolTip(self.doc.es_slider1())
         self.es_slider1.setToolTip(self.doc.es_slider1())
         self.cb_es_centered.setToolTip(self.doc.es_centered())
-        self.vs_slider0_label.setToolTip(self.doc.vs_slider0())
-        self.vs_slider0.setToolTip(self.doc.vs_slider0())
+        self.cb_vsfingers_label.setToolTip(self.doc.cb_vsfingers())
+        self.cb_vsfingers.setToolTip(self.doc.cb_vsfingers())
 
     def create_status_bar(self):
         '''
@@ -798,13 +818,11 @@ class Driver(QtGui.QMainWindow):
             # Variable spacing widgets
             params = self.var_spacing.params
             p = params['Fingers']
-            self.vs_slider0.blockSignals(True)
-            self.vs_slider0.setMinimum(p.vMin)
-            self.vs_slider0.setMaximum(p.vMax)
-            self.vs_slider0.setValue(p.v)
-            self.vs_slider0.blockSignals(False)
+            self.cb_vsfingers.blockSignals(True)
+            self.update_cb_vsfingers(p.vMin, p.vMax, p.v)
+            self.cb_vsfingers.blockSignals(False)
             self.var_spacing.set_cuts()
-            self.vs_slider0_label.setText(self.var_spacing.labels[0])
+            self.cb_vsfingers_label.setText(self.var_spacing.keys[0] + ':')
             self.spacing = self.var_spacing
         elif self.spacing_index == self.edit_spacing_id:
             # Edit spacing parameters.  Currently, this has no parameters, and
@@ -945,15 +963,15 @@ class Driver(QtGui.QMainWindow):
         self.file_saved = False
 
     @QtCore.pyqtSlot(int)
-    def _on_vs_slider0(self, value):
+    def _on_cb_vsfingers(self, index):
         '''Handles changes to the variable-spaced slider Fingers'''
         if self.config.debug:
-            print('_on_vs_slider0', value)
-        self.var_spacing.params['Fingers'].v = value
+            print('_on_cb_vsfingers', index)
+        self.var_spacing.params['Fingers'].v = int(self.cb_vsfingers.itemText(index))
         self.var_spacing.set_cuts()
-        self.vs_slider0_label.setText(self.var_spacing.labels[0])
+        self.cb_vsfingers_label.setText(self.var_spacing.keys[0] + ':')
         self.draw()
-        self.status_message('Changed slider %s' % str(self.vs_slider0_label.text()))
+        self.status_message('Changed slider %s' % str(self.cb_vsfingers_label.text()))
         self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -1194,14 +1212,16 @@ class Driver(QtGui.QMainWindow):
         self.update_tooltips()
         self.draw()
 
-    def _on_wood(self, index, reinit=False):
+    def _on_wood(self, iwood, index=None, reinit=False):
         '''Handles all changes in wood'''
         if self.config.debug:
-            print('_on_wood', index)
-        s = str(self.cb_wood[index].currentText())
-        label = str(self.cb_wood_label[index].text())
+            print('_on_wood', iwood, index)
+        if index is None:
+            index = self.cb_wood[iwood].currentIndex()
+        s = str(self.cb_wood[iwood].itemText(index))
+        label = str(self.cb_wood_label[iwood].text())
         if s != 'NONE':
-            self.boards[index].set_wood(s)
+            self.boards[iwood].set_wood(s)
         if reinit:
             self.reinit_spacing()
         self.draw()
@@ -1209,26 +1229,26 @@ class Driver(QtGui.QMainWindow):
         msg = 'Changed %s to %s' % (label, s)
         self.statusbar.showMessage(msg)
 
-    @QtCore.pyqtSlot()
-    def _on_wood0(self):
+    @QtCore.pyqtSlot(int)
+    def _on_wood0(self, index):
         '''Handles changes in wood index 0'''
         if self.config.debug:
-            print('_on_wood0')
-        self._on_wood(0)
+            print('_on_wood0', index)
+        self._on_wood(0, index)
 
-    @QtCore.pyqtSlot()
-    def _on_wood1(self):
+    @QtCore.pyqtSlot(int)
+    def _on_wood1(self, index):
         '''Handles changes in wood index 1'''
         if self.config.debug:
-            print('_on_wood1')
-        self._on_wood(1)
+            print('_on_wood1', index)
+        self._on_wood(1, index)
 
-    @QtCore.pyqtSlot()
-    def _on_wood2(self):
+    @QtCore.pyqtSlot(int)
+    def _on_wood2(self, index):
         '''Handles changes in wood index 2'''
         if self.config.debug:
-            print('_on_wood2')
-        s = str(self.cb_wood[2].currentText())
+            print('_on_wood2', index)
+        s = str(self.cb_wood[2].itemText(index))
         reinit = False
         if s == 'NONE':
             if self.boards[2].active:
@@ -1249,14 +1269,14 @@ class Driver(QtGui.QMainWindow):
             self.boards[2].set_active(True)
             self.le_boardm[0].setEnabled(True)
             self.le_boardm[0].setStyleSheet("color: black;")
-        self._on_wood(2, reinit)
+        self._on_wood(2, index, reinit)
 
-    @QtCore.pyqtSlot()
-    def _on_wood3(self):
+    @QtCore.pyqtSlot(int)
+    def _on_wood3(self, index):
         '''Handles changes in wood index 3'''
         if self.config.debug:
-            print('_on_wood3')
-        s = str(self.cb_wood[3].currentText())
+            print('_on_wood3', index)
+        s = str(self.cb_wood[3].itemText(index))
         reinit = False
         if s == 'NONE':
             if self.boards[3].active:
@@ -1270,7 +1290,7 @@ class Driver(QtGui.QMainWindow):
             self.boards[3].set_active(True)
             self.le_boardm[1].setEnabled(True)
             self.le_boardm[1].setStyleSheet("color: black;")
-        self._on_wood(3, reinit)
+        self._on_wood(3, index, reinit)
 
     def _on_boardm(self, i):
         '''Handles changes board-M height changes'''
