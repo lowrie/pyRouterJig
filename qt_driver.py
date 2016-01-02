@@ -149,6 +149,14 @@ class Driver(QtGui.QMainWindow):
         # ... show the status message from reading the configuration file
         self.statusbar.showMessage(msg)
 
+    def center(self):
+        '''Centers the app in the screen'''
+        frameGm = self.frameGeometry()
+        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
+        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
+        frameGm.moveCenter(centerPoint)
+        self.move(frameGm.topLeft())
+
     def exception_hook(self, etype, value, trace):
         '''
         Handler for all exceptions.
@@ -1592,6 +1600,7 @@ def run():
     app.setStyle('macintosh')
     driver = Driver()
     driver.show()
+    driver.center()
     driver.raise_()
     app.exec_()
 
