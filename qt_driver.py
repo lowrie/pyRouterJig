@@ -52,6 +52,7 @@ class MyComboBox(QtGui.QComboBox):
 
     def hidePopup(self):
         QtGui.QComboBox.hidePopup(self)
+        #print('hidePopup')
         self.activated.emit(self.currentIndex())
 
 def set_line_style(line):
@@ -776,29 +777,33 @@ class Driver(QtGui.QMainWindow):
         les.extend(self.le_boardm_label)
         if self.spacing_index == self.edit_spacing_id:
             for le in les:
+                le.blockSignals(True)
                 le.setEnabled(False)
                 le.setStyleSheet("color: gray;")
-            for cb in self.cb_wood:
-                cb.setEnabled(False)
+                le.blockSignals(False)
         else:
             for le in les:
+                le.blockSignals(True)
                 le.setEnabled(True)
                 le.setStyleSheet("color: black;")
-            for cb in self.cb_wood:
-                cb.setEnabled(True)
+                le.blockSignals(False)
             if not self.boards[2].active:
                 disable = self.le_boardm
                 disable.extend(self.le_boardm_label)
                 disable.append(self.cb_wood[3])
                 disable.append(self.cb_wood_label[3])
                 for le in disable:
+                    le.blockSignals(True)
                     le.setEnabled(False)
                     le.setStyleSheet("color: gray;")
+                    le.blockSignals(False)
             if not self.boards[3].active:
                 disable = [self.le_boardm[1], self.le_boardm_label[1]]
                 for le in disable:
+                    le.blockSignals(True)
                     le.setEnabled(False)
                     le.setStyleSheet("color: gray;")
+                    le.blockSignals(False)
 
         # Set up the various widgets for each spacing option
         if self.spacing_index == self.equal_spacing_id:
