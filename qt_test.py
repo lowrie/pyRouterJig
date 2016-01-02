@@ -131,13 +131,13 @@ class Driver_Test(unittest.TestCase):
         i = self.d.cb_wood[2].findText('black-walnut')
         self.assertTrue(i >= 0)
         self.d.cb_wood[2].setCurrentIndex(i)
-        self.d._on_wood2()
+        self.d._on_wood2(i)
         self.screenshot()
         # double-double
         i = self.d.cb_wood[3].findText('mahogany')
         self.assertTrue(i >= 0)
         self.d.cb_wood[3].setCurrentIndex(i)
-        self.d._on_wood3()
+        self.d._on_wood3(i)
         self.screenshot()
         # save option
         self.screenshot(False)

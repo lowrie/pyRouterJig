@@ -40,13 +40,17 @@ from PyQt4 import QtCore, QtGui
 
 class MyComboBox(QtGui.QComboBox):
     '''
-    This comboxbox emits "activated" when hidePopup is called.
+    This comboxbox emits "activated" when hidePopup is called.  This allows
+    for a combobox with a preview mode, so that as each selection is
+    highlighted with the popup open, the figure can be updated.  Once the
+    popup is closed, this hidePopup ensures that the figure is redrawn with
+    the current actual selection.
+
     '''
     def __init__(self, parent):
         QtGui.QComboBox.__init__(self, parent)
 
     def hidePopup(self):
-        print('in hidePopup')
         QtGui.QComboBox.hidePopup(self)
         self.activated.emit(self.currentIndex())
 
