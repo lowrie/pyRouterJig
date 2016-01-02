@@ -243,7 +243,7 @@ class Variable_Spaced(Base_Spacing):
         increments = [0] * (m + 1)
         ivals = 0
         for i in lrange(1, m + 1):
-            increments[i] = int(c - d * i)
+            increments[i] = max(2, int(c - d * i))
             ivals += 2 * increments[i]
         # Set the center increment.  This takes up the slop in the rounding and increment
         # resolution.
@@ -254,7 +254,7 @@ class Variable_Spaced(Base_Spacing):
             increments[0] = increments[1]
             m -= 1
         if self.config.debug:
-            print('increments', increments)
+            print('v-s increments', increments)
         # Adjustments for dovetails
         deltaP = self.bit.width + 2 * self.dhtot - self.eff_width
         deltaM = utils.my_round(self.eff_width - self.bit.neck - 2 * self.dhtot)
@@ -282,6 +282,9 @@ class Variable_Spaced(Base_Spacing):
             do_cut = (not do_cut)
         # sort the cuts in increasing x
         self.cuts = sorted(self.cuts, key=attrgetter('xmin'))
+        if self.config.debug:
+            print('v-s cuts:')
+            dump_cuts(self.cuts)
 
 class Edit_Spaced(Base_Spacing):
     '''
