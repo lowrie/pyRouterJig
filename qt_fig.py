@@ -209,6 +209,7 @@ class Qt_Plotter(QtGui.QWidget):
         # Print through the preview dialog
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         printer.setOrientation(QtGui.QPrinter.Landscape)
+        printer.setPageMargins(0, 0, 0, 0, QtGui.QPrinter.Inch)
         pdialog = QtGui.QPrintPreviewDialog(printer)
         pdialog.setModal(True)
         pdialog.paintRequested.connect(self.preview_requested)
