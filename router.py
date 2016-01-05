@@ -571,6 +571,9 @@ class Joint_Geometry(object):
             self.board_TDD = My_Rectangle(self.rect_TDD.xL() + template.margin, y, \
                                           boards[0].width, template.height)
             y = self.board_TDD.yT() + margins.sep
+        else:
+            self.rect_TDD = None
+            self.board_TDD = None
 
         # Caul template
         if self.template.do_caul:
@@ -580,3 +583,6 @@ class Joint_Geometry(object):
                                           boards[0].width, template.height)
             self.caul_top = caul_cuts(self.boards[0].bottom_cuts, bit, boards[0], caul_trim)
             self.caul_bottom = caul_cuts(self.boards[1].top_cuts, bit, boards[1], caul_trim)
+        else:
+            self.rect_caul = None
+            self.board_caul = None

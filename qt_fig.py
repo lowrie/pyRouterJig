@@ -120,7 +120,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.current_background = self.background
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
-        self.font_size = {'title':4, 'fingers':3, 'template':2, 'boards':4}
+        self.font_size = {'title':4, 'fingers':3, 'template':2, 'boards':4, 'template_labels':3}
 
     def minimumSizeHint(self):
         '''
@@ -317,14 +317,14 @@ class Qt_Plotter(QtGui.QWidget):
         painter.setPen(QtCore.Qt.black)
 
         # draw the objects
-        self.draw_template(painter)
         self.draw_boards(painter)
+        self.draw_template(painter)
         self.draw_title(painter)
         self.draw_cut_sizes(painter)
 
         return (window_width, window_height)
 
-    def draw_passes(self, painter, blabel, cuts, y1, y2, flags):
+    def draw_passes(self, painter, blabel, cuts, y1, y2, flags, xMid):
         '''
         Draws and labels the router passes on a template or board.
         '''
@@ -336,15 +336,41 @@ class Qt_Plotter(QtGui.QWidget):
             shift = (0, -2)
         else:
             shift = (0, 2)
+        passMid = None
         self.set_font_size(painter, 'template')
         for c in cuts[::-1]:
             for p in lrange(len(c.passes) - 1, -1, -1):
                 xp = c.passes[p] + board_T.xL()
                 ip += 1
                 label = '%d%s' % (ip, blabel)
+                if xp == xMid:
+                    passMid = label
                 painter.drawLine(xp, y1, xp, y2)
                 if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
                     paint_text(painter, label, (xp, y1), flags, shift, -90, fill=brush)
+        return passMid
+
+    def draw_alignment(self, painter):
+        '''
+        Draws the alignment lines on all templates
+        '''
+        board_T = self.geom.board_T
+        board_TDD = self.geom.board_TDD
+        board_caul = self.geom.board_caul
+
+        # draw the alignment lines on both templates
+        #x = board_T.xL() + passes[iMax] - pMax // 2
+        x = board_T.xR() + self.geom.bit.width // 2
+        painter.setPen(QtCore.Qt.SolidLine)
+        self.set_font_size(painter, 'template')
+        label = 'ALIGN'
+        flags = QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter
+        for b in [board_T, board_TDD, board_caul]:
+            if b is not None:
+                y1 = b.yB()
+                y2 = b.yT()
+                painter.drawLine(x, y1, x, y2)
+                paint_text(painter, label, (x, (y1 + y2) // 2), flags, (0, 0), -90)
 
     def draw_template_rectangle(self, painter, r, b):
         '''
@@ -361,43 +387,6 @@ class Qt_Plotter(QtGui.QWidget):
         # Draw the template bounding box
         painter.drawRect(r.xL(), r.yB(), r.width, r.height)
 
-    def draw_alignment(self, painter):
-        '''
-        Draws the alignment lines on 2 templates
-        '''
-        board_T = self.geom.board_T
-        board_TDD = self.geom.board_TDD
-        boards = self.geom.boards
-
-        # accumulate and sort all passes
-        passes = []
-        for b in boards:
-            for cuts in [b.top_cuts, b.bottom_cuts]:
-                if cuts is not None:
-                    for c in cuts:
-                        passes.extend(c.passes)
-        passes = sorted(passes)
-
-        # find the biggest gap in the passes
-        iMax = -1
-        pMax = -1
-        for i in lrange(1, len(passes)):
-            d = passes[i] - passes[i-1]
-            if d > pMax:
-                pMax = d
-                iMax = i
-
-        # draw the alignment lines on both templates
-        x = board_T.xL() + passes[iMax] - pMax // 2
-        painter.setPen(QtCore.Qt.SolidLine)
-        label = 'ALIGN'
-        flags = QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter
-        for b in [board_T, board_TDD]:
-            y1 = b.yB()
-            y2 = b.yT()
-            painter.drawLine(x, y1, x, y2)
-            paint_text(painter, label, (x, (y1 + y2) // 2), flags, (0, 0), -90)
-
     def draw_template(self, painter):
         '''
         Draws the Incra templates
@@ -405,6 +394,10 @@ class Qt_Plotter(QtGui.QWidget):
         rect_T = self.geom.rect_T
         board_T = self.geom.board_T
         boards = self.geom.boards
+
+        xMid = board_T.xMid()
+        centerline = []
+        centerline_TDD = []
 
         self.draw_template_rectangle(painter, rect_T, board_T)
         if boards[3].active:
@@ -424,8 +417,13 @@ class Qt_Plotter(QtGui.QWidget):
         y1 = boards[0].yB()
         y2 = y1 + frac_depth
         self.draw_passes(painter, 'A', boards[0].bottom_cuts, rect_top.yMid(),\
-                         rect_top.yT(), flagsR)
-        self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2, flagsR)
+                         rect_top.yT(), flagsR, xMid)
+        pm = self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2, flagsR, xMid)
+        if pm is not None:
+            if boards[3].active:
+                centerline_TDD.append(pm)
+            else:
+                centerline.append(pm)
         label_bottom = 'A,B'
         label_top = None
         i = 0
@@ -435,15 +433,18 @@ class Qt_Plotter(QtGui.QWidget):
             y1 = boards[3].yT()
             y2 = y1 - frac_depth
             self.draw_passes(painter, self.labels[i], boards[3].top_cuts, rect_TDD.yMid(), \
-                             rect_TDD.yT(), flagsR)
-            self.draw_passes(painter, self.labels[i], boards[3].top_cuts, y1, y2, flagsL)
+                             rect_TDD.yT(), flagsR, xMid)
+            pm = self.draw_passes(painter, self.labels[i], boards[3].top_cuts, y1, y2, flagsL, xMid)
+            if pm is not None:
+                centerline_TDD.append(pm)
             painter.setPen(QtCore.Qt.SolidLine)
             y1 = boards[3].yB()
             y2 = y1 + frac_depth
             self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(), \
-                             rect_TDD.yB(), flagsL)
-            self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2, flagsR)
-            self.draw_alignment(painter)
+                             rect_TDD.yB(), flagsL, xMid)
+            pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2, flagsR, xMid)
+            if pm is not None:
+                centerline_TDD.append(pm)
             label_bottom = 'D,E,F'
             label_top = 'A,B,C'
             i += 2
@@ -453,13 +454,17 @@ class Qt_Plotter(QtGui.QWidget):
             y1 = boards[2].yT()
             y2 = y1 - frac_depth
             self.draw_passes(painter, self.labels[i], boards[2].top_cuts, rect_T.yMid(), \
-                             rect_T.yT(), flagsR)
-            self.draw_passes(painter, self.labels[i], boards[2].top_cuts, y1, y2, flagsL)
+                             rect_T.yT(), flagsR, xMid)
+            pm = self.draw_passes(painter, self.labels[i], boards[2].top_cuts, y1, y2, flagsL, xMid)
+            if pm is not None:
+                centerline.append(pm)
             y1 = boards[2].yB()
             y2 = y1 + frac_depth
             self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, rect_T.yMid(), \
-                             rect_T.yB(), flagsL)
-            self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2, flagsR)
+                             rect_T.yB(), flagsL, xMid)
+            pm = self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2, flagsR, xMid)
+            if pm is not None:
+                centerline.append(pm)
             painter.setPen(QtCore.Qt.SolidLine)
             if not boards[3].active:
                 label_bottom = 'A,B,C,D'
@@ -469,8 +474,10 @@ class Qt_Plotter(QtGui.QWidget):
         y1 = boards[1].yT()
         y2 = y1 - frac_depth
         self.draw_passes(painter, self.labels[i], boards[1].top_cuts, rect_T.yMid(), \
-                         rect_T.yB(), flagsL)
-        self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2, flagsL)
+                         rect_T.yB(), flagsL, xMid)
+        pm = self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2, flagsL, xMid)
+        if pm is not None:
+            centerline.append(pm)
 
         # ... draw the caul template and do its passes
         if self.geom.template.do_caul:
@@ -479,20 +486,49 @@ class Qt_Plotter(QtGui.QWidget):
             top = self.geom.caul_top
             bottom = self.geom.caul_bottom
             self.draw_template_rectangle(painter, rect_caul, board_caul)
-            self.draw_passes(painter, 'A', top, rect_caul.yMid(), rect_caul.yT(), flagsR)
-            self.draw_passes(painter, self.labels[i], bottom, rect_caul.yMid(),\
-                             rect_caul.yB(), flagsL)
-            self.set_font_size(painter, 'boards')
-            paint_text(painter, 'Cauls', (rect_caul.xL(), rect_caul.yMid()), flagsL, (5, 0))
-            paint_text(painter, 'Cauls', (rect_caul.xR(), rect_caul.yMid()), flagsR, (-5, 0))
+            centerline_caul = []
+            pm = self.draw_passes(painter, 'A', top, rect_caul.yMid(), rect_caul.yT(), flagsR, xMid)
+            if pm is not None:
+                centerline_caul.append(pm)
+            pm = self.draw_passes(painter, self.labels[i], bottom, rect_caul.yMid(),\
+                                  rect_caul.yB(), flagsL, xMid)
+            if pm is not None:
+                centerline_caul.append(pm)
+            self.set_font_size(painter, 'template_labels')
+            label = 'Cauls'
+            if len(centerline_caul) > 0:
+                label += '\nCenter:'
+                for c in centerline_caul:
+                    label += ' ' + c
+            else:
+                painter.setPen(QtCore.Qt.DashLine)
+                painter.drawLine(xMid, rect_caul.yB(), xMid, rect_caul.yT())
+            paint_text(painter, label, (rect_caul.xL(), rect_caul.yMid()), flagsL, (5, 0))
+            paint_text(painter, label, (rect_caul.xR(), rect_caul.yMid()), flagsR, (-5, 0))
 
         # Label the templates
-        self.set_font_size(painter, 'boards')
+        self.set_font_size(painter, 'template_labels')
+        if len(centerline) > 0:
+            label_bottom += '\nCenter:'
+            for c in centerline:
+                label_bottom += ' ' + c
+        else:
+            painter.setPen(QtCore.Qt.DashLine)
+            painter.drawLine(xMid, rect_T.yB(), xMid, rect_T.yT())
         paint_text(painter, label_bottom, (rect_T.xL(), rect_T.yMid()), flagsL, (5, 0))
         paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsR, (-5, 0))
         if label_top is not None:
+            if len(centerline_TDD) > 0:
+                label_top += '\nCenter:'
+                for c in centerline_TDD:
+                    label_top += ' ' + c
+            else:
+                painter.setPen(QtCore.Qt.DashLine)
+                painter.drawLine(xMid, rect_TDD.yB(), xMid, rect_TDD.yT())
             paint_text(painter, label_top, (rect_TDD.xL(), rect_TDD.yMid()), flagsL, (5, 0))
             paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsR, (-5, 0))
+
+        self.draw_alignment(painter)
 
     def draw_one_board(self, painter, board, bit):
         '''
@@ -524,11 +560,6 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         Draws all the boards
         '''
-        # Plot the board center
-#        painter.setPen(QtCore.Qt.DashLine)
-#        painter.drawLine(self.geom.board_T.xMid(), self.geom.rect_T.yB(), \
-#                         self.geom.board_T.xMid(), self.geom.boards[0].yT())
-#        painter.setPen(QtCore.Qt.SolidLine)
 
         # Draw the A and B boards
         for i in lrange(4):

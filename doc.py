@@ -44,6 +44,10 @@ class Doc(object):
     pyRouterJig; see the file LICENSE. If not, see \
     <a href=http://www.gnu.org/licenses/>http://www.gnu.org/licenses/</a>.\
     <p>\
+    This software and its output is not an INCRA product.  The authors have no\
+    connection with INCRA (or Taylor Design Group, Inc.), aside from being users\
+    themselves of their products.\
+    <p>\
     <h3>USE AT YOUR OWN RISK!</h3>'
 
     _board_width = '<b>Board Width</b> is the board width (in%s) of \
