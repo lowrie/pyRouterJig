@@ -364,7 +364,7 @@ class Qt_Plotter(QtGui.QWidget):
         painter.setPen(QtCore.Qt.SolidLine)
         self.set_font_size(painter, 'template')
         label = 'ALIGN'
-        flags = QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter
+        flags = QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter
         for b in [board_T, board_TDD, board_caul]:
             if b is not None:
                 y1 = b.yB()
@@ -497,9 +497,7 @@ class Qt_Plotter(QtGui.QWidget):
             self.set_font_size(painter, 'template_labels')
             label = 'Cauls'
             if len(centerline_caul) > 0:
-                label += '\nCenter:'
-                for c in centerline_caul:
-                    label += ' ' + c
+                label += '\nCenter: ' + centerline_caul[0]
             else:
                 painter.setPen(QtCore.Qt.DashLine)
                 painter.drawLine(xMid, rect_caul.yB(), xMid, rect_caul.yT())
@@ -509,9 +507,7 @@ class Qt_Plotter(QtGui.QWidget):
         # Label the templates
         self.set_font_size(painter, 'template_labels')
         if len(centerline) > 0:
-            label_bottom += '\nCenter:'
-            for c in centerline:
-                label_bottom += ' ' + c
+            label_bottom += '\nCenter: ' + centerline[0]
         else:
             painter.setPen(QtCore.Qt.DashLine)
             painter.drawLine(xMid, rect_T.yB(), xMid, rect_T.yT())
@@ -519,9 +515,7 @@ class Qt_Plotter(QtGui.QWidget):
         paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsR, (-5, 0))
         if label_top is not None:
             if len(centerline_TDD) > 0:
-                label_top += '\nCenter:'
-                for c in centerline_TDD:
-                    label_top += ' ' + c
+                label_top += '\nCenter: ' + centerline_TDD[0]
             else:
                 painter.setPen(QtCore.Qt.DashLine)
                 painter.drawLine(xMid, rect_TDD.yB(), xMid, rect_TDD.yT())
