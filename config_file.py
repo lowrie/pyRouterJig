@@ -68,8 +68,22 @@ min_finger_width = 2
 # Specified in increments.
 caul_trim = 1
 
-# On save image, minimum width of image in pixels.  Does not apply to screenshots.
-min_image_width = 2048
+# On save image, minimum width of image in pixels. Used if the figure width is
+# less than this size.  Does not apply to screenshots, which are done at the
+# resolution of the window.
+min_image_width = 1440
+
+# On save image, maximum width of image in pixels. Used if the figure width is
+# less than this size.  Does not apply to screenshots, which are done at the
+# resolution of the window.
+# Set to min_image_width to force that resolution for every image.
+max_image_width = min_image_width
+
+# Scaling factor for printing.  Set to 1.0 for no scaling.  If your printed templates
+# measure Y inches instead of X inches, set to X / Y. You may use a forumla
+# here. Make sure that you use decimal points for numbers (floating point). Example:
+# print_scale_factor = 9.5 / (9.5 - 1.0 / 32.0)
+print_scale_factor = 1.0
 
 # The folder which contains wood grain image files.  Prefix the string with the character-r to prevent
 # python from interpreting the character-\ (used in Windows file paths) as an escape.

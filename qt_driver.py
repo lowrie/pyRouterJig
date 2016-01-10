@@ -87,7 +87,7 @@ class Driver(QtGui.QMainWindow):
 
         # Read the config file.  We wait until the end of this init to print
         # the status message, because we need the statusbar to be created first.
-        (self.config, msg, msg_level) = config_file.read_config(70)
+        (self.config, msg, msg_level) = config_file.read_config(78)
 
         # Ensure config file is up-to-date
         if msg_level > 0:
@@ -1049,8 +1049,7 @@ class Driver(QtGui.QMainWindow):
         if do_screenshot:
             image = QtGui.QPixmap.grabWindow(self.winId()).toImage()
         else:
-            image = self.fig.image(self.template, self.boards, self.bit, self.spacing, self.woods,\
-                                   self.config.min_image_width)
+            image = self.fig.image(self.template, self.boards, self.bit, self.spacing, self.woods)
 
         s = serialize.serialize(self.bit, self.boards, self.spacing, \
                                 self.config)
@@ -1163,7 +1162,8 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_print')
 
-        r = self.fig.print(self.template, self.boards, self.bit, self.spacing, self.woods)
+        r = self.fig.print(self.template, self.boards, self.bit, self.spacing,
+                           self.woods)
         if r:
             self.status_message('Figure printed')
         else:

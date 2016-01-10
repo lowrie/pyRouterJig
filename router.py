@@ -350,6 +350,9 @@ class Board(My_Rectangle):
         Compute the perimeter coordinates of the board.
 
         bit: A Router_Bit object.
+
+        Returns (x, y) coordinates of perimeter, ordred clockwise around
+        perimeter.
         '''
         # Do the top edge
         y_nocut = self.yT() # y-location of uncut edge
@@ -375,6 +378,58 @@ class Board(My_Rectangle):
         # close the polygon by adding the first point
         x.append(x[0])
         y.append(y[0])
+        return (x, y)
+    def triangulate(self, bit):
+        '''
+        Compute the triangulation of the board.
+
+        bit: A Router_Bit object.
+
+        Returns (x, y, t), where
+
+        x, y = lists of vertex coordinates, ordered clockwise around perimeter
+        t = list of triangle indices in x, y
+
+        Note that perimeter() returns a smaller list of (x, y), but more
+        coordinates are needed to create a good triangulation.
+        '''
+        if self.top_cuts is None: # has only bottom cuts
+            y_nocut = self.yB() # y-location of uncut edge
+            y_cut = y_nocut + bit.depth # y-location of routed edge
+            (xb, yb) = self._do_cuts(bit, self.bottom_cuts, y_nocut, y_cut)
+            x = copy.deepcopy(xb)
+            y_nocut = self.yT()
+            y = [y_nocut] * len(yb)
+        else: # has top cuts
+            y_nocut = self.yT() # y-location of uncut edge
+            y_cut = y_nocut - bit.depth # y-location of routed edge
+            (x, y) = self._do_cuts(bit, self.top_cuts, y_nocut, y_cut)
+            y_nocut = self.yB() # y-location of uncut edge
+            if self.bottom_cuts is None: # has only top cuts
+                xb = copy.deepcopy(x)
+                yb = [y_nocut] * len(y)
+            else: # has both top and bottom cuts
+                y_cut = y_nocut + bit.depth # y-location of routed edge
+                (xb, yb) = self._do_cuts(bit, self.bottom_cuts, y_nocut, y_cut)
+                # TODO: merge xb, yb into x, y
+                itop = 1
+                for i in lrange(1, len(xb)):
+                    if xb[i] > x[itop]:
+                        x.insert(itop + 1, xb[i])
+                        y.insert(itop + 1, y[itop])
+                        yb.insert(itop + 1, yb[itop])
+                    else:
+                        x.insert(itop, xb[i])
+                        y.insert(itop, y[itop])
+                        yb.insert(itop, yb[itop])
+                    itop += 2
+                xb = copy.deepcopy(x)
+        n = len(x)
+        # append the bottom to top
+        xb.reverse()
+        yb.reverse()
+        x.extend(xb)
+        y.extend(yb)
         return (x, y)
 
 class Cut(object):

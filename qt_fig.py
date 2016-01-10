@@ -94,11 +94,11 @@ class Qt_Fig(object):
         '''
         return self.canvas.print_fig(template, boards, bit, spacing, woods)
 
-    def image(self, template, boards, bit, spacing, woods, min_width):
+    def image(self, template, boards, bit, spacing, woods):
         '''
         Prints the figure to an image
         '''
-        return self.canvas.image_fig(template, boards, bit, spacing, woods, min_width)
+        return self.canvas.image_fig(template, boards, bit, spacing, woods)
 
 class Qt_Plotter(QtGui.QWidget):
     '''
@@ -215,7 +215,7 @@ class Qt_Plotter(QtGui.QWidget):
         pdialog.paintRequested.connect(self.preview_requested)
         return pdialog.exec_()
 
-    def image_fig(self, template, boards, bit, spacing, woods, min_width):
+    def image_fig(self, template, boards, bit, spacing, woods):
         '''
         Prints the figure to a QImage object
         '''
@@ -229,9 +229,10 @@ class Qt_Plotter(QtGui.QWidget):
         window_ar = float(s.width()) / s.height()
         fig_ar = float(self.fig_width) / self.fig_height
         if window_ar < fig_ar:
-            w = max(min_width, s.width())
+            w = s.width()
         else:
-            w = max(min_width, int(s.height() * fig_ar))
+            w = int(s.height() * fig_ar)
+        w = max(self.config.min_image_width, min(self.config.max_image_width, w))
         h = utils.my_round(w / fig_ar)
         sNew = QtCore.QSize(w, h)
 
@@ -248,7 +249,7 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         Handles the print preview action.
         '''
-        dpi = printer.resolution()
+        dpi = printer.resolution() * self.config.print_scale_factor
         painter = QtGui.QPainter()
         painter.begin(printer)
         self.paint_all(painter, dpi)
