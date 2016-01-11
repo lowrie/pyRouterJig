@@ -34,6 +34,7 @@ import spacing
 import utils
 import doc
 import serialize
+import threeDS
 
 from PyQt4 import QtCore, QtGui
 #from PySide import QtCore, QtGui
@@ -206,11 +207,17 @@ class Driver(QtGui.QMainWindow):
         screenshot_action.triggered.connect(self._on_screenshot)
         file_menu.addAction(screenshot_action)
 
-        print_action = QtGui.QAction('&Print', self)
+        print_action = QtGui.QAction('&Print...', self)
         print_action.setShortcut('Ctrl+P')
         print_action.setStatusTip('Print the figure')
         print_action.triggered.connect(self._on_print)
         file_menu.addAction(print_action)
+
+        threeDS_action = QtGui.QAction('&Export 3DS...', self)
+        threeDS_action.setShortcut('Ctrl+E')
+        threeDS_action.setStatusTip('Export the joint to a 3DS file')
+        threeDS_action.triggered.connect(self._on_3ds)
+        file_menu.addAction(threeDS_action)
 
         exit_action = QtGui.QAction('&Quit', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -1155,6 +1162,38 @@ class Driver(QtGui.QMainWindow):
         self.set_spacing_widgets()
 
         self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_3ds(self):
+        '''
+        Handles export to 3DS file events.
+        '''
+        if self.config.debug:
+            print('_on_3ds')
+
+        fname = 'pyrouterjig.3ds'
+
+        # Get the file name
+        defname = os.path.join(self.working_dir, fname)
+        dialog = QtGui.QFileDialog(self, 'Export joint', defname, \
+                                   'Autodesk 3DS file (*.3ds)')
+        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+        filename = None
+        if dialog.exec_():
+            filenames = dialog.selectedFiles()
+            d = str(dialog.directory().path())
+            # force recomputation of index, next time around, if path changed
+            if d != self.working_dir:
+                self.screenshot_index = None
+            self.working_dir = d
+            filename = str(filenames[0]).strip()
+        if filename is None:
+            self.status_message('Joint not exported')
+            return
+
+        threeDS.joint_to_3ds(filename, self.boards, self.bit, self.spacing)
+        self.status_message('Exported to file %s' % filename)
 
     @QtCore.pyqtSlot()
     def _on_print(self):

@@ -393,44 +393,98 @@ class Board(My_Rectangle):
         Note that perimeter() returns a smaller list of (x, y), but more
         coordinates are needed to create a good triangulation.
         '''
+        t = []
+        y_top = self.yT()
+        y_bot = self.yB()
         if self.top_cuts is None: # has only bottom cuts
-            y_nocut = self.yB() # y-location of uncut edge
-            y_cut = y_nocut + bit.depth # y-location of routed edge
-            (xb, yb) = self._do_cuts(bit, self.bottom_cuts, y_nocut, y_cut)
-            x = copy.deepcopy(xb)
-            y_nocut = self.yT()
-            y = [y_nocut] * len(yb)
-        else: # has top cuts
-            y_nocut = self.yT() # y-location of uncut edge
-            y_cut = y_nocut - bit.depth # y-location of routed edge
-            (x, y) = self._do_cuts(bit, self.top_cuts, y_nocut, y_cut)
-            y_nocut = self.yB() # y-location of uncut edge
-            if self.bottom_cuts is None: # has only top cuts
-                xb = copy.deepcopy(x)
-                yb = [y_nocut] * len(y)
-            else: # has both top and bottom cuts
-                y_cut = y_nocut + bit.depth # y-location of routed edge
-                (xb, yb) = self._do_cuts(bit, self.bottom_cuts, y_nocut, y_cut)
-                # TODO: merge xb, yb into x, y
-                itop = 1
-                for i in lrange(1, len(xb)):
-                    if xb[i] > x[itop]:
-                        x.insert(itop + 1, xb[i])
-                        y.insert(itop + 1, y[itop])
-                        yb.insert(itop + 1, yb[itop])
+            y_cut = y_bot + bit.depth # y-location of routed edge
+            cuts = self.bottom_cuts
+            (xc, yc) = self._do_cuts(bit, cuts, y_bot, y_cut)
+            nintervals = 2 * len(cuts) - 1
+            incut = True
+            if cuts[0].xmin > 0:
+                nintervals += 1
+                incut = False
+                xc.insert(0, xc[0])
+                yc.insert(0, y_cut)
+            if cuts[-1].xmax < self.width:
+                nintervals += 1
+                xc.append(self.width)
+                yc.append(y_cut)
+            ntop = nintervals + 1
+            ntotal = ntop + len(xc)
+            v = [[self.xL(), y_top]] * ntotal
+            v[0] = [xc[0], yc[0]]
+            v[1] = [xc[1], yc[1]]
+            ic = 0
+            ibot = 2
+            itop = ntotal - 2
+            for i in lrange(nintervals):
+                v[ibot] = [xc[ibot], yc[ibot]]
+                if ibot < len(xc) - 1:
+                    v[ibot + 1] = [xc[ibot + 1], yc[ibot + 1]]
+                if incut:
+                    v[itop] = [cuts[ic].xmax + self.xL(), y_top]
+                    ic += 1
+                    t.append([ibot - 1, ibot, itop])
+                    t.append([ibot - 1, itop, itop + 1])
+                else:
+                    if ic < len(cuts):
+                        v[itop] = [cuts[ic].xmin + self.xL(), y_top]
                     else:
-                        x.insert(itop, xb[i])
-                        y.insert(itop, y[itop])
-                        yb.insert(itop, yb[itop])
-                    itop += 2
-                xb = copy.deepcopy(x)
-        n = len(x)
-        # append the bottom to top
-        xb.reverse()
-        yb.reverse()
-        x.extend(xb)
-        y.extend(yb)
-        return (x, y)
+                        v[itop] = [self.xR(), y_top]
+                    t.append([ibot - 1, ibot, ibot + 1])
+                    t.append([ibot - 1, ibot + 1, ibot - 2])
+                    t.append([ibot - 2, ibot + 1, itop])
+                    t.append([ibot - 2, itop, itop + 1])
+                incut = (not incut)
+                ibot += 2
+                itop -= 1
+        elif self.bottom_cuts is None: # has only top cuts
+            y_cut = y_top - bit.depth # y-location of routed edge
+            cuts = self.top_cuts
+            (xc, yc) = self._do_cuts(bit, cuts, y_top, y_cut)
+            nintervals = 2 * len(cuts) - 1
+            incut = True
+            if cuts[0].xmin > 0:
+                nintervals += 1
+                incut = False
+                xc.insert(0, xc[0])
+                yc.insert(0, y_cut)
+            if cuts[-1].xmax < self.width:
+                nintervals += 1
+                xc.append(self.width)
+                yc.append(y_cut)
+            nbot = nintervals + 1
+            ntotal = nbot + len(xc)
+            v = [[self.xL(), y_bot]] * ntotal
+            v[0] = [xc[0], yc[0]]
+            v[1] = [xc[1], yc[1]]
+            ic = 0
+            ibot = ntotal - 2
+            itop = 2
+            for i in lrange(nintervals):
+                v[itop] = [xc[itop], yc[itop]]
+                if itop < len(xc) - 1:
+                    v[itop + 1] = [xc[itop + 1], yc[itop + 1]]
+                if incut:
+                    v[ibot] = [cuts[ic].xmax + self.xL(), y_bot]
+                    ic += 1
+                    t.append([itop - 1, itop, ibot + 1])
+                    t.append([itop, ibot, ibot + 1])
+                else:
+                    if ic < len(cuts):
+                        v[ibot] = [cuts[ic].xmin + self.xL(), y_bot]
+                    else:
+                        v[ibot] = [self.xR(), y_bot]
+                    t.append([itop - 2, itop + 1, itop])
+                    t.append([itop - 2, itop, itop - 1])
+                    t.append([itop + 1, itop - 2, ibot + 1])
+                    t.append([itop + 1, ibot + 1, ibot])
+                incut = (not incut)
+                itop += 2
+                ibot -= 1
+        return (v, t)
 
 class Cut(object):
     '''
@@ -562,6 +616,30 @@ def caul_cuts(cuts, bit, board, trim):
         new_cuts.append(cut)
     return new_cuts
 
+def cut_boards(boards, bit, spacing):
+    '''
+    Determines the cuts for each board for the given bit and spacing
+    '''
+    # determine all the cuts from the a-cuts (index 0)
+    last = spacing.cuts
+    boards[0].set_bottom_cuts(last, bit)
+    if boards[3].active:
+        # double-double case
+        top = adjoining_cuts(last, bit, boards[0])
+        boards[3].set_top_cuts(top, bit)
+        last = adjoining_cuts(top, bit, boards[3])
+        boards[3].set_bottom_cuts(last, bit)
+    if boards[2].active:
+        # double and double-double
+        top = adjoining_cuts(last, bit, boards[0])
+        boards[2].set_top_cuts(top, bit)
+        last = adjoining_cuts(top, bit, boards[2])
+        boards[2].set_bottom_cuts(last, bit)
+
+    # make the top cuts on the bottom board
+    top = adjoining_cuts(last, bit, boards[1])
+    boards[1].set_top_cuts(top, bit)
+
 class Joint_Geometry(object):
     '''
     Computes and stores all of the geometry attributes of the joint.
@@ -572,25 +650,7 @@ class Joint_Geometry(object):
         self.bit = bit
         self.spacing = spacing
 
-        # determine all the cuts from the a-cuts (index 0)
-        last = spacing.cuts
-        self.boards[0].set_bottom_cuts(last, bit)
-        if self.boards[3].active:
-            # double-double case
-            top = adjoining_cuts(last, bit, boards[0])
-            self.boards[3].set_top_cuts(top, bit)
-            last = adjoining_cuts(top, bit, boards[3])
-            self.boards[3].set_bottom_cuts(last, bit)
-        if self.boards[2].active:
-            # double and double-double
-            top = adjoining_cuts(last, bit, boards[0])
-            self.boards[2].set_top_cuts(top, bit)
-            last = adjoining_cuts(top, bit, boards[2])
-            self.boards[2].set_bottom_cuts(last, bit)
-
-        # make the top cuts on the bottom board
-        top = adjoining_cuts(last, bit, boards[1])
-        self.boards[1].set_top_cuts(top, bit)
+        cut_boards(boards, bit, spacing)
 
         # Create the corners of the template
         self.rect_T = My_Rectangle(margins.left, margins.bottom,
