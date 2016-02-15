@@ -846,7 +846,7 @@ class Driver(QtGui.QMainWindow):
             self.update_cb_vsfingers(p.vMin, p.vMax, p.v)
             self.cb_vsfingers.blockSignals(False)
             self.var_spacing.set_cuts()
-            self.cb_vsfingers_label.setText(self.var_spacing.keys[0] + ':')
+            self.cb_vsfingers_label.setText(self.var_spacing.labels[0])
             self.spacing = self.var_spacing
         elif self.spacing_index == self.edit_spacing_id:
             # Edit spacing parameters.  Currently, this has no parameters, and
@@ -993,7 +993,7 @@ class Driver(QtGui.QMainWindow):
             print('_on_cb_vsfingers', index)
         self.var_spacing.params['Fingers'].v = int(self.cb_vsfingers.itemText(index))
         self.var_spacing.set_cuts()
-        self.cb_vsfingers_label.setText(self.var_spacing.keys[0] + ':')
+        self.cb_vsfingers_label.setText(self.var_spacing.labels[0])
         self.draw()
         self.status_message('Changed slider %s' % str(self.cb_vsfingers_label.text()))
         self.file_saved = False
@@ -1641,7 +1641,8 @@ def run():
     app = QtGui.QApplication(sys.argv)
 #    app.setStyle('plastique')
 #    app.setStyle('windows')
-    app.setStyle('macintosh')
+#    app.setStyle('windowsxp')
+#    app.setStyle('macintosh')
     driver = Driver()
     driver.show()
     driver.center()
