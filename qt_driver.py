@@ -213,11 +213,15 @@ class Driver(QtGui.QMainWindow):
         print_action.triggered.connect(self._on_print)
         file_menu.addAction(print_action)
 
-        threeDS_action = QtGui.QAction('&Export 3DS...', self)
-        threeDS_action.setShortcut('Ctrl+E')
-        threeDS_action.setStatusTip('Export the joint to a 3DS file')
-        threeDS_action.triggered.connect(self._on_3ds)
-        file_menu.addAction(threeDS_action)
+        # ... we need to make this action persistent, so that we can
+        # enable and disable it (until all of its functionality is
+        # written)
+        self.threeDS_action = QtGui.QAction('&Export 3DS...', self)
+        self.threeDS_action.setShortcut('Ctrl+E')
+        self.threeDS_action.setStatusTip('Export the joint to a 3DS file')
+        self.threeDS_action.triggered.connect(self._on_3ds)
+        file_menu.addAction(self.threeDS_action)
+        self.threeDS_enabler()
 
         exit_action = QtGui.QAction('&Quit', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -931,6 +935,7 @@ class Driver(QtGui.QMainWindow):
             self.draw()
             self.status_message('Changed bit angle to ' + text)
             self.file_saved = False
+            self.threeDS_enabler()
 
     @QtCore.pyqtSlot()
     def _on_board_width(self):
@@ -1163,6 +1168,19 @@ class Driver(QtGui.QMainWindow):
 
         self.draw()
 
+    def threeDS_enabler(self):
+        '''
+        Enables / Disables 3DS file save, depending on joint and bit
+        properties
+        '''
+        if self.config.debug:
+            print('threeDS_enabler')
+
+        if self.bit.angle > 0 or self.boards[2].active:
+            self.threeDS_action.setEnabled(False)
+        else:
+            self.threeDS_action.setEnabled(True)
+
     @QtCore.pyqtSlot()
     def _on_3ds(self):
         '''
@@ -1326,6 +1344,7 @@ class Driver(QtGui.QMainWindow):
             self.le_boardm[0].setEnabled(True)
             self.le_boardm[0].setStyleSheet("color: black;")
         self._on_wood(2, index, reinit)
+        self.threeDS_enabler()
 
     @QtCore.pyqtSlot(int)
     def _on_wood3(self, index):
@@ -1638,11 +1657,14 @@ def run():
     '''
     Sets up and runs the application
     '''
+#    QtGui.QApplication.setStyle('plastique')
+#    QtGui.QApplication.setStyle('windows')
+#    QtGui.QApplication.setStyle('windowsxp')
+#    QtGui.QApplication.setStyle('macintosh')
+#    QtGui.QApplication.setStyle('motif')
+#    QtGui.QApplication.setStyle('cde')
+
     app = QtGui.QApplication(sys.argv)
-#    app.setStyle('plastique')
-#    app.setStyle('windows')
-#    app.setStyle('windowsxp')
-#    app.setStyle('macintosh')
     driver = Driver()
     driver.show()
     driver.center()
