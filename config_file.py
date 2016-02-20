@@ -44,9 +44,14 @@ version = '%s'
 # If True, use metric units.  If False, use English units.
 metric = False
 
-# If using English units, this parameter sets the size of an increment.
-# Ignored for metric units, where 1 increment = 1 mm.
-increments_per_inch = 32
+# If True, restrict router passes to the resolution of the Incra LS Positioner,
+# namely,
+#    1/32" (metric = False)
+#    1 mm  (metric = True)
+# Otherwise, router passes are restricted to a very fine resolution:
+#    0.001"  (metric = False)
+#    0.01 mm (metric = True)
+incra_alignment = True
 
 # Initial board width, in increments
 board_width = 240

@@ -88,7 +88,7 @@ class Driver(QtGui.QMainWindow):
 
         # Read the config file.  We wait until the end of this init to print
         # the status message, because we need the statusbar to be created first.
-        (self.config, msg, msg_level) = config_file.read_config(78)
+        (self.config, msg, msg_level) = config_file.read_config(80)
 
         # Ensure config file is up-to-date
         if msg_level > 0:
@@ -96,7 +96,7 @@ class Driver(QtGui.QMainWindow):
             msg = ''
 
         # Default is English units, 1/32" resolution
-        self.units = utils.Units(self.config.increments_per_inch, self.config.metric)
+        self.units = utils.Units(self.config.metric)
         self.doc = doc.Doc(self.units)
 
         # Create an initial joint.  Even though another joint may be opened
@@ -233,13 +233,33 @@ class Driver(QtGui.QMainWindow):
 
         units_menu = self.menubar.addMenu('Units')
         ag = QtGui.QActionGroup(self, exclusive=True)
-        english_action = QtGui.QAction('English', self, checkable=True)
-        units_menu.addAction(ag.addAction(english_action))
-        self.metric_action = QtGui.QAction('Metric', self, checkable=True)
-        units_menu.addAction(ag.addAction(self.metric_action))
-        english_action.setChecked(True)
-        english_action.triggered.connect(self._on_units)
-        self.metric_action.triggered.connect(self._on_units)
+
+        english_menu = units_menu.addMenu('English')
+        english_incra_action = QtGui.QAction('Alignment for Incra (1/32")', self, checkable=True)
+        english_menu.addAction(ag.addAction(english_incra_action))
+        english_none_action = QtGui.QAction('No alignment', self, checkable=True)
+        english_menu.addAction(ag.addAction(english_none_action))
+        english_incra_action.triggered.connect(self._on_english_incra)
+        english_none_action.triggered.connect(self._on_english_none)
+
+        metric_menu = units_menu.addMenu('Metric')
+        metric_incra_action = QtGui.QAction('Alignment for Incra (1mm)', self, checkable=True)
+        metric_menu.addAction(ag.addAction(metric_incra_action))
+        metric_none_action = QtGui.QAction('No alignment', self, checkable=True)
+        metric_menu.addAction(ag.addAction(metric_none_action))
+        metric_incra_action.triggered.connect(self._on_metric_incra)
+        metric_none_action.triggered.connect(self._on_metric_none)
+
+        if self.config.metric:
+            if self.config.incra_alignment:
+                metric_incra_action.setChecked(True)
+            else:
+                metric_none_action.setChecked(True)
+        else:
+            if self.config.incra_alignment:
+                english_incra_action.setChecked(True)
+            else:
+                english_none_action.setChecked(True)
 
         # Add view menu
 
@@ -1264,17 +1284,40 @@ class Driver(QtGui.QMainWindow):
         webbrowser.open('http://lowrie.github.io/pyRouterJig/documentation.html')
 
     @QtCore.pyqtSlot()
-    def _on_units(self):
-        '''Handles changes in units'''
+    def _on_english_incra(self):
+        '''Handles change to english units, incra alignment'''
         if self.config.debug:
-            print('_on_units')
-        do_metric = self.metric_action.isChecked()
-        if self.metric == do_metric:
-            return # no change in units
-        if do_metric:
-            self.units = utils.Units(metric=True)
-        else:
-            self.units = utils.Units(32)
+            print('_on_english_incra')
+        self.change_units(metric=False, align_incra=True)
+
+    @QtCore.pyqtSlot()
+    def _on_english_none(self):
+        '''Handles change to english units, no alignment'''
+        if self.config.debug:
+            print('_on_english_none')
+        self.change_units(metric=False, align_incra=False)
+
+    @QtCore.pyqtSlot()
+    def _on_metric_incra(self):
+        '''Handles change to metric units, incra alignment'''
+        if self.config.debug:
+            print('_on_metric_incra')
+        self.change_units(metric=True, align_incra=True)
+
+    @QtCore.pyqtSlot()
+    def _on_metric_none(self):
+        '''Handles change to metric units, no alignment'''
+        if self.config.debug:
+            print('_on_metric_incra')
+        self.change_units(metric=True, align_incra=False)
+
+    def change_units(self, metric=False, align_incra=True):
+        '''Changes units (if necessary)'''
+        if self.config.debug:
+            print('change_units')
+        if self.units.metric == metric and self.units.align_incra == align_incra:
+            return # units not really changed
+        self.units = utils.Units(metric, align_incra)
         for b in self.boards:
             b.change_units(self.units)
         self.bit.change_units(self.units)

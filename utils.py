@@ -25,7 +25,7 @@ from __future__ import division
 
 import math, fractions, os, glob
 
-VERSION = '0.7.8'
+VERSION = '0.8.0'
 
 def my_round(f):
     '''
@@ -125,35 +125,46 @@ class Units(object):
     '''
     Converts to and from increments and the units being used.
 
-    metric: If true, then an increment corresponds to 1 mm.
+    metric: If true, then use metric (mm).  Otherwise, english (inches)
+    align_incra: If true, align for the incra fence.
 
-    increments_per_inch:  For metric false, this correpsonds
-    to the number of increments per inch.  So a value of 32
-    (the default) corresponds an increment size of 1/32".
-    For metric true, this values is the number of mm in an inch.
-
+    Attributes:
+    increments_per_inch: Number of increments per inch.
+    increments_per_length: Number of increments per unit length (1 inch for english, 1 mm for metric)
     '''
     mm_per_inch = 25.4
-    def __init__(self, increments_per_inch=32, metric=False):
+    def __init__(self, metric=False, align_incra=True):
         self.metric = metric
-        self.increments_per_inch = increments_per_inch
+        self.align_incra = align_incra
+        if align_incra:
+            if metric:
+                self.increments_per_length = 1
+            else:
+                self.increments_per_length = 32
+        else:
+            # Set a very fine alignment
+            if metric:
+                # 0.01 mm for metric
+                self.increments_per_length = 100
+            else:
+                # 0.001" for english
+                self.increments_per_length = 1000
         if metric:
-            self.increments_per_inch = self.mm_per_inch
+            self.increments_per_inch = self.mm_per_inch * self.increments_per_length
+        else: # english units
+            self.increments_per_inch = self.increments_per_length
     def get_scaling(self, new_units):
         '''
         Returns the scaling factor to change the current units to new_units.
         The scaling factor is a floating point number, unless there is no
-        change in units, in which case the integer 1 is returned.
+        change in units or resolution, in which case the integer 1 is returned.
         '''
         s = 1
-        if new_units.metric:
-            if not self.metric:
-                s = self.mm_per_inch / self.increments_per_inch
+        if self.metric == new_units.metric:
+            if self.increments_per_length != new_units.increments_per_length:
+                s = float(new_units.increments_per_length) / self.increments_per_length
         else:
-            if self.metric:
-                s = new_units.increments_per_inch / self.mm_per_inch
-            elif self.increments_per_inch != new_units.increments_per_inch:
-                s = float(new_units.increments_per_inch) / self.increments_per_inch
+            s = new_units.increments_per_inch / self.increments_per_inch
         return s
     def increments_to_inches(self, increments_):
         '''Converts increments to inches.'''
@@ -164,7 +175,7 @@ class Units(object):
     def increments_to_string(self, increments, with_units=False):
         '''A string representation of the value increments'''
         if self.metric:
-            r = '%d' % increments
+            r = '%g' % (increments / float(self.increments_per_length))
         else:
             whole = increments // self.increments_per_inch
             numer = increments - self.increments_per_inch * whole
@@ -192,7 +203,7 @@ class Units(object):
         attribute.
         '''
         if self.metric:
-            return int(s)
+            return float(s) * self.increments_per_length
         f = My_Fraction()
         f.set_from_string(s)
         r = f.whole * self.increments_per_inch
@@ -202,11 +213,6 @@ class Units(object):
                 raise ValueError('"%s" is not an exact number of increments' % s)
             r += ratio * f.numerator
         return r
-    def metric_to_english(self, m):
-        '''
-        Converts metric increments to english increments
-        '''
-        return int(m / 25.4 * self.increments_per_inch)
 
 class Margins(object):
     '''
