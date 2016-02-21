@@ -44,7 +44,7 @@ version = '%s'
 # If True, use metric units.  If False, use English units.
 metric = False
 
-# If True, restrict router passes to the resolution of the Incra LS Positioner,
+# If True, restrict router passes to the resolution of the Incra LS Positioner;
 # namely,
 #    1/32" (metric = False)
 #    1 mm  (metric = True)
@@ -53,24 +53,39 @@ metric = False
 #    0.01 mm (metric = True)
 incra_alignment = True
 
+# [inches|mm] below means the value is in inches (if metric=False above) or mm
+# (if metric=True).  The value may be an integer or floating point value.
+# Fractional values (only for inches) must be in quotes.
+
 # Initial board width [inches|mm]
+# Example of fractional value. 7.5 is equivalent.
 board_width = '7 1/2'
 
 # Initial bit width [inches|mm]
+# Another example of fractional value. 0.5 is equivalent.
 bit_width = '1/2'
 
-# Initial bit depth [inches|mm]
+# Initial bit depth [inches|mm] 
+# Example of floating point. '3/4' is equivalent.
 bit_depth = 0.75
 
 # Initial bit angle [degrees]
 bit_angle = 0
 
-# Avoid fingers that are smaller than this dimension.
+# Avoid fingers that are smaller than this dimension [inches|mm]
 min_finger_width = '1/16'
 
-# Trim this amount from each side of the Top- and Bottom-board fingers to form the optional clamping cauls.
-# Specified in increments.
+# Trim this amount from each side of the Top- and Bottom-board fingers to form
+# the optional clamping cauls [inches|mm]
 caul_trim = '1/32'
+
+# The margins object controls top, bottom, and side margins, along with the
+# separation between objects in the figure [inches|mm]
+top_margin = '1/4'
+left_margin = top_margin
+right_margin = top_margin
+bottom_margin = '1/2'
+separation = top_margin
 
 # On save image, minimum width of image in pixels. Used if the figure width is
 # less than this size.  Does not apply to screenshots, which are done at the
@@ -103,15 +118,6 @@ default_wood = 'DiagCrossPattern'
 # for developers.
 debug = False
 #debug = True
-
-# The margins object controls top, bottom, and side margins, along with the
-# separation between objects in the figure.
-# Specified in increments.
-top_margin = '1/4'
-left_margin = top_margin
-right_margin = top_margin
-bottom_margin = '1/2'
-separation = top_margin
 
 # Colors are specified as a mix of three values between 0 and 255, as
 #     (red, green, blue)
