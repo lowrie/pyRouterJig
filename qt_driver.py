@@ -98,13 +98,14 @@ class Driver(QtGui.QMainWindow):
         # Default is English units, 1/32" resolution
         self.units = utils.Units(self.config.metric)
         self.doc = doc.Doc(self.units)
+        config_file.parameters_to_increments(self.config, self.units)
 
         # Create an initial joint.  Even though another joint may be opened
         # later, we do this now so that the initial widget layout may be
         # created.
-        self.bit = router.Router_Bit(self.units, self.config.bit_width,\
-                                     self.config.bit_depth, self.config.bit_angle)
-        self.m_thickness = [4, 4] # initial thickness of M0 and M1 boards
+        self.bit = router.Router_Bit(self.units, self.config.bit_width, self.config.bit_depth, 
+                                     self.config.bit_angle)
+        self.m_thickness = [4, 4] # initial thickness of double and double-double boards
         self.boards = []
         for i in lrange(4):
             self.boards.append(router.Board(self.bit, width=self.config.board_width))
@@ -421,8 +422,7 @@ class Driver(QtGui.QMainWindow):
         self.es_slider0.setMaximum(p.vMax)
         self.es_slider0.setValue(p.v)
         self.es_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
-        if p.vMax - p.vMin < 10:
-            self.es_slider0.setTickInterval(1)
+        utils.set_slider_tick_interval(self.es_slider0)
         self.es_slider0.valueChanged.connect(self._on_es_slider0)
         self.es_slider0.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
@@ -435,8 +435,7 @@ class Driver(QtGui.QMainWindow):
         self.es_slider1.setMaximum(p.vMax)
         self.es_slider1.setValue(p.v)
         self.es_slider1.setTickPosition(QtGui.QSlider.TicksBelow)
-        if p.vMax - p.vMin < 10:
-            self.es_slider1.setTickInterval(1)
+        utils.set_slider_tick_interval(self.es_slider1)
         self.es_slider1.valueChanged.connect(self._on_es_slider1)
         self.es_slider1.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
@@ -845,12 +844,14 @@ class Driver(QtGui.QMainWindow):
             self.es_slider0.setMinimum(p.vMin)
             self.es_slider0.setMaximum(p.vMax)
             self.es_slider0.setValue(p.v)
+            utils.set_slider_tick_interval(self.es_slider0)
             self.es_slider0.blockSignals(False)
             p = params['Width']
             self.es_slider1.blockSignals(True)
             self.es_slider1.setMinimum(p.vMin)
             self.es_slider1.setMaximum(p.vMax)
             self.es_slider1.setValue(p.v)
+            utils.set_slider_tick_interval(self.es_slider1)
             self.es_slider1.blockSignals(False)
             p = params['Centered']
             centered = p.v
@@ -1317,7 +1318,9 @@ class Driver(QtGui.QMainWindow):
             print('change_units')
         if self.units.metric == metric and self.units.align_incra == align_incra:
             return # units not really changed
+        old_units = self.units
         self.units = utils.Units(metric, align_incra)
+        config_file.change_units(self.config, old_units, self.units)
         for b in self.boards:
             b.change_units(self.units)
         self.bit.change_units(self.units)

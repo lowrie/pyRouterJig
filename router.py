@@ -304,6 +304,7 @@ class Board(My_Rectangle):
             return
         self.width = my_round(self.width * s)
         self.height = my_round(self.height * s)
+        self.dheight = my_round(self.dheight * s)
         self.thickness = my_round(self.thickness * s)
         self.units = new_units
     def set_bottom_cuts(self, cuts, bit):

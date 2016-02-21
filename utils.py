@@ -147,8 +147,8 @@ class Units(object):
                 # 0.01 mm for metric
                 self.increments_per_length = 100
             else:
-                # 0.001" for english
-                self.increments_per_length = 1000
+                # Roughly 0.001" for english
+                self.increments_per_length = 1024
         if metric:
             self.increments_per_inch = self.mm_per_inch * self.increments_per_length
         else: # english units
@@ -180,7 +180,12 @@ class Units(object):
             whole = increments // self.increments_per_inch
             numer = increments - self.increments_per_inch * whole
             denom = self.increments_per_inch
-            r = My_Fraction(whole, numer, denom).to_string()
+            frac = My_Fraction(whole, numer, denom)
+            frac.reduce()
+            if frac.numerator > 0 and frac.denominator not in [1, 2, 4, 8, 16, 32, 64]:
+                r = '%.3f' % (increments / float(self.increments_per_length))
+            else:
+                r = frac.to_string()
         if with_units:
             r += self.units_string()
         return r
@@ -196,23 +201,34 @@ class Units(object):
                 return ' inches'
             else:
                 return '"'
+    def string_to_length(self, s):
+        '''
+        Converts a string representation to a floating-point length (mm or inch).
+        Assumes the string is in inches or mm, depending on the metric
+        attribute.
+        '''
+        if self.metric:
+            return float(s)
+        f = My_Fraction()
+        f.set_from_string(s)
+        r = f.whole
+        if f.numerator > 0:
+            r += float(f.numerator) / f.denominator
+        return r
+    def length_to_increments(self, v):
+        return my_round(v * self.increments_per_length)
     def string_to_increments(self, s):
         '''
         Converts a string representation to the number of increments.
         Assumes the string is in inches or mm, depending on the metric
         attribute.
         '''
-        if self.metric:
-            return float(s) * self.increments_per_length
-        f = My_Fraction()
-        f.set_from_string(s)
-        r = f.whole * self.increments_per_inch
-        if f.numerator > 0:
-            ratio = self.increments_per_inch // f.denominator
-            if ratio * f.denominator != self.increments_per_inch:
-                raise ValueError('"%s" is not an exact number of increments' % s)
-            r += ratio * f.numerator
-        return r
+        return self.length_to_increments(self.string_to_length(s))
+    def abstract_to_increments(self, a):
+        if isinstance(a, str):
+            return self.string_to_increments(a)
+        else:
+            return self.length_to_increments(float(a))
 
 class Margins(object):
     '''
@@ -295,3 +311,16 @@ def get_file_index(path, prefix, postfix):
             index = i
     index += 1
     return index
+
+def set_slider_tick_interval(slider):
+    '''
+    Sets the QSlider tick interval to a reasonable value
+    '''
+    minval = slider.minimum()
+    maxval = slider.maximum()
+    maxtics = 30
+    diff = maxval - minval
+    if diff > maxtics:
+        slider.setTickInterval(diff // maxtics)
+    else:
+        slider.setTickInterval(1)

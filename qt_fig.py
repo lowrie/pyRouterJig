@@ -141,7 +141,8 @@ class Qt_Plotter(QtGui.QWidget):
         Returns True if the dimensions changed.
         '''
         # Try default margins, but reset if the template is too small for margins
-        self.margins = utils.Margins(8, self.config.separation,\
+        self.margins = utils.Margins(self.config.separation, \
+                                     self.config.separation,\
                                      self.config.left_margin,\
                                      self.config.right_margin,\
                                      self.config.bottom_margin,\
@@ -700,6 +701,7 @@ class Qt_Plotter(QtGui.QWidget):
         '''
         Annotates the cut sizes on each board
         '''
+        units = self.geom.bit.units
         self.set_font_size(painter, 'fingers')
         # Determine the cuts that are adjacent to board-A and board-B
         acuts = self.geom.boards[1].top_cuts
@@ -717,7 +719,7 @@ class Qt_Plotter(QtGui.QWidget):
         for c in bcuts:
             x = self.geom.boards[1].xL() + (c.xmin + c.xmax) // 2
             y = self.geom.boards[1].yT()
-            label = '%d' % (c.xmax - c.xmin)
+            label = units.increments_to_string(c.xmax - c.xmin)
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill=self.current_background)
         # ... do the A cuts
@@ -726,7 +728,7 @@ class Qt_Plotter(QtGui.QWidget):
         for c in acuts:
             x = self.geom.boards[0].xL() + (c.xmin + c.xmax) // 2
             y = self.geom.boards[0].yB()
-            label = '%d' % (c.xmax - c.xmin)
+            label = units.increments_to_string(c.xmax - c.xmin)
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill=self.current_background)
 

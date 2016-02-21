@@ -53,25 +53,24 @@ metric = False
 #    0.01 mm (metric = True)
 incra_alignment = True
 
-# Initial board width, in increments
-board_width = 240
+# Initial board width [inches|mm]
+board_width = '7 1/2'
 
-# Initial bit width, in increments
-bit_width = 16
+# Initial bit width [inches|mm]
+bit_width = '1/2'
 
-# Initial bit depth, in increments
-bit_depth = 24
+# Initial bit depth [inches|mm]
+bit_depth = 0.75
 
-# Initial bit angle, in degrees
+# Initial bit angle [degrees]
 bit_angle = 0
 
 # Avoid fingers that are smaller than this dimension.
-# Specified in increments.
-min_finger_width = 2
+min_finger_width = '1/16'
 
 # Trim this amount from each side of the Top- and Bottom-board fingers to form the optional clamping cauls.
 # Specified in increments.
-caul_trim = 1
+caul_trim = '1/32'
 
 # On save image, minimum width of image in pixels. Used if the figure width is
 # less than this size.  Does not apply to screenshots, which are done at the
@@ -108,10 +107,10 @@ debug = False
 # The margins object controls top, bottom, and side margins, along with the
 # separation between objects in the figure.
 # Specified in increments.
-top_margin = 8
+top_margin = '1/4'
 left_margin = top_margin
 right_margin = top_margin
-bottom_margin = 16
+bottom_margin = '1/2'
 separation = top_margin
 
 # Colors are specified as a mix of three values between 0 and 255, as
@@ -174,3 +173,39 @@ def read_config(min_version_number):
               ' settings.' % (filename, backup)
 
     return (config, msg, msg_level)
+
+def parameters_to_increments(config, units):
+    '''
+    Converts parameters in the config file to their appropriate increment values, based on
+    units.
+    '''
+    config.board_width = units.abstract_to_increments(config.board_width)
+    config.bit_width = units.abstract_to_increments(config.bit_width)
+    config.bit_depth = units.abstract_to_increments(config.bit_depth)
+    config.min_finger_width = max(1, units.abstract_to_increments(config.min_finger_width))
+    config.caul_trim = max(1, units.abstract_to_increments(config.caul_trim))
+    config.top_margin = units.abstract_to_increments(config.top_margin)
+    config.bottom_margin = units.abstract_to_increments(config.bottom_margin)
+    config.left_margin = units.abstract_to_increments(config.left_margin)
+    config.right_margin = units.abstract_to_increments(config.right_margin)
+    config.separation = units.abstract_to_increments(config.separation)
+
+def change_units(config, old_units, new_units):
+    '''
+    Changes units for parameters in the config file, scaling appropriately their increment values.
+    '''
+    s = old_units.get_scaling(new_units)
+    if s == 1:
+        return
+    config.min_finger_width = utils.my_round(config.min_finger_width * s)
+    config.caul_trim = utils.my_round(config.caul_trim * s)
+    config.top_margin = utils.my_round(config.top_margin * s)
+    config.bottom_margin = utils.my_round(config.bottom_margin * s)
+    config.left_margin = utils.my_round(config.left_margin * s)
+    config.right_margin = utils.my_round(config.right_margin * s)
+    config.separation = utils.my_round(config.separation * s)
+    # We really don't need to change the following, because they're only used
+    # initially in the driver, but do it anyway
+    config.board_width = utils.my_round(config.board_width * s)
+    config.bit_width = utils.my_round(config.bit_width * s)
+    config.bit_depth = utils.my_round(config.bit_depth * s)
