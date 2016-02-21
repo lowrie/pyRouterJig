@@ -236,7 +236,7 @@ class Driver(QtGui.QMainWindow):
         ag = QtGui.QActionGroup(self, exclusive=True)
 
         english_menu = units_menu.addMenu('English')
-        english_incra_action = QtGui.QAction('Alignment for Incra (1/32")', self, checkable=True)
+        english_incra_action = QtGui.QAction('Alignment for INCRA (1/32")', self, checkable=True)
         english_menu.addAction(ag.addAction(english_incra_action))
         english_none_action = QtGui.QAction('No alignment', self, checkable=True)
         english_menu.addAction(ag.addAction(english_none_action))
@@ -244,7 +244,7 @@ class Driver(QtGui.QMainWindow):
         english_none_action.triggered.connect(self._on_english_none)
 
         metric_menu = units_menu.addMenu('Metric')
-        metric_incra_action = QtGui.QAction('Alignment for Incra (1mm)', self, checkable=True)
+        metric_incra_action = QtGui.QAction('Alignment for INCRA (1mm)', self, checkable=True)
         metric_menu.addAction(ag.addAction(metric_incra_action))
         metric_none_action = QtGui.QAction('No alignment', self, checkable=True)
         metric_menu.addAction(ag.addAction(metric_none_action))
