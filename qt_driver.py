@@ -88,7 +88,7 @@ class Driver(QtGui.QMainWindow):
 
         # Read the config file.  We wait until the end of this init to print
         # the status message, because we need the statusbar to be created first.
-        (self.config, msg, msg_level) = config_file.read_config(80)
+        (self.config, msg, msg_level) = config_file.read_config(82)
 
         # Ensure config file is up-to-date
         if msg_level > 0:
@@ -125,9 +125,9 @@ class Driver(QtGui.QMainWindow):
         self.spacing_index = None # to be set in layout_widgets()
 
         # Create the main frame and menus
-        self.create_menu()
         self.create_status_bar()
         self.create_widgets()
+        self.create_menu()
 
         # Draw the initial figure
         self.draw()
@@ -232,10 +232,10 @@ class Driver(QtGui.QMainWindow):
 
         # Add units menu
 
-        units_menu = self.menubar.addMenu('Units')
+        self.units_menu = self.menubar.addMenu('Units')
         ag = QtGui.QActionGroup(self, exclusive=True)
 
-        english_menu = units_menu.addMenu('English')
+        english_menu = self.units_menu.addMenu('English')
         english_incra_action = QtGui.QAction('Alignment for INCRA (1/32")', self, checkable=True)
         english_menu.addAction(ag.addAction(english_incra_action))
         english_none_action = QtGui.QAction('No alignment', self, checkable=True)
@@ -243,13 +243,14 @@ class Driver(QtGui.QMainWindow):
         english_incra_action.triggered.connect(self._on_english_incra)
         english_none_action.triggered.connect(self._on_english_none)
 
-        metric_menu = units_menu.addMenu('Metric')
+        metric_menu = self.units_menu.addMenu('Metric')
         metric_incra_action = QtGui.QAction('Alignment for INCRA (1mm)', self, checkable=True)
         metric_menu.addAction(ag.addAction(metric_incra_action))
         metric_none_action = QtGui.QAction('No alignment', self, checkable=True)
         metric_menu.addAction(ag.addAction(metric_none_action))
         metric_incra_action.triggered.connect(self._on_metric_incra)
         metric_none_action.triggered.connect(self._on_metric_none)
+        self.units_menu.setEnabled(True)
 
         if self.config.metric:
             if self.config.incra_alignment:
@@ -265,15 +266,27 @@ class Driver(QtGui.QMainWindow):
         # Add view menu
 
         view_menu = self.menubar.addMenu('View')
+
         fullscreen_action = QtGui.QAction('&Fullscreen', self, checkable=True)
         fullscreen_action.setShortcut('Ctrl+F')
         fullscreen_action.setStatusTip('Toggle full-screen mode')
         fullscreen_action.triggered.connect(self._on_fullscreen)
         view_menu.addAction(fullscreen_action)
+
         caul_action = QtGui.QAction('Caul Template', self, checkable=True)
         caul_action.setStatusTip('Toggle caul template')
         caul_action.triggered.connect(self._on_caul)
         view_menu.addAction(caul_action)
+
+        finger_size_action = QtGui.QAction('Finger Sizes', self, checkable=True)
+        finger_size_action.setStatusTip('Toggle viewing finger sizes')
+        finger_size_action.triggered.connect(self._on_finger_sizes)
+        view_menu.addAction(finger_size_action)
+        if self.config.label_fingers:
+            self.fig.canvas.do_finger_sizes = True
+        else:
+            self.fig.canvas.do_finger_sizes = False
+        finger_size_action.setChecked(self.fig.canvas.do_finger_sizes)
 
         # Add the help menu
 
@@ -806,12 +819,14 @@ class Driver(QtGui.QMainWindow):
         les.extend(self.le_boardm)
         les.extend(self.le_boardm_label)
         if self.spacing_index == self.edit_spacing_id:
+            self.units_menu.setEnabled(False)
             for le in les:
                 le.blockSignals(True)
                 le.setEnabled(False)
                 le.setStyleSheet("color: gray;")
                 le.blockSignals(False)
         else:
+            self.units_menu.setEnabled(True)
             for le in les:
                 le.blockSignals(True)
                 le.setEnabled(True)
@@ -1595,6 +1610,19 @@ class Driver(QtGui.QMainWindow):
             self.do_caul = True
             self.status_message('Turned on caul template.')
         self.file_saved = False
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_finger_sizes(self):
+        '''Handles toggling showing finger sizes'''
+        if self.config.debug:
+            print('_on_finger_sizes')
+        if self.fig.canvas.do_finger_sizes:
+            self.fig.canvas.do_finger_sizes = False
+            self.status_message('Turned off finger sizes.')
+        else:
+            self.fig.canvas.do_finger_sizes = True
+            self.status_message('Turned on finger sizes.')
         self.draw()
 
     def status_message(self, msg, flash_len_ms=None):

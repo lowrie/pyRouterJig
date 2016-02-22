@@ -53,6 +53,10 @@ metric = False
 #    0.01 mm (metric = True)
 incra_alignment = True
 
+# If true, label each finger with its size.  The labels may also be turned
+# on and off under the menu "View" and selecting "Finger Sizes".
+label_fingers = True
+
 # [inches|mm] below means the value is in inches (if metric=False above) or mm
 # (if metric=True).  The value may be an integer or floating point value.
 # Fractional values (only for inches) must be in quotes.

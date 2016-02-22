@@ -121,6 +121,8 @@ class Qt_Plotter(QtGui.QWidget):
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
         self.font_size = {'title':4, 'fingers':3, 'template':2, 'boards':4, 'template_labels':3}
+        # if true, draw finger sizes
+        self.do_finger_sizes = False
 
     def minimumSizeHint(self):
         '''
@@ -322,7 +324,8 @@ class Qt_Plotter(QtGui.QWidget):
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
-        self.draw_cut_sizes(painter)
+        if self.do_finger_sizes:
+            self.draw_finger_sizes(painter)
 
         return (window_width, window_height)
 
@@ -697,12 +700,12 @@ class Qt_Plotter(QtGui.QWidget):
         p = (self.geom.board_T.xMid(), self.margins.bottom)
         paint_text(painter, title, p, flags, (0, 5))
 
-    def draw_cut_sizes(self, painter):
+    def draw_finger_sizes(self, painter):
         '''
-        Annotates the cut sizes on each board
+        Annotates the finger sizes on each board
         '''
         units = self.geom.bit.units
-        self.set_font_size(painter, 'fingers')
+        self.set_font_size(painter, 'template')
         # Determine the cuts that are adjacent to board-A and board-B
         acuts = self.geom.boards[1].top_cuts
         bcuts = self.geom.boards[0].bottom_cuts
