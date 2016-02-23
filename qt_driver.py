@@ -95,8 +95,8 @@ class Driver(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, 'Warning', msg)
             msg = ''
 
-        # Default is English units, 1/32" resolution
-        self.units = utils.Units(self.config.metric)
+        # Form the units
+        self.units = utils.Units(self.config.metric, self.config.num_increments)
         self.doc = doc.Doc(self.units)
         config_file.parameters_to_increments(self.config, self.units)
 
@@ -229,39 +229,6 @@ class Driver(QtGui.QMainWindow):
         exit_action.setStatusTip('Exit pyRouterJig')
         exit_action.triggered.connect(self._on_exit)
         file_menu.addAction(exit_action)
-
-        # Add units menu
-
-        self.units_menu = self.menubar.addMenu('Units')
-        ag = QtGui.QActionGroup(self, exclusive=True)
-
-        english_menu = self.units_menu.addMenu('English')
-        english_incra_action = QtGui.QAction('Alignment for INCRA (1/32")', self, checkable=True)
-        english_menu.addAction(ag.addAction(english_incra_action))
-        english_none_action = QtGui.QAction('No alignment', self, checkable=True)
-        english_menu.addAction(ag.addAction(english_none_action))
-        english_incra_action.triggered.connect(self._on_english_incra)
-        english_none_action.triggered.connect(self._on_english_none)
-
-        metric_menu = self.units_menu.addMenu('Metric')
-        metric_incra_action = QtGui.QAction('Alignment for INCRA (1mm)', self, checkable=True)
-        metric_menu.addAction(ag.addAction(metric_incra_action))
-        metric_none_action = QtGui.QAction('No alignment', self, checkable=True)
-        metric_menu.addAction(ag.addAction(metric_none_action))
-        metric_incra_action.triggered.connect(self._on_metric_incra)
-        metric_none_action.triggered.connect(self._on_metric_none)
-        self.units_menu.setEnabled(True)
-
-        if self.config.metric:
-            if self.config.incra_alignment:
-                metric_incra_action.setChecked(True)
-            else:
-                metric_none_action.setChecked(True)
-        else:
-            if self.config.incra_alignment:
-                english_incra_action.setChecked(True)
-            else:
-                english_none_action.setChecked(True)
 
         # Add view menu
 
@@ -819,14 +786,12 @@ class Driver(QtGui.QMainWindow):
         les.extend(self.le_boardm)
         les.extend(self.le_boardm_label)
         if self.spacing_index == self.edit_spacing_id:
-            self.units_menu.setEnabled(False)
             for le in les:
                 le.blockSignals(True)
                 le.setEnabled(False)
                 le.setStyleSheet("color: gray;")
                 le.blockSignals(False)
         else:
-            self.units_menu.setEnabled(True)
             for le in les:
                 le.blockSignals(True)
                 le.setEnabled(True)
@@ -1154,6 +1119,7 @@ class Driver(QtGui.QMainWindow):
 
         # Reset the dependent data
         self.units = self.bit.units
+        self.doc = doc.Doc(self.units)
         self.template = router.Incra_Template(self.units, self.boards, self.do_caul)
 
         # ... set the wood selection for each board.  If the wood does not
@@ -1298,54 +1264,6 @@ class Driver(QtGui.QMainWindow):
             print('_on_doclink')
 
         webbrowser.open('http://lowrie.github.io/pyRouterJig/documentation.html')
-
-    @QtCore.pyqtSlot()
-    def _on_english_incra(self):
-        '''Handles change to english units, incra alignment'''
-        if self.config.debug:
-            print('_on_english_incra')
-        self.change_units(metric=False, align_incra=True)
-
-    @QtCore.pyqtSlot()
-    def _on_english_none(self):
-        '''Handles change to english units, no alignment'''
-        if self.config.debug:
-            print('_on_english_none')
-        self.change_units(metric=False, align_incra=False)
-
-    @QtCore.pyqtSlot()
-    def _on_metric_incra(self):
-        '''Handles change to metric units, incra alignment'''
-        if self.config.debug:
-            print('_on_metric_incra')
-        self.change_units(metric=True, align_incra=True)
-
-    @QtCore.pyqtSlot()
-    def _on_metric_none(self):
-        '''Handles change to metric units, no alignment'''
-        if self.config.debug:
-            print('_on_metric_incra')
-        self.change_units(metric=True, align_incra=False)
-
-    def change_units(self, metric=False, align_incra=True):
-        '''Changes units (if necessary)'''
-        if self.config.debug:
-            print('change_units')
-        if self.units.metric == metric and self.units.align_incra == align_incra:
-            return # units not really changed
-        old_units = self.units
-        self.units = utils.Units(metric, align_incra)
-        config_file.change_units(self.config, old_units, self.units)
-        for b in self.boards:
-            b.change_units(self.units)
-        self.bit.change_units(self.units)
-        self.doc.change_units(self.units)
-        self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
-        self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
-        self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
-        self.reinit_spacing()
-        self.update_tooltips()
-        self.draw()
 
     def _on_wood(self, iwood, index=None, reinit=False):
         '''Handles all changes in wood'''

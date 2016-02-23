@@ -20,7 +20,7 @@
 
 '''
 This module contains utilities for creating and reading the
-user configuration file
+user configuration file.
 '''
 
 import os, imp, shutil
@@ -31,11 +31,20 @@ _CONFIG_INIT = r'''
 # Options for pyRouterJig.  Be careful editing this file.  Any errors
 # that occur will not be friendly.
 #
-# This file is a python script, so for example, '#' as the first
-# character on a line is a comment.
+# This file is a python script.  Here's some basics:
+#
+# If # is the first character on a line, it's a comment line.
+# True and False are logical values (you must capitalize the first letter).
+# None is also a value, sometimes used below to indicate "use the default."
+#
+# Also, [inches|mm] below means "inches or millimeters".  The value is in
+# inches (if metric=False) or mm (if metric=True).  The value may be an
+# integer or floating point value.  Fractional values (only for inches) must
+# be in quotes.
+#
 ######################################################################
-# Do not change the version, because this tells pyRouterJig which
-# version initially created this file.
+# Do not change version, because this tells pyRouterJig which
+# code version initially created this file.
 version = '%s'
 ######################################################################
 # Options below may be changed
@@ -44,22 +53,21 @@ version = '%s'
 # If True, use metric units.  If False, use English units.
 metric = False
 
-# If True, restrict router passes to the resolution of the Incra LS Positioner;
-# namely,
-#    1/32" (metric = False)
-#    1 mm  (metric = True)
-# Otherwise, router passes are restricted to a very fine resolution:
-#    0.001"  (metric = False)
-#    0.01 mm (metric = True)
-incra_alignment = True
+# The number of increments per unit length (integer value, or None). 
+# All dimensions and router passes are restricted to
+#   (unit length) / (num_increments) 
+# The unit length is
+#   1 inch (metric = False)
+#   1 mm   (metric = True)
+# If None, num_increments is set to the resolution of the Incra LS Positioner;
+# namely.
+#    32 (metric = False), corresponding to 1/32" resolution
+#    1  (metric = True), corresponding to 1mm resolution
+num_increments = None
 
 # If true, label each finger with its size.  The labels may also be turned
 # on and off under the menu "View" and selecting "Finger Sizes".
 label_fingers = True
-
-# [inches|mm] below means the value is in inches (if metric=False above) or mm
-# (if metric=True).  The value may be an integer or floating point value.
-# Fractional values (only for inches) must be in quotes.
 
 # Initial board width [inches|mm]
 # Example of fractional value. 7.5 is equivalent.
@@ -121,7 +129,6 @@ default_wood = 'DiagCrossPattern'
 # stdout during a pyRouterJig session.  This option is typically only useful
 # for developers.
 debug = False
-#debug = True
 
 # Colors are specified as a mix of three values between 0 and 255, as
 #     (red, green, blue)
@@ -199,23 +206,3 @@ def parameters_to_increments(config, units):
     config.left_margin = units.abstract_to_increments(config.left_margin)
     config.right_margin = units.abstract_to_increments(config.right_margin)
     config.separation = units.abstract_to_increments(config.separation)
-
-def change_units(config, old_units, new_units):
-    '''
-    Changes units for parameters in the config file, scaling appropriately their increment values.
-    '''
-    s = old_units.get_scaling(new_units)
-    if s == 1:
-        return
-    config.min_finger_width = utils.my_round(config.min_finger_width * s)
-    config.caul_trim = utils.my_round(config.caul_trim * s)
-    config.top_margin = utils.my_round(config.top_margin * s)
-    config.bottom_margin = utils.my_round(config.bottom_margin * s)
-    config.left_margin = utils.my_round(config.left_margin * s)
-    config.right_margin = utils.my_round(config.right_margin * s)
-    config.separation = utils.my_round(config.separation * s)
-    # We really don't need to change the following, because they're only used
-    # initially in the driver, but do it anyway
-    config.board_width = utils.my_round(config.board_width * s)
-    config.bit_width = utils.my_round(config.bit_width * s)
-    config.bit_depth = utils.my_round(config.bit_depth * s)

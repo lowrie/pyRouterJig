@@ -41,8 +41,7 @@ def serialize(bit, boards, sp, config):
     # Save the units
     units = bit.units
     p.dump(units.metric)
-    if not units.metric:
-        p.dump(units.increments_per_inch)
+    p.dump(units.num_increments)
     # Save the bit
     p.dump(bit.width)
     p.dump(bit.depth)
@@ -82,11 +81,8 @@ def unserialize(s, config):
         print('unserialized version:', version)
     # form the units
     metric = u.load()
-    if metric:
-        units = utils.Units(metric=True)
-    else:
-        ipi = u.load()
-        units = utils.Units(ipi)
+    num_increments = u.load()
+    units = utils.Units(metric, num_increments)
     # form the bit
     width = u.load()
     depth = u.load()

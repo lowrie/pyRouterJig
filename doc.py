@@ -94,8 +94,6 @@ class Doc(object):
 
     def __init__(self, units):
         self.sunits = units.units_string(verbose=True)
-    def change_units(self, new_units):
-        self.sunits = new_units.units_string(verbose=True)
     def short_desc(self):
         return self._short_desc
     def license(self):

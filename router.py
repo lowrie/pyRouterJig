@@ -167,16 +167,6 @@ class Router_Bit(object):
         self.width += self.width % 2 # ensure even
         self.depth = my_round(self.depth * s)
         self.reinit()
-    def change_units(self, new_units):
-        '''Changes units to new_units'''
-        s = self.units.get_scaling(new_units)
-        if s == 1:
-            return
-        self.width = my_round(self.width * s)
-        self.width += self.width % 2 # ensure even
-        self.depth = my_round(self.depth * s)
-        self.units = new_units
-        self.reinit()
 
 class My_Rectangle(object):
     '''
@@ -297,16 +287,6 @@ class Board(My_Rectangle):
         if t <= 0:
             raise Router_Exception(msg)
         self.set_height(bit, t)
-    def change_units(self, new_units):
-        '''Changes units to new_units'''
-        s = self.units.get_scaling(new_units)
-        if s == 1:
-            return
-        self.width = my_round(self.width * s)
-        self.height = my_round(self.height * s)
-        self.dheight = my_round(self.dheight * s)
-        self.thickness = my_round(self.thickness * s)
-        self.units = new_units
     def set_bottom_cuts(self, cuts, bit):
         '''Sets the bottom cuts for the board'''
         for c in cuts:

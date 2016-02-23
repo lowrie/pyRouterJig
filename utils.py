@@ -126,43 +126,35 @@ class Units(object):
     Converts to and from increments and the units being used.
 
     metric: If true, then use metric (mm).  Otherwise, english (inches)
-    align_incra: If true, align for the incra fence.
+    num_increments: Number of increments per unit length (1 inch for english, 1 mm for metric)
 
     Attributes:
     increments_per_inch: Number of increments per inch.
-    increments_per_length: Number of increments per unit length (1 inch for english, 1 mm for metric)
     '''
     mm_per_inch = 25.4
-    def __init__(self, metric=False, align_incra=True):
+    def __init__(self, metric=False, num_increments=None):
         self.metric = metric
-        self.align_incra = align_incra
-        if align_incra:
+        if num_increments is None:
             if metric:
-                self.increments_per_length = 1
+                self.num_increments = 1
             else:
-                self.increments_per_length = 32
+                self.num_increments = 32
         else:
-            # Set a very fine alignment
-            if metric:
-                # 0.01 mm for metric
-                self.increments_per_length = 100
-            else:
-                # Roughly 0.001" for english
-                self.increments_per_length = 1024
+            self.num_increments = num_increments
         if metric:
-            self.increments_per_inch = self.mm_per_inch * self.increments_per_length
+            self.increments_per_inch = self.mm_per_inch * self.num_increments
         else: # english units
-            self.increments_per_inch = self.increments_per_length
+            self.increments_per_inch = self.num_increments
     def get_scaling(self, new_units):
-        '''
+        ''' 
         Returns the scaling factor to change the current units to new_units.
         The scaling factor is a floating point number, unless there is no
         change in units or resolution, in which case the integer 1 is returned.
         '''
         s = 1
         if self.metric == new_units.metric:
-            if self.increments_per_length != new_units.increments_per_length:
-                s = float(new_units.increments_per_length) / self.increments_per_length
+            if self.num_increments != new_units.num_increments:
+                s = float(new_units.num_increments) / self.num_increments
         else:
             s = new_units.increments_per_inch / self.increments_per_inch
         return s
@@ -175,7 +167,7 @@ class Units(object):
     def increments_to_string(self, increments, with_units=False):
         '''A string representation of the value increments'''
         if self.metric:
-            r = '%g' % (increments / float(self.increments_per_length))
+            r = '%g' % (increments / float(self.num_increments))
         else:
             whole = increments // self.increments_per_inch
             numer = increments - self.increments_per_inch * whole
@@ -183,7 +175,7 @@ class Units(object):
             frac = My_Fraction(whole, numer, denom)
             frac.reduce()
             if frac.numerator > 0 and frac.denominator not in [1, 2, 4, 8, 16, 32, 64]:
-                r = '%.3f' % (increments / float(self.increments_per_length))
+                r = '%.3f' % (increments / float(self.num_increments))
             else:
                 r = frac.to_string()
         if with_units:
@@ -216,7 +208,10 @@ class Units(object):
             r += float(f.numerator) / f.denominator
         return r
     def length_to_increments(self, v):
-        return my_round(v * self.increments_per_length)
+        '''
+        Converts v to increments, where v is [inches|mm]
+        '''
+        return my_round(v * self.num_increments)
     def string_to_increments(self, s):
         '''
         Converts a string representation to the number of increments.
@@ -225,6 +220,11 @@ class Units(object):
         '''
         return self.length_to_increments(self.string_to_length(s))
     def abstract_to_increments(self, a):
+        '''
+        Converts a value to increments.  If a is a string, then
+        string_to_increments() is called.  Otherwise, length_to_increments()
+        is called.
+        '''
         if isinstance(a, str):
             return self.string_to_increments(a)
         else:
