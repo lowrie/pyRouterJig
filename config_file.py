@@ -45,13 +45,13 @@ _CONFIG_INIT = r'''
 ######################################################################
 # Do not change version, because this tells pyRouterJig which
 # code version initially created this file.
-version = '%s'
+version = '{version}'
 ######################################################################
 # Options below may be changed
 ######################################################################
 
 # If True, use metric units.  If False, use English units.
-metric = False
+metric = {metric}
 
 # The number of increments per unit length (integer value, or None). 
 # All dimensions and router passes are restricted to
@@ -59,76 +59,75 @@ metric = False
 # The unit length is
 #   1 inch (metric = False)
 #   1 mm   (metric = True)
-# If None, num_increments is set to the resolution of the Incra LS Positioner;
-# namely.
+# For the Incra LS Positioner, use
 #    32 (metric = False), corresponding to 1/32" resolution
 #    1  (metric = True), corresponding to 1mm resolution
-num_increments = None
+num_increments = {num_increments}
 
 # If true, label each finger with its size.  The labels may also be turned
 # on and off under the menu "View" and selecting "Finger Sizes".
-label_fingers = True
+label_fingers = {label_fingers}
 
 # Initial board width [inches|mm]
 # Example of fractional value. 7.5 is equivalent.
-board_width = '7 1/2'
+board_width = {board_width}
 
 # Initial bit width [inches|mm]
 # Another example of fractional value. 0.5 is equivalent.
-bit_width = '1/2'
+bit_width = {bit_width}
 
 # Initial bit depth [inches|mm] 
 # Example of floating point. '3/4' is equivalent.
-bit_depth = 0.75
+bit_depth = {bit_depth}
 
 # Initial bit angle [degrees]
-bit_angle = 0
+bit_angle = {bit_angle}
 
 # Avoid fingers that are smaller than this dimension [inches|mm]
-min_finger_width = '1/16'
+min_finger_width = {min_finger_width}
 
 # Trim this amount from each side of the Top- and Bottom-board fingers to form
 # the optional clamping cauls [inches|mm]
-caul_trim = '1/32'
+caul_trim = {caul_trim}
 
 # The margins object controls top, bottom, and side margins, along with the
 # separation between objects in the figure [inches|mm]
-top_margin = '1/4'
-left_margin = top_margin
-right_margin = top_margin
-bottom_margin = '1/2'
-separation = top_margin
+top_margin = {top_margin}
+bottom_margin = {bottom_margin}
+left_margin = {left_margin}
+right_margin = {right_margin}
+separation = {separation}
 
 # On save image, minimum width of image in pixels. Used if the figure width is
 # less than this size.  Does not apply to screenshots, which are done at the
 # resolution of the window.
-min_image_width = 1440
+min_image_width = {min_image_width}
 
 # On save image, maximum width of image in pixels. Used if the figure width is
 # less than this size.  Does not apply to screenshots, which are done at the
 # resolution of the window.
 # Set to min_image_width to force that resolution for every image.
-max_image_width = min_image_width
+max_image_width = {max_image_width}
 
 # Scaling factor for printing.  Set to 1.0 for no scaling.  If your printed templates
 # measure Y inches instead of X inches, set to X / Y. You may use a forumla
 # here. Make sure that you use decimal points for numbers (floating point). Example:
 # print_scale_factor = 9.5 / (9.5 - 1.0 / 32.0)
-print_scale_factor = 1.0
+print_scale_factor = {print_scale_factor}
 
 # The folder which contains wood grain image files.  Prefix the string with the character-r to prevent
 # python from interpreting the character-\ (used in Windows file paths) as an escape.
-wood_images = r'%s'
+wood_images = r'{wood_images}'
 
 # This is either a wood name (the file prefix of an image file in wood_images),
 # or the following Qt fill patterns:
 # DiagCrossPattern, BDiagPattern, FDiagPattern, Dense1Pattern, Dense5Pattern
-default_wood = 'DiagCrossPattern'
+default_wood = '{default_wood}'
 
 # Set debug to True to turn on debugging.  This will print a lot of output to
 # stdout during a pyRouterJig session.  This option is typically only useful
 # for developers.
-debug = False
+debug = {debug}
 
 # Colors are specified as a mix of three values between 0 and 255, as
 #     (red, green, blue)
@@ -142,54 +141,99 @@ debug = False
 # Useful site: http://www.colorpicker.com/
 
 # Background color
-background_color = (240, 231, 201)
+background_color = {background_color}
 '''
+
+# common default values
+common_vals = {'version':'NONE',
+               'label_fingers':True, 
+               'bit_angle':0,
+               'min_image_width':1440,
+               'max_image_width':'min_image_width',
+               'print_scale_factor':1.0,
+               'wood_images':'NONE',
+               'default_wood':'DiagCrossPattern',
+               'debug':False,
+               'left_margin':'top_margin',
+               'right_margin':'top_margin',
+               'separation':'top_margin',
+               'background_color':(240, 231, 201)}
+
+# default values for english units
+english_vals = {'metric':False,
+                'num_increments':32,
+                'board_width':"'7 1/2'",
+                'bit_width':"'1/2'",
+                'bit_depth':0.75,
+                'min_finger_width':"'1/16'",
+                'caul_trim':"'1/32'",
+                'top_margin':"'1/4'",
+                'bottom_margin':"'1/2'"}
+
+# default values for metric units
+metric_vals = {'metric':True,
+               'num_increments':1,
+               'board_width':200,
+               'bit_width':12,
+               'bit_depth':12,
+               'min_finger_width':2,
+               'caul_trim':1,
+               'top_margin':6,
+               'bottom_margin':12}
 
 def version_number(version):
     '''Splits the string version into its version number'''
     vs = version.split('.')
     return int(vs[0]) * 100 + int(vs[1]) * 10 + int(vs[2])
 
-def create_config(filename):
+class Configuration(object):
     '''
-    Creates the configuration file.
+    Defines interface to reading and creating the configuration file
     '''
-    wood_images = os.path.join(os.path.expanduser('~'), 'wood_images')
-    content = _CONFIG_INIT % (utils.VERSION, wood_images)
-    fd = open(filename, 'w')
-    fd.write(content)
-    fd.close()
+    def __init__(self):
+        self.filename = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
+    def create_config(self, metric):
+        '''
+        Creates the configuration file.
+        '''
+        common_vals['wood_images'] = os.path.join(os.path.expanduser('~'), 'wood_images')
+        common_vals['version'] = str(utils.VERSION)
+        if metric:
+            common_vals.update(metric_vals)
+        else:
+            common_vals.update(english_vals)
+        content = _CONFIG_INIT.format(**common_vals)
+        fd = open(self.filename, 'w')
+        fd.write(content)
+        fd.close()
+    def read_config(self, min_version_number):
+        '''
+        Reads the configuration file.  If it does not exist, it's created.
+        '''
+        do_metric = False
+        if not os.path.exists(self.filename):
+            # create the config file
+            self.create_config(do_metric)
+            msg = 'Configuration file %s created' % self.filename
+        else:
+            msg = 'Read configuration file %s' % self.filename
 
-def read_config(min_version_number):
-    '''
-    Reads the configuration file.  If it does not exist, it's created.
-    '''
-    global _CONFIG_INIT
-    filename = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
+        config = imp.load_source('', self.filename)
+        vnum = version_number(config.version)
+        msg_level = 0
+        if vnum < min_version_number:
+            msg_level = 1
+            backup = self.filename + config.version
+            shutil.move(self.filename, backup)
+            self.create_config(do_metric)
+            config = imp.load_source('', self.filename)
+            msg = 'Your configuration file %s was outdated and has been moved to %s.'\
+                  ' A new configuration file has been created.  Any changes you made'\
+                  ' to the old file will need to be migrated to the new file.'\
+                  ' Unfortunately, we are unable to automatically migrate your old'\
+                  ' settings.' % (self.filename, backup)
 
-    if not os.path.exists(filename):
-        # create the config file
-        create_config(filename)
-        msg = 'Configuration file %s created' % filename
-    else:
-        msg = 'Read configuration file %s' % filename
-
-    config = imp.load_source('', filename)
-    vnum = version_number(config.version)
-    msg_level = 0
-    if vnum < min_version_number:
-        msg_level = 1
-        backup = filename + config.version
-        shutil.move(filename, backup)
-        create_config(filename)
-        config = imp.load_source('', filename)
-        msg = 'Your configuration file %s was outdated and has been moved to %s.'\
-              ' A new configuration file has been created.  Any changes you made'\
-              ' to the old file will need to be migrated to the new file.'\
-              ' Unfortunately, we are unable to automatically migrate your old'\
-              ' settings.' % (filename, backup)
-
-    return (config, msg, msg_level)
+        return (config, msg, msg_level)
 
 def parameters_to_increments(config, units):
     '''

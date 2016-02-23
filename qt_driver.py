@@ -88,7 +88,8 @@ class Driver(QtGui.QMainWindow):
 
         # Read the config file.  We wait until the end of this init to print
         # the status message, because we need the statusbar to be created first.
-        (self.config, msg, msg_level) = config_file.read_config(82)
+        c = config_file.Configuration()
+        (self.config, msg, msg_level) = c.read_config(82)
 
         # Ensure config file is up-to-date
         if msg_level > 0:
