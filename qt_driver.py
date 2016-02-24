@@ -25,7 +25,7 @@ from __future__ import print_function
 from future.utils import lrange
 from builtins import str
 
-import os, sys, traceback, webbrowser, copy
+import os, sys, traceback, webbrowser, copy, shutil
 
 import qt_fig
 import config_file
@@ -89,12 +89,26 @@ class Driver(QtGui.QMainWindow):
         # Read the config file.  We wait until the end of this init to print
         # the status message, because we need the statusbar to be created first.
         c = config_file.Configuration()
-        (self.config, msg, msg_level) = c.read_config(82)
-
-        # Ensure config file is up-to-date
-        if msg_level > 0:
+        r = c.read_config()
+        if r == 1:
+            c.create_config(False)
+            msg = 'Configuration file %s created' % c.filename
+            c.read_config()
+        elif r == 2:
+            backup = c.filename + c.config.version
+            shutil.move(c.filename, backup)
+            c.create_config(False)
+            msg = 'Your configuration file %s was outdated and has been moved to %s.'\
+                  ' A new configuration file has been created.  Any changes you made'\
+                  ' to the old file will need to be migrated to the new file.'\
+                  ' Unfortunately, we are unable to automatically migrate your old'\
+                  ' settings.' % (c.filename, backup)
+            c.read_config()
             QtGui.QMessageBox.warning(self, 'Warning', msg)
             msg = ''
+        else:
+            msg = 'Read configuration file %s' % c.filename
+        self.config = c.config
 
         # Form the units
         self.units = utils.Units(self.config.metric, self.config.num_increments)

@@ -23,7 +23,7 @@ This module contains utilities for creating and reading the
 user configuration file.
 '''
 
-import os, imp, shutil
+import os, imp
 import utils
 
 _CONFIG_INIT = r'''
@@ -192,6 +192,22 @@ class Configuration(object):
     '''
     def __init__(self):
         self.filename = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
+        self.min_version_number = 82
+        self.config = None
+    def read_config(self):
+        '''
+        Reads the configuration file.  If it does not exist, it's created.
+        '''
+        if not os.path.exists(self.filename):
+            return 1
+        else:
+            self.config = imp.load_source('', self.filename)
+            vnum = version_number(self.config.version)
+            msg_level = 0
+            if vnum < self.min_version_number:
+                return 2
+            else:
+                return 0
     def create_config(self, metric):
         '''
         Creates the configuration file.
@@ -206,34 +222,6 @@ class Configuration(object):
         fd = open(self.filename, 'w')
         fd.write(content)
         fd.close()
-    def read_config(self, min_version_number):
-        '''
-        Reads the configuration file.  If it does not exist, it's created.
-        '''
-        do_metric = False
-        if not os.path.exists(self.filename):
-            # create the config file
-            self.create_config(do_metric)
-            msg = 'Configuration file %s created' % self.filename
-        else:
-            msg = 'Read configuration file %s' % self.filename
-
-        config = imp.load_source('', self.filename)
-        vnum = version_number(config.version)
-        msg_level = 0
-        if vnum < min_version_number:
-            msg_level = 1
-            backup = self.filename + config.version
-            shutil.move(self.filename, backup)
-            self.create_config(do_metric)
-            config = imp.load_source('', self.filename)
-            msg = 'Your configuration file %s was outdated and has been moved to %s.'\
-                  ' A new configuration file has been created.  Any changes you made'\
-                  ' to the old file will need to be migrated to the new file.'\
-                  ' Unfortunately, we are unable to automatically migrate your old'\
-                  ' settings.' % (self.filename, backup)
-
-        return (config, msg, msg_level)
 
 def parameters_to_increments(config, units):
     '''
