@@ -90,22 +90,27 @@ class Driver(QtGui.QMainWindow):
         # the status message, because we need the statusbar to be created first.
         c = config_file.Configuration()
         r = c.read_config()
-        if r == 1:
-            c.create_config(False)
+        if r > 0:
+            if r == 1:
+                question = 'The configuration file %s will be created.'\
+                           ' Which unit system would you prefer?  This option '\
+                           ' may be changed later by editing the configuration file.' % c.filename
+                m = QtGui.QMessageBox.question(self, 'Units', question,
+                                               'English', 'Metric',
+                                               defaultButtonNumber=0)
+                metric = (m == 1)
+            else: # r == 2
+                metric = c.config.metric
+                backup = c.filename + c.config.version
+                shutil.move(c.filename, backup)
+                c.create_config(False)
+                msg = 'Your configuration file %s was outdated and has been moved to %s.'\
+                  ' A new configuration file has been created.  Most changes that you made'\
+                  ' to the old file will need to be migrated to the new file.' % (c.filename, backup)
+                QtGui.QMessageBox.warning(self, 'Warning', msg)
+            c.create_config(metric)
             msg = 'Configuration file %s created' % c.filename
             c.read_config()
-        elif r == 2:
-            backup = c.filename + c.config.version
-            shutil.move(c.filename, backup)
-            c.create_config(False)
-            msg = 'Your configuration file %s was outdated and has been moved to %s.'\
-                  ' A new configuration file has been created.  Any changes you made'\
-                  ' to the old file will need to be migrated to the new file.'\
-                  ' Unfortunately, we are unable to automatically migrate your old'\
-                  ' settings.' % (c.filename, backup)
-            c.read_config()
-            QtGui.QMessageBox.warning(self, 'Warning', msg)
-            msg = ''
         else:
             msg = 'Read configuration file %s' % c.filename
         self.config = c.config
