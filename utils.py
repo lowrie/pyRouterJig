@@ -25,7 +25,7 @@ from __future__ import division
 
 import math, fractions, os, glob
 
-VERSION = '0.8.2'
+VERSION = '0.8.3'
 
 def my_round(f):
     '''
@@ -145,19 +145,6 @@ class Units(object):
             self.increments_per_inch = self.mm_per_inch * self.num_increments
         else: # english units
             self.increments_per_inch = self.num_increments
-    def get_scaling(self, new_units):
-        ''' 
-        Returns the scaling factor to change the current units to new_units.
-        The scaling factor is a floating point number, unless there is no
-        change in units or resolution, in which case the integer 1 is returned.
-        '''
-        s = 1
-        if self.metric == new_units.metric:
-            if self.num_increments != new_units.num_increments:
-                s = float(new_units.num_increments) / self.num_increments
-        else:
-            s = new_units.increments_per_inch / self.increments_per_inch
-        return s
     def increments_to_inches(self, increments_):
         '''Converts increments to inches.'''
         return float(increments_) / self.increments_per_inch
@@ -199,8 +186,6 @@ class Units(object):
         Assumes the string is in inches or mm, depending on the metric
         attribute.
         '''
-        if self.metric:
-            return float(s)
         f = My_Fraction()
         f.set_from_string(s)
         r = f.whole

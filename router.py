@@ -97,10 +97,11 @@ class Router_Bit(object):
         Sets the width from the string s, following requirements from units.string_to_increments().
         '''
         msg = 'Bit width is %s\n' % s
+        msg += 'Set to a positive value, such as '
         if self.units.metric:
-            msg += 'Set to an even positive integer value, such as 6'
+            msg += '6'
         else:
-            msg += 'Set to a positive value, such as 1/2'
+            msg += '1/2'
         try:
             self.width = self.units.string_to_increments(s)
         except ValueError as e:
@@ -113,8 +114,7 @@ class Router_Bit(object):
         self.halfwidth = self.width // 2
         if 2 * self.halfwidth != self.width:
             pmsg = 'Bit width must be an even number of increments.\n'
-            if not self.units.metric:
-                pmsg += 'The increment size is 1/%d"\n\n' % self.units.increments_per_inch
+            pmsg += 'The increment size is %s.\n\n' % self.units.increments_to_string(1, True)
             raise Router_Exception(pmsg + msg)
         self.reinit()
     def set_depth_from_string(self, s):
@@ -122,10 +122,11 @@ class Router_Bit(object):
         Sets the depth from the string s, following requirements from units.string_to_increments().
         '''
         msg = 'Bit depth is %s\n' % s
+        msg += 'Set to a positive value, such as '
         if self.units.metric:
-            msg += 'Set to a positive integer value, such as 5'
+            msg += '5'
         else:
-            msg += 'Set to a positive value, such as 3/4'
+            msg += '3/4'
         try:
             self.depth = self.units.string_to_increments(s)
         except ValueError as e:
@@ -239,10 +240,11 @@ class Board(My_Rectangle):
         Sets the width from the string s, following requirements from units.string_to_increments().
         '''
         msg = 'Board width is %s\n' % s
+        msg += 'Set to a postive value, such as '
         if self.units.metric:
-            msg += 'Set to a postive integer value, such as 52'
+            msg += '52'
         else:
-            msg += 'Set to a postive value, such as 7 1/2'
+            msg += '7 1/2'
         try:
             self.width = self.units.string_to_increments(s)
         except ValueError as e:
@@ -273,10 +275,11 @@ class Board(My_Rectangle):
         # TODO: This is called "thickness" because we set this only for
         # double* boards, for which we call this the thickness.
         msg = 'Board thickness is %s\n' % s
+        msg += 'Set to a postive value, such as '
         if self.units.metric:
-            msg += 'Set to a postive integer value, such as 4'
+            msg += '4'
         else:
-            msg += 'Set to a postive value, such as 1/8'
+            msg += '1/8'
         try:
             t = self.units.string_to_increments(s)
         except ValueError as e:

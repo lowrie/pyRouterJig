@@ -123,7 +123,7 @@ class Driver(QtGui.QMainWindow):
                 box.setText('Configuration file updated')
                 warning = 'Your configuration file\n\n{}\n\nwas outdated and has been moved to\n\n{}\n\n'\
                   'A new configuration file has been created.  The setting\n\nmetric = {}\n\nhas been migrated.'\
-                  ' Other changes that you made'\
+                  ' Any other changes that you may have made'\
                   ' to the old file will need to be migrated to the new file.'.format(c.filename, backup, metric)
                 box.setInformativeText(warning)
                 box.raise_()
@@ -947,6 +947,9 @@ class Driver(QtGui.QMainWindow):
             self.bit.set_width_from_string(text)
             self.reinit_spacing()
             self.draw()
+            # because of possible rounding, we need to reset the text in the line edit
+            self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
+            text = str(self.le_bit_width.text())
             self.status_message('Changed bit width to ' + text)
             self.file_saved = False
 
@@ -962,6 +965,9 @@ class Driver(QtGui.QMainWindow):
             for b in self.boards:
                 b.set_height(self.bit)
             self.draw()
+            # because of possible rounding, we need to reset the text in the line edit
+            self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
+            text = str(self.le_bit_depth.text())
             self.status_message('Changed bit depth to ' + text)
             self.file_saved = False
 
@@ -993,6 +999,9 @@ class Driver(QtGui.QMainWindow):
                 b.width = self.boards[0].width
             self.reinit_spacing()
             self.draw()
+            # because of possible rounding, we need to reset the text in the line edit
+            self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
+            text = str(self.le_board_width.text())
             self.status_message('Changed board width to ' + text)
             self.file_saved = False
 
@@ -1399,6 +1408,9 @@ class Driver(QtGui.QMainWindow):
             self.reinit_spacing()
             self.draw()
             labels = ['Double', 'Double-Double']
+            # because of possible rounding, we need to reset the text in the line edit
+            self.le_boardm[i].setText(self.units.increments_to_string(self.boards[i + 2].dheight))
+            text = str(self.le_boardm[i].text())
             self.status_message(('Changed %s Board thickness to ' + text) % labels[i])
             self.reinit_spacing()
             self.file_saved = False
