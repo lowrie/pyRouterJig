@@ -39,7 +39,7 @@ _CONFIG_INIT = r'''
 #
 # Also, [inches|mm] below means "inches or millimeters".  The value is in
 # inches (if metric=False) or mm (if metric=True).  The value may be an
-# integer or floating point value.  Fractional values (only for inches) must
+# integer, floating point, or fractional value.  Fractional values must
 # be in quotes.
 #
 ######################################################################
@@ -182,9 +182,25 @@ metric_vals = {'metric':True,
                'bottom_margin':12}
 
 def version_number(version):
-    '''Splits the string version into its version number'''
+    '''Splits the string version into its integer version number.  X.Y.Z -> XYZ'''
     vs = version.split('.')
     return int(vs[0]) * 100 + int(vs[1]) * 10 + int(vs[2])
+
+def parameters_to_increments(config, units):
+    '''
+    Converts parameters in the config file to their appropriate increment values, based on
+    units.
+    '''
+    config.board_width = units.abstract_to_increments(config.board_width)
+    config.bit_width = units.abstract_to_increments(config.bit_width)
+    config.bit_depth = units.abstract_to_increments(config.bit_depth)
+    config.min_finger_width = max(1, units.abstract_to_increments(config.min_finger_width))
+    config.caul_trim = max(1, units.abstract_to_increments(config.caul_trim))
+    config.top_margin = units.abstract_to_increments(config.top_margin)
+    config.bottom_margin = units.abstract_to_increments(config.bottom_margin)
+    config.left_margin = units.abstract_to_increments(config.left_margin)
+    config.right_margin = units.abstract_to_increments(config.right_margin)
+    config.separation = units.abstract_to_increments(config.separation)
 
 class Configuration(object):
     '''
@@ -192,7 +208,9 @@ class Configuration(object):
     '''
     def __init__(self):
         self.filename = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
-        self.min_version_number = 82
+        # version number as integer. config file must be updated if it was created
+        # with an earlier number
+        self.min_version_number = 83
         self.config = None
     def read_config(self):
         '''
@@ -222,19 +240,3 @@ class Configuration(object):
         fd = open(self.filename, 'w')
         fd.write(content)
         fd.close()
-
-def parameters_to_increments(config, units):
-    '''
-    Converts parameters in the config file to their appropriate increment values, based on
-    units.
-    '''
-    config.board_width = units.abstract_to_increments(config.board_width)
-    config.bit_width = units.abstract_to_increments(config.bit_width)
-    config.bit_depth = units.abstract_to_increments(config.bit_depth)
-    config.min_finger_width = max(1, units.abstract_to_increments(config.min_finger_width))
-    config.caul_trim = max(1, units.abstract_to_increments(config.caul_trim))
-    config.top_margin = units.abstract_to_increments(config.top_margin)
-    config.bottom_margin = units.abstract_to_increments(config.bottom_margin)
-    config.left_margin = units.abstract_to_increments(config.left_margin)
-    config.right_margin = units.abstract_to_increments(config.right_margin)
-    config.separation = units.abstract_to_increments(config.separation)
