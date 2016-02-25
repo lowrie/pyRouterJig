@@ -92,26 +92,48 @@ class Driver(QtGui.QMainWindow):
         r = c.read_config()
         if r > 0:
             if r == 1:
-                question = 'The configuration file %s will be created.'\
-                           ' Which unit system would you prefer?  This option '\
+                # The config file does not exist.  Ask the user whether they want metric or english
+                # units
+                box = QtGui.QMessageBox(self)
+                box.setTextFormat(QtCore.Qt.RichText)
+                box.setIcon(QtGui.QMessageBox.Question)
+                box.setText('Select unit system')
+                question = 'The configuration file\n\n%s\n\nwill be created to store this setting,'\
+                           ' along with additional default settings.  These options'\
                            ' may be changed later by editing the configuration file.' % c.filename
-                m = QtGui.QMessageBox.question(self, 'Units', question,
-                                               'English', 'Metric',
-                                               defaultButtonNumber=0)
-                metric = (m == 1)
-            else: # r == 2
+                box.setInformativeText(question)
+                buttonMetric = box.addButton('Metric (millimeters)', QtGui.QMessageBox.AcceptRole)
+                buttonEnglish = box.addButton('English (inches)', QtGui.QMessageBox.AcceptRole)
+                box.setDefaultButton(buttonEnglish)
+                box.raise_()
+                box.exec_()
+                clicked = box.clickedButton()
+                metric = (clicked == buttonMetric)
+            else: # r == 2 
+                # The config file exists, but it's out of date, so
+                # update it.  Tell the user and use the old metric setting.
                 metric = c.config.metric
                 backup = c.filename + c.config.version
                 shutil.move(c.filename, backup)
                 c.create_config(False)
-                msg = 'Your configuration file %s was outdated and has been moved to %s.'\
-                  ' A new configuration file has been created.  Most changes that you made'\
-                  ' to the old file will need to be migrated to the new file.' % (c.filename, backup)
-                QtGui.QMessageBox.warning(self, 'Warning', msg)
+
+                box = QtGui.QMessageBox(self)
+                box.setTextFormat(QtCore.Qt.RichText)
+                box.setIcon(QtGui.QMessageBox.Warning)
+                box.setText('Configuration file updated')
+                warning = 'Your configuration file\n\n{}\n\nwas outdated and has been moved to\n\n{}\n\n'\
+                  'A new configuration file has been created.  The setting\n\nmetric = {}\n\nhas been migrated.'\
+                  ' Other changes that you made'\
+                  ' to the old file will need to be migrated to the new file.'.format(c.filename, backup, metric)
+                box.setInformativeText(warning)
+                box.raise_()
+                box.exec_()
+                self.raise_()
             c.create_config(metric)
             msg = 'Configuration file %s created' % c.filename
             c.read_config()
         else:
+            # The config file exists and is current
             msg = 'Read configuration file %s' % c.filename
         self.config = c.config
 
