@@ -88,60 +88,7 @@ class Driver(QtGui.QMainWindow):
 
         # Read the config file.  We wait until the end of this init to print
         # the status message, because we need the statusbar to be created first.
-        c = config_file.Configuration()
-        r = c.read_config()
-        if r > 0:
-            if r == 1:
-                # The config file does not exist.  Ask the user whether they want metric or english
-                # units
-                box = QtGui.QMessageBox(self)
-                box.setTextFormat(QtCore.Qt.RichText)
-                box.setIcon(QtGui.QMessageBox.NoIcon)
-                box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>')
-                question = '<font size=5>Please select a unit system below.'\
-                           ' The configuration file<p><tt>{}</tt><p>'\
-                           ' will be created to store this setting,'\
-                           ' along with additional default settings.  These options'\
-                           ' may be changed later by editing the configuration file and'\
-                           ' restarting <i>pyRouterJig</i>.</font>'.format(c.filename)
-                box.setInformativeText(question)
-                buttonMetric = box.addButton('Metric (millimeters)', QtGui.QMessageBox.AcceptRole)
-                buttonEnglish = box.addButton('English (inches)', QtGui.QMessageBox.AcceptRole)
-                box.setDefaultButton(buttonEnglish)
-                box.raise_()
-                box.exec_()
-                clicked = box.clickedButton()
-                metric = (clicked == buttonMetric)
-            else: # r == 2 
-                # The config file exists, but it's out of date, so
-                # update it.  Tell the user and use the old metric setting.
-                metric = c.config.metric
-                backup = c.filename + c.config.version
-                shutil.move(c.filename, backup)
-                c.create_config(False)
-
-                box = QtGui.QMessageBox(self)
-                box.setTextFormat(QtCore.Qt.RichText)
-                box.setIcon(QtGui.QMessageBox.Warning)
-                box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !')
-                warning = '<font size=5>Your configuration file<p><tt>{}</tt><p>'\
-                          'has been updated. The old version has been saved to<p><tt>{}</tt><p>'\
-                          'The previous setting of'\
-                          '<p><i>metric = {}</i><p>has been migrated.'\
-                          ' But any other changes that you may have made'\
-                          ' to the old file will need to be migrated to the'\
-                          ' new file.'.format(c.filename, backup, metric)
-                box.setInformativeText(warning)
-                box.raise_()
-                box.exec_()
-                self.raise_()
-            c.create_config(metric)
-            msg = 'Configuration file %s created' % c.filename
-            c.read_config()
-        else:
-            # The config file exists and is current
-            msg = 'Read configuration file %s' % c.filename
-        self.config = c.config
+        (self.config, msg) = self.load_config()
 
         # Form the units
         self.units = utils.Units(self.config.metric, self.config.num_increments)
@@ -199,6 +146,69 @@ class Driver(QtGui.QMainWindow):
 
         # ... show the status message from reading the configuration file
         self.statusbar.showMessage(msg)
+
+    def load_config(self):
+        '''
+        Sets the config attribute, by either
+           1) Reading an existing config file
+           2) Updating an existing config file and loading it
+           3) Creating the config file, if it does not exist
+        '''
+        c = config_file.Configuration()
+        r = c.read_config()
+        if r > 0:
+            if r == 1:
+                # The config file does not exist.  Ask the user whether they want metric or english
+                # units
+                box = QtGui.QMessageBox(self)
+                box.setTextFormat(QtCore.Qt.RichText)
+                box.setIcon(QtGui.QMessageBox.NoIcon)
+                box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>')
+                question = '<font size=5>Please select a unit system below.'\
+                           ' The configuration file<p><tt>{}</tt><p>'\
+                           ' will be created to store this setting,'\
+                           ' along with additional default settings.  These options'\
+                           ' may be changed later by editing the configuration file and'\
+                           ' restarting <i>pyRouterJig</i>.</font>'.format(c.filename)
+                box.setInformativeText(question)
+                buttonMetric = box.addButton('Metric (millimeters)', QtGui.QMessageBox.AcceptRole)
+                buttonEnglish = box.addButton('English (inches)', QtGui.QMessageBox.AcceptRole)
+                box.setDefaultButton(buttonEnglish)
+                box.raise_()
+                box.exec_()
+                clicked = box.clickedButton()
+                metric = (clicked == buttonMetric)
+            else: # r == 2
+                # The config file exists, but it's out of date, so
+                # update it.  Tell the user and use the old metric setting.
+                metric = c.config.metric
+                backup = c.filename + c.config.version
+                shutil.move(c.filename, backup)
+                c.create_config(False)
+
+                box = QtGui.QMessageBox(self)
+                box.setTextFormat(QtCore.Qt.RichText)
+                box.setIcon(QtGui.QMessageBox.Warning)
+                box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !')
+                warning = '<font size=5>Your configuration file<p><tt>{}</tt><p>'\
+                          'has been updated. The old version has been saved to<p><tt>{}</tt><p>'\
+                          'The previous setting of'\
+                          '<p><i>metric = {}</i><p>has been migrated.'\
+                          ' But any other changes that you may have made'\
+                          ' to the old file will need to be migrated to the'\
+                          ' new file.'.format(c.filename, backup, metric)
+                box.setInformativeText(warning)
+                box.raise_()
+                box.exec_()
+                self.raise_()
+            c.create_config(metric)
+            msg = 'Configuration file %s created' % c.filename
+            c.read_config()
+        else:
+            # The config file exists and is current
+            msg = 'Read configuration file %s' % c.filename
+
+        return (c.config, msg)
 
     def center(self):
         '''Centers the app in the screen'''
