@@ -33,6 +33,28 @@ def my_round(f):
     '''
     return int(round(f))
 
+def string_to_float(s):
+    '''
+    Converts a string representation to a floating-point value, where
+    the string may contain a fractional value.
+    '''
+    f = My_Fraction()
+    f.set_from_string(s)
+    r = f.whole
+    if f.numerator > 0:
+        r += float(f.numerator) / f.denominator
+    return r
+
+def abstract_to_float(a):
+    '''
+    Converts a value to a float.  If a is a string, then
+    string_to_float() is called.  Otherwise, float() is called.
+    '''
+    if isinstance(a, str):
+        return string_to_float(a)
+    else:
+        return float(a)
+
 class My_Fraction(object):
     '''
     Represents a number as whole + numerator / denominator, all of which must be
@@ -180,18 +202,6 @@ class Units(object):
                 return ' inches'
             else:
                 return '"'
-    def string_to_length(self, s):
-        '''
-        Converts a string representation to a floating-point length (mm or inch).
-        Assumes the string is in inches or mm, depending on the metric
-        attribute.
-        '''
-        f = My_Fraction()
-        f.set_from_string(s)
-        r = f.whole
-        if f.numerator > 0:
-            r += float(f.numerator) / f.denominator
-        return r
     def length_to_increments(self, v):
         '''
         Converts v to increments, where v is [inches|mm]
@@ -203,7 +213,7 @@ class Units(object):
         Assumes the string is in inches or mm, depending on the metric
         attribute.
         '''
-        return self.length_to_increments(self.string_to_length(s))
+        return self.length_to_increments(string_to_float(s))
     def abstract_to_increments(self, a):
         '''
         Converts a value to increments.  If a is a string, then

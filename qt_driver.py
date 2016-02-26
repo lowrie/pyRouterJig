@@ -96,11 +96,14 @@ class Driver(QtGui.QMainWindow):
                 # units
                 box = QtGui.QMessageBox(self)
                 box.setTextFormat(QtCore.Qt.RichText)
-                box.setIcon(QtGui.QMessageBox.Question)
-                box.setText('Select unit system')
-                question = 'The configuration file\n\n%s\n\nwill be created to store this setting,'\
+                box.setIcon(QtGui.QMessageBox.NoIcon)
+                box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !<p>'\
+                            'Please select a unit system below.</font>')
+                question = '<font size=5>The configuration file<p><tt>{}</tt><p>'\
+                           ' will be created to store this setting,'\
                            ' along with additional default settings.  These options'\
-                           ' may be changed later by editing the configuration file.' % c.filename
+                           ' may be changed later by editing the configuration file and'\
+                           ' restarting <i>pyRouterJig</i>.</font>'.format(c.filename)
                 box.setInformativeText(question)
                 buttonMetric = box.addButton('Metric (millimeters)', QtGui.QMessageBox.AcceptRole)
                 buttonEnglish = box.addButton('English (inches)', QtGui.QMessageBox.AcceptRole)
@@ -120,11 +123,14 @@ class Driver(QtGui.QMainWindow):
                 box = QtGui.QMessageBox(self)
                 box.setTextFormat(QtCore.Qt.RichText)
                 box.setIcon(QtGui.QMessageBox.Warning)
-                box.setText('Configuration file updated')
-                warning = 'Your configuration file\n\n{}\n\nwas outdated and has been moved to\n\n{}\n\n'\
-                  'A new configuration file has been created.  The setting\n\nmetric = {}\n\nhas been migrated.'\
-                  ' Any other changes that you may have made'\
-                  ' to the old file will need to be migrated to the new file.'.format(c.filename, backup, metric)
+                box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !')
+                warning = '<font size=5>Your configuration file<p><tt>{}</tt><p>'\
+                          'has been updated. The old version has been saved to<p><tt>{}</tt><p>'\
+                          'The previous setting of'\
+                          '<p><i>metric = {}</i><p>has been migrated.'\
+                          ' But any other changes that you may have made'\
+                          ' to the old file will need to be migrated to the'\
+                          ' new file.'.format(c.filename, backup, metric)
                 box.setInformativeText(warning)
                 box.raise_()
                 box.exec_()

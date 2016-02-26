@@ -26,7 +26,7 @@ from __future__ import print_function
 from future.utils import lrange
 
 import math
-from utils import my_round
+import utils
 
 class Router_Exception(Exception):
     '''
@@ -139,11 +139,11 @@ class Router_Bit(object):
         self.reinit()
     def set_angle_from_string(self, s):
         '''
-        Sets the angle from the string s, where s represents a floating point number.
+        Sets the angle from the string s, where s represents a floating point number or fractional number.
         '''
-        msg = 'Bit angle is %s\nSet to zero or a positive floating-point value, such as 7.5' % s
+        msg = 'Bit angle is %s\nSet to zero or a positive value, such as 7.5 or "7 1/2"' % s
         try:
-            self.angle = float(s)
+            self.angle = utils.string_to_float(s)
         except ValueError as e:
             msg = 'ValueError setting bit angle: %s\n\n' % (e) + msg
             raise Router_Exception(msg)
@@ -164,9 +164,9 @@ class Router_Bit(object):
         self.neck = self.width - 2 * self.offset
     def scale(self, s):
         '''Scales dimensions by the factor s'''
-        self.width = my_round(self.width * s)
+        self.width = utils.my_round(self.width * s)
         self.width += self.width % 2 # ensure even
-        self.depth = my_round(self.depth * s)
+        self.depth = utils.my_round(self.depth * s)
         self.reinit()
 
 class My_Rectangle(object):
@@ -262,7 +262,7 @@ class Board(My_Rectangle):
             if self.dheight > 0:
                 h = self.dheight
             else:
-                h = my_round(0.5 * bit.depth)
+                h = utils.my_round(0.5 * bit.depth)
         else:
             self.dheight = dheight
             h = dheight
@@ -562,19 +562,19 @@ def adjoining_cuts(cuts, bit, board):
     # adjoining cut that includes the left edge
     if cuts[0].xmin > 0:
         left = 0
-        right = my_round(cuts[0].xmin + bit.offset) - board.dheight
+        right = utils.my_round(cuts[0].xmin + bit.offset) - board.dheight
         if right - left >= board.dheight:
             adjCuts.append(Cut(left, right))
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
     for i in lrange(1, nc):
-        left = my_round(cuts[i-1].xmax - bit.offset + board.dheight)
-        right = max(left + bit.width, my_round(cuts[i].xmin + bit.offset) - board.dheight)
+        left = utils.my_round(cuts[i-1].xmax - bit.offset + board.dheight)
+        right = max(left + bit.width, utils.my_round(cuts[i].xmin + bit.offset) - board.dheight)
         adjCuts.append(Cut(left, right))
     # if the right-most input cut does not include the right edge, add an
     # adjoining cut that includes this edge
     if cuts[-1].xmax < board.width:
-        left = my_round(cuts[-1].xmax - bit.offset) + board.dheight
+        left = utils.my_round(cuts[-1].xmax - bit.offset) + board.dheight
         right = board.width
         if right - left >= board.dheight:
             adjCuts.append(Cut(left, right))

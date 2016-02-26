@@ -194,6 +194,7 @@ def parameters_to_increments(config, units):
     config.board_width = units.abstract_to_increments(config.board_width)
     config.bit_width = units.abstract_to_increments(config.bit_width)
     config.bit_depth = units.abstract_to_increments(config.bit_depth)
+    config.bit_angle = utils.abstract_to_float(config.bit_angle)
     config.min_finger_width = max(1, units.abstract_to_increments(config.min_finger_width))
     config.caul_trim = max(1, units.abstract_to_increments(config.caul_trim))
     config.top_margin = units.abstract_to_increments(config.top_margin)
