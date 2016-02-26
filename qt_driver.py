@@ -97,9 +97,9 @@ class Driver(QtGui.QMainWindow):
                 box = QtGui.QMessageBox(self)
                 box.setTextFormat(QtCore.Qt.RichText)
                 box.setIcon(QtGui.QMessageBox.NoIcon)
-                box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !<p>'\
-                            'Please select a unit system below.</font>')
-                question = '<font size=5>The configuration file<p><tt>{}</tt><p>'\
+                box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>')
+                question = '<font size=5>Please select a unit system below.'\
+                           ' The configuration file<p><tt>{}</tt><p>'\
                            ' will be created to store this setting,'\
                            ' along with additional default settings.  These options'\
                            ' may be changed later by editing the configuration file and'\
