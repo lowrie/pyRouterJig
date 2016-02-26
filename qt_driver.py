@@ -100,14 +100,13 @@ class Driver(QtGui.QMainWindow):
         # created.
         self.bit = router.Router_Bit(self.units, self.config.bit_width, self.config.bit_depth, 
                                      self.config.bit_angle)
-        self.m_thickness = [4, 4] # initial thickness of double and double-double boards
         self.boards = []
         for i in lrange(4):
             self.boards.append(router.Board(self.bit, width=self.config.board_width))
         self.boards[2].set_active(False)
         self.boards[3].set_active(False)
-        self.boards[2].set_height(self.bit, self.m_thickness[0])
-        self.boards[3].set_height(self.bit, self.m_thickness[1])
+        self.boards[2].set_height(self.bit, self.config.double_board_thickness)
+        self.boards[3].set_height(self.bit, self.config.double_board_thickness)
         self.do_caul = False # if true, do caul template
         self.template = router.Incra_Template(self.units, self.boards, self.do_caul)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.boards, self.config)
@@ -403,14 +402,15 @@ class Driver(QtGui.QMainWindow):
         self.le_bit_angle.setText('%g' % self.bit.angle)
         self.le_bit_angle.editingFinished.connect(self._on_bit_angle)
 
-        # Board M thicknesses
+        # Double and double-double board thicknesses
         self.le_boardm_label = []
         self.le_boardm = []
         for i in lrange(2):
             self.le_boardm_label.append(QtGui.QLabel('Thickness'))
             self.le_boardm.append(QtGui.QLineEdit(self.main_frame))
             self.le_boardm[i].setFixedWidth(lineEditWidth)
-            self.le_boardm[i].setText(self.units.increments_to_string(self.m_thickness[i]))
+            s = self.units.increments_to_string(self.boards[i+2].dheight)
+            self.le_boardm[i].setText(s)
         self.le_boardm[0].editingFinished.connect(self._on_boardm0)
         self.le_boardm[1].editingFinished.connect(self._on_boardm1)
 

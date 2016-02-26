@@ -25,7 +25,7 @@ from __future__ import division
 
 import math, fractions, os, glob
 
-VERSION = '0.8.3'
+VERSION = '0.8.4'
 
 def my_round(f):
     '''

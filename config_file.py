@@ -83,6 +83,9 @@ bit_depth = {bit_depth}
 # Initial bit angle [degrees]
 bit_angle = {bit_angle}
 
+# Initial thickness of double and double-double boards.
+double_board_thickness = {double_board_thickness}
+
 # Avoid fingers that are smaller than this dimension [inches|mm]
 min_finger_width = {min_finger_width}
 
@@ -165,6 +168,7 @@ english_vals = {'metric':False,
                 'board_width':"'7 1/2'",
                 'bit_width':"'1/2'",
                 'bit_depth':0.75,
+                'double_board_thickness':"'1/8'",
                 'min_finger_width':"'1/16'",
                 'caul_trim':"'1/32'",
                 'top_margin':"'1/4'",
@@ -176,6 +180,7 @@ metric_vals = {'metric':True,
                'board_width':200,
                'bit_width':12,
                'bit_depth':12,
+               'double_board_thickness':4,
                'min_finger_width':2,
                'caul_trim':1,
                'top_margin':6,
@@ -196,6 +201,7 @@ def parameters_to_increments(config, units):
     config.bit_depth = units.abstract_to_increments(config.bit_depth)
     config.bit_angle = utils.abstract_to_float(config.bit_angle)
     config.min_finger_width = max(1, units.abstract_to_increments(config.min_finger_width))
+    config.double_board_thickness = units.abstract_to_increments(config.double_board_thickness)
     config.caul_trim = max(1, units.abstract_to_increments(config.caul_trim))
     config.top_margin = units.abstract_to_increments(config.top_margin)
     config.bottom_margin = units.abstract_to_increments(config.bottom_margin)
@@ -211,7 +217,7 @@ class Configuration(object):
         self.filename = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
         # version number as integer. config file must be updated if it was created
         # with an earlier number
-        self.min_version_number = 83
+        self.min_version_number = 84
         self.config = None
     def read_config(self):
         '''
