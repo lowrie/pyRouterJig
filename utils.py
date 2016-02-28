@@ -92,7 +92,7 @@ class My_Fraction(object):
         if self.whole > 0:
             s = '%d' % self.whole
             if self.numerator > 0:
-                s += ' '
+                s += '+'
         if self.numerator > 0:
             s += '%d/%d' % (self.numerator, self.denominator)
         elif self.whole == 0:
@@ -113,6 +113,9 @@ class My_Fraction(object):
         dotloc = s.find('.')
         if dotloc == -1:
             # No decimal point, so try fractional form
+            # Convert the "+" to a space
+            s = s.replace('+', ' ', 1)
+            # Look for a divisor
             sp = s.split('/')
             if len(sp) == 2: # found a divisor
                 whole_num = sp[0].split(None)

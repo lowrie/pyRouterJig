@@ -82,8 +82,8 @@ def print_table(filename, boards, title):
         printing = False
         # Loop through the edges
         for icol in lrange(ncol):
-            label = ''
-            dim = ''
+            label = '**'
+            dim = '**'
             # check if there are any more passes for this edge
             icut = cut_index[icol]
             if icut >= 0:
