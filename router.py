@@ -685,3 +685,28 @@ class Joint_Geometry(object):
         else:
             self.rect_caul = None
             self.board_caul = None
+
+def create_title(boards, bit, spacing):
+    '''
+    Returns a title that describes the joint
+    '''
+    units = bit.units
+    title = spacing.description
+    title += '\nBoard width: '
+    title += units.increments_to_string(boards[0].width, True)
+    if boards[2].active:
+        title += '   Double Thickness: '
+        title += units.increments_to_string(boards[2].dheight, True)
+        if boards[3].active:
+            title += ', '
+            title += units.increments_to_string(boards[2].dheight, True)
+    title += '    Bit: '
+    if bit.angle > 0:
+        title += '%.1f deg. dovetail' % bit.angle
+    else:
+        title += 'straight'
+    title += ', width: '
+    title += units.increments_to_string(bit.width, True)
+    title += ', depth: '
+    title += units.increments_to_string(bit.depth, True)
+    return title

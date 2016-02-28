@@ -28,6 +28,7 @@ from builtins import str
 import os, sys, traceback, webbrowser, copy, shutil
 
 import qt_fig
+import qt_table
 import config_file
 import router
 import spacing
@@ -135,8 +136,9 @@ class Driver(QtGui.QMainWindow):
         # we'd use the cwd, but that's complicated.
         self.working_dir = os.path.expanduser('~')
 
-        # We form the screenshot and save filename from this index
+        # Indices for screenshot/save and table filenames
         self.screenshot_index = None
+        self.table_index = None
 
         # Initialize keyboard modifiers
         self.control_key = False
@@ -270,6 +272,11 @@ class Driver(QtGui.QMainWindow):
         print_action.setStatusTip('Print the figure')
         print_action.triggered.connect(self._on_print)
         file_menu.addAction(print_action)
+
+        table_action = QtGui.QAction('Print Table...', self)
+        table_action.setStatusTip('Print a table of router pass locations')
+        table_action.triggered.connect(self._on_print_table)
+        file_menu.addAction(table_action)
 
         # ... we need to make this action persistent, so that we can
         # enable and disable it (until all of its functionality is
@@ -1294,6 +1301,24 @@ class Driver(QtGui.QMainWindow):
             self.status_message('Figure printed')
         else:
             self.status_message('Figure not printed')
+
+    @QtCore.pyqtSlot()
+    def _on_print_table(self):
+        '''Handles printing the router pass location table'''
+        if self.config.debug:
+            print('_on_print_table')
+
+        prefix = 'table_'
+        postfix = '.txt'
+        if self.table_index is None:
+            self.table_index = utils.get_file_index(self.working_dir, prefix, postfix)
+
+        fname = prefix + `self.table_index` + postfix
+        filename = os.path.join(self.working_dir, fname)
+        title = router.create_title(self.boards, self.bit, self.spacing)
+        qt_table.print_table(filename, self.boards, title)
+        self.table_index += 1
+        self.status_message('Saved router pass location table to %s' % filename)
 
     @QtCore.pyqtSlot()
     def _on_exit(self):

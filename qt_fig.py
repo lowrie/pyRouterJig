@@ -677,25 +677,7 @@ class Qt_Plotter(QtGui.QWidget):
         Draws the title
         '''
         self.set_font_size(painter, 'title')
-        units = self.geom.bit.units
-        title = self.geom.spacing.description
-        title += '\nBoard width: '
-        title += units.increments_to_string(self.geom.boards[0].width, True)
-        if self.geom.boards[2].active:
-            title += '   Double Thickness: '
-            title += units.increments_to_string(self.geom.boards[2].dheight, True)
-            if self.geom.boards[3].active:
-                title += ', '
-                title += units.increments_to_string(self.geom.boards[2].dheight, True)
-        title += '    Bit: '
-        if self.geom.bit.angle > 0:
-            title += '%.1f deg. dovetail' % self.geom.bit.angle
-        else:
-            title += 'straight'
-        title += ', width: '
-        title += units.increments_to_string(self.geom.bit.width, True)
-        title += ', depth: '
-        title += units.increments_to_string(self.geom.bit.depth, True)
+        title = router.create_title(self.geom.boards, self.geom.bit, self.geom.spacing)
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         p = (self.geom.board_T.xMid(), self.margins.bottom)
         paint_text(painter, title, p, flags, (0, 5))
