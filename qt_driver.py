@@ -1361,8 +1361,12 @@ class Driver(QtGui.QMainWindow):
         '''Handles all changes in wood'''
         if self.config.debug:
             print('_on_wood', iwood, index)
+        cindex = self.cb_wood[iwood].currentIndex()
         if index is None:
-            index = self.cb_wood[iwood].currentIndex()
+            index = cindex
+        else:
+            if index == cindex: # then no change, so return
+                return
         s = str(self.cb_wood[iwood].itemText(index))
         label = str(self.cb_wood_label[iwood].text())
         if s != 'NONE':
@@ -1370,7 +1374,6 @@ class Driver(QtGui.QMainWindow):
         if reinit:
             self.reinit_spacing()
         self.draw()
-        self.file_saved = False
         msg = 'Changed %s to %s' % (label, s)
         self.statusbar.showMessage(msg)
 
