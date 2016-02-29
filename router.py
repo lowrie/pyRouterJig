@@ -633,6 +633,7 @@ class Joint_Geometry(object):
         self.boards = boards
         self.bit = bit
         self.spacing = spacing
+        self.margins = margins
 
         cut_boards(boards, bit, spacing)
 

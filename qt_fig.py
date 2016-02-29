@@ -33,7 +33,8 @@ from PyQt4 import QtCore, QtGui
 
 def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
     '''
-    Puts text at coord with alignment flags.
+    Puts text at coord with alignment flags.  Returns a QRect of the bounding box
+    of the text that was painted.
 
     painter: QPainter object
     text: The text to print.
@@ -71,8 +72,13 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
     if fill is not None:
         painter.fillRect(rect, fill)
     painter.drawText(rect, flags, text)
-    # restore the original transform
+    # Find the text rectangle in our original coordinate system
+    rect1 = painter.transform().mapRect(rect)
+    (inverted, invertable) = transform.inverted()
+    rect = inverted.mapRect(rect1)
+    # Restore the original transform
     painter.setTransform(transform)
+    return rect
 
 class Qt_Fig(object):
     '''
@@ -329,7 +335,7 @@ class Qt_Plotter(QtGui.QWidget):
 
         return (window_width, window_height)
 
-    def draw_passes(self, painter, blabel, cuts, y1, y2, flags, xMid):
+    def draw_passes(self, painter, blabel, cuts, y1, y2, flags, xMid, add_location=False):
         '''
         Draws and labels the router passes on a template or board.
         '''
@@ -337,10 +343,7 @@ class Qt_Plotter(QtGui.QWidget):
         # brush = QtGui.QBrush(QtCore.Qt.white)
         brush = None
         ip = 0
-        if y1 > y2:
-            shift = (0, -2)
-        else:
-            shift = (0, 2)
+        shift = (0, 0) # for adjustments of text
         passMid = None
         self.set_font_size(painter, 'template')
         for c in cuts[::-1]:
@@ -350,9 +353,23 @@ class Qt_Plotter(QtGui.QWidget):
                 label = '%d%s' % (ip, blabel)
                 if xp == xMid:
                     passMid = label
-                painter.drawLine(xp, y1, xp, y2)
+                y1text = y1
+                # Add the label if constraints are met
                 if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    paint_text(painter, label, (xp, y1), flags, shift, -90, fill=brush)
+                    if add_location:
+                        loc = self.geom.bit.units.increments_to_string(board_T.width - c.passes[p])
+                        label += ': ' + loc
+                    r = paint_text(painter, label, (xp, y1), flags, shift, -90, fill=brush)
+                    if y1 > y2:
+                        yTry = r.y()
+                        if yTry > y2:
+                            y1text = yTry + 0.05 * (y2 - yTry)
+                    else:
+                        yTry = r.y() + r.height()
+                        if yTry < y2:
+                            y1text = yTry + 0.05 * (y2 - yTry)
+                # Draw the line from the label to the base of cut
+                painter.drawLine(xp, y1text, xp, y2)
         return passMid
 
     def draw_alignment(self, painter):
@@ -417,13 +434,15 @@ class Qt_Plotter(QtGui.QWidget):
         flagsR = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
 
         frac_depth = 0.95 * self.geom.bit.depth
+        sepOver2 = 0.5 * self.geom.margins.sep
         # Draw the router passes
         # ... do the top board passes
-        y1 = boards[0].yB()
-        y2 = y1 + frac_depth
-        self.draw_passes(painter, 'A', boards[0].bottom_cuts, rect_top.yMid(),\
+        y1 = boards[0].yB() - sepOver2
+        y2 = boards[0].yB() + frac_depth
+        self.draw_passes(painter, 'A', boards[0].bottom_cuts, rect_top.yMid(),
                          rect_top.yT(), flagsR, xMid)
-        pm = self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2, flagsR, xMid)
+        pm = self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2,
+                              flagsL, xMid, True)
         if pm is not None:
             if boards[3].active:
                 centerline_TDD.append(pm)
@@ -435,19 +454,21 @@ class Qt_Plotter(QtGui.QWidget):
         # Do double-double passes
         if boards[3].active:
             painter.setPen(QtCore.Qt.DashLine)
-            y1 = boards[3].yT()
-            y2 = y1 - frac_depth
+            y1 = boards[3].yT() + sepOver2
+            y2 = boards[3].yT() - frac_depth
             self.draw_passes(painter, self.labels[i], boards[3].top_cuts, rect_TDD.yMid(), \
                              rect_TDD.yT(), flagsR, xMid)
-            pm = self.draw_passes(painter, self.labels[i], boards[3].top_cuts, y1, y2, flagsL, xMid)
+            pm = self.draw_passes(painter, self.labels[i], boards[3].top_cuts, y1, y2,
+                                  flagsR, xMid, True)
             if pm is not None:
                 centerline_TDD.append(pm)
             painter.setPen(QtCore.Qt.SolidLine)
-            y1 = boards[3].yB()
-            y2 = y1 + frac_depth
+            y1 = boards[3].yB() - sepOver2
+            y2 = boards[3].yB() + frac_depth
             self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(), \
                              rect_TDD.yB(), flagsL, xMid)
-            pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2, flagsR, xMid)
+            pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2,
+                                  flagsL, xMid, True)
             if pm is not None:
                 centerline_TDD.append(pm)
             label_bottom = 'D,E,F'
@@ -456,18 +477,20 @@ class Qt_Plotter(QtGui.QWidget):
         # Do double passes
         if boards[2].active:
             painter.setPen(QtCore.Qt.DashLine)
-            y1 = boards[2].yT()
-            y2 = y1 - frac_depth
-            self.draw_passes(painter, self.labels[i], boards[2].top_cuts, rect_T.yMid(), \
+            y1 = boards[2].yT() + sepOver2
+            y2 = boards[2].yT() - frac_depth
+            self.draw_passes(painter, self.labels[i], boards[2].top_cuts, rect_T.yMid(),
                              rect_T.yT(), flagsR, xMid)
-            pm = self.draw_passes(painter, self.labels[i], boards[2].top_cuts, y1, y2, flagsL, xMid)
+            pm = self.draw_passes(painter, self.labels[i], boards[2].top_cuts, y1, y2,
+                                  flagsR, xMid, True)
             if pm is not None:
                 centerline.append(pm)
-            y1 = boards[2].yB()
-            y2 = y1 + frac_depth
-            self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, rect_T.yMid(), \
+            y1 = boards[2].yB() - sepOver2
+            y2 = boards[2].yB() + frac_depth
+            self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, rect_T.yMid(),
                              rect_T.yB(), flagsL, xMid)
-            pm = self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2, flagsR, xMid)
+            pm = self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2,
+                                  flagsL, xMid, True)
             if pm is not None:
                 centerline.append(pm)
             painter.setPen(QtCore.Qt.SolidLine)
@@ -476,11 +499,12 @@ class Qt_Plotter(QtGui.QWidget):
             i += 2
 
         # ... do the bottom board passes
-        y1 = boards[1].yT()
-        y2 = y1 - frac_depth
-        self.draw_passes(painter, self.labels[i], boards[1].top_cuts, rect_T.yMid(), \
+        y1 = boards[1].yT() + sepOver2
+        y2 = boards[1].yT() - frac_depth
+        self.draw_passes(painter, self.labels[i], boards[1].top_cuts, rect_T.yMid(),
                          rect_T.yB(), flagsL, xMid)
-        pm = self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2, flagsL, xMid)
+        pm = self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2,
+                              flagsR, xMid, True)
         if pm is not None:
             centerline.append(pm)
 
