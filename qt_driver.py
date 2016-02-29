@@ -314,10 +314,20 @@ class Driver(QtGui.QMainWindow):
         finger_size_action.triggered.connect(self._on_finger_sizes)
         view_menu.addAction(finger_size_action)
         if self.config.label_fingers:
-            self.fig.do_finger_sizes = True
+            self.fig.label_fingers = True
         else:
-            self.fig.do_finger_sizes = False
-        finger_size_action.setChecked(self.fig.do_finger_sizes)
+            self.fig.label_fingers = False
+        finger_size_action.setChecked(self.fig.label_fingers)
+
+        show_passes_action = QtGui.QAction('Router Passes', self, checkable=True)
+        show_passes_action.setStatusTip('Toggle viewing router passes')
+        show_passes_action.triggered.connect(self._on_show_passes)
+        view_menu.addAction(show_passes_action)
+        if self.config.show_router_passes:
+            self.fig.show_router_passes = True
+        else:
+            self.fig.show_router_passes = False
+        show_passes_action.setChecked(self.fig.show_router_passes)
 
         # Add the help menu
 
@@ -1634,12 +1644,25 @@ class Driver(QtGui.QMainWindow):
         '''Handles toggling showing finger sizes'''
         if self.config.debug:
             print('_on_finger_sizes')
-        if self.fig.do_finger_sizes:
-            self.fig.do_finger_sizes = False
+        if self.fig.label_fingers:
+            self.fig.label_fingers = False
             self.status_message('Turned off finger sizes.')
         else:
-            self.fig.do_finger_sizes = True
+            self.fig.label_fingers = True
             self.status_message('Turned on finger sizes.')
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_show_passes(self):
+        '''Handles toggling showing router passes'''
+        if self.config.debug:
+            print('_on_show_passes')
+        if self.fig.show_router_passes:
+            self.fig.show_router_passes = False
+            self.status_message('Turned off router passes.')
+        else:
+            self.fig.show_router_passes = True
+            self.status_message('Turned on router passes.')
         self.draw()
 
     def status_message(self, msg, flash_len_ms=None):

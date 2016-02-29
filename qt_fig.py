@@ -104,8 +104,10 @@ class Qt_Fig(QtGui.QWidget):
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
         self.font_size = {'title':4, 'fingers':3, 'template':2, 'boards':4, 'template_labels':3}
-        # if true, draw finger sizes
-        self.do_finger_sizes = False
+        # if true, label the fingers on each board with its width
+        self.label_fingers = False
+        # if true, draw router passes
+        self.show_router_passes = True
 
     def minimumSizeHint(self):
         '''
@@ -307,7 +309,7 @@ class Qt_Fig(QtGui.QWidget):
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
-        if self.do_finger_sizes:
+        if self.label_fingers:
             self.draw_finger_sizes(painter)
 
         return (window_width, window_height)
@@ -416,15 +418,16 @@ class Qt_Fig(QtGui.QWidget):
         # ... do the top board passes
         y1 = boards[0].yB() - sepOver2
         y2 = boards[0].yB() + frac_depth
-        self.draw_passes(painter, 'A', boards[0].bottom_cuts, rect_top.yMid(),
-                         rect_top.yT(), flagsR, xMid)
-        pm = self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2,
-                              flagsL, xMid, True)
+        pm = self.draw_passes(painter, 'A', boards[0].bottom_cuts, rect_top.yMid(),
+                              rect_top.yT(), flagsR, xMid)
         if pm is not None:
             if boards[3].active:
                 centerline_TDD.append(pm)
             else:
                 centerline.append(pm)
+        if self.show_router_passes:
+            self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2,
+                             flagsL, xMid, True)
         label_bottom = 'A,B'
         label_top = None
         i = 0
@@ -433,21 +436,23 @@ class Qt_Fig(QtGui.QWidget):
             painter.setPen(QtCore.Qt.DashLine)
             y1 = boards[3].yT() + sepOver2
             y2 = boards[3].yT() - frac_depth
-            self.draw_passes(painter, self.labels[i], boards[3].top_cuts, rect_TDD.yMid(), \
-                             rect_TDD.yT(), flagsR, xMid)
-            pm = self.draw_passes(painter, self.labels[i], boards[3].top_cuts, y1, y2,
-                                  flagsR, xMid, True)
+            pm = self.draw_passes(painter, self.labels[i], boards[3].top_cuts, rect_TDD.yMid(),
+                                  rect_TDD.yT(), flagsR, xMid)
             if pm is not None:
                 centerline_TDD.append(pm)
+            if self.show_router_passes:
+                self.draw_passes(painter, self.labels[i], boards[3].top_cuts, y1, y2,
+                                 flagsR, xMid, True)
             painter.setPen(QtCore.Qt.SolidLine)
             y1 = boards[3].yB() - sepOver2
             y2 = boards[3].yB() + frac_depth
-            self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(), \
-                             rect_TDD.yB(), flagsL, xMid)
-            pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2,
-                                  flagsL, xMid, True)
+            pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(), \
+                                  rect_TDD.yB(), flagsL, xMid) 
             if pm is not None:
                 centerline_TDD.append(pm)
+            if self.show_router_passes:
+                self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2,
+                                 flagsL, xMid, True)
             label_bottom = 'D,E,F'
             label_top = 'A,B,C'
             i += 2
@@ -456,20 +461,22 @@ class Qt_Fig(QtGui.QWidget):
             painter.setPen(QtCore.Qt.DashLine)
             y1 = boards[2].yT() + sepOver2
             y2 = boards[2].yT() - frac_depth
-            self.draw_passes(painter, self.labels[i], boards[2].top_cuts, rect_T.yMid(),
-                             rect_T.yT(), flagsR, xMid)
-            pm = self.draw_passes(painter, self.labels[i], boards[2].top_cuts, y1, y2,
-                                  flagsR, xMid, True)
+            pm = self.draw_passes(painter, self.labels[i], boards[2].top_cuts, rect_T.yMid(),
+                                  rect_T.yT(), flagsR, xMid)
             if pm is not None:
                 centerline.append(pm)
+            if self.show_router_passes:
+                self.draw_passes(painter, self.labels[i], boards[2].top_cuts, y1, y2,
+                                 flagsR, xMid, True)
             y1 = boards[2].yB() - sepOver2
             y2 = boards[2].yB() + frac_depth
-            self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, rect_T.yMid(),
-                             rect_T.yB(), flagsL, xMid)
-            pm = self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2,
-                                  flagsL, xMid, True)
+            pm = self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, rect_T.yMid(),
+                                  rect_T.yB(), flagsL, xMid)
             if pm is not None:
                 centerline.append(pm)
+            if self.show_router_passes:
+                self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2,
+                                 flagsL, xMid, True)
             painter.setPen(QtCore.Qt.SolidLine)
             if not boards[3].active:
                 label_bottom = 'A,B,C,D'
@@ -478,12 +485,13 @@ class Qt_Fig(QtGui.QWidget):
         # ... do the bottom board passes
         y1 = boards[1].yT() + sepOver2
         y2 = boards[1].yT() - frac_depth
-        self.draw_passes(painter, self.labels[i], boards[1].top_cuts, rect_T.yMid(),
-                         rect_T.yB(), flagsL, xMid)
-        pm = self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2,
-                              flagsR, xMid, True)
+        pm = self.draw_passes(painter, self.labels[i], boards[1].top_cuts, rect_T.yMid(),
+                              rect_T.yB(), flagsL, xMid)
         if pm is not None:
             centerline.append(pm)
+        if self.show_router_passes:
+            self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2,
+                             flagsR, xMid, True)
 
         # ... draw the caul template and do its passes
         if self.geom.template.do_caul:

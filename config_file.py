@@ -64,9 +64,13 @@ metric = {metric}
 #    1  (metric = True), corresponding to 1mm resolution
 num_increments = {num_increments}
 
-# If true, label each finger with its size.  The labels may also be turned
+# If true, label each finger with its size.  This option may also be turned
 # on and off under the menu "View" and selecting "Finger Sizes".
 label_fingers = {label_fingers}
+
+# If true, label each router passes on the board.  This option may also be turned
+# on and off under the menu "View" and selecting "Router Passes".
+show_router_passes = {show_router_passes}
 
 # Initial board width [inches|mm]
 # Example of fractional value. 7.5 is equivalent.
@@ -149,7 +153,8 @@ background_color = {background_color}
 
 # common default values
 common_vals = {'version':'NONE',
-               'label_fingers':True, 
+               'label_fingers':True,
+               'show_router_passes':True,
                'bit_angle':0,
                'min_image_width':1440,
                'max_image_width':'min_image_width',
@@ -217,7 +222,7 @@ class Configuration(object):
         self.filename = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
         # version number as integer. config file must be updated if it was created
         # with an earlier number
-        self.min_version_number = 84
+        self.min_version_number = 85
         self.config = None
     def read_config(self):
         '''
