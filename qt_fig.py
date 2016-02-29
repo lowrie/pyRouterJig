@@ -565,13 +565,14 @@ class Qt_Plotter(QtGui.QWidget):
         pen.setWidthF(0)
         painter.setPen(pen)
         icon = self.woods[board.wood]
-        if isinstance(icon, str):
-            brush = QtGui.QBrush(QtGui.QPixmap(icon))
-        else:
-            brush = QtGui.QBrush(QtCore.Qt.black, icon)
-        (inverted, invertable) = self.transform.inverted()
-        brush.setMatrix(inverted.toAffine())
-        painter.setBrush(brush)
+        if icon is not None:
+            if isinstance(icon, str):
+                brush = QtGui.QBrush(QtGui.QPixmap(icon))
+            else:
+                brush = QtGui.QBrush(QtCore.Qt.black, icon)
+            (inverted, invertable) = self.transform.inverted()
+            brush.setMatrix(inverted.toAffine())
+            painter.setBrush(brush)
         n = len(x)
         poly = QtGui.QPolygonF()
         for i in lrange(n):

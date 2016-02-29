@@ -427,7 +427,8 @@ class Driver(QtGui.QMainWindow):
                     'BDiagPattern':QtCore.Qt.BDiagPattern,\
                     'FDiagPattern':QtCore.Qt.FDiagPattern,\
                     'Dense1Pattern':QtCore.Qt.Dense1Pattern,\
-                    'Dense5Pattern':QtCore.Qt.Dense5Pattern}
+                    'Dense5Pattern':QtCore.Qt.Dense5Pattern,\
+                    'No fill':None}
         # ... combine the wood images and patterns
         self.woods = copy.deepcopy(woods)
         self.woods.update(patterns)
