@@ -80,37 +80,14 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
     painter.setTransform(transform)
     return rect
 
-class Qt_Fig(object):
+class Qt_Fig(QtGui.QWidget):
     '''
     Interface to the qt_driver, using Qt to draw the boards and template.
+    The attribute "canvas" is self, to mimic
+    the old interface to matplotlib, which this class replaced.
     '''
     def __init__(self, template, boards, config):
-        self.canvas = Qt_Plotter(template, boards, config)
-        self.transform = None
-
-    def draw(self, template, boards, bit, spacing, woods):
-        '''
-        Draws the template and boards
-        '''
-        self.canvas.draw(template, boards, bit, spacing, woods)
-
-    def print(self, template, boards, bit, spacing, woods):
-        '''
-        Prints the figure
-        '''
-        return self.canvas.print_fig(template, boards, bit, spacing, woods)
-
-    def image(self, template, boards, bit, spacing, woods):
-        '''
-        Prints the figure to an image
-        '''
-        return self.canvas.image_fig(template, boards, bit, spacing, woods)
-
-class Qt_Plotter(QtGui.QWidget):
-    '''
-    Plots the template and boards using Qt.
-    '''
-    def __init__(self, template, boards, config):
+        self.canvas = self
         QtGui.QWidget.__init__(self)
         self.config = config
         self.fig_width = -1
@@ -203,7 +180,7 @@ class Qt_Plotter(QtGui.QWidget):
         self.current_background = self.background
         self.update()
 
-    def print_fig(self, template, boards, bit, spacing, woods):
+    def print(self, template, boards, bit, spacing, woods):
         '''
         Prints the figure
         '''
@@ -224,7 +201,7 @@ class Qt_Plotter(QtGui.QWidget):
         pdialog.paintRequested.connect(self.preview_requested)
         return pdialog.exec_()
 
-    def image_fig(self, template, boards, bit, spacing, woods):
+    def image(self, template, boards, bit, spacing, woods):
         '''
         Prints the figure to a QImage object
         '''
@@ -245,14 +222,14 @@ class Qt_Plotter(QtGui.QWidget):
         h = utils.my_round(w / fig_ar)
         sNew = QtCore.QSize(w, h)
 
-        image = QtGui.QImage(sNew, QtGui.QImage.Format_RGB32)
+        im = QtGui.QImage(sNew, QtGui.QImage.Format_RGB32)
         painter = QtGui.QPainter()
-        painter.begin(image)
-        size = image.size()
+        painter.begin(im)
+        size = im.size()
         painter.fillRect(0, 0, size.width(), size.height(), self.background)
         self.paint_all(painter)
         painter.end()
-        return image
+        return im
 
     def preview_requested(self, printer):
         '''

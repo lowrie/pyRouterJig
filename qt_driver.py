@@ -314,10 +314,10 @@ class Driver(QtGui.QMainWindow):
         finger_size_action.triggered.connect(self._on_finger_sizes)
         view_menu.addAction(finger_size_action)
         if self.config.label_fingers:
-            self.fig.canvas.do_finger_sizes = True
+            self.fig.do_finger_sizes = True
         else:
-            self.fig.canvas.do_finger_sizes = False
-        finger_size_action.setChecked(self.fig.canvas.do_finger_sizes)
+            self.fig.do_finger_sizes = False
+        finger_size_action.setChecked(self.fig.do_finger_sizes)
 
         # Add the help menu
 
@@ -1634,11 +1634,11 @@ class Driver(QtGui.QMainWindow):
         '''Handles toggling showing finger sizes'''
         if self.config.debug:
             print('_on_finger_sizes')
-        if self.fig.canvas.do_finger_sizes:
-            self.fig.canvas.do_finger_sizes = False
+        if self.fig.do_finger_sizes:
+            self.fig.do_finger_sizes = False
             self.status_message('Turned off finger sizes.')
         else:
-            self.fig.canvas.do_finger_sizes = True
+            self.fig.do_finger_sizes = True
             self.status_message('Turned on finger sizes.')
         self.draw()
 
