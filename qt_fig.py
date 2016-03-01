@@ -66,7 +66,7 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
         yorg = -big
     elif flags & QtCore.Qt.AlignVCenter:
         yorg = -big // 2
-    rect = QtCore.QRect(xorg, yorg, big, big)
+    rect = QtCore.QRectF(xorg, yorg, big, big)
     rect = painter.boundingRect(rect, flags, text)
     # Draw the text
     if fill is not None:
@@ -319,7 +319,7 @@ class Qt_Fig(QtGui.QWidget):
         Draws and labels the router passes on a template or board.
         '''
         board_T = self.geom.board_T
-        # brush = QtGui.QBrush(QtCore.Qt.white)
+        #brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 100))
         brush = None
         ip = 0
         shift = (0, 0) # for adjustments of text
@@ -339,16 +339,21 @@ class Qt_Fig(QtGui.QWidget):
                         loc = self.geom.bit.units.increments_to_string(board_T.width - c.passes[p])
                         label += ': ' + loc
                     r = paint_text(painter, label, (xp, y1), flags, shift, -90, fill=brush)
+                    # Determine the line starting point from the size of the
+                    # text.  Give a small margin so that the starting point is
+                    # not too close to the text.
                     if y1 > y2:
-                        yTry = r.y()
-                        if yTry > y2:
-                            y1text = yTry + 0.05 * (y2 - yTry)
+                        y1text = r.y()
+                        if y1text > y2:
+                            y1text += 0.05 * (y2 - y1text)
                     else:
-                        yTry = r.y() + r.height()
-                        if yTry < y2:
-                            y1text = yTry + 0.05 * (y2 - yTry)
+                        y1text = r.y() + r.height()
+                        if y1text < y2:
+                            y1text += 0.05 * (y2 - y1text)
                 # Draw the line from the label to the base of cut
-                painter.drawLine(xp, y1text, xp, y2)
+                p1 = QtCore.QPointF(xp, y1text)
+                p2 = QtCore.QPointF(xp, y2)
+                painter.drawLine(p1, p2)
         return passMid
 
     def draw_alignment(self, painter):
