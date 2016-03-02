@@ -273,10 +273,11 @@ class Driver(QtGui.QMainWindow):
         print_action.triggered.connect(self._on_print)
         file_menu.addAction(print_action)
 
-        table_action = QtGui.QAction('Print Table...', self)
-        table_action.setStatusTip('Print a table of router pass locations')
-        table_action.triggered.connect(self._on_print_table)
-        file_menu.addAction(table_action)
+        # comment out for now...
+        #table_action = QtGui.QAction('Print Table...', self)
+        #table_action.setStatusTip('Print a table of router pass locations')
+        #table_action.triggered.connect(self._on_print_table)
+        #file_menu.addAction(table_action)
 
         # ... we need to make this action persistent, so that we can
         # enable and disable it (until all of its functionality is
