@@ -389,10 +389,11 @@ class Qt_Fig(QtGui.QWidget):
                 y1text = r.y() + r.height()
                 if y1text < y2:
                     y1text += 0.05 * (y2 - y1text)
-            # Draw the line from the label to the base of cut
-            p1 = QtCore.QPointF(xpShift, y1text)
-            p2 = QtCore.QPointF(xpShift, y2)
-            painter.drawLine(p1, p2)
+            # If there is any room left, draw the line from the label to the base of cut
+            if (y1 - y2) * (y1text - y2) > 0:
+                p1 = QtCore.QPointF(xpShift, y1text)
+                p2 = QtCore.QPointF(xpShift, y2)
+                painter.drawLine(p1, p2)
         return passMid
 
     def draw_alignment(self, painter):
