@@ -93,17 +93,13 @@ class Qt_Fig(QtGui.QWidget):
         self.fig_width = -1
         self.fig_height = -1
         self.set_fig_dimensions(template, boards)
-        # if subsequent passes are less than this value, don't label
-        # the pass (in increments)
-        #self.sep_annotate = 4
-        self.sep_annotate = 0
         self.geom = None
         (r, g, b) = config.background_color
         self.background = QtGui.QBrush(QtGui.QColor(r, g, b))
         self.current_background = self.background
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
-        self.font_size = {'title':4, 'fingers':3, 'template':2, 'boards':4, 'template_labels':3}
+        self.font_size = {'title':4, 'fingers':3, 'template':3, 'boards':4, 'template_labels':3}
         # if true, label the fingers on each board with its width
         self.label_fingers = False
         # if true, draw router passes
@@ -262,12 +258,12 @@ class Qt_Fig(QtGui.QWidget):
 
     def set_font_size(self, painter, param):
         '''
-        Sets the font size for type param
+        Sets the font size for font type param
         '''
         font_inches = self.font_size[param] / 32.0 * self.geom.bit.units.increments_per_inch
+        dx = self.transform.map(font_inches, 0)[0] - self.transform.dx()
         font = painter.font()
-        xx = self.transform.map(font_inches, 0)[0] - self.transform.dx()
-        font.setPixelSize(utils.my_round(xx))
+        font.setPixelSize(utils.my_round(dx))
         painter.setFont(font)
 
     def paint_all(self, painter, dpi=None):
@@ -317,43 +313,86 @@ class Qt_Fig(QtGui.QWidget):
     def draw_passes(self, painter, blabel, cuts, y1, y2, flags, xMid, add_location=False):
         '''
         Draws and labels the router passes on a template or board.
+
+        painter: The QPainter object
+        blabel: The board label (A, B, C, ...)
+        cuts: Array of router.Cut objects
+        y1: y-location where pass label is placed
+        y2: y-location where end of line is located
+        flags: Horizontal alignment for label
+        xMid: x-location of board center
+        add_location: If true, also print the the x-location in the label
+
+        Returns the pass label if a pass matches xMid, None otherwise
         '''
         board_T = self.geom.board_T
         #brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 100))
         brush = None
-        ip = 0
         shift = (0, 0) # for adjustments of text
-        passMid = None
-        self.set_font_size(painter, 'template')
+        passMid = None # location of board-center pass (return value)
+        font_type = 'template'
+        char_size = self.font_size[font_type]
+        self.set_font_size(painter, font_type)
+        # Collect the router pass locations in a single array by looping
+        # through each cut and each pass for each cut, right-to-left.
+        xp = []
         for c in cuts[::-1]:
             for p in lrange(len(c.passes) - 1, -1, -1):
-                xp = c.passes[p] + board_T.xL()
-                ip += 1
-                label = '%d%s' % (ip, blabel)
-                if xp == xMid:
-                    passMid = label
-                y1text = y1
-                # Add the label if constraints are met
-                if p == 0 or c.passes[p] - c.passes[p-1] > self.sep_annotate:
-                    if add_location:
-                        loc = self.geom.bit.units.increments_to_string(board_T.width - c.passes[p])
-                        label += ': ' + loc
-                    r = paint_text(painter, label, (xp, y1), flags, shift, -90, fill=brush)
-                    # Determine the line starting point from the size of the
-                    # text.  Give a small margin so that the starting point is
-                    # not too close to the text.
-                    if y1 > y2:
-                        y1text = r.y()
-                        if y1text > y2:
-                            y1text += 0.05 * (y2 - y1text)
-                    else:
-                        y1text = r.y() + r.height()
-                        if y1text < y2:
-                            y1text += 0.05 * (y2 - y1text)
-                # Draw the line from the label to the base of cut
-                p1 = QtCore.QPointF(xp, y1text)
-                p2 = QtCore.QPointF(xp, y2)
-                painter.drawLine(p1, p2)
+                xp.append(c.passes[p])
+        # Loop through the passes and do the labels
+        np = len(xp)
+        for i in lrange(np):
+            # Determine vertical alignment, by checking the separation from adjacent passes.
+            # If too close to an adjacent pass, then shift the alignment in the opposite
+            # direction.
+            flagsv = flags
+            diffm = xp[max(0, i - 1)] - xp[i]
+            diffp = xp[i] - xp[min(np - 1, i + 1)]
+            if i == 0:
+                if diffp < char_size:
+                    flagsv |= QtCore.Qt.AlignTop
+                else:
+                    flagsv |= QtCore.Qt.AlignVCenter
+            elif i == np - 1:
+                if diffm < char_size:
+                    flagsv |= QtCore.Qt.AlignBottom
+                else:
+                    flagsv |= QtCore.Qt.AlignVCenter
+            elif diffp < char_size:
+                if diffm < char_size:
+                    flagsv |= QtCore.Qt.AlignVCenter
+                else:
+                    flagsv |= QtCore.Qt.AlignTop
+            else:
+                if diffm < char_size:
+                    flagsv |= QtCore.Qt.AlignBottom
+                else:
+                    flagsv |= QtCore.Qt.AlignVCenter
+            xpShift = xp[i] + board_T.xL()
+            # Draw the text label for this pass
+            label = '%d%s' % (i + 1, blabel)
+            if xpShift == xMid:
+                passMid = label
+            y1text = y1
+            if add_location:
+                loc = self.geom.bit.units.increments_to_string(board_T.width - xp[i])
+                label += ': ' + loc
+            r = paint_text(painter, label, (xpShift, y1), flagsv, shift, -90, fill=brush)
+            # Determine the line starting point from the size of the text.
+            # Create a small margin so that the starting point is not too
+            # close to the text.
+            if y1 > y2:
+                y1text = r.y()
+                if y1text > y2:
+                    y1text += 0.05 * (y2 - y1text)
+            else:
+                y1text = r.y() + r.height()
+                if y1text < y2:
+                    y1text += 0.05 * (y2 - y1text)
+            # Draw the line from the label to the base of cut
+            p1 = QtCore.QPointF(xpShift, y1text)
+            p2 = QtCore.QPointF(xpShift, y2)
+            painter.drawLine(p1, p2)
         return passMid
 
     def draw_alignment(self, painter):
@@ -414,8 +453,8 @@ class Qt_Fig(QtGui.QWidget):
         else:
             rect_top = rect_T
 
-        flagsL = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-        flagsR = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+        flagsL = QtCore.Qt.AlignLeft
+        flagsR = QtCore.Qt.AlignRight
 
         frac_depth = 0.95 * self.geom.bit.depth
         sepOver2 = 0.5 * self.geom.margins.sep
