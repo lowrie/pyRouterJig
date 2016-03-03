@@ -103,7 +103,8 @@ class Qt_Fig(QtGui.QWidget):
         # if true, label the fingers on each board with its width
         self.label_fingers = False
         # if true, draw router passes
-        self.show_router_passes = True
+        self.show_router_pass_identifiers = True
+        self.show_router_pass_locations = False
 
     def minimumSizeHint(self):
         '''
@@ -310,7 +311,8 @@ class Qt_Fig(QtGui.QWidget):
 
         return (window_width, window_height)
 
-    def draw_passes(self, painter, blabel, cuts, y1, y2, flags, xMid, add_location=False):
+    def draw_passes(self, painter, blabel, cuts, y1, y2, flags, xMid,
+                    id=True, location=False):
         '''
         Draws and labels the router passes on a template or board.
 
@@ -321,7 +323,8 @@ class Qt_Fig(QtGui.QWidget):
         y2: y-location where end of line is located
         flags: Horizontal alignment for label
         xMid: x-location of board center
-        add_location: If true, also print the the x-location in the label
+        id: If true, show the pass id
+        location: If true, show the x-location
 
         Returns the pass label if a pass matches xMid, None otherwise
         '''
@@ -370,17 +373,21 @@ class Qt_Fig(QtGui.QWidget):
                     flagsv |= QtCore.Qt.AlignVCenter
             xpShift = xp[i] + board_T.xL()
             # Draw the text label for this pass
-            label = '%d%s' % (i + 1, blabel)
-            if xpShift == xMid:
-                passMid = label
-            y1text = y1
-            if add_location:
+            label = ''
+            if id:
+                label = '%d%s' % (i + 1, blabel)
+                if xpShift == xMid:
+                    passMid = label
+            if location:
+                if id:
+                    label += ': '
                 loc = self.geom.bit.units.increments_to_string(board_T.width - xp[i])
-                label += ': ' + loc
+                label += loc
             r = paint_text(painter, label, (xpShift, y1), flagsv, shift, -90, fill=brush)
             # Determine the line starting point from the size of the text.
             # Create a small margin so that the starting point is not too
             # close to the text.
+            y1text = y1
             if y1 > y2:
                 y1text = r.y()
                 if y1text > y2:
@@ -456,6 +463,7 @@ class Qt_Fig(QtGui.QWidget):
 
         flagsL = QtCore.Qt.AlignLeft
         flagsR = QtCore.Qt.AlignRight
+        show_passes = self.show_router_pass_identifiers | self.show_router_pass_locations
 
         frac_depth = 0.95 * self.geom.bit.depth
         sepOver2 = 0.5 * self.geom.margins.sep
@@ -470,9 +478,10 @@ class Qt_Fig(QtGui.QWidget):
                 centerline_TDD.append(pm)
             else:
                 centerline.append(pm)
-        if self.show_router_passes:
+        if show_passes:
             self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2,
-                             flagsL, xMid, True)
+                             flagsL, xMid, self.show_router_pass_identifiers,
+                             self.show_router_pass_locations)
         label_bottom = 'A,B'
         label_top = None
         i = 0
@@ -485,9 +494,10 @@ class Qt_Fig(QtGui.QWidget):
                                   rect_TDD.yT(), flagsR, xMid)
             if pm is not None:
                 centerline_TDD.append(pm)
-            if self.show_router_passes:
+            if show_passes:
                 self.draw_passes(painter, self.labels[i], boards[3].top_cuts, y1, y2,
-                                 flagsR, xMid, True)
+                                 flagsR, xMid, self.show_router_pass_identifiers,
+                                 self.show_router_pass_locations)
             painter.setPen(QtCore.Qt.SolidLine)
             y1 = boards[3].yB() - sepOver2
             y2 = boards[3].yB() + frac_depth
@@ -495,9 +505,10 @@ class Qt_Fig(QtGui.QWidget):
                                   rect_TDD.yB(), flagsL, xMid) 
             if pm is not None:
                 centerline_TDD.append(pm)
-            if self.show_router_passes:
+            if show_passes:
                 self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2,
-                                 flagsL, xMid, True)
+                                 flagsL, xMid, self.show_router_pass_identifiers,
+                                 self.show_router_pass_locations)
             label_bottom = 'D,E,F'
             label_top = 'A,B,C'
             i += 2
@@ -510,18 +521,20 @@ class Qt_Fig(QtGui.QWidget):
                                   rect_T.yT(), flagsR, xMid)
             if pm is not None:
                 centerline.append(pm)
-            if self.show_router_passes:
+            if show_passes:
                 self.draw_passes(painter, self.labels[i], boards[2].top_cuts, y1, y2,
-                                 flagsR, xMid, True)
+                                 flagsR, xMid, self.show_router_pass_identifiers,
+                                 self.show_router_pass_locations)
             y1 = boards[2].yB() - sepOver2
             y2 = boards[2].yB() + frac_depth
             pm = self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, rect_T.yMid(),
                                   rect_T.yB(), flagsL, xMid)
             if pm is not None:
                 centerline.append(pm)
-            if self.show_router_passes:
+            if show_passes:
                 self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2,
-                                 flagsL, xMid, True)
+                                 flagsL, xMid, self.show_router_pass_identifiers,
+                                 self.show_router_pass_locations)
             painter.setPen(QtCore.Qt.SolidLine)
             if not boards[3].active:
                 label_bottom = 'A,B,C,D'
@@ -534,9 +547,10 @@ class Qt_Fig(QtGui.QWidget):
                               rect_T.yB(), flagsL, xMid)
         if pm is not None:
             centerline.append(pm)
-        if self.show_router_passes:
+        if show_passes:
             self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2,
-                             flagsR, xMid, True)
+                             flagsR, xMid, self.show_router_pass_identifiers,
+                             self.show_router_pass_locations)
 
         # ... draw the caul template and do its passes
         if self.geom.template.do_caul:

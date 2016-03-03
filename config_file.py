@@ -71,9 +71,15 @@ english_separator = '{english_separator}'
 # on and off under the menu "View" and selecting "Finger Sizes".
 label_fingers = {label_fingers}
 
-# If true, label each router passes on the board.  This option may also be turned
-# on and off under the menu "View" and selecting "Router Passes".
-show_router_passes = {show_router_passes}
+# If true, then label each router pass with its identifier on the board.  This
+# option may also be turned on and off under the menu "View", selecting
+# "Router Passes", and selecting "Identifiers"
+show_router_pass_identifiers = {show_router_pass_identifiers}
+
+# If true, then label each router pass with its location on the board.  This
+# option may also be turned on and off under the menu "View", selecting
+# "Router Passes", and selecting "Locations"
+show_router_pass_locations = {show_router_pass_locations}
 
 # Initial board width [inches|mm]
 board_width = {board_width}
@@ -155,7 +161,8 @@ background_color = {background_color}
 common_vals = {'version':'NONE',
                'english_separator':' ',
                'label_fingers':True,
-               'show_router_passes':True,
+               'show_router_pass_identifiers':True,
+               'show_router_pass_locations':False,
                'bit_angle':0,
                'min_image_width':1440,
                'max_image_width':'min_image_width',

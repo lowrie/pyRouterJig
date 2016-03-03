@@ -325,15 +325,26 @@ class Driver(QtGui.QMainWindow):
             self.fig.label_fingers = False
         finger_size_action.setChecked(self.fig.label_fingers)
 
-        show_passes_action = QtGui.QAction('Router Passes', self, checkable=True)
-        show_passes_action.setStatusTip('Toggle viewing router passes')
-        show_passes_action.triggered.connect(self._on_show_passes)
-        view_menu.addAction(show_passes_action)
-        if self.config.show_router_passes:
-            self.fig.show_router_passes = True
+        pass_menu = view_menu.addMenu('Router Passes')
+        pass_id_action = QtGui.QAction('Identifiers', self, checkable=True)
+        pass_id_action.setStatusTip('Toggle viewing router pass identifiers')
+        pass_id_action.triggered.connect(self._on_pass_id)
+        pass_menu.addAction(pass_id_action)
+        if self.config.show_router_pass_identifiers:
+            self.fig.show_router_pass_identifiers = True
         else:
-            self.fig.show_router_passes = False
-        show_passes_action.setChecked(self.fig.show_router_passes)
+            self.fig.show_router_pass_identifiers = False
+        pass_id_action.setChecked(self.fig.show_router_pass_identifiers)
+
+        pass_location_action = QtGui.QAction('Locations', self, checkable=True)
+        pass_location_action.setStatusTip('Toggle viewing router pass locations')
+        pass_location_action.triggered.connect(self._on_pass_location)
+        pass_menu.addAction(pass_location_action)
+        if self.config.show_router_pass_locations:
+            self.fig.show_router_pass_locations = True
+        else:
+            self.fig.show_router_pass_locations = False
+        pass_location_action.setChecked(self.fig.show_router_pass_locations)
 
         # Add the help menu
 
@@ -1659,16 +1670,29 @@ class Driver(QtGui.QMainWindow):
         self.draw()
 
     @QtCore.pyqtSlot()
-    def _on_show_passes(self):
-        '''Handles toggling showing router passes'''
+    def _on_pass_id(self):
+        '''Handles toggling showing router pass identifiers'''
         if self.config.debug:
-            print('_on_show_passes')
-        if self.fig.show_router_passes:
-            self.fig.show_router_passes = False
-            self.status_message('Turned off router passes.')
+            print('_on_pass_id')
+        if self.fig.show_router_pass_identifiers:
+            self.fig.show_router_pass_identifiers = False
+            self.status_message('Turned off router pass identifiers.')
         else:
-            self.fig.show_router_passes = True
-            self.status_message('Turned on router passes.')
+            self.fig.show_router_pass_identifiers = True
+            self.status_message('Turned on router pass identifiers.')
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_pass_location(self):
+        '''Handles toggling showing router pass locations'''
+        if self.config.debug:
+            print('_on_pass_locations')
+        if self.fig.show_router_pass_locations:
+            self.fig.show_router_pass_locations = False
+            self.status_message('Turned off router pass locations.')
+        else:
+            self.fig.show_router_pass_locations = True
+            self.status_message('Turned on router pass locations.')
         self.draw()
 
     def status_message(self, msg, flash_len_ms=None):
