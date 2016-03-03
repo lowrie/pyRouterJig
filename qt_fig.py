@@ -552,6 +552,9 @@ class Qt_Fig(QtGui.QWidget):
                              flagsR, xMid, self.show_router_pass_identifiers,
                              self.show_router_pass_locations)
 
+        flagsLC = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        flagsRC = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+
         # ... draw the caul template and do its passes
         if self.geom.template.do_caul:
             rect_caul = self.geom.rect_caul
@@ -574,8 +577,8 @@ class Qt_Fig(QtGui.QWidget):
             else:
                 painter.setPen(QtCore.Qt.DashLine)
                 painter.drawLine(xMid, rect_caul.yB(), xMid, rect_caul.yT())
-            paint_text(painter, label, (rect_caul.xL(), rect_caul.yMid()), flagsL, (5, 0))
-            paint_text(painter, label, (rect_caul.xR(), rect_caul.yMid()), flagsR, (-5, 0))
+            paint_text(painter, label, (rect_caul.xL(), rect_caul.yMid()), flagsLC, (5, 0))
+            paint_text(painter, label, (rect_caul.xR(), rect_caul.yMid()), flagsRC, (-5, 0))
 
         # Label the templates
         self.set_font_size(painter, 'template_labels')
@@ -584,16 +587,16 @@ class Qt_Fig(QtGui.QWidget):
         else:
             painter.setPen(QtCore.Qt.DashLine)
             painter.drawLine(xMid, rect_T.yB(), xMid, rect_T.yT())
-        paint_text(painter, label_bottom, (rect_T.xL(), rect_T.yMid()), flagsL, (5, 0))
-        paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsR, (-5, 0))
+        paint_text(painter, label_bottom, (rect_T.xL(), rect_T.yMid()), flagsLC, (5, 0))
+        paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsRC, (-5, 0))
         if label_top is not None:
             if len(centerline_TDD) > 0:
                 label_top += '\nCenter: ' + centerline_TDD[0]
             else:
                 painter.setPen(QtCore.Qt.DashLine)
                 painter.drawLine(xMid, rect_TDD.yB(), xMid, rect_TDD.yT())
-            paint_text(painter, label_top, (rect_TDD.xL(), rect_TDD.yMid()), flagsL, (5, 0))
-            paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsR, (-5, 0))
+            paint_text(painter, label_top, (rect_TDD.xL(), rect_TDD.yMid()), flagsLC, (5, 0))
+            paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsRC, (-5, 0))
 
         self.draw_alignment(painter)
 
