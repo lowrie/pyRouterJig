@@ -64,6 +64,9 @@ metric = {metric}
 #    1  (metric = True), corresponding to 1mm resolution
 num_increments = {num_increments}
 
+# For English units, the string separator between the whole and fraction components
+english_separator = '{english_separator}'
+
 # If true, label each finger with its size.  This option may also be turned
 # on and off under the menu "View" and selecting "Finger Sizes".
 label_fingers = {label_fingers}
@@ -73,15 +76,12 @@ label_fingers = {label_fingers}
 show_router_passes = {show_router_passes}
 
 # Initial board width [inches|mm]
-# Example of fractional value. 7.5 is equivalent.
 board_width = {board_width}
 
 # Initial bit width [inches|mm]
-# Another example of fractional value. 0.5 is equivalent.
 bit_width = {bit_width}
 
 # Initial bit depth [inches|mm] 
-# Example of floating point. '3/4' is equivalent.
 bit_depth = {bit_depth}
 
 # Initial bit angle [degrees]
@@ -153,6 +153,7 @@ background_color = {background_color}
 
 # common default values
 common_vals = {'version':'NONE',
+               'english_separator':' ',
                'label_fingers':True,
                'show_router_passes':True,
                'bit_angle':0,
@@ -191,6 +192,45 @@ metric_vals = {'metric':True,
                'top_margin':6,
                'bottom_margin':12}
 
+# values that are migrated to new versions of the config file.  Don't include metric, because it's
+# always migrated.
+migrate = ['english_separator',  # common_vals
+           'label_fingers',
+           'show_router_passes',
+           'bit_angle',
+           'min_image_width',
+           'max_image_width',
+           'print_scale_factor',
+           'default_wood',
+           'debug',
+           'left_margin',
+           'right_margin',
+           'separation',
+           'background_color',
+           'num_increments', # metric_vals or english_vals
+           'board_width',
+           'bit_width',
+           'bit_depth',
+           'double_board_thickness',
+           'min_finger_width',
+           'caul_trim',
+           'top_margin',
+           'bottom_margin']
+
+# Values that have either metric or English dimensions
+dim_vals = ['separation',
+            'board_width',
+            'bit_angle',
+            'bit_width',
+            'bit_depth',
+            'double_board_thickness',
+            'min_finger_width',
+            'caul_trim',
+            'top_margin',
+            'bottom_margin',
+            'left_margin',
+            'right_margin']
+
 def version_number(version):
     '''Splits the string version into its integer version number.  X.Y.Z -> XYZ'''
     vs = version.split('.')
@@ -204,7 +244,7 @@ def parameters_to_increments(config, units):
     config.board_width = units.abstract_to_increments(config.board_width)
     config.bit_width = units.abstract_to_increments(config.bit_width)
     config.bit_depth = units.abstract_to_increments(config.bit_depth)
-    config.bit_angle = utils.abstract_to_float(config.bit_angle)
+    config.bit_angle = units.abstract_to_float(config.bit_angle)
     config.min_finger_width = max(1, units.abstract_to_increments(config.min_finger_width))
     config.double_board_thickness = units.abstract_to_increments(config.double_board_thickness)
     config.caul_trim = max(1, units.abstract_to_increments(config.caul_trim))
@@ -220,13 +260,21 @@ class Configuration(object):
     '''
     def __init__(self):
         self.filename = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
-        # version number as integer. config file must be updated if it was created
-        # with an earlier number
-        self.min_version_number = 85
+        # config file must be updated if it was created with an earlier number.
+        # Update this value when new parameters are added to the config file,
+        # or any parameter's type changes,
+        self.create_version_number = 86
+        # config file cannot be migrated from versions earlier than this.
+        # This value is currently set at the version that all dimensions and bit_angle
+        # were consistent types and dimensions.
+        self.migrate_version_number = 84
         self.config = None
     def read_config(self):
         '''
-        Reads the configuration file.  If it does not exist, it's created.
+        Reads the configuration file.  Return values:
+           0: Config file was read successfully
+           1: Config file does not exist
+           2: Config file was read successfully, but it is outdated
         '''
         if not os.path.exists(self.filename):
             return 1
@@ -234,13 +282,15 @@ class Configuration(object):
             self.config = imp.load_source('', self.filename)
             vnum = version_number(self.config.version)
             msg_level = 0
-            if vnum < self.min_version_number:
+            if vnum < self.create_version_number:
                 return 2
             else:
                 return 0
     def create_config(self, metric):
         '''
-        Creates the configuration file.
+        Creates the configuration file.  Return values:
+          0: All values default
+          1: Values were migrated from old config file
         '''
         common_vals['wood_images'] = os.path.join(os.path.expanduser('~'), 'wood_images')
         common_vals['version'] = str(utils.VERSION)
@@ -248,7 +298,20 @@ class Configuration(object):
             common_vals.update(metric_vals)
         else:
             common_vals.update(english_vals)
+        r = 0
+        if self.config is not None:
+            # Then config file was outdated
+            vnum = version_number(self.config.version)
+            if vnum >= self.migrate_version_number:
+                # Then we can migrate the old settings
+                r = 1
+                for m in migrate:
+                    if m in self.config.__dict__.keys():
+                        common_vals[m] = self.config.__dict__[m]
+                        if m in dim_vals and isinstance(common_vals[m], str):
+                            common_vals[m] = "'{}'".format(common_vals[m])
         content = _CONFIG_INIT.format(**common_vals)
         fd = open(self.filename, 'w')
         fd.write(content)
         fd.close()
+        return r

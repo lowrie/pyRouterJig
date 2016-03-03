@@ -92,7 +92,8 @@ class Driver(QtGui.QMainWindow):
         (self.config, msg) = self.load_config()
 
         # Form the units
-        self.units = utils.Units(self.config.metric, self.config.num_increments)
+        self.units = utils.Units(self.config.english_separator, self.config.metric,
+                                 self.config.num_increments)
         self.doc = doc.Doc(self.units)
         config_file.parameters_to_increments(self.config, self.units)
 
@@ -179,30 +180,34 @@ class Driver(QtGui.QMainWindow):
                 box.exec_()
                 clicked = box.clickedButton()
                 metric = (clicked == buttonMetric)
+                c.create_config(metric)
             else: # r == 2
                 # The config file exists, but it's out of date, so
                 # update it.  Tell the user and use the old metric setting.
-                metric = c.config.metric
                 backup = c.filename + c.config.version
                 shutil.move(c.filename, backup)
-                c.create_config(False)
-
+                metric = c.config.metric
+                rc = c.create_config(metric)
                 box = QtGui.QMessageBox(self)
                 box.setTextFormat(QtCore.Qt.RichText)
                 box.setIcon(QtGui.QMessageBox.Warning)
                 box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !')
-                warning = '<font size=5>Your configuration file<p><tt>{}</tt><p>'\
-                          'has been updated. The old version has been saved to<p><tt>{}</tt><p>'\
-                          'The previous setting of'\
-                          '<p><i>metric = {}</i><p>has been migrated.'\
-                          ' But any other changes that you may have made'\
-                          ' to the old file will need to be migrated to the'\
-                          ' new file.'.format(c.filename, backup, metric)
+                warning = '<font size=5>A new configuration file<p><tt>{}</tt><p>'\
+                          'has been created. The old version was saved'\
+                          ' to<p><tt>{}</tt><p> '.format(c.filename, backup)
+                if rc == 0:
+                    warning += 'The previous setting of'\
+                               '<p><i>metric = {}</i><p>has been migrated.'\
+                               ' But any other changes that you may have made'\
+                               ' to the old file will need to be migrated to the'\
+                               ' new file.'.format(metric)
+                else:
+                    warning += 'The old configuration values were migrated'\
+                               ' and any new values were set to their default.'
                 box.setInformativeText(warning)
                 box.raise_()
                 box.exec_()
                 self.raise_()
-            c.create_config(metric)
             msg = 'Configuration file %s created' % c.filename
             c.read_config()
         else:

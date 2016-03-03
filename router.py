@@ -143,7 +143,7 @@ class Router_Bit(object):
         '''
         msg = 'Bit angle is %s\nSet to zero or a positive value, such as 7.5 or "7 1/2"' % s
         try:
-            self.angle = utils.string_to_float(s)
+            self.angle = self.units.string_to_float(s)
         except ValueError as e:
             msg = 'ValueError setting bit angle: %s\n\n' % (e) + msg
             raise Router_Exception(msg)

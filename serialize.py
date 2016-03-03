@@ -82,7 +82,7 @@ def unserialize(s, config):
     # form the units
     metric = u.load()
     num_increments = u.load()
-    units = utils.Units(metric, num_increments)
+    units = utils.Units(self.config.english_separator, metric, num_increments)
     # form the bit
     width = u.load()
     depth = u.load()

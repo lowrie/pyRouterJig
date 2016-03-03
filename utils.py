@@ -25,35 +25,13 @@ from __future__ import division
 
 import math, fractions, os, glob
 
-VERSION = '0.8.5'
+VERSION = '0.8.6'
 
 def my_round(f):
     '''
     Rounds to the nearest integer
     '''
     return int(round(f))
-
-def string_to_float(s):
-    '''
-    Converts a string representation to a floating-point value, where
-    the string may contain a fractional value.
-    '''
-    f = My_Fraction()
-    f.set_from_string(s)
-    r = f.whole
-    if f.numerator > 0:
-        r += float(f.numerator) / f.denominator
-    return r
-
-def abstract_to_float(a):
-    '''
-    Converts a value to a float.  If a is a string, then
-    string_to_float() is called.  Otherwise, float() is called.
-    '''
-    if isinstance(a, str):
-        return string_to_float(a)
-    else:
-        return float(a)
 
 class My_Fraction(object):
     '''
@@ -66,10 +44,11 @@ class My_Fraction(object):
     - My_Fraction includes a whole number attribute.  The equivalent is
       fractions.Fraction(whole * denominator + numerator, denominator)
     '''
-    def __init__(self, whole=0, numerator=0, denominator=None):
+    def __init__(self, english_separator, whole=0, numerator=0, denominator=None):
         self.whole = whole
         self.numerator = numerator
         self.denominator = denominator
+        self.english_separator = english_separator
     def reduce(self):
         '''
         Reduces the fraction to the minimum values for the numerator and
@@ -92,7 +71,7 @@ class My_Fraction(object):
         if self.whole > 0:
             s = '%d' % self.whole
             if self.numerator > 0:
-                s += '+'
+                s += self.english_separator
         if self.numerator > 0:
             s += '%d/%d' % (self.numerator, self.denominator)
         elif self.whole == 0:
@@ -113,8 +92,9 @@ class My_Fraction(object):
         dotloc = s.find('.')
         if dotloc == -1:
             # No decimal point, so try fractional form
-            # Convert the "+" to a space
-            s = s.replace('+', ' ', 1)
+            # Convert the english_separator to a space
+            if self.english_separator != ' ':
+                s = s.replace(self.english_separator, ' ', 1)
             # Look for a divisor
             sp = s.split('/')
             if len(sp) == 2: # found a divisor
@@ -150,6 +130,7 @@ class Units(object):
     '''
     Converts to and from increments and the units being used.
 
+    english_separator: For English units, string english_separator between whole and fraction
     metric: If true, then use metric (mm).  Otherwise, english (inches)
     num_increments: Number of increments per unit length (1 inch for english, 1 mm for metric)
 
@@ -157,7 +138,8 @@ class Units(object):
     increments_per_inch: Number of increments per inch.
     '''
     mm_per_inch = 25.4
-    def __init__(self, metric=False, num_increments=None):
+    def __init__(self, english_separator, metric=False, num_increments=None):
+        self.english_separator = english_separator
         self.metric = metric
         if num_increments is None:
             if metric:
@@ -184,7 +166,7 @@ class Units(object):
             whole = increments // self.increments_per_inch
             numer = increments - self.increments_per_inch * whole
             denom = self.increments_per_inch
-            frac = My_Fraction(whole, numer, denom)
+            frac = My_Fraction(self.english_separator, whole, numer, denom)
             frac.reduce()
             if frac.numerator > 0 and frac.denominator not in [1, 2, 4, 8, 16, 32, 64]:
                 r = '%.3f' % (increments / float(self.num_increments))
@@ -210,13 +192,33 @@ class Units(object):
         Converts v to increments, where v is [inches|mm]
         '''
         return my_round(v * self.num_increments)
+    def string_to_float(self, s):
+        '''
+        Converts a string representation to a floating-point value, where
+        the string may contain a fractional value.
+        '''
+        f = My_Fraction(self.english_separator)
+        f.set_from_string(s)
+        r = f.whole
+        if f.numerator > 0:
+            r += float(f.numerator) / f.denominator
+        return r
+    def abstract_to_float(self, a):
+        '''
+        Converts a value to a float.  If a is a string, then
+        string_to_float() is called.  Otherwise, float() is called.
+        '''
+        if isinstance(a, str):
+            return self.string_to_float(a)
+        else:
+            return float(a)
     def string_to_increments(self, s):
         '''
         Converts a string representation to the number of increments.
         Assumes the string is in inches or mm, depending on the metric
         attribute.
         '''
-        return self.length_to_increments(string_to_float(s))
+        return self.length_to_increments(self.string_to_float(s))
     def abstract_to_increments(self, a):
         '''
         Converts a value to increments.  If a is a string, then
