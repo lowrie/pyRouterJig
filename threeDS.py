@@ -24,11 +24,15 @@ Contains functionality for writing Autodesk 3DS files.
 from __future__ import division
 from __future__ import print_function
 from future.utils import lrange
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
-import struct, StringIO, copy
+import struct, copy
 import router
 
-class BinaryIO(StringIO.StringIO):
+class BinaryIO(StringIO):
     def writepack(self, fmt, *values):
         '''Writes data with little-endian, packed with struct'''
         self.write(struct.pack('<' + fmt, *values))

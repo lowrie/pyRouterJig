@@ -23,8 +23,12 @@ Contains serialization capability
 '''
 from __future__ import print_function
 from future.utils import lrange
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
-import pickle, StringIO
+import pickle
 import router
 import utils
 import spacing
@@ -34,7 +38,7 @@ def serialize(bit, boards, sp, config):
     Serializes the arguments. Returns the serialized string, which can
     later be used to reconstruct the arguments using unserialize_joint()
     '''
-    out = StringIO.StringIO()
+    out = StringIO()
     p = pickle.Pickler(out)
     # Save code version
     p.dump(utils.VERSION)
@@ -74,7 +78,7 @@ def unserialize(s, config):
     '''
     Unserializes the string s, and returns the tuple (bit, boards, spacing)
     '''
-    inp = StringIO.StringIO(s)
+    inp = StringIO(s)
     u = pickle.Unpickler(inp)
     version = u.load()
     if config.debug:
@@ -82,7 +86,7 @@ def unserialize(s, config):
     # form the units
     metric = u.load()
     num_increments = u.load()
-    units = utils.Units(self.config.english_separator, metric, num_increments)
+    units = utils.Units(config.english_separator, metric, num_increments)
     # form the bit
     width = u.load()
     depth = u.load()
