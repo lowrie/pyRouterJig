@@ -114,6 +114,6 @@ def unserialize(s, config):
             sp = spacing.Variable_Spaced(bit, boards, config)
         sp.params = u.load()
         if config.debug:
-            print('unserialized ', sp_type, `sp.params`)
+            print('unserialized ', sp_type, str(sp.params))
         sp.set_cuts()
     return (bit, boards, sp, sp_type)

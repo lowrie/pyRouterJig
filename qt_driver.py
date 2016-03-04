@@ -780,8 +780,8 @@ class Driver(QtGui.QMainWindow):
         '''
         self.cb_vsfingers.clear()
         for i in lrange(vMin, vMax + 1, 1):
-            self.cb_vsfingers.addItem(`i`)
-        i = self.cb_vsfingers.findText(`value`)
+            self.cb_vsfingers.addItem(str(i))
+        i = self.cb_vsfingers.findText(str(value))
         self.cb_vsfingers.setCurrentIndex(i)
 
     def update_tooltips(self):
@@ -1129,7 +1129,7 @@ class Driver(QtGui.QMainWindow):
         if self.screenshot_index is None:
             self.screenshot_index = utils.get_file_index(self.working_dir, prefix, postfix)
 
-        fname = prefix + `self.screenshot_index` + postfix
+        fname = prefix + str(self.screenshot_index) + postfix
 
         # Get the file name.  The default name is indexed on the number of
         # times this function is called.  If a screenshot, don't prompt for
@@ -1267,7 +1267,7 @@ class Driver(QtGui.QMainWindow):
         self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
         self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
         self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
-        self.le_bit_angle.setText(`self.bit.angle`)
+        self.le_bit_angle.setText(str(self.bit.angle))
         self.set_spacing_widgets()
 
         self.draw()
@@ -1341,7 +1341,7 @@ class Driver(QtGui.QMainWindow):
         if self.table_index is None:
             self.table_index = utils.get_file_index(self.working_dir, prefix, postfix)
 
-        fname = prefix + `self.table_index` + postfix
+        fname = prefix + str(self.table_index) + postfix
         filename = os.path.join(self.working_dir, fname)
         title = router.create_title(self.boards, self.bit, self.spacing)
         qt_table.print_table(filename, self.boards, title)
