@@ -312,7 +312,7 @@ class Qt_Fig(QtGui.QWidget):
         return (window_width, window_height)
 
     def draw_passes(self, painter, blabel, cuts, y1, y2, flags, xMid,
-                    id=True, location=False):
+                    template=True):
         '''
         Draws and labels the router passes on a template or board.
 
@@ -323,8 +323,7 @@ class Qt_Fig(QtGui.QWidget):
         y2: y-location where end of line is located
         flags: Horizontal alignment for label
         xMid: x-location of board center
-        id: If true, show the pass id
-        location: If true, show the x-location
+        template: If true, then a template
 
         Returns the pass label if a pass matches xMid, None otherwise
         '''
@@ -374,12 +373,12 @@ class Qt_Fig(QtGui.QWidget):
             xpShift = xp[i] + board_T.xL()
             # Draw the text label for this pass
             label = ''
-            if id:
+            if template or self.show_router_pass_identifiers:
                 label = '%d%s' % (i + 1, blabel)
                 if xpShift == xMid:
                     passMid = label
-            if location:
-                if id:
+            if not template and self.show_router_pass_locations:
+                if len(label) > 0:
                     label += ': '
                 loc = self.geom.bit.units.increments_to_string(board_T.width - xp[i])
                 label += loc
@@ -480,8 +479,7 @@ class Qt_Fig(QtGui.QWidget):
                 centerline.append(pm)
         if show_passes:
             self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2,
-                             flagsL, xMid, self.show_router_pass_identifiers,
-                             self.show_router_pass_locations)
+                             flagsL, xMid, False)
         label_bottom = 'A,B'
         label_top = None
         i = 0
@@ -496,8 +494,7 @@ class Qt_Fig(QtGui.QWidget):
                 centerline_TDD.append(pm)
             if show_passes:
                 self.draw_passes(painter, self.labels[i], boards[3].top_cuts, y1, y2,
-                                 flagsR, xMid, self.show_router_pass_identifiers,
-                                 self.show_router_pass_locations)
+                                 flagsR, xMid, False)
             painter.setPen(QtCore.Qt.SolidLine)
             y1 = boards[3].yB() - sepOver2
             y2 = boards[3].yB() + frac_depth
@@ -507,8 +504,7 @@ class Qt_Fig(QtGui.QWidget):
                 centerline_TDD.append(pm)
             if show_passes:
                 self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2,
-                                 flagsL, xMid, self.show_router_pass_identifiers,
-                                 self.show_router_pass_locations)
+                                 flagsL, xMid, False)
             label_bottom = 'D,E,F'
             label_top = 'A,B,C'
             i += 2
@@ -523,8 +519,7 @@ class Qt_Fig(QtGui.QWidget):
                 centerline.append(pm)
             if show_passes:
                 self.draw_passes(painter, self.labels[i], boards[2].top_cuts, y1, y2,
-                                 flagsR, xMid, self.show_router_pass_identifiers,
-                                 self.show_router_pass_locations)
+                                 flagsR, xMid, False)
             y1 = boards[2].yB() - sepOver2
             y2 = boards[2].yB() + frac_depth
             pm = self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, rect_T.yMid(),
@@ -533,8 +528,7 @@ class Qt_Fig(QtGui.QWidget):
                 centerline.append(pm)
             if show_passes:
                 self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2,
-                                 flagsL, xMid, self.show_router_pass_identifiers,
-                                 self.show_router_pass_locations)
+                                 flagsL, xMid, False)
             painter.setPen(QtCore.Qt.SolidLine)
             if not boards[3].active:
                 label_bottom = 'A,B,C,D'
@@ -549,8 +543,7 @@ class Qt_Fig(QtGui.QWidget):
             centerline.append(pm)
         if show_passes:
             self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2,
-                             flagsR, xMid, self.show_router_pass_identifiers,
-                             self.show_router_pass_locations)
+                             flagsR, xMid, False)
 
         flagsLC = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
         flagsRC = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
