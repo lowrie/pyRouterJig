@@ -1371,7 +1371,7 @@ class Driver(QtGui.QMainWindow):
             print('_on_about')
 
         box = QtGui.QMessageBox(self)
-        s = '<h2>Welcome to pyRouterJig!</h2>'
+        s = '<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>'
         s += '<h3>Version: %s</h3>' % utils.VERSION
         box.setText(s + self.doc.short_desc() + self.doc.license())
         box.setTextFormat(QtCore.Qt.RichText)

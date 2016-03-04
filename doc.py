@@ -27,21 +27,21 @@ class Doc(object):
     '''
     Defines documentation strings.
     '''
-    _short_desc = 'pyRouterJig is a joint layout tool for woodworking.'
+    _short_desc = '<i>pyRouterJig</i> is a joint layout tool for woodworking.'
 
     _license = '<p>\
     Copyright 2015, 2016 Robert B. Lowrie (pyrouterjig@lowrielodge.org)\
     <p>\
-    pyRouterJig is free software: you can redistribute it and/or modify it under\
+    <i>pyRouterJig</i> is free software: you can redistribute it and/or modify it under\
     the terms of the GNU General Public License as published by the Free Software\
     Foundation, either version 3 of the License, or (at your option) any later\
     version.\
     <p>\
-    pyRouterJig is distributed in the hope that it will be useful, but WITHOUT ANY\
+    <i>pyRouterJig</i> is distributed in the hope that it will be useful, but WITHOUT ANY\
     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR\
     A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\
     You should have received a copy of the GNU General Public License along with\
-    pyRouterJig; see the file LICENSE. If not, see \
+    <i>pyRouterJig</i>; see the file LICENSE. If not, see \
     <a href=http://www.gnu.org/licenses/>http://www.gnu.org/licenses/</a>.\
     <p>\
     This software and its output is not an INCRA product.  The authors have no\
