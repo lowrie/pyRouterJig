@@ -274,7 +274,7 @@ class Configuration(object):
         # config file cannot be migrated from versions earlier than this.
         # This value is currently set at the version that all dimensions and bit_angle
         # were consistent types and dimensions.
-        self.migrate_version_number = 84
+        self.migrate_version_number = 83
         self.config = None
     def read_config(self):
         '''
