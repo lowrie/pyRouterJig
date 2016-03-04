@@ -1389,12 +1389,8 @@ class Driver(QtGui.QMainWindow):
         '''Handles all changes in wood'''
         if self.config.debug:
             print('_on_wood', iwood, index)
-        cindex = self.cb_wood[iwood].currentIndex()
         if index is None:
-            index = cindex
-        else:
-            if index == cindex: # then no change, so return
-                return
+            index = self.cb_wood[iwood].currentIndex()
         s = str(self.cb_wood[iwood].itemText(index))
         label = str(self.cb_wood_label[iwood].text())
         if s != 'NONE':

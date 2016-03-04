@@ -21,6 +21,7 @@
 '''
 Tests for qt_driver
 '''
+from __future__ import print_function
 from builtins import str
 
 import sys
@@ -55,13 +56,16 @@ class Driver_Test(unittest.TestCase):
         self.d._on_save(do_screenshot)
     def test_screenshots(self):
         # default
+        print('************ default')
         self.d._on_fullscreen()
         self.screenshot()
         # default with caul
+        print('************ caul')
         self.d._on_caul()
         self.screenshot()
         self.d._on_caul()
         # dovetail
+        print('************ dovetail')
         self.d.le_bit_angle.clear()
         QTest.keyClicks(self.d.le_bit_angle, '7')
         self.d._on_bit_angle()
@@ -72,6 +76,7 @@ class Driver_Test(unittest.TestCase):
         self.d._on_bit_angle()
         self.assertEqual(str(self.d.le_bit_angle.text()), '0')
         # Wood selection
+        print('************ wood selection')
         for w in [0, 1]:
             i = self.d.cb_wood[w].findText('hard-maple')
             self.assertTrue(i >= 0)
@@ -84,14 +89,17 @@ class Driver_Test(unittest.TestCase):
             self.d.cb_wood[w].setCurrentIndex(i)
             self.d._on_wood(w)
         # spacing slider
+        print('************ spacing slider')
         self.d.es_slider0.setValue(17)
         self.screenshot()
         self.d.es_slider0.setValue(0)
         # width slider
+        print('************ width slider')
         self.d.es_slider1.setValue(27)
         self.screenshot()
         self.d.es_slider1.setValue(16)
         # centered checkbox
+        print('************ centered checkbox')
         self.d.le_board_width.clear()
         QTest.keyClicks(self.d.le_board_width, '7')
         self.d._on_board_width()
@@ -112,9 +120,11 @@ class Driver_Test(unittest.TestCase):
         self.d.cb_es_centered.setChecked(True)
         self.assertTrue(self.d.cb_es_centered.isChecked())
         # variable spacing
+        print('************ variable spacing')
         self.d.tabs_spacing.setCurrentIndex(self.d.var_spacing_id)
         self.screenshot()
         # editor
+        print('************ editor')
         self.d.tabs_spacing.setCurrentIndex(self.d.edit_spacing_id)
         QTest.keyClick(self.d.fig.canvas, QtCore.Qt.Key_Right)
         QTest.keyClick(self.d.fig.canvas, QtCore.Qt.Key_Return)
@@ -122,6 +132,7 @@ class Driver_Test(unittest.TestCase):
         QTest.keyClick(self.d.fig.canvas, QtCore.Qt.Key_Return)
         self.screenshot()
         # double
+        print('************ double')
         self.d.tabs_spacing.setCurrentIndex(self.d.equal_spacing_id)
         for w in [0, 1]:
             i = self.d.cb_wood[w].findText('hard-maple')
@@ -134,12 +145,14 @@ class Driver_Test(unittest.TestCase):
         self.d._on_wood2(i)
         self.screenshot()
         # double-double
+        print('************ double-double')
         i = self.d.cb_wood[3].findText('mahogany')
         self.assertTrue(i >= 0)
         self.d.cb_wood[3].setCurrentIndex(i)
         self.d._on_wood3(i)
         self.screenshot()
         # save option
+        print('************ save')
         self.screenshot(False)
 
 if __name__ == '__main__':
