@@ -21,10 +21,6 @@
 '''
 Contains the classes that define the finger width and spacing.
 '''
-from __future__ import print_function
-from __future__ import division
-from future.utils import lrange
-
 import math
 import copy
 from operator import attrgetter
@@ -129,7 +125,7 @@ class Equally_Spaced(Base_Spacing):
                            self.bit.width + dh2),\
              Spacing_Param(None, None, True)]
         self.params = {}
-        for i in lrange(len(t)):
+        for i in range(len(t)):
             self.params[self.keys[i]] = t[i]
 
     def set_cuts(self):
@@ -242,7 +238,7 @@ class Variable_Spaced(Base_Spacing):
         # in increments.  Keep a running total of sizes.
         increments = [0] * (m + 1)
         ivals = 0
-        for i in lrange(1, m + 1):
+        for i in range(1, m + 1):
             increments[i] = max(2, int(c - d * i))
             ivals += 2 * increments[i]
         # Set the center increment.  This takes up the slop in the rounding and increment
@@ -266,7 +262,7 @@ class Variable_Spaced(Base_Spacing):
         self.cuts = [router.Cut(left, right)]
         # do the remaining cuts
         do_cut = False
-        for i in lrange(1, m + 1):
+        for i in range(1, m + 1):
             if do_cut:
                 width = increments[i] + deltaP
                 farLeft = max(0, left - width)
@@ -556,7 +552,7 @@ class Edit_Spaced(Base_Spacing):
         '''
         Sets all cuts as active.
         '''
-        self.active_cuts = lrange(len(self.cuts))
+        self.active_cuts = range(len(self.cuts))
         return 'All cuts activated'
 
     def cut_all_not_active(self):
@@ -585,7 +581,7 @@ class Edit_Spaced(Base_Spacing):
         c = self.active_cuts[0:id]
         c.extend(self.active_cuts[id + 1:])
         self.active_cuts = c
-        for i in lrange(len(self.active_cuts)):
+        for i in range(len(self.active_cuts)):
             if self.active_cuts[i] > f:
                 self.active_cuts[i] -= 1
         return True
@@ -630,7 +626,7 @@ class Edit_Spaced(Base_Spacing):
             xmax = self.cuts[0].xmin - neck_width
         wadd = 2 * self.bit.width + neck_width
         wdelta = self.bit.width - neck_width
-        for i in lrange(1, len(self.cuts)):
+        for i in range(1, len(self.cuts)):
             if self.cuts[i].xmin - self.cuts[i - 1].xmax + wdelta >= wadd:
                 if self.config.debug:
                     print('add in cut')

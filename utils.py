@@ -21,9 +21,7 @@
 '''
 This module contains base utilities for pyRouterJig
 '''
-from __future__ import division
-
-import math, fractions, os, glob
+import math, os, glob
 
 VERSION = '0.8.7'
 
@@ -59,7 +57,7 @@ class My_Fraction(object):
         dwhole = self.numerator // self.denominator
         self.whole += dwhole
         self.numerator -= dwhole * self.denominator
-        gcd = fractions.gcd(self.numerator, self.denominator)
+        gcd = math.gcd(int(self.numerator), int(self.denominator))
         self.numerator /= gcd
         self.denominator /= gcd
     def to_string(self):

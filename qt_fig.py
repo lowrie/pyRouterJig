@@ -21,10 +21,6 @@
 '''
 Contains the Qt functionality for drawing the template and boards.
 '''
-from __future__ import print_function
-from __future__ import division
-from future.utils import lrange
-
 import router
 import utils
 
@@ -135,7 +131,7 @@ class Qt_Fig(QtGui.QWidget):
         # Set the figure dimensions
         fig_width = template.length + self.margins.left + self.margins.right
         fig_height = template.height + self.margins.bottom + self.margins.top
-        for i in lrange(4):
+        for i in range(4):
             if boards[i].active:
                 fig_height += boards[i].height + self.margins.sep
 
@@ -339,11 +335,11 @@ class Qt_Fig(QtGui.QWidget):
         # through each cut and each pass for each cut, right-to-left.
         xp = []
         for c in cuts[::-1]:
-            for p in lrange(len(c.passes) - 1, -1, -1):
+            for p in range(len(c.passes) - 1, -1, -1):
                 xp.append(c.passes[p])
         # Loop through the passes and do the labels
         np = len(xp)
-        for i in lrange(np):
+        for i in range(np):
             # Determine vertical alignment, by checking the separation from adjacent passes.
             # If too close to an adjacent pass, then shift the alignment in the opposite
             # direction.
@@ -615,7 +611,7 @@ class Qt_Fig(QtGui.QWidget):
             painter.setBrush(brush)
         n = len(x)
         poly = QtGui.QPolygonF()
-        for i in lrange(n):
+        for i in range(n):
             poly.append(QtCore.QPointF(x[i], y[i]))
         painter.drawPolygon(poly)
         painter.restore()
@@ -626,7 +622,7 @@ class Qt_Fig(QtGui.QWidget):
         '''
 
         # Draw the A and B boards
-        for i in lrange(4):
+        for i in range(4):
             self.draw_one_board(painter, self.geom.boards[i], self.geom.bit)
 
         # Label the boards

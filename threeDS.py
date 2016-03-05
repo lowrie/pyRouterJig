@@ -21,10 +21,6 @@
 '''
 Contains functionality for writing Autodesk 3DS files.
 '''
-from __future__ import division
-from __future__ import print_function
-from future.utils import lrange
-
 import struct, copy, io
 import router
 
@@ -132,7 +128,7 @@ def write_3ds(filename, objects):
     edit3ds_size = 6
     main3ds_size = 6
     # determine the size of each chunk
-    for i in lrange(n):
+    for i in range(n):
         tri_vertexl_size[i] += 4 * 3 * objects[i].num_vertices()
         tri_facel1_size[i] += 2 * 4 * objects[i].num_triangles()
         obj_trimesh_size[i] += tri_vertexl_size[i] + tri_facel1_size[i]
@@ -144,7 +140,7 @@ def write_3ds(filename, objects):
     bio = BinaryIO()
     bio.writepack('HI', key3ds['MAIN3DS'], main3ds_size)
     bio.writepack('HI', key3ds['EDIT3DS'], edit3ds_size)
-    for i in lrange(n):
+    for i in range(n):
         bio.writepack('HI', key3ds['EDIT_OBJECT'], edit_object_size[i])
         bio.write(name[i].encode('utf-8'))
         bio.writepack('HI', key3ds['OBJ_TRIMESH'], obj_trimesh_size[i])
@@ -188,7 +184,7 @@ def extrude(v2d, tri2d, order, z1, z2, units):
         tri3d[i2] = [t[0] + nv2d, t[1] + nv2d, t[2] + nv2d]
         i += 1
         i2 += 1
-    for i in lrange(nv2d):
+    for i in range(nv2d):
         ip = i + 1
         ie = i + nv2d
         iep = ie + 1

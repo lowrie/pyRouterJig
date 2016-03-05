@@ -21,10 +21,6 @@
 '''
 Contains the main driver, using pySide or pyQt.
 '''
-from __future__ import print_function
-from future.utils import lrange
-from builtins import str
-
 import os, sys, traceback, webbrowser, copy, shutil
 
 import qt_fig
@@ -103,7 +99,7 @@ class Driver(QtGui.QMainWindow):
         self.bit = router.Router_Bit(self.units, self.config.bit_width, self.config.bit_depth, 
                                      self.config.bit_angle)
         self.boards = []
-        for i in lrange(4):
+        for i in range(4):
             self.boards.append(router.Board(self.bit, width=self.config.board_width))
         self.boards[2].set_active(False)
         self.boards[3].set_active(False)
@@ -439,7 +435,7 @@ class Driver(QtGui.QMainWindow):
         # Double and double-double board thicknesses
         self.le_boardm_label = []
         self.le_boardm = []
-        for i in lrange(2):
+        for i in range(2):
             self.le_boardm_label.append(QtGui.QLabel('Thickness'))
             self.le_boardm.append(QtGui.QLineEdit(self.main_frame))
             self.le_boardm[i].setFixedWidth(lineEditWidth)
@@ -779,7 +775,7 @@ class Driver(QtGui.QMainWindow):
         Updates the combobox for Variable spacing Fingers.
         '''
         self.cb_vsfingers.clear()
-        for i in lrange(vMin, vMax + 1, 1):
+        for i in range(vMin, vMax + 1, 1):
             self.cb_vsfingers.addItem(str(i))
         i = self.cb_vsfingers.findText(str(value))
         self.cb_vsfingers.setCurrentIndex(i)
@@ -1227,7 +1223,7 @@ class Driver(QtGui.QMainWindow):
         # ... set the wood selection for each board.  If the wood does not
         # exist, set to a wood we know exists.  This can happen if the wood
         # image files don't exist across users.
-        for i in lrange(4):
+        for i in range(4):
             if self.boards[i].wood is None:
                 self.boards[i].set_wood('NONE')
             elif self.boards[i].wood not in self.woods.keys():

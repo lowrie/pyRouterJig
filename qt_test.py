@@ -21,9 +21,6 @@
 '''
 Tests for qt_driver
 '''
-from __future__ import print_function
-from builtins import str
-
 import sys
 import unittest
 from qt_driver import Driver

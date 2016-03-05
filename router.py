@@ -21,10 +21,6 @@
 '''
 Contains the router, board, template and their geometry properties.
 '''
-from __future__ import division
-from __future__ import print_function
-from future.utils import lrange
-
 import math
 import utils
 
@@ -403,7 +399,7 @@ class Board(My_Rectangle):
             ic = 0
             ibot = 2
             itop = ntotal - 2
-            for i in lrange(nintervals):
+            for i in range(nintervals):
                 v[ibot] = [xc[ibot], yc[ibot]]
                 if ibot < len(xc) - 1:
                     v[ibot + 1] = [xc[ibot + 1], yc[ibot + 1]]
@@ -447,7 +443,7 @@ class Board(My_Rectangle):
             ic = 0
             ibot = ntotal - 2
             itop = 2
-            for i in lrange(nintervals):
+            for i in range(nintervals):
                 v[itop] = [xc[itop], yc[itop]]
                 if itop < len(xc) - 1:
                     v[itop + 1] = [xc[itop + 1], yc[itop + 1]]
@@ -567,7 +563,7 @@ def adjoining_cuts(cuts, bit, board):
             adjCuts.append(Cut(left, right))
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
-    for i in lrange(1, nc):
+    for i in range(1, nc):
         left = utils.my_round(cuts[i-1].xmax - bit.offset + board.dheight)
         right = max(left + bit.width, utils.my_round(cuts[i].xmin + bit.offset) - board.dheight)
         adjCuts.append(Cut(left, right))

@@ -21,10 +21,7 @@
 '''
 Contains serialization capability
 '''
-from __future__ import print_function
-from future.utils import lrange
 import io
-
 import pickle
 import router
 import utils
@@ -92,7 +89,7 @@ def unserialize(s, config):
     # form the boards
     nb = u.load()
     boards = []
-    for i in lrange(nb):
+    for i in range(nb):
         boards.append(router.Board(bit, 10)) # dummy width argument, for now
     for b in boards:
         b.width = u.load()
