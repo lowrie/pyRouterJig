@@ -24,15 +24,11 @@ Contains functionality for writing Autodesk 3DS files.
 from __future__ import division
 from __future__ import print_function
 from future.utils import lrange
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 
-import struct, copy
+import struct, copy, io
 import router
 
-class BinaryIO(StringIO):
+class BinaryIO(io.BytesIO):
     def writepack(self, fmt, *values):
         '''Writes data with little-endian, packed with struct'''
         self.write(struct.pack('<' + fmt, *values))
@@ -150,7 +146,7 @@ def write_3ds(filename, objects):
     bio.writepack('HI', key3ds['EDIT3DS'], edit3ds_size)
     for i in lrange(n):
         bio.writepack('HI', key3ds['EDIT_OBJECT'], edit_object_size[i])
-        bio.write(name[i])
+        bio.write(name[i].encode('utf-8'))
         bio.writepack('HI', key3ds['OBJ_TRIMESH'], obj_trimesh_size[i])
         bio.writepack('HI', key3ds['TRI_VERTEXL'], tri_vertexl_size[i])
         bio.writepack('H', objects[i].num_vertices())

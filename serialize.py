@@ -23,10 +23,7 @@ Contains serialization capability
 '''
 from __future__ import print_function
 from future.utils import lrange
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+import io
 
 import pickle
 import router
@@ -38,7 +35,7 @@ def serialize(bit, boards, sp, config):
     Serializes the arguments. Returns the serialized string, which can
     later be used to reconstruct the arguments using unserialize_joint()
     '''
-    out = StringIO()
+    out = io.BytesIO()
     p = pickle.Pickler(out)
     # Save code version
     p.dump(utils.VERSION)
@@ -68,7 +65,7 @@ def serialize(bit, boards, sp, config):
         p.dump(sp.cuts)
     else:
         p.dump(sp.params)
-    s = out.getvalue()
+    s = out.getvalue().hex()
     out.close()
     if config.debug:
         print('size of pickle', len(s))
@@ -78,7 +75,7 @@ def unserialize(s, config):
     '''
     Unserializes the string s, and returns the tuple (bit, boards, spacing)
     '''
-    inp = StringIO(s)
+    inp = io.BytesIO(bytes.fromhex(s))
     u = pickle.Unpickler(inp)
     version = u.load()
     if config.debug:
