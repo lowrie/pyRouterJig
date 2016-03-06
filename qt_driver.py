@@ -37,10 +37,10 @@ import doc
 import serialize
 import threeDS
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 #from PySide import QtCore, QtGui
 
-class MyComboBox(QtGui.QComboBox):
+class MyComboBox(QtWidgets.QComboBox):
     '''
     This comboxbox emits "activated" when hidePopup is called.  This allows
     for a combobox with a preview mode, so that as each selection is
@@ -50,40 +50,40 @@ class MyComboBox(QtGui.QComboBox):
 
     '''
     def __init__(self, parent):
-        QtGui.QComboBox.__init__(self, parent)
+        QtWidgets.QComboBox.__init__(self, parent)
 
     def hidePopup(self):
-        QtGui.QComboBox.hidePopup(self)
+        QtWidgets.QComboBox.hidePopup(self)
         #print('hidePopup')
         self.activated.emit(self.currentIndex())
 
 def set_line_style(line):
     '''Sets the style for create_vline() and create_hline()'''
-    line.setFrameShadow(QtGui.QFrame.Raised)
+    line.setFrameShadow(QtWidgets.QFrame.Raised)
     line.setLineWidth(1)
     line.setMidLineWidth(1)
-    line.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+    line.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
 
 def create_vline():
     '''Creates a vertical line'''
-    vline = QtGui.QFrame()
-    vline.setFrameStyle(QtGui.QFrame.VLine)
+    vline = QtWidgets.QFrame()
+    vline.setFrameStyle(QtWidgets.QFrame.VLine)
     set_line_style(vline)
     return vline
 
 def create_hline():
     '''Creates a horizontal line'''
-    hline = QtGui.QFrame()
-    hline.setFrameStyle(QtGui.QFrame.HLine)
+    hline = QtWidgets.QFrame()
+    hline.setFrameStyle(QtWidgets.QFrame.HLine)
     set_line_style(hline)
     return hline
 
-class Driver(QtGui.QMainWindow):
+class Driver(QtWidgets.QMainWindow):
     '''
     Qt driver for pyRouterJig
     '''
     def __init__(self, parent=None):
-        QtGui.QMainWindow.__init__(self, parent)
+        QtWidgets.QMainWindow.__init__(self, parent)
         sys.excepthook = self.exception_hook
         self.except_handled = False
 
@@ -162,9 +162,9 @@ class Driver(QtGui.QMainWindow):
             if r == 1:
                 # The config file does not exist.  Ask the user whether they want metric or english
                 # units
-                box = QtGui.QMessageBox(self)
+                box = QtWidgets.QMessageBox(self)
                 box.setTextFormat(QtCore.Qt.RichText)
-                box.setIcon(QtGui.QMessageBox.NoIcon)
+                box.setIcon(QtWidgets.QMessageBox.NoIcon)
                 box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>')
                 question = '<font size=5>Please select a unit system below.'\
                            ' The configuration file<p><tt>{}</tt><p>'\
@@ -173,8 +173,8 @@ class Driver(QtGui.QMainWindow):
                            ' may be changed later by editing the configuration file and'\
                            ' restarting <i>pyRouterJig</i>.</font>'.format(c.filename)
                 box.setInformativeText(question)
-                buttonMetric = box.addButton('Metric (millimeters)', QtGui.QMessageBox.AcceptRole)
-                buttonEnglish = box.addButton('English (inches)', QtGui.QMessageBox.AcceptRole)
+                buttonMetric = box.addButton('Metric (millimeters)', QtWidgets.QMessageBox.AcceptRole)
+                buttonEnglish = box.addButton('English (inches)', QtWidgets.QMessageBox.AcceptRole)
                 box.setDefaultButton(buttonEnglish)
                 box.raise_()
                 box.exec_()
@@ -188,9 +188,9 @@ class Driver(QtGui.QMainWindow):
                 shutil.move(c.filename, backup)
                 metric = c.config.metric
                 rc = c.create_config(metric)
-                box = QtGui.QMessageBox(self)
+                box = QtWidgets.QMessageBox(self)
                 box.setTextFormat(QtCore.Qt.RichText)
-                box.setIcon(QtGui.QMessageBox.Warning)
+                box.setIcon(QtWidgets.QMessageBox.Warning)
                 box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !')
                 warning = '<font size=5>A new configuration file<p><tt>{}</tt><p>'\
                           'has been created. The old version was saved'\
@@ -219,8 +219,8 @@ class Driver(QtGui.QMainWindow):
     def center(self):
         '''Centers the app in the screen'''
         frameGm = self.frameGeometry()
-        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
-        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
+        screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
+        centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
@@ -238,7 +238,7 @@ class Driver(QtGui.QMainWindow):
             tmp = traceback.format_exception_only(etype, value)
         exception = '\n'.join(tmp)
 
-        QtGui.QMessageBox.warning(self, 'Error', exception)
+        QtWidgets.QMessageBox.warning(self, 'Error', exception)
         self.except_handled = False
 
     def create_menu(self):
@@ -254,32 +254,32 @@ class Driver(QtGui.QMainWindow):
 
         file_menu = self.menubar.addMenu('File')
 
-        open_action = QtGui.QAction('&Open File...', self)
+        open_action = QtWidgets.QAction('&Open File...', self)
         open_action.setShortcut('Ctrl+O')
         open_action.setStatusTip('Opens a previously saved image of joint')
         open_action.triggered.connect(self._on_open)
         file_menu.addAction(open_action)
 
-        save_action = QtGui.QAction('&Save File...', self)
+        save_action = QtWidgets.QAction('&Save File...', self)
         save_action.setShortcut('Ctrl+S')
         save_action.setStatusTip('Saves an image of the joint to a file')
         save_action.triggered.connect(self._on_save)
         file_menu.addAction(save_action)
 
-        screenshot_action = QtGui.QAction('Screenshot...', self)
+        screenshot_action = QtWidgets.QAction('Screenshot...', self)
         screenshot_action.setShortcut('Ctrl+W')
         screenshot_action.setStatusTip('Saves an image of the pyRouterJig window to a file')
         screenshot_action.triggered.connect(self._on_screenshot)
         file_menu.addAction(screenshot_action)
 
-        print_action = QtGui.QAction('&Print...', self)
+        print_action = QtWidgets.QAction('&Print...', self)
         print_action.setShortcut('Ctrl+P')
         print_action.setStatusTip('Print the figure')
         print_action.triggered.connect(self._on_print)
         file_menu.addAction(print_action)
 
         # comment out for now...
-        #table_action = QtGui.QAction('Print Table...', self)
+        #table_action = QtWidgets.QAction('Print Table...', self)
         #table_action.setStatusTip('Print a table of router pass locations')
         #table_action.triggered.connect(self._on_print_table)
         #file_menu.addAction(table_action)
@@ -287,14 +287,14 @@ class Driver(QtGui.QMainWindow):
         # ... we need to make this action persistent, so that we can
         # enable and disable it (until all of its functionality is
         # written)
-        self.threeDS_action = QtGui.QAction('&Export 3DS...', self)
+        self.threeDS_action = QtWidgets.QAction('&Export 3DS...', self)
         self.threeDS_action.setShortcut('Ctrl+E')
         self.threeDS_action.setStatusTip('Export the joint to a 3DS file')
         self.threeDS_action.triggered.connect(self._on_3ds)
         file_menu.addAction(self.threeDS_action)
         self.threeDS_enabler()
 
-        exit_action = QtGui.QAction('&Quit', self)
+        exit_action = QtWidgets.QAction('&Quit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit pyRouterJig')
         exit_action.triggered.connect(self._on_exit)
@@ -304,18 +304,18 @@ class Driver(QtGui.QMainWindow):
 
         view_menu = self.menubar.addMenu('View')
 
-        fullscreen_action = QtGui.QAction('&Fullscreen', self, checkable=True)
+        fullscreen_action = QtWidgets.QAction('&Fullscreen', self, checkable=True)
         fullscreen_action.setShortcut('Ctrl+F')
         fullscreen_action.setStatusTip('Toggle full-screen mode')
         fullscreen_action.triggered.connect(self._on_fullscreen)
         view_menu.addAction(fullscreen_action)
 
-        caul_action = QtGui.QAction('Caul Template', self, checkable=True)
+        caul_action = QtWidgets.QAction('Caul Template', self, checkable=True)
         caul_action.setStatusTip('Toggle caul template')
         caul_action.triggered.connect(self._on_caul)
         view_menu.addAction(caul_action)
 
-        finger_size_action = QtGui.QAction('Finger Sizes', self, checkable=True)
+        finger_size_action = QtWidgets.QAction('Finger Sizes', self, checkable=True)
         finger_size_action.setStatusTip('Toggle viewing finger sizes')
         finger_size_action.triggered.connect(self._on_finger_sizes)
         view_menu.addAction(finger_size_action)
@@ -326,7 +326,7 @@ class Driver(QtGui.QMainWindow):
         finger_size_action.setChecked(self.fig.label_fingers)
 
         pass_menu = view_menu.addMenu('Router Passes')
-        pass_id_action = QtGui.QAction('Identifiers', self, checkable=True)
+        pass_id_action = QtWidgets.QAction('Identifiers', self, checkable=True)
         pass_id_action.setStatusTip('Toggle viewing router pass identifiers')
         pass_id_action.triggered.connect(self._on_pass_id)
         pass_menu.addAction(pass_id_action)
@@ -336,7 +336,7 @@ class Driver(QtGui.QMainWindow):
             self.fig.show_router_pass_identifiers = False
         pass_id_action.setChecked(self.fig.show_router_pass_identifiers)
 
-        pass_location_action = QtGui.QAction('Locations', self, checkable=True)
+        pass_location_action = QtWidgets.QAction('Locations', self, checkable=True)
         pass_location_action.setStatusTip('Toggle viewing router pass locations')
         pass_location_action.triggered.connect(self._on_pass_location)
         pass_menu.addAction(pass_location_action)
@@ -350,13 +350,13 @@ class Driver(QtGui.QMainWindow):
 
         help_menu = self.menubar.addMenu('Help')
 
-        about_action = QtGui.QAction('&About', self)
+        about_action = QtWidgets.QAction('&About', self)
         about_action.setShortcut('Ctrl+A')
         about_action.setStatusTip('About this program')
         about_action.triggered.connect(self._on_about)
         help_menu.addAction(about_action)
 
-        doclink_action = QtGui.QAction('&Documentation', self)
+        doclink_action = QtWidgets.QAction('&Documentation', self)
         doclink_action.setStatusTip('Opens documentation page in web browser')
         doclink_action.triggered.connect(self._on_doclink)
         help_menu.addAction(doclink_action)
@@ -365,7 +365,7 @@ class Driver(QtGui.QMainWindow):
         '''
         Creates a wood selection combox box
         '''
-#        cb = QtGui.QComboBox(self)
+#        cb = QtWidgets.QComboBox(self)
         cb = MyComboBox(self)
         # Set the default wood.
         if has_none:
@@ -396,7 +396,7 @@ class Driver(QtGui.QMainWindow):
         '''
         Creates all of the widgets in the main panel
         '''
-        self.main_frame = QtGui.QWidget()
+        self.main_frame = QtWidgets.QWidget()
 
         lineEditWidth = 80
 
@@ -404,34 +404,34 @@ class Driver(QtGui.QMainWindow):
         self.fig = qt_fig.Qt_Fig(self.template, self.boards, self.config)
         self.fig.canvas.setParent(self.main_frame)
         self.fig.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.fig.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.fig.canvas.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.fig.canvas.setFocus()
 
         # Board width line edit
-        self.le_board_width_label = QtGui.QLabel('Board Width')
-        self.le_board_width = QtGui.QLineEdit(self.main_frame)
+        self.le_board_width_label = QtWidgets.QLabel('Board Width')
+        self.le_board_width = QtWidgets.QLineEdit(self.main_frame)
         self.le_board_width.setFixedWidth(lineEditWidth)
         self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
         self.le_board_width.editingFinished.connect(self._on_board_width)
-        self.le_board_width.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        self.le_board_width.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
 
         # Bit width line edit
-        self.le_bit_width_label = QtGui.QLabel('Bit Width')
-        self.le_bit_width = QtGui.QLineEdit(self.main_frame)
+        self.le_bit_width_label = QtWidgets.QLabel('Bit Width')
+        self.le_bit_width = QtWidgets.QLineEdit(self.main_frame)
         self.le_bit_width.setFixedWidth(lineEditWidth)
         self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
         self.le_bit_width.editingFinished.connect(self._on_bit_width)
 
         # Bit depth line edit
-        self.le_bit_depth_label = QtGui.QLabel('Bit Depth')
-        self.le_bit_depth = QtGui.QLineEdit(self.main_frame)
+        self.le_bit_depth_label = QtWidgets.QLabel('Bit Depth')
+        self.le_bit_depth = QtWidgets.QLineEdit(self.main_frame)
         self.le_bit_depth.setFixedWidth(lineEditWidth)
         self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.le_bit_depth.editingFinished.connect(self._on_bit_depth)
 
         # Bit angle line edit
-        self.le_bit_angle_label = QtGui.QLabel('Bit Angle')
-        self.le_bit_angle = QtGui.QLineEdit(self.main_frame)
+        self.le_bit_angle_label = QtWidgets.QLabel('Bit Angle')
+        self.le_bit_angle = QtWidgets.QLineEdit(self.main_frame)
         self.le_bit_angle.setFixedWidth(lineEditWidth)
         self.le_bit_angle.setText('%g' % self.bit.angle)
         self.le_bit_angle.editingFinished.connect(self._on_bit_angle)
@@ -440,8 +440,8 @@ class Driver(QtGui.QMainWindow):
         self.le_boardm_label = []
         self.le_boardm = []
         for i in lrange(2):
-            self.le_boardm_label.append(QtGui.QLabel('Thickness'))
-            self.le_boardm.append(QtGui.QLineEdit(self.main_frame))
+            self.le_boardm_label.append(QtWidgets.QLabel('Thickness'))
+            self.le_boardm.append(QtWidgets.QLineEdit(self.main_frame))
             self.le_boardm[i].setFixedWidth(lineEditWidth)
             s = self.units.increments_to_string(self.boards[i+2].dheight)
             self.le_boardm[i].setText(s)
@@ -466,10 +466,10 @@ class Driver(QtGui.QMainWindow):
         self.cb_wood.append(self.create_wood_combo_box(woods, patterns, True))
         self.cb_wood.append(self.create_wood_combo_box(woods, patterns, True))
         self.cb_wood_label = []
-        self.cb_wood_label.append(QtGui.QLabel('Top Board'))
-        self.cb_wood_label.append(QtGui.QLabel('Bottom Board'))
-        self.cb_wood_label.append(QtGui.QLabel('Double Board'))
-        self.cb_wood_label.append(QtGui.QLabel('Double-Double Board'))
+        self.cb_wood_label.append(QtWidgets.QLabel('Top Board'))
+        self.cb_wood_label.append(QtWidgets.QLabel('Bottom Board'))
+        self.cb_wood_label.append(QtWidgets.QLabel('Double Board'))
+        self.cb_wood_label.append(QtWidgets.QLabel('Double-Double Board'))
 
         # Disable double* boards, for now
         self.le_boardm[0].setEnabled(False)
@@ -488,33 +488,33 @@ class Driver(QtGui.QMainWindow):
 
         # ...first slider
         p = params['Spacing']
-        self.es_slider0_label = QtGui.QLabel(labels[0])
-        self.es_slider0 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
+        self.es_slider0_label = QtWidgets.QLabel(labels[0])
+        self.es_slider0 = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.main_frame)
         self.es_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.es_slider0.setMinimum(p.vMin)
         self.es_slider0.setMaximum(p.vMax)
         self.es_slider0.setValue(p.v)
-        self.es_slider0.setTickPosition(QtGui.QSlider.TicksBelow)
+        self.es_slider0.setTickPosition(QtWidgets.QSlider.TicksBelow)
         utils.set_slider_tick_interval(self.es_slider0)
         self.es_slider0.valueChanged.connect(self._on_es_slider0)
-        self.es_slider0.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.es_slider0.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
 
         # ...second slider
         p = params['Width']
-        self.es_slider1_label = QtGui.QLabel(labels[1])
-        self.es_slider1 = QtGui.QSlider(QtCore.Qt.Horizontal, self.main_frame)
+        self.es_slider1_label = QtWidgets.QLabel(labels[1])
+        self.es_slider1 = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.main_frame)
         self.es_slider1.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.es_slider1.setMinimum(p.vMin)
         self.es_slider1.setMaximum(p.vMax)
         self.es_slider1.setValue(p.v)
-        self.es_slider1.setTickPosition(QtGui.QSlider.TicksBelow)
+        self.es_slider1.setTickPosition(QtWidgets.QSlider.TicksBelow)
         utils.set_slider_tick_interval(self.es_slider1)
         self.es_slider1.valueChanged.connect(self._on_es_slider1)
-        self.es_slider1.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.es_slider1.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
 
         # ...check box for centering
         p = params['Centered']
-        self.cb_es_centered = QtGui.QCheckBox(labels[2], self.main_frame)
+        self.cb_es_centered = QtWidgets.QCheckBox(labels[2], self.main_frame)
         self.cb_es_centered.setChecked(True)
         self.cb_es_centered.stateChanged.connect(self._on_cb_es_centered)
 
@@ -525,71 +525,71 @@ class Driver(QtGui.QMainWindow):
 
         # ...combox box for fingers
         p = params['Fingers']
-        self.cb_vsfingers_label = QtGui.QLabel(labels[0])
+        self.cb_vsfingers_label = QtWidgets.QLabel(labels[0])
         self.cb_vsfingers = MyComboBox(self.main_frame)
         self.cb_vsfingers.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.update_cb_vsfingers(p.vMin, p.vMax, p.v)
 
         # Edit spacing widgets
 
-        edit_btn_undo = QtGui.QPushButton('Undo', self.main_frame)
+        edit_btn_undo = QtWidgets.QPushButton('Undo', self.main_frame)
         edit_btn_undo.clicked.connect(self._on_edit_undo)
         edit_btn_undo.setToolTip('Undo the last change')
-        edit_btn_add = QtGui.QPushButton('Add', self.main_frame)
+        edit_btn_add = QtWidgets.QPushButton('Add', self.main_frame)
         edit_btn_add.clicked.connect(self._on_edit_add)
         edit_btn_add.setToolTip('Add a cut (if there is space to add cuts)')
-        edit_btn_del = QtGui.QPushButton('Delete', self.main_frame)
+        edit_btn_del = QtWidgets.QPushButton('Delete', self.main_frame)
         edit_btn_del.clicked.connect(self._on_edit_del)
         edit_btn_del.setToolTip('Delete the active cuts')
 
-        edit_move_label = QtGui.QLabel('Move')
+        edit_move_label = QtWidgets.QLabel('Move')
         edit_move_label.setToolTip('Moves the active cuts')
-        edit_btn_moveL = QtGui.QToolButton(self.main_frame)
+        edit_btn_moveL = QtWidgets.QToolButton(self.main_frame)
         edit_btn_moveL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_moveL.clicked.connect(self._on_edit_moveL)
         edit_btn_moveL.setToolTip('Move active cuts to left 1 increment')
-        edit_btn_moveR = QtGui.QToolButton(self.main_frame)
+        edit_btn_moveR = QtWidgets.QToolButton(self.main_frame)
         edit_btn_moveR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_moveR.clicked.connect(self._on_edit_moveR)
         edit_btn_moveR.setToolTip('Move active cuts to right 1 increment')
 
-        edit_widen_label = QtGui.QLabel('Widen')
+        edit_widen_label = QtWidgets.QLabel('Widen')
         edit_widen_label.setToolTip('Widens the active cuts')
-        edit_btn_widenL = QtGui.QToolButton(self.main_frame)
+        edit_btn_widenL = QtWidgets.QToolButton(self.main_frame)
         edit_btn_widenL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_widenL.clicked.connect(self._on_edit_widenL)
         edit_btn_widenL.setToolTip('Widen active cuts 1 increment on left side')
-        edit_btn_widenR = QtGui.QToolButton(self.main_frame)
+        edit_btn_widenR = QtWidgets.QToolButton(self.main_frame)
         edit_btn_widenR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_widenR.clicked.connect(self._on_edit_widenR)
         edit_btn_widenR.setToolTip('Widen active cuts 1 increment on right side')
 
-        edit_trim_label = QtGui.QLabel('Trim')
+        edit_trim_label = QtWidgets.QLabel('Trim')
         edit_trim_label.setToolTip('Trims the active cuts')
-        edit_btn_trimL = QtGui.QToolButton(self.main_frame)
+        edit_btn_trimL = QtWidgets.QToolButton(self.main_frame)
         edit_btn_trimL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_trimL.clicked.connect(self._on_edit_trimL)
         edit_btn_trimL.setToolTip('Trim active cuts 1 increment on left side')
-        edit_btn_trimR = QtGui.QToolButton(self.main_frame)
+        edit_btn_trimR = QtWidgets.QToolButton(self.main_frame)
         edit_btn_trimR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_trimR.clicked.connect(self._on_edit_trimR)
         edit_btn_trimR.setToolTip('Trim active cuts 1 increment on right side')
 
-        edit_btn_toggle = QtGui.QPushButton('Toggle', self.main_frame)
+        edit_btn_toggle = QtWidgets.QPushButton('Toggle', self.main_frame)
         edit_btn_toggle.clicked.connect(self._on_edit_toggle)
         edit_btn_toggle.setToolTip('Toggles the cut at cursor between active and deactive')
-        edit_btn_cursorL = QtGui.QToolButton(self.main_frame)
+        edit_btn_cursorL = QtWidgets.QToolButton(self.main_frame)
         edit_btn_cursorL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_cursorL.clicked.connect(self._on_edit_cursorL)
         edit_btn_cursorL.setToolTip('Move cut cursor to left')
-        edit_btn_cursorR = QtGui.QToolButton(self.main_frame)
+        edit_btn_cursorR = QtWidgets.QToolButton(self.main_frame)
         edit_btn_cursorR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_cursorR.clicked.connect(self._on_edit_cursorR)
         edit_btn_cursorR.setToolTip('Move cut cursor to right')
-        edit_btn_activate_all = QtGui.QPushButton('All', self.main_frame)
+        edit_btn_activate_all = QtWidgets.QPushButton('All', self.main_frame)
         edit_btn_activate_all.clicked.connect(self._on_edit_activate_all)
         edit_btn_activate_all.setToolTip('Set all cuts to be active')
-        edit_btn_deactivate_all = QtGui.QPushButton('None', self.main_frame)
+        edit_btn_deactivate_all = QtWidgets.QPushButton('None', self.main_frame)
         edit_btn_deactivate_all.clicked.connect(self._on_edit_deactivate_all)
         edit_btn_deactivate_all.setToolTip('Set no cuts to be active')
 
@@ -599,17 +599,17 @@ class Driver(QtGui.QMainWindow):
 
         # vbox contains all of the widgets in the main frame, positioned
         # vertically
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
 
         # Add the figure canvas to the top
         vbox.addWidget(self.fig.canvas)
 
         # hbox contains all of the control widgets
         # (everything but the canvas)
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
 
         # this grid contains all the lower-left input stuff
-        grid = QtGui.QGridLayout()
+        grid = QtWidgets.QGridLayout()
 
         grid.addWidget(create_hline(), 0, 0, 2, 9, QtCore.Qt.AlignTop)
         grid.addWidget(create_vline(), 0, 0, 9, 1)
@@ -660,14 +660,14 @@ class Driver(QtGui.QMainWindow):
         hbox.addLayout(grid)
 
         # Create the layout of the Equal spacing controls
-        hbox_es = QtGui.QHBoxLayout()
+        hbox_es = QtWidgets.QHBoxLayout()
 
-        vbox_es_slider0 = QtGui.QVBoxLayout()
+        vbox_es_slider0 = QtWidgets.QVBoxLayout()
         vbox_es_slider0.addWidget(self.es_slider0_label)
         vbox_es_slider0.addWidget(self.es_slider0)
         hbox_es.addLayout(vbox_es_slider0)
 
-        vbox_es_slider1 = QtGui.QVBoxLayout()
+        vbox_es_slider1 = QtWidgets.QVBoxLayout()
         vbox_es_slider1.addWidget(self.es_slider1_label)
         vbox_es_slider1.addWidget(self.es_slider1)
         hbox_es.addLayout(vbox_es_slider1)
@@ -677,18 +677,18 @@ class Driver(QtGui.QMainWindow):
         # Create the layout of the Variable spacing controls.  Given only one
         # item, this is overkill, but the coding allows us to add additional
         # controls later.
-        hbox_vs = QtGui.QHBoxLayout()
+        hbox_vs = QtWidgets.QHBoxLayout()
         hbox_vs.addWidget(self.cb_vsfingers_label)
         hbox_vs.addWidget(self.cb_vsfingers)
         hbox_vs.addStretch(1)
 
         # Create the layout of the edit spacing controls
-        hbox_edit = QtGui.QHBoxLayout()
-        grid_edit = QtGui.QGridLayout()
+        hbox_edit = QtWidgets.QHBoxLayout()
+        grid_edit = QtWidgets.QGridLayout()
         grid_edit.addWidget(create_hline(), 0, 0, 2, 16, QtCore.Qt.AlignTop)
         grid_edit.addWidget(create_hline(), 2, 0, 2, 16, QtCore.Qt.AlignTop)
         grid_edit.addWidget(create_vline(), 0, 0, 6, 1)
-        label_active_cut_select = QtGui.QLabel('Active Cut Select')
+        label_active_cut_select = QtWidgets.QLabel('Active Cut Select')
         label_active_cut_select.setToolTip('Tools that select the active cuts')
         grid_edit.addWidget(label_active_cut_select, 1, 1, 1, 3, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_toggle, 3, 1, 1, 2, QtCore.Qt.AlignHCenter)
@@ -697,7 +697,7 @@ class Driver(QtGui.QMainWindow):
         grid_edit.addWidget(edit_btn_activate_all, 3, 3)
         grid_edit.addWidget(edit_btn_deactivate_all, 4, 3)
         grid_edit.addWidget(create_vline(), 0, 4, 6, 1)
-        label_active_cut_ops = QtGui.QLabel('Active Cut Operators')
+        label_active_cut_ops = QtWidgets.QLabel('Active Cut Operators')
         label_active_cut_ops.setToolTip('Edit operations applied to active cuts')
         grid_edit.addWidget(label_active_cut_ops, 1, 5, 1, 10, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_move_label, 3, 5, 1, 2, QtCore.Qt.AlignHCenter)
@@ -723,14 +723,14 @@ class Driver(QtGui.QMainWindow):
         hbox_edit.addWidget(edit_btn_undo)
 
         # Add the spacing layouts as Tabs
-        self.tabs_spacing = QtGui.QTabWidget()
-        tab_es = QtGui.QWidget()
+        self.tabs_spacing = QtWidgets.QTabWidget()
+        tab_es = QtWidgets.QWidget()
         tab_es.setLayout(hbox_es)
         self.tabs_spacing.addTab(tab_es, 'Equal')
-        tab_vs = QtGui.QWidget()
+        tab_vs = QtWidgets.QWidget()
         tab_vs.setLayout(hbox_vs)
         self.tabs_spacing.addTab(tab_vs, 'Variable')
-        tab_edit = QtGui.QWidget()
+        tab_edit = QtWidgets.QWidget()
         tab_edit.setLayout(hbox_edit)
         self.tabs_spacing.addTab(tab_edit, 'Editor')
         self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
@@ -746,7 +746,7 @@ class Driver(QtGui.QMainWindow):
         self.tabs_spacing.setCurrentIndex(self.spacing_index)
 
         # either add the spacing Tabs to the right of the line edits
-        vbox_tabs = QtGui.QVBoxLayout()
+        vbox_tabs = QtWidgets.QVBoxLayout()
         vbox_tabs.addWidget(self.tabs_spacing)
         vbox_tabs.addStretch(1)
         hbox.addStretch(1)
@@ -966,11 +966,11 @@ class Driver(QtGui.QMainWindow):
             msg = 'You are exiting the Editor, which will discard'\
                   ' any changes made in the Editor.'\
                   '\n\nAre you sure you want to do this?'
-            reply = QtGui.QMessageBox.question(self, 'Message', msg,
-                                               QtGui.QMessageBox.Yes,
-                                               QtGui.QMessageBox.No)
+            reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
+                                               QtWidgets.QMessageBox.Yes,
+                                               QtWidgets.QMessageBox.No)
 
-            if reply == QtGui.QMessageBox.No:
+            if reply == QtWidgets.QMessageBox.No:
                 self.tabs_spacing.setCurrentIndex(self.spacing_index)
                 return
         self.reinit_spacing()
@@ -1140,13 +1140,13 @@ class Driver(QtGui.QMainWindow):
         else:
             # This is the simple approach to set the filename, but doesn't allow
             # us to update the working_dir, if the user changes it.
-            #filename = QtGui.QFileDialog.getSaveFileName(self, 'Save file', \
+            #filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', \
             #                     defname, 'Portable Network Graphics (*.png)')
             # ... so here is now we do it:
-            dialog = QtGui.QFileDialog(self, 'Save file', defname, \
+            dialog = QtWidgets.QFileDialog(self, 'Save file', defname, \
                                        'Portable Network Graphics (*.png)')
-            dialog.setFileMode(QtGui.QFileDialog.AnyFile)
-            dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+            dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+            dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
             filename = None
             if dialog.exec_():
                 filenames = dialog.selectedFiles()
@@ -1162,7 +1162,7 @@ class Driver(QtGui.QMainWindow):
 
         # Save the file with metadata
         if do_screenshot:
-            image = QtGui.QPixmap.grabWindow(self.winId()).toImage()
+            image = QtWidgets.QPixmap.grabWindow(self.winId()).toImage()
         else:
             image = self.fig.image(self.template, self.boards, self.bit, self.spacing, self.woods)
 
@@ -1193,15 +1193,15 @@ class Driver(QtGui.QMainWindow):
             msg = 'Current joint not saved.'\
                   ' Opening a new file will overwrite the current joint.'\
                   '\n\nAre you sure you want to do this?'
-            reply = QtGui.QMessageBox.question(self, 'Message', msg,
-                                               QtGui.QMessageBox.Yes,
-                                               QtGui.QMessageBox.No)
+            reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
+                                               QtWidgets.QMessageBox.Yes,
+                                               QtWidgets.QMessageBox.No)
 
-            if reply == QtGui.QMessageBox.No:
+            if reply == QtWidgets.QMessageBox.No:
                 return
 
         # Get the file name
-        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open file', \
+        filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', \
                                                      self.working_dir, \
                                                      'Portable Network Graphics (*.png)')
         filename = str(filename).strip()
@@ -1210,12 +1210,12 @@ class Driver(QtGui.QMainWindow):
             return
 
         # From the image file, parse the metadata.
-        image = QtGui.QImage(filename)
+        image = QtWidgets.QImage(filename)
         s = image.text('pyRouterJig') # see setText in _on_save
         if len(s) == 0:
             msg = 'File %s does not contain pyRouterJig data.  The PNG file'\
                   ' must have been saved using pyRouterJig.' % filename
-            QtGui.QMessageBox.warning(self, 'Error', msg)
+            QtWidgets.QMessageBox.warning(self, 'Error', msg)
             return
         (self.bit, self.boards, sp, sp_type) = serialize.unserialize(s, self.config)
 
@@ -1297,10 +1297,10 @@ class Driver(QtGui.QMainWindow):
 
         # Get the file name
         defname = os.path.join(self.working_dir, fname)
-        dialog = QtGui.QFileDialog(self, 'Export joint', defname, \
+        dialog = QtWidgets.QFileDialog(self, 'Export joint', defname, \
                                    'Autodesk 3DS file (*.3ds)')
-        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
-        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+        dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
         filename = None
         if dialog.exec_():
             filenames = dialog.selectedFiles()
@@ -1354,15 +1354,15 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_exit')
         if self.file_saved:
-            QtGui.qApp.quit()
+            QtWidgets.qApp.quit()
         else:
             msg = 'Figure was changed but not saved.  Are you sure you want to quit?'
-            reply = QtGui.QMessageBox.question(self, 'Message', msg,
-                                               QtGui.QMessageBox.Yes,
-                                               QtGui.QMessageBox.No)
+            reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
+                                               QtWidgets.QMessageBox.Yes,
+                                               QtWidgets.QMessageBox.No)
 
-            if reply == QtGui.QMessageBox.Yes:
-                QtGui.qApp.quit()
+            if reply == QtWidgets.QMessageBox.Yes:
+                QtWidgets.qApp.quit()
 
     @QtCore.pyqtSlot()
     def _on_about(self):
@@ -1370,7 +1370,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_about')
 
-        box = QtGui.QMessageBox(self)
+        box = QtWidgets.QMessageBox(self)
         s = '<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>'
         s += '<h3>Version: %s</h3>' % utils.VERSION
         box.setText(s + self.doc.short_desc() + self.doc.license())
@@ -1797,14 +1797,14 @@ def run():
     '''
     Sets up and runs the application
     '''
-#    QtGui.QApplication.setStyle('plastique')
-#    QtGui.QApplication.setStyle('windows')
-#    QtGui.QApplication.setStyle('windowsxp')
-#    QtGui.QApplication.setStyle('macintosh')
-#    QtGui.QApplication.setStyle('motif')
-#    QtGui.QApplication.setStyle('cde')
+#    QtWidgets.QApplication.setStyle('plastique')
+#    QtWidgets.QApplication.setStyle('windows')
+#    QtWidgets.QApplication.setStyle('windowsxp')
+#    QtWidgets.QApplication.setStyle('macintosh')
+#    QtWidgets.QApplication.setStyle('motif')
+#    QtWidgets.QApplication.setStyle('cde')
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     driver = Driver()
     driver.show()
     driver.center()

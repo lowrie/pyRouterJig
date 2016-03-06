@@ -28,8 +28,7 @@ from future.utils import lrange
 import router
 import utils
 
-from PyQt4 import QtCore, QtGui
-#from PySide import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 
 def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
     '''
@@ -80,7 +79,7 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
     painter.setTransform(transform)
     return rect
 
-class Qt_Fig(QtGui.QWidget):
+class Qt_Fig(QtWidgets.QWidget):
     '''
     Interface to the qt_driver, using Qt to draw the boards and template.
     The attribute "canvas" is self, to mimic
@@ -88,7 +87,7 @@ class Qt_Fig(QtGui.QWidget):
     '''
     def __init__(self, template, boards, config):
         self.canvas = self
-        QtGui.QWidget.__init__(self)
+        QtWidgets.QWidget.__init__(self)
         self.config = config
         self.fig_width = -1
         self.fig_height = -1
@@ -192,10 +191,10 @@ class Qt_Fig(QtGui.QWidget):
                                           self.config.caul_trim)
 
         # Print through the preview dialog
-        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
-        printer.setOrientation(QtGui.QPrinter.Landscape)
-        printer.setPageMargins(0, 0, 0, 0, QtGui.QPrinter.Inch)
-        pdialog = QtGui.QPrintPreviewDialog(printer)
+        printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
+        printer.setOrientation(QtPrintSupport.QPrinter.Landscape)
+        printer.setPageMargins(0, 0, 0, 0, QtPrintSupport.QPrinter.Inch)
+        pdialog = QtPrintSupport.QPrintPreviewDialog(printer)
         pdialog.setModal(True)
         pdialog.paintRequested.connect(self.preview_requested)
         return pdialog.exec_()
@@ -611,7 +610,7 @@ class Qt_Fig(QtGui.QWidget):
             else:
                 brush = QtGui.QBrush(QtCore.Qt.black, icon)
             (inverted, invertable) = self.transform.inverted()
-            brush.setMatrix(inverted.toAffine())
+            brush.setTransform(inverted)
             painter.setBrush(brush)
         n = len(x)
         poly = QtGui.QPolygonF()
