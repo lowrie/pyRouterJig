@@ -167,16 +167,17 @@ class Equally_Spaced(Base_Spacing):
         # do left side of board
         i = left - neck_width
         min_interior = utils.my_round(self.dhtot + self.bit.offset)
+        min_finger_width = max(1, units.abstract_to_increments(self.config.min_finger_width))
         while i > 0:
             li = max(i - width, 0)
-            if i - li > self.config.min_finger_width and i > min_interior:
+            if i - li > min_finger_width and i > min_interior:
                 self.cuts.append(router.Cut(li, i))
             i = li - neck_width
         # do right side of board
         i = right + neck_width
         while i < board_width:
             ri = min(i + width, board_width)
-            if ri - i > self.config.min_finger_width and board_width - i > min_interior:
+            if ri - i > min_finger_width and board_width - i > min_interior:
                 self.cuts.append(router.Cut(i, ri))
             i = ri + neck_width
         # If we have only one cut the entire width of the board, then

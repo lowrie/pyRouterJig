@@ -53,7 +53,7 @@ version = '{version}'
 # If True, use metric units.  If False, use English units.
 metric = {metric}
 
-# The number of increments per unit length (integer value, or None). 
+# The number of increments per unit length.
 # All dimensions and router passes are restricted to
 #   (unit length) / (num_increments) 
 # The unit length is
@@ -178,14 +178,14 @@ common_vals = {'version':'NONE',
 # default values for english units
 english_vals = {'metric':False,
                 'num_increments':32,
-                'board_width':"'7 1/2'",
-                'bit_width':"'1/2'",
+                'board_width':'7 1/2',
+                'bit_width':'1/2',
                 'bit_depth':0.75,
-                'double_board_thickness':"'1/8'",
-                'min_finger_width':"'1/16'",
-                'caul_trim':"'1/32'",
-                'top_margin':"'1/4'",
-                'bottom_margin':"'1/2'"}
+                'double_board_thickness':'1/8',
+                'min_finger_width':'1/16',
+                'caul_trim':'1/32',
+                'top_margin':'1/4',
+                'bottom_margin':'1/2'}
 
 # default values for metric units
 metric_vals = {'metric':True,
@@ -243,24 +243,6 @@ def version_number(version):
     vs = version.split('.')
     return int(vs[0]) * 100 + int(vs[1]) * 10 + int(vs[2])
 
-def parameters_to_increments(config, units):
-    '''
-    Converts parameters in the config file to their appropriate increment values, based on
-    units.
-    '''
-    config.board_width = units.abstract_to_increments(config.board_width)
-    config.bit_width = units.abstract_to_increments(config.bit_width)
-    config.bit_depth = units.abstract_to_increments(config.bit_depth)
-    config.bit_angle = units.abstract_to_float(config.bit_angle)
-    config.min_finger_width = max(1, units.abstract_to_increments(config.min_finger_width))
-    config.double_board_thickness = units.abstract_to_increments(config.double_board_thickness)
-    config.caul_trim = max(1, units.abstract_to_increments(config.caul_trim))
-    config.top_margin = units.abstract_to_increments(config.top_margin)
-    config.bottom_margin = units.abstract_to_increments(config.bottom_margin)
-    config.left_margin = units.abstract_to_increments(config.left_margin)
-    config.right_margin = units.abstract_to_increments(config.right_margin)
-    config.separation = units.abstract_to_increments(config.separation)
-
 class Configuration(object):
     '''
     Defines interface to reading and creating the configuration file
@@ -315,10 +297,18 @@ class Configuration(object):
                 for m in migrate:
                     if m in self.config.__dict__.keys():
                         common_vals[m] = self.config.__dict__[m]
-                        if m in dim_vals and isinstance(common_vals[m], str):
-                            common_vals[m] = "'{}'".format(common_vals[m])
-        content = _CONFIG_INIT.format(**common_vals)
+        self.write_config(common_vals)
+        return r
+    def write_config(self, vals):
+        '''
+        Writes the configuration file using the dictionary vals.
+        '''
+        units = utils.Units(vals['english_separator'], vals['metric'])
+        w = vals.copy()
+        for i in dim_vals:
+            if isinstance(w[i], str) and units.valid_number(w[i]):
+                w[i] = "'{}'".format(w[i])
+        content = _CONFIG_INIT.format(**w)
         fd = open(self.filename, 'w')
         fd.write(content)
         fd.close()
-        return r

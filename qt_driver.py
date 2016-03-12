@@ -28,6 +28,7 @@ from builtins import str
 import os, sys, traceback, webbrowser, copy, shutil
 
 import qt_fig
+import qt_config
 import qt_table
 import config_file
 import router
@@ -38,7 +39,6 @@ import serialize
 import threeDS
 
 from PyQt4 import QtCore, QtGui
-#from PySide import QtCore, QtGui
 
 class MyComboBox(QtGui.QComboBox):
     '''
@@ -95,20 +95,23 @@ class Driver(QtGui.QMainWindow):
         self.units = utils.Units(self.config.english_separator, self.config.metric,
                                  self.config.num_increments)
         self.doc = doc.Doc(self.units)
-        config_file.parameters_to_increments(self.config, self.units)
 
         # Create an initial joint.  Even though another joint may be opened
         # later, we do this now so that the initial widget layout may be
         # created.
-        self.bit = router.Router_Bit(self.units, self.config.bit_width, self.config.bit_depth, 
-                                     self.config.bit_angle)
+        bit_width = self.units.abstract_to_increments(self.config.bit_width)
+        bit_depth = self.units.abstract_to_increments(self.config.bit_depth)
+        bit_angle = self.units.abstract_to_float(self.config.bit_angle)
+        self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle)
         self.boards = []
+        board_width = self.units.abstract_to_increments(self.config.board_width)
         for i in lrange(4):
-            self.boards.append(router.Board(self.bit, width=self.config.board_width))
+            self.boards.append(router.Board(self.bit, width=board_width))
         self.boards[2].set_active(False)
         self.boards[3].set_active(False)
-        self.boards[2].set_height(self.bit, self.config.double_board_thickness)
-        self.boards[3].set_height(self.bit, self.config.double_board_thickness)
+        dbt = self.units.abstract_to_increments(self.config.double_board_thickness)
+        self.boards[2].set_height(self.bit, dbt)
+        self.boards[3].set_height(self.bit, dbt)
         self.do_caul = False # if true, do caul template
         self.template = router.Incra_Template(self.units, self.boards, self.do_caul)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.boards, self.config)
@@ -145,6 +148,8 @@ class Driver(QtGui.QMainWindow):
         self.control_key = False
         self.shift_key = False
         self.alt_key = False
+
+        self.config_window = None
 
         # ... show the status message from reading the configuration file
         self.statusbar.showMessage(msg)
@@ -250,6 +255,32 @@ class Driver(QtGui.QMainWindow):
         # always attach the menubar to the application window, even on the Mac
         self.menubar.setNativeMenuBar(False)
 
+        # Add pyRouterJig menu
+
+        pyr_menu = self.menubar.addMenu('pyRouterJig')
+
+        about_action = QtGui.QAction('&About pyRouterJig', self)
+        about_action.setShortcut('Ctrl+A')
+        about_action.setStatusTip('About this program')
+        about_action.triggered.connect(self._on_about)
+        pyr_menu.addAction(about_action)
+
+        pyr_menu.addSeparator()
+
+        pref_action = QtGui.QAction('Preferences...', self)
+        pref_action.setShortcut('Ctrl+,')
+        pref_action.setStatusTip('Open preferences')
+        pref_action.triggered.connect(self._on_preferences)
+        pyr_menu.addAction(pref_action)
+
+        pyr_menu.addSeparator()
+
+        exit_action = QtGui.QAction('&Quit pyRouterJig', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.setStatusTip('Quit pyRouterJig')
+        exit_action.triggered.connect(self._on_exit)
+        pyr_menu.addAction(exit_action)
+
         # Add the file menu
 
         file_menu = self.menubar.addMenu('File')
@@ -294,12 +325,6 @@ class Driver(QtGui.QMainWindow):
         file_menu.addAction(self.threeDS_action)
         self.threeDS_enabler()
 
-        exit_action = QtGui.QAction('&Quit', self)
-        exit_action.setShortcut('Ctrl+Q')
-        exit_action.setStatusTip('Exit pyRouterJig')
-        exit_action.triggered.connect(self._on_exit)
-        file_menu.addAction(exit_action)
-
         # Add view menu
 
         view_menu = self.menubar.addMenu('View')
@@ -315,46 +340,28 @@ class Driver(QtGui.QMainWindow):
         caul_action.triggered.connect(self._on_caul)
         view_menu.addAction(caul_action)
 
-        finger_size_action = QtGui.QAction('Finger Sizes', self, checkable=True)
-        finger_size_action.setStatusTip('Toggle viewing finger sizes')
-        finger_size_action.triggered.connect(self._on_finger_sizes)
-        view_menu.addAction(finger_size_action)
-        if self.config.label_fingers:
-            self.fig.label_fingers = True
-        else:
-            self.fig.label_fingers = False
-        finger_size_action.setChecked(self.fig.label_fingers)
+        self.finger_size_action = QtGui.QAction('Finger Sizes', self, checkable=True)
+        self.finger_size_action.setStatusTip('Toggle viewing finger sizes')
+        self.finger_size_action.triggered.connect(self._on_finger_sizes)
+        view_menu.addAction(self.finger_size_action)
+        self.finger_size_action.setChecked(self.config.label_fingers)
 
         pass_menu = view_menu.addMenu('Router Passes')
-        pass_id_action = QtGui.QAction('Identifiers', self, checkable=True)
-        pass_id_action.setStatusTip('Toggle viewing router pass identifiers')
-        pass_id_action.triggered.connect(self._on_pass_id)
-        pass_menu.addAction(pass_id_action)
-        if self.config.show_router_pass_identifiers:
-            self.fig.show_router_pass_identifiers = True
-        else:
-            self.fig.show_router_pass_identifiers = False
-        pass_id_action.setChecked(self.fig.show_router_pass_identifiers)
+        self.pass_id_action = QtGui.QAction('Identifiers', self, checkable=True)
+        self.pass_id_action.setStatusTip('Toggle viewing router pass identifiers')
+        self.pass_id_action.triggered.connect(self._on_pass_id)
+        pass_menu.addAction(self.pass_id_action)
+        self.pass_id_action.setChecked(self.config.show_router_pass_identifiers)
 
-        pass_location_action = QtGui.QAction('Locations', self, checkable=True)
-        pass_location_action.setStatusTip('Toggle viewing router pass locations')
-        pass_location_action.triggered.connect(self._on_pass_location)
-        pass_menu.addAction(pass_location_action)
-        if self.config.show_router_pass_locations:
-            self.fig.show_router_pass_locations = True
-        else:
-            self.fig.show_router_pass_locations = False
-        pass_location_action.setChecked(self.fig.show_router_pass_locations)
+        self.pass_location_action = QtGui.QAction('Locations', self, checkable=True)
+        self.pass_location_action.setStatusTip('Toggle viewing router pass locations')
+        self.pass_location_action.triggered.connect(self._on_pass_location)
+        pass_menu.addAction(self.pass_location_action)
+        self.pass_location_action.setChecked(self.config.show_router_pass_locations)
 
         # Add the help menu
 
         help_menu = self.menubar.addMenu('Help')
-
-        about_action = QtGui.QAction('&About', self)
-        about_action.setShortcut('Ctrl+A')
-        about_action.setStatusTip('About this program')
-        about_action.triggered.connect(self._on_about)
-        help_menu.addAction(about_action)
 
         doclink_action = QtGui.QAction('&Documentation', self)
         doclink_action.setStatusTip('Opens documentation page in web browser')
@@ -1349,6 +1356,33 @@ class Driver(QtGui.QMainWindow):
         self.status_message('Saved router pass location table to %s' % filename)
 
     @QtCore.pyqtSlot()
+    def _on_about(self):
+        '''Handles about dialog event'''
+        if self.config.debug:
+            print('_on_about')
+
+        box = QtGui.QMessageBox(self)
+        s = '<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>'
+        s += '<h3>Version: %s</h3>' % utils.VERSION
+        box.setText(s + self.doc.short_desc() + self.doc.license())
+        box.setTextFormat(QtCore.Qt.RichText)
+        box.show()
+
+    @QtCore.pyqtSlot()
+    def _on_preferences(self):
+        '''Handles opening and changing preferences'''
+        if self.config.debug:
+            print('_on_preferences')
+
+        if self.config_window is None:
+            self.config_window = qt_config.Config_Window(self.config, self.units, self)
+        self.config_window.initialize()
+        self.config_window.exec_()
+        self.finger_size_action.setChecked(self.config.label_fingers)
+        self.pass_id_action.setChecked(self.config.show_router_pass_identifiers)
+        self.pass_location_action.setChecked(self.config.show_router_pass_locations)
+
+    @QtCore.pyqtSlot()
     def _on_exit(self):
         '''Handles code exit events'''
         if self.config.debug:
@@ -1363,19 +1397,6 @@ class Driver(QtGui.QMainWindow):
 
             if reply == QtGui.QMessageBox.Yes:
                 QtGui.qApp.quit()
-
-    @QtCore.pyqtSlot()
-    def _on_about(self):
-        '''Handles about dialog event'''
-        if self.config.debug:
-            print('_on_about')
-
-        box = QtGui.QMessageBox(self)
-        s = '<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>'
-        s += '<h3>Version: %s</h3>' % utils.VERSION
-        box.setText(s + self.doc.short_desc() + self.doc.license())
-        box.setTextFormat(QtCore.Qt.RichText)
-        box.show()
 
     @QtCore.pyqtSlot()
     def _on_doclink(self):
@@ -1657,12 +1678,11 @@ class Driver(QtGui.QMainWindow):
         '''Handles toggling showing finger sizes'''
         if self.config.debug:
             print('_on_finger_sizes')
-        if self.fig.label_fingers:
-            self.fig.label_fingers = False
-            self.status_message('Turned off finger sizes.')
-        else:
-            self.fig.label_fingers = True
+        self.config.label_fingers = self.finger_size_action.isChecked()
+        if self.config.label_fingers:
             self.status_message('Turned on finger sizes.')
+        else:
+            self.status_message('Turned off finger sizes.')
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1670,12 +1690,11 @@ class Driver(QtGui.QMainWindow):
         '''Handles toggling showing router pass identifiers'''
         if self.config.debug:
             print('_on_pass_id')
-        if self.fig.show_router_pass_identifiers:
-            self.fig.show_router_pass_identifiers = False
-            self.status_message('Turned off router pass identifiers.')
-        else:
-            self.fig.show_router_pass_identifiers = True
+        self.config.show_router_pass_identifiers = self.pass_id_action.isChecked()
+        if self.config.show_router_pass_identifiers:
             self.status_message('Turned on router pass identifiers.')
+        else:
+            self.status_message('Turned off router pass identifiers.')
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1683,12 +1702,11 @@ class Driver(QtGui.QMainWindow):
         '''Handles toggling showing router pass locations'''
         if self.config.debug:
             print('_on_pass_locations')
-        if self.fig.show_router_pass_locations:
-            self.fig.show_router_pass_locations = False
-            self.status_message('Turned off router pass locations.')
-        else:
-            self.fig.show_router_pass_locations = True
+        self.config.show_router_pass_locations = self.pass_location_action.isChecked()
+        if self.config.show_router_pass_locations:
             self.status_message('Turned on router pass locations.')
+        else:
+            self.status_message('Turned off router pass locations.')
         self.draw()
 
     def status_message(self, msg, flash_len_ms=None):

@@ -83,12 +83,12 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
 class Qt_Fig(QtGui.QWidget):
     '''
     Interface to the qt_driver, using Qt to draw the boards and template.
-    The attribute "canvas" is self, to mimic
-    the old interface to matplotlib, which this class replaced.
+    The attribute "canvas" is self, to mimic the old interface to matplotlib,
+    which this class replaced.
     '''
     def __init__(self, template, boards, config):
-        self.canvas = self
         QtGui.QWidget.__init__(self)
+        self.canvas = self
         self.config = config
         self.fig_width = -1
         self.fig_height = -1
@@ -100,11 +100,6 @@ class Qt_Fig(QtGui.QWidget):
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
         self.font_size = {'title':4, 'fingers':3, 'template':3, 'boards':4, 'template_labels':3}
-        # if true, label the fingers on each board with its width
-        self.label_fingers = False
-        # if true, draw router passes
-        self.show_router_pass_identifiers = True
-        self.show_router_pass_locations = False
 
     def minimumSizeHint(self):
         '''
@@ -125,12 +120,14 @@ class Qt_Fig(QtGui.QWidget):
         Returns True if the dimensions changed.
         '''
         # Try default margins, but reset if the template is too small for margins
-        self.margins = utils.Margins(self.config.separation, \
-                                     self.config.separation,\
-                                     self.config.left_margin,\
-                                     self.config.right_margin,\
-                                     self.config.bottom_margin,\
-                                     self.config.top_margin)
+        units = boards[0].units
+        top_margin = units.abstract_to_increments(self.config.top_margin)
+        bottom_margin = units.abstract_to_increments(self.config.bottom_margin)
+        left_margin = units.abstract_to_increments(self.config.left_margin)
+        right_margin = units.abstract_to_increments(self.config.right_margin)
+        separation = units.abstract_to_increments(self.config.separation)
+        self.margins = utils.Margins(separation, separation, left_margin, right_margin,
+                                     bottom_margin, top_margin)
 
         # Set the figure dimensions
         fig_width = template.length + self.margins.left + self.margins.right
@@ -174,8 +171,9 @@ class Qt_Fig(QtGui.QWidget):
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
         self.woods = woods
+        caul_trim = max(1, bit.units.abstract_to_increments(self.config.caul_trim))
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,\
-                                          self.config.caul_trim)
+                                          caul_trim)
         self.current_background = self.background
         self.update()
 
@@ -188,8 +186,9 @@ class Qt_Fig(QtGui.QWidget):
 
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
+        caul_trim = max(1, bit.units.abstract_to_increments(self.config.caul_trim))
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,\
-                                          self.config.caul_trim)
+                                          caul_trim)
 
         # Print through the preview dialog
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
@@ -206,8 +205,9 @@ class Qt_Fig(QtGui.QWidget):
         '''
         self.woods = woods
         self.set_fig_dimensions(template, boards)
+        caul_trim = max(1, bit.units.abstract_to_increments(self.config.caul_trim))
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,\
-                                          self.config.caul_trim)
+                                          caul_trim)
         self.current_background = self.background
 
         s = self.size()
@@ -306,7 +306,7 @@ class Qt_Fig(QtGui.QWidget):
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
-        if self.label_fingers:
+        if self.config.label_fingers:
             self.draw_finger_sizes(painter)
 
         return (window_width, window_height)
@@ -373,11 +373,11 @@ class Qt_Fig(QtGui.QWidget):
             xpShift = xp[i] + board_T.xL()
             # Draw the text label for this pass
             label = ''
-            if template or self.show_router_pass_identifiers:
+            if template or self.config.show_router_pass_identifiers:
                 label = '%d%s' % (i + 1, blabel)
                 if xpShift == xMid:
                     passMid = label
-            if not template and self.show_router_pass_locations:
+            if not template and self.config.show_router_pass_locations:
                 if len(label) > 0:
                     label += ': '
                 loc = self.geom.bit.units.increments_to_string(board_T.width - xp[i])
@@ -462,7 +462,7 @@ class Qt_Fig(QtGui.QWidget):
 
         flagsL = QtCore.Qt.AlignLeft
         flagsR = QtCore.Qt.AlignRight
-        show_passes = self.show_router_pass_identifiers | self.show_router_pass_locations
+        show_passes = self.config.show_router_pass_identifiers | self.config.show_router_pass_locations
 
         frac_depth = 0.95 * self.geom.bit.depth
         sepOver2 = 0.5 * self.geom.margins.sep
