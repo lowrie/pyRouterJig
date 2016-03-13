@@ -22,6 +22,7 @@
 This module contains the Qt interface to setting config file parameters.
 '''
 
+import os, sys
 from PyQt4 import QtCore, QtGui
 
 import config_file
@@ -92,20 +93,18 @@ class Config_Window(QtGui.QDialog):
         self.cb_units = QtGui.QComboBox(self)
         self.cb_units.addItem('Metric')
         self.cb_units.addItem('English')
+        self.cb_units.activated.connect(self._on_units)
         hbox.addWidget(self.cb_units)
         hbox.addStretch(1)
         vbox.addLayout(hbox)
         #vbox.addWidget(self.cb_units)
 
-        label = 'Increments per '
         if self.config.metric:
-            label += 'mm'
             self.cb_units.setCurrentIndex(0)
         else:
-            label += 'inch'
             self.cb_units.setCurrentIndex(1)
 
-        self.le_num_incr_label = QtGui.QLabel(label)
+        self.le_num_incr_label = QtGui.QLabel(self.units_label(self.config.metric))
         self.le_num_incr = QtGui.QLineEdit(w)
         self.le_num_incr.setFixedWidth(self.line_edit_width)
         self.le_num_incr.setText(str(self.config.num_increments))
@@ -223,17 +222,40 @@ class Config_Window(QtGui.QDialog):
             self.change_state = max(state, self.change_state)
             self.btn_save.setEnabled(True)
 
+    def units_label(self, metric):
+        label = 'Increments per '
+        if metric:
+            label += 'mm'
+        else:
+            label += 'inch'
+        return label
+
     @QtCore.pyqtSlot()
     def _on_cancel(self):
         self.close()
 
     @QtCore.pyqtSlot()
     def _on_save(self):
-        if self.change_state > 0:
+        if self.change_state == 2:
+            os.execv(sys.argv[0], sys.argv)
+        elif self.change_state == 1:
             self.config.__dict__.update(self.new_config)
             c = config_file.Configuration()
             c.write_config(self.new_config)
         self.close()
+
+    @QtCore.pyqtSlot(int)
+    def _on_units(self, index):
+        s = str(self.cb_units.itemText(index))
+        metric = (s == 'Metric')
+        if metric != self.config.metric:
+            self.new_config['metric'] = metric
+            self.update_state('metric', 2)
+            if metric:
+                 self.le_num_incr.setText('1')
+            else:
+                 self.le_num_incr.setText('32')
+            self.le_num_incr_label.setText(self.units_label(metric))
 
     @QtCore.pyqtSlot()
     def _on_num_incr(self):
