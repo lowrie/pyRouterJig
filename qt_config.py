@@ -94,6 +94,7 @@ class Config_Window(QtGui.QDialog):
         self.cb_units.addItem('Metric')
         self.cb_units.addItem('English')
         self.cb_units.activated.connect(self._on_units)
+        self.cb_units.setToolTip('The unit system.')
         hbox.addWidget(self.cb_units)
         hbox.addStretch(1)
         vbox.addLayout(hbox)
@@ -109,6 +110,9 @@ class Config_Window(QtGui.QDialog):
         self.le_num_incr.setFixedWidth(self.line_edit_width)
         self.le_num_incr.setText(str(self.config.num_increments))
         self.le_num_incr.editingFinished.connect(self._on_num_incr)
+        tt = 'The number of increments per unit length.'
+        self.le_num_incr.setToolTip(tt)
+        self.le_num_incr_label.setToolTip(tt)
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(self.le_num_incr_label)
         hbox.addWidget(self.le_num_incr)
@@ -154,6 +158,9 @@ class Config_Window(QtGui.QDialog):
         self.le_printsf.setFixedWidth(self.line_edit_width)
         self.le_printsf.setText(str(self.config.print_scale_factor))
         self.le_printsf.editingFinished.connect(self._on_printsf)
+        tt = 'Scale output by this factor when printing.'
+        self.le_printsf_label.setToolTip(tt)
+        self.le_printsf.setToolTip(tt)
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(self.le_printsf_label)
         hbox.addWidget(self.le_printsf)
@@ -164,6 +171,9 @@ class Config_Window(QtGui.QDialog):
         self.le_min_image.setFixedWidth(self.line_edit_width)
         self.le_min_image.setText(str(self.config.min_image_width))
         self.le_min_image.editingFinished.connect(self._on_min_image)
+        tt = 'On save image, minimum width of image in pixels.'
+        self.le_min_image.setToolTip(tt)
+        self.le_min_image_label.setToolTip(tt)
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(self.le_min_image_label)
         hbox.addWidget(self.le_min_image)
@@ -174,6 +184,9 @@ class Config_Window(QtGui.QDialog):
         self.le_max_image.setFixedWidth(self.line_edit_width)
         self.le_max_image.setText(str(self.config.max_image_width))
         self.le_max_image.editingFinished.connect(self._on_max_image)
+        tt = 'On save image, maximum width of image in pixels.'
+        self.le_max_image.setToolTip(tt)
+        self.le_max_image_label.setToolTip(tt)
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(self.le_max_image_label)
         hbox.addWidget(self.le_max_image)
@@ -195,12 +208,14 @@ class Config_Window(QtGui.QDialog):
         btn_cancel = QtGui.QPushButton('Cancel', self)
         btn_cancel.clicked.connect(self._on_cancel)
         btn_cancel.setAutoDefault(False)
+        btn_cancel.setToolTip('Discard any preference changes and continue.')
         hbox_btns.addWidget(btn_cancel)
         
         self.btn_save = QtGui.QPushButton('Save', self)
         self.btn_save.clicked.connect(self._on_save)
         self.btn_save.setAutoDefault(False)
         self.btn_save.setEnabled(False)
+        self.btn_save.setToolTip('Save preference changes permanently to your configuration file.')
         hbox_btns.addWidget(self.btn_save)
         return hbox_btns
 
@@ -232,16 +247,49 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_cancel(self):
+        '''
+        Handles Cancel button events.
+        '''
         self.close()
 
     @QtCore.pyqtSlot()
     def _on_save(self):
+        '''
+        Handles Save button events.
+        '''
+        do_save_config = False
+        do_restart = False
         if self.change_state == 2:
-            os.execv(sys.argv[0], sys.argv)
+            # Units were changes, so ask for a restart
+            box = QtGui.QMessageBox(self)
+            box.setTextFormat(QtCore.Qt.RichText)
+            box.setIcon(QtGui.QMessageBox.NoIcon)
+            box.setText('<font size=5 color=red>Warning!</font>')
+            question = '<font size=5>You have changed a Units setting, which'\
+                       ' requires <i>pyRouterJig</i> to restart to take effect.'\
+                       ' Your current joint will be lost, unless you have already saved it. <p>'\
+                       ' Press <b>Restart</b> to save the settings and restart.<p>'\
+                       ' Press <b>Cancel</b> to discard the changes that you made.'\
+                       ' </font>'
+            box.setInformativeText(question)
+            buttonRestart = box.addButton('Restart', QtGui.QMessageBox.AcceptRole)
+            buttonCancel = box.addButton('Cancel', QtGui.QMessageBox.AcceptRole)
+            box.setDefaultButton(buttonCancel)
+            box.raise_()
+            box.exec_()
+            if box.clickedButton() == buttonRestart:
+                do_save_config = True
+                do_restart = True
         elif self.change_state == 1:
+            # Units was not changed
+            do_save_config = True
+        if do_save_config:
+            config_file.set_default_dimensions(self.new_config)
             self.config.__dict__.update(self.new_config)
             c = config_file.Configuration()
             c.write_config(self.new_config)
+        if do_restart:
+            os.execv(sys.argv[0], sys.argv)
         self.close()
 
     @QtCore.pyqtSlot(int)

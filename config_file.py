@@ -243,6 +243,16 @@ def version_number(version):
     vs = version.split('.')
     return int(vs[0]) * 100 + int(vs[1]) * 10 + int(vs[2])
 
+def set_default_dimensions(d):
+    '''Sets the default dimensional quantites in the config dictionary d'''
+    if d['metric']:
+        common_vals.update(metric_vals)
+    else:
+        common_vals.update(english_vals)
+    d['num_increments'] = common_vals['num_increments']
+    for v in dim_vals:
+        d[v] = common_vals[v]
+
 class Configuration(object):
     '''
     Defines interface to reading and creating the configuration file
