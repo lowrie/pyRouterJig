@@ -26,15 +26,8 @@ import os, sys
 from PyQt4 import QtCore, QtGui
 
 import config_file
+import qt_utils
 
-# Units
-#   metric/english
-#   num_increments
-# Board
-#   width
-#   double_board_thickness
-#   wood_images
-#   default_wood
 # Bit
 #   width
 #   depth
@@ -98,7 +91,6 @@ class Config_Window(QtGui.QDialog):
         hbox.addWidget(self.cb_units)
         hbox.addStretch(1)
         vbox.addLayout(hbox)
-        #vbox.addWidget(self.cb_units)
 
         if self.config.metric:
             self.cb_units.setCurrentIndex(0)
@@ -121,10 +113,77 @@ class Config_Window(QtGui.QDialog):
         w.setLayout(vbox)
         return w
 
+    def set_wood_combobox(self):
+        (woods, patterns) = qt_utils.create_wood_dict(self.new_config['wood_images'])
+        woodnames = woods.keys()
+        woodnames.extend(patterns.keys())
+        self.cb_wood.clear()
+        self.cb_wood.addItems(woodnames)
+        i = self.cb_wood.findText(self.new_config['default_wood'])
+        if i < 0:
+            self.cb_wood.setCurrentIndex(0)
+            self.new_config['default_wood'] = self.cb_wood.currentText()
+        else:
+            self.cb_wood.setCurrentIndex(i)
+
     def create_boards(self):
         '''Creates the layout for boards preferences'''
         w =  QtGui.QWidget()
-        #w.setLayout(vbox)
+        vbox = QtGui.QVBoxLayout()
+
+        self.le_board_width_label = QtGui.QLabel('Initial Board Width:')
+        self.le_board_width = QtGui.QLineEdit(w)
+        self.le_board_width.setFixedWidth(self.line_edit_width)
+        self.le_board_width.setText(str(self.config.board_width))
+        self.le_board_width.editingFinished.connect(self._on_board_width)
+        tt = 'The initial board width when pyRouterJig starts.'
+        self.le_board_width_label.setToolTip(tt)
+        self.le_board_width.setToolTip(tt)
+        hbox = QtGui.QHBoxLayout()
+        hbox.addWidget(self.le_board_width_label)
+        hbox.addWidget(self.le_board_width)
+        vbox.addLayout(hbox)
+
+        self.le_db_thick_label = QtGui.QLabel('Initial Double Board Thickness:')
+        self.le_db_thick = QtGui.QLineEdit(w)
+        self.le_db_thick.setFixedWidth(self.line_edit_width)
+        self.le_db_thick.setText(str(self.config.double_board_thickness))
+        self.le_db_thick.editingFinished.connect(self._on_db_thick)
+        tt = 'The initial double-board thickness when pyRouterJig starts.'
+        self.le_db_thick_label.setToolTip(tt)
+        self.le_db_thick.setToolTip(tt)
+        hbox = QtGui.QHBoxLayout()
+        hbox.addWidget(self.le_db_thick_label)
+        hbox.addWidget(self.le_db_thick)
+        vbox.addLayout(hbox)
+
+        hbox = QtGui.QHBoxLayout()
+        (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images)
+        woodnames = woods.keys()
+        woodnames.extend(patterns.keys())
+        self.cb_wood_label = QtGui.QLabel('Default Wood Fill:')
+        self.cb_wood = QtGui.QComboBox(self)
+        self.set_wood_combobox()
+        self.cb_wood.activated.connect(self._on_wood)
+        tt = 'The default wood fill for each board.'
+        self.cb_wood.setToolTip(tt)
+        self.cb_wood_label.setToolTip(tt)
+        hbox.addWidget(self.cb_wood_label)
+        hbox.addWidget(self.cb_wood)
+        vbox.addLayout(hbox)
+
+        self.le_wood_images_label = QtGui.QLabel('Wood Images Folder:')
+        self.le_wood_images = QtGui.QLineEdit(w)
+        self.le_wood_images.setText(str(self.config.wood_images))
+        self.le_wood_images.editingFinished.connect(self._on_wood_images)
+        tt = 'Location of wood images.'
+        self.le_wood_images_label.setToolTip(tt)
+        self.le_wood_images.setToolTip(tt)
+        vbox.addWidget(self.le_wood_images_label)
+        vbox.addWidget(self.le_wood_images)
+        vbox.addStretch(1)
+
+        w.setLayout(vbox)
         return w
 
     def create_bit(self):
@@ -153,7 +212,7 @@ class Config_Window(QtGui.QDialog):
         self.cb_rploc.setToolTip('On each router pass, label its distance from the right edge')
         vbox.addWidget(self.cb_rploc)
 
-        self.le_printsf_label = QtGui.QLabel('Print Scale Factor')
+        self.le_printsf_label = QtGui.QLabel('Print Scale Factor:')
         self.le_printsf = QtGui.QLineEdit(w)
         self.le_printsf.setFixedWidth(self.line_edit_width)
         self.le_printsf.setText(str(self.config.print_scale_factor))
@@ -166,7 +225,7 @@ class Config_Window(QtGui.QDialog):
         hbox.addWidget(self.le_printsf)
         vbox.addLayout(hbox)
 
-        self.le_min_image_label = QtGui.QLabel('Min Image Width')
+        self.le_min_image_label = QtGui.QLabel('Min Image Width:')
         self.le_min_image = QtGui.QLineEdit(w)
         self.le_min_image.setFixedWidth(self.line_edit_width)
         self.le_min_image.setText(str(self.config.min_image_width))
@@ -179,7 +238,7 @@ class Config_Window(QtGui.QDialog):
         hbox.addWidget(self.le_min_image)
         vbox.addLayout(hbox)
 
-        self.le_max_image_label = QtGui.QLabel('Max Image Width')
+        self.le_max_image_label = QtGui.QLabel('Max Image Width:')
         self.le_max_image = QtGui.QLineEdit(w)
         self.le_max_image.setFixedWidth(self.line_edit_width)
         self.le_max_image.setText(str(self.config.max_image_width))
@@ -311,6 +370,45 @@ class Config_Window(QtGui.QDialog):
             text = str(self.le_num_incr.text())
             self.new_config['num_increments'] = int(text)
             self.update_state('num_increments', 2)
+
+    @QtCore.pyqtSlot()
+    def _on_board_width(self):
+        if self.le_board_width.isModified():
+            s = str(self.le_board_width.text())
+            if self.units.valid_number(s):
+                self.new_config['board_width'] = s
+                self.update_state('board_width')
+            else:
+                msg = '"{}" is not a valid board width'.format(s)
+                QtGui.QMessageBox.warning(self, 'Error', msg)
+                self.le_board_width.setText(self.new_config['board_width'])
+
+    @QtCore.pyqtSlot()
+    def _on_db_thick(self):
+        if self.le_db_thick.isModified():
+            s = str(self.le_db_thick.text())
+            if self.units.valid_number(s):
+                self.new_config['double_board_thickness'] = s
+                self.update_state('double_board_thickness')
+            else:
+                msg = '"{}" is not a valid board width'.format(s)
+                QtGui.QMessageBox.warning(self, 'Error', msg)
+                self.le_db_thick.setText(self.new_config['double_board_thickness'])
+
+    @QtCore.pyqtSlot(int)
+    def _on_wood(self, index):
+        s = str(self.cb_wood.itemText(index))
+        if s != self.config.default_wood:
+            self.new_config['default_wood'] = s
+            self.update_state('default_wood')
+
+    @QtCore.pyqtSlot()
+    def _on_wood_images(self):
+        if self.le_wood_images.isModified():
+            text = str(self.le_wood_images.text())
+            self.new_config['wood_images'] = text
+            self.set_wood_combobox()
+            self.update_state('wood_images')
 
     @QtCore.pyqtSlot()
     def _on_label_fingers(self):

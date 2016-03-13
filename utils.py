@@ -235,8 +235,11 @@ class Units(object):
         be converted to a number, or a number itself.
         '''
         try:
-            self.abstract_to_increments(a)
-            return True
+            i = self.abstract_to_increments(a)
+            if i > 0:
+                return True
+            else:
+                return False
         except:
             return False
 
@@ -280,26 +283,6 @@ class Margins(object):
         else:
             self.top = top
 
-def create_wood_dict(wood_images):
-    '''
-    Creates a dictionary {wood_name : wood_image_filename} by parsing the
-    directory wood_images.  The wood_name is formed by taking the prefix of the
-    wood_image_filename.
-    '''
-    d = {}
-    if not os.path.isdir(wood_images):
-        return d
-    globber = os.path.join(wood_images, '*')
-    files = glob.glob(globber)
-    for f in files:
-        name = os.path.basename(f)
-        i = name.rfind('.')
-        if i > 0:
-            name = name[0:i]
-        path = os.path.abspath(f)
-        d[name] = path
-    return d
-
 def get_file_index(path, prefix, postfix):
     '''
     Finds the next index available for files that match the signature
@@ -334,3 +317,80 @@ def set_slider_tick_interval(slider):
         slider.setTickInterval(diff // maxtics)
     else:
         slider.setTickInterval(1)
+
+def print_table(filename, boards, title):
+    '''
+    Prints a table of router pass locations, referenced to the right size of the board.
+    '''
+    # Load up the cuts and labels to be printed
+    all_cuts = [boards[0].bottom_cuts]
+    label_cuts = ['A']
+    labels = ['B', 'C', 'D', 'E', 'F']
+    i = 0
+    if boards[3].active:
+        all_cuts.append(boards[3].top_cuts)
+        label_cuts.append(labels[i])
+        all_cuts.append(boards[3].bottom_cuts)
+        label_cuts.append(labels[i + 1])
+        i += 2
+    if boards[2].active:
+        all_cuts.append(boards[2].top_cuts)
+        label_cuts.append(labels[i])
+        all_cuts.append(boards[2].bottom_cuts)
+        label_cuts.append(labels[i + 1])
+        i += 2
+    all_cuts.append(boards[1].top_cuts)
+    label_cuts.append(labels[i])
+    # TODO: add cauls
+    # Format for each pass, location pair
+    form = ' %4s %9s '
+    # Print the header
+    line = ''
+    for k in label_cuts:
+        s = 'Pass'
+        line += form % (s, 'Location')
+    lenh = len(line)
+    divider = '-' * lenh + '\n'
+    line = divider + line + '\n' + divider
+    fd = open(filename, 'w')
+    fd.write(title + '\n')
+    fd.write(line)
+    # Initialize for the print loop
+    ncol = len(all_cuts)
+    width = boards[0].width
+    units = boards[0].units
+    pass_index = [0] * ncol
+    cut_index = [0] * ncol
+    for icol in lrange(ncol):
+        cut_index[icol] = len(all_cuts[icol]) - 1
+    total_passes = [0] * ncol
+    # Print until all of the edges are out of passes.  We go through the cuts,
+    # and each pass in the cut, in reverse order (from right to left).
+    printing = True
+    while printing:
+        line = ''
+        printing = False
+        # Loop through the edges
+        for icol in lrange(ncol):
+            label = '**'
+            dim = '**'
+            # check if there are any more passes for this edge
+            icut = cut_index[icol]
+            if icut >= 0:
+                # Still have a pass, so load it
+                c = all_cuts[icol][icut]
+                np = len(c.passes)
+                pi = pass_index[icol]
+                total_passes[icol] += 1
+                label = '%d%s' % (total_passes[icol], label_cuts[icol])
+                dim = units.increments_to_string(width - c.passes[np - pi - 1])
+                pass_index[icol] += 1
+                printing = True
+                # if we are done with this cut, go on to the next cut
+                if pass_index[icol] == np:
+                    cut_index[icol] -= 1
+                    pass_index[icol] = 0
+            line += form % (label, dim)
+        if printing:
+            fd.write(line + '\n')
+    fd.close()

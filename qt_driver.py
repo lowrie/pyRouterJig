@@ -29,7 +29,7 @@ import os, sys, traceback, webbrowser, copy, shutil
 
 import qt_fig
 import qt_config
-import qt_table
+import qt_utils
 import config_file
 import router
 import spacing
@@ -456,13 +456,7 @@ class Driver(QtGui.QMainWindow):
         self.le_boardm[1].editingFinished.connect(self._on_boardm1)
 
         # Wood combo boxes
-        woods = utils.create_wood_dict(self.config.wood_images)
-        patterns = {'DiagCrossPattern':QtCore.Qt.DiagCrossPattern,\
-                    'BDiagPattern':QtCore.Qt.BDiagPattern,\
-                    'FDiagPattern':QtCore.Qt.FDiagPattern,\
-                    'Dense1Pattern':QtCore.Qt.Dense1Pattern,\
-                    'Dense5Pattern':QtCore.Qt.Dense5Pattern,\
-                    'No fill':None}
+        (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images)
         # ... combine the wood images and patterns
         self.woods = copy.deepcopy(woods)
         self.woods.update(patterns)
@@ -1351,7 +1345,7 @@ class Driver(QtGui.QMainWindow):
         fname = prefix + str(self.table_index) + postfix
         filename = os.path.join(self.working_dir, fname)
         title = router.create_title(self.boards, self.bit, self.spacing)
-        qt_table.print_table(filename, self.boards, title)
+        utils.print_table(filename, self.boards, title)
         self.table_index += 1
         self.status_message('Saved router pass location table to %s' % filename)
 
