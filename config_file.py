@@ -67,9 +67,9 @@ num_increments = {num_increments}
 # For English units, the string separator between the whole and fraction components
 english_separator = '{english_separator}'
 
-# If true, label each finger with its size.  This option may also be turned
-# on and off under the menu "View" and selecting "Finger Sizes".
-label_fingers = {label_fingers}
+# If true, label each finger with its width.  This option may also be turned
+# on and off under the menu "View" and selecting "Finger Widths".
+show_finger_widths = {show_finger_widths}
 
 # If true, then label each router pass with its identifier on the board.  This
 # option may also be turned on and off under the menu "View", selecting
@@ -160,7 +160,7 @@ background_color = {background_color}
 # common default values
 common_vals = {'version':'NONE',
                'english_separator':' ',
-               'label_fingers':True,
+               'show_finger_widths':True,
                'show_router_pass_identifiers':True,
                'show_router_pass_locations':False,
                'bit_angle':0,
@@ -202,7 +202,7 @@ metric_vals = {'metric':True,
 # values that are migrated to new versions of the config file.  Don't include metric, because it's
 # always migrated.
 migrate = ['english_separator',  # common_vals
-           'label_fingers',
+           'show_finger_widths',
            'show_router_passes',
            'bit_angle',
            'min_image_width',
@@ -262,7 +262,7 @@ class Configuration(object):
         # config file must be updated if it was created with an earlier number.
         # Update this value when new parameters are added to the config file,
         # or any parameter's type changes,
-        self.create_version_number = 86
+        self.create_version_number = 87
         # config file cannot be migrated from versions earlier than this.
         # This value is currently set at the version that all dimensions and bit_angle
         # were consistent types and dimensions.

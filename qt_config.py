@@ -28,10 +28,6 @@ from PyQt4 import QtCore, QtGui
 import config_file
 import qt_utils
 
-# Bit
-#   width
-#   depth
-#   angle
 # Output
 #   background_color
 #   -english_separator
@@ -78,7 +74,9 @@ class Config_Window(QtGui.QDialog):
         w =  QtGui.QWidget()
         vbox = QtGui.QVBoxLayout()
 
-        mesg = QtGui.QLabel('Changing any Units settings will require pyRouterJig to restart and your present joint will be lost.')
+        mesg = QtGui.QLabel('<font color=red><b>WARNING:</b></font>'
+                            ' Changing any Units settings will require <i>pyRouterJig</i>'
+                            ' to restart and your present joint will be lost.')
         mesg.setWordWrap(True)
         vbox.addWidget(mesg)
 
@@ -189,7 +187,48 @@ class Config_Window(QtGui.QDialog):
     def create_bit(self):
         '''Creates the layout for bit preferences'''
         w =  QtGui.QWidget()
-        #w.setLayout(vbox)
+        vbox = QtGui.QVBoxLayout()
+
+        self.le_bit_width_label = QtGui.QLabel('Initial Bit Width:')
+        self.le_bit_width = QtGui.QLineEdit(w)
+        self.le_bit_width.setFixedWidth(self.line_edit_width)
+        self.le_bit_width.setText(str(self.config.bit_width))
+        self.le_bit_width.editingFinished.connect(self._on_bit_width)
+        tt = 'The initial bit width when pyRouterJig starts.'
+        self.le_bit_width_label.setToolTip(tt)
+        self.le_bit_width.setToolTip(tt)
+        hbox = QtGui.QHBoxLayout()
+        hbox.addWidget(self.le_bit_width_label)
+        hbox.addWidget(self.le_bit_width)
+        vbox.addLayout(hbox)
+
+        self.le_bit_depth_label = QtGui.QLabel('Initial Bit Depth:')
+        self.le_bit_depth = QtGui.QLineEdit(w)
+        self.le_bit_depth.setFixedWidth(self.line_edit_width)
+        self.le_bit_depth.setText(str(self.config.bit_depth))
+        self.le_bit_depth.editingFinished.connect(self._on_bit_depth)
+        tt = 'The initial bit depth when pyRouterJig starts.'
+        self.le_bit_depth_label.setToolTip(tt)
+        self.le_bit_depth.setToolTip(tt)
+        hbox = QtGui.QHBoxLayout()
+        hbox.addWidget(self.le_bit_depth_label)
+        hbox.addWidget(self.le_bit_depth)
+        vbox.addLayout(hbox)
+
+        self.le_bit_angle_label = QtGui.QLabel('Initial Bit Angle:')
+        self.le_bit_angle = QtGui.QLineEdit(w)
+        self.le_bit_angle.setFixedWidth(self.line_edit_width)
+        self.le_bit_angle.setText(str(self.config.bit_angle))
+        self.le_bit_angle.editingFinished.connect(self._on_bit_angle)
+        tt = 'The initial bit angle when pyRouterJig starts.'
+        self.le_bit_angle_label.setToolTip(tt)
+        self.le_bit_angle.setToolTip(tt)
+        hbox = QtGui.QHBoxLayout()
+        hbox.addWidget(self.le_bit_angle_label)
+        hbox.addWidget(self.le_bit_angle)
+        vbox.addLayout(hbox)
+
+        w.setLayout(vbox)
         return w
 
     def create_output(self):
@@ -197,17 +236,17 @@ class Config_Window(QtGui.QDialog):
         w =  QtGui.QWidget()
         vbox = QtGui.QVBoxLayout()
 
-        self.cb_label_fingers = QtGui.QCheckBox('Label Fingers', w)
-        self.cb_label_fingers.stateChanged.connect(self._on_label_fingers)
-        self.cb_label_fingers.setToolTip('Display the width of each finger')
-        vbox.addWidget(self.cb_label_fingers)
+        self.cb_show_finger_widths = QtGui.QCheckBox('Show Finger Widths', w)
+        self.cb_show_finger_widths.stateChanged.connect(self._on_show_finger_widths)
+        self.cb_show_finger_widths.setToolTip('Display the width of each finger')
+        vbox.addWidget(self.cb_show_finger_widths)
 
-        self.cb_rpid = QtGui.QCheckBox('Label Router Pass Identifiers', w)
+        self.cb_rpid = QtGui.QCheckBox('Show Router Pass Identifiers', w)
         self.cb_rpid.stateChanged.connect(self._on_rpid)
         self.cb_rpid.setToolTip('On each router pass, label its identifier')
         vbox.addWidget(self.cb_rpid)
 
-        self.cb_rploc = QtGui.QCheckBox('Label Router Pass Locations', w)
+        self.cb_rploc = QtGui.QCheckBox('Show Router Pass Locations', w)
         self.cb_rploc.stateChanged.connect(self._on_rploc)
         self.cb_rploc.setToolTip('On each router pass, label its distance from the right edge')
         vbox.addWidget(self.cb_rploc)
@@ -284,7 +323,7 @@ class Config_Window(QtGui.QDialog):
         We need this because these values may have changed in the config since
         the preferences window was created.
         '''
-        self.cb_label_fingers.setChecked(self.config.label_fingers)
+        self.cb_show_finger_widths.setChecked(self.config.show_finger_widths)
         self.cb_rpid.setChecked(self.config.show_router_pass_identifiers)
         self.cb_rploc.setChecked(self.config.show_router_pass_locations)
 
@@ -372,6 +411,42 @@ class Config_Window(QtGui.QDialog):
             self.update_state('num_increments', 2)
 
     @QtCore.pyqtSlot()
+    def _on_bit_width(self):
+        if self.le_bit_width.isModified():
+            s = str(self.le_bit_width.text())
+            if self.units.valid_number(s):
+                self.new_config['bit_width'] = s
+                self.update_state('bit_width')
+            else:
+                msg = '"{}" is not a valid bit width'.format(s)
+                QtGui.QMessageBox.warning(self, 'Error', msg)
+                self.le_bit_width.setText(self.new_config['bit_width'])
+
+    @QtCore.pyqtSlot()
+    def _on_bit_depth(self):
+        if self.le_bit_depth.isModified():
+            s = str(self.le_bit_depth.text())
+            if self.units.valid_number(s):
+                self.new_config['bit_depth'] = s
+                self.update_state('bit_depth')
+            else:
+                msg = '"{}" is not a valid bit depth'.format(s)
+                QtGui.QMessageBox.warning(self, 'Error', msg)
+                self.le_bit_depth.setText(self.new_config['bit_depth'])
+
+    @QtCore.pyqtSlot()
+    def _on_bit_angle(self):
+        if self.le_bit_angle.isModified():
+            s = str(self.le_bit_angle.text())
+            if self.units.valid_number(s):
+                self.new_config['bit_angle'] = s
+                self.update_state('bit_angle')
+            else:
+                msg = '"{}" is not a valid bit angle'.format(s)
+                QtGui.QMessageBox.warning(self, 'Error', msg)
+                self.le_bit_angle.setText(self.new_config['bit_angle'])
+
+    @QtCore.pyqtSlot()
     def _on_board_width(self):
         if self.le_board_width.isModified():
             s = str(self.le_board_width.text())
@@ -411,9 +486,9 @@ class Config_Window(QtGui.QDialog):
             self.update_state('wood_images')
 
     @QtCore.pyqtSlot()
-    def _on_label_fingers(self):
-        self.new_config['label_fingers'] = self.cb_label_fingers.isChecked()
-        self.update_state('label_fingers')
+    def _on_show_finger_widths(self):
+        self.new_config['show_finger_widths'] = self.cb_show_finger_widths.isChecked()
+        self.update_state('show_finger_widths')
 
     @QtCore.pyqtSlot()
     def _on_rpid(self):

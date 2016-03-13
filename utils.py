@@ -236,7 +236,7 @@ class Units(object):
         '''
         try:
             i = self.abstract_to_increments(a)
-            if i > 0:
+            if i >= 0:
                 return True
             else:
                 return False

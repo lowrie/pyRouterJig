@@ -340,11 +340,11 @@ class Driver(QtGui.QMainWindow):
         caul_action.triggered.connect(self._on_caul)
         view_menu.addAction(caul_action)
 
-        self.finger_size_action = QtGui.QAction('Finger Sizes', self, checkable=True)
+        self.finger_size_action = QtGui.QAction('Finger Widths', self, checkable=True)
         self.finger_size_action.setStatusTip('Toggle viewing finger sizes')
         self.finger_size_action.triggered.connect(self._on_finger_sizes)
         view_menu.addAction(self.finger_size_action)
-        self.finger_size_action.setChecked(self.config.label_fingers)
+        self.finger_size_action.setChecked(self.config.show_finger_widths)
 
         pass_menu = view_menu.addMenu('Router Passes')
         self.pass_id_action = QtGui.QAction('Identifiers', self, checkable=True)
@@ -1372,7 +1372,7 @@ class Driver(QtGui.QMainWindow):
             self.config_window = qt_config.Config_Window(self.config, self.units, self)
         self.config_window.initialize()
         self.config_window.exec_()
-        self.finger_size_action.setChecked(self.config.label_fingers)
+        self.finger_size_action.setChecked(self.config.show_finger_widths)
         self.pass_id_action.setChecked(self.config.show_router_pass_identifiers)
         self.pass_location_action.setChecked(self.config.show_router_pass_locations)
 
@@ -1672,13 +1672,13 @@ class Driver(QtGui.QMainWindow):
         '''Handles toggling showing finger sizes'''
         if self.config.debug:
             print('_on_finger_sizes')
-        self.config.label_fingers = self.finger_size_action.isChecked()
+        self.config.show_finger_widths = self.finger_size_action.isChecked()
         if self.config_window is not None:
-            self.config_window.update_state('label_fingers')
-        if self.config.label_fingers:
-            self.status_message('Turned on finger sizes.')
+            self.config_window.update_state('show_finger_widths')
+        if self.config.show_finger_widths:
+            self.status_message('Turned on finger widths.')
         else:
-            self.status_message('Turned off finger sizes.')
+            self.status_message('Turned off finger widths.')
         self.draw()
 
     @QtCore.pyqtSlot()

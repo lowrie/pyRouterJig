@@ -306,7 +306,7 @@ class Qt_Fig(QtGui.QWidget):
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
-        if self.config.label_fingers:
+        if self.config.show_finger_widths:
             self.draw_finger_sizes(painter)
 
         return (window_width, window_height)
