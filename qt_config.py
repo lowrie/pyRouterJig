@@ -51,7 +51,7 @@ class Config_Window(QtGui.QDialog):
         self.new_config = config.__dict__.copy()
         self.units = units
         self.line_edit_width = 80
-        title_label = QtGui.QLabel('<b>pyRouterJig Preferences</b>')
+        title_label = QtGui.QLabel('<font color=blue><b>pyRouterJig Preferences</b></font>')
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(title_label)
         
@@ -68,6 +68,12 @@ class Config_Window(QtGui.QDialog):
         self.setLayout(vbox)
         self.initialize()
         self.change_state = 0
+
+    def unit_string(self):
+        if self.new_config['metric']:
+            return 'mm'
+        else:
+            return 'in.'
 
     def create_units(self):
         '''Creates the layout for units preferences'''
@@ -86,8 +92,8 @@ class Config_Window(QtGui.QDialog):
         self.cb_units.addItem('English')
         self.cb_units.activated.connect(self._on_units)
         self.cb_units.setToolTip('The unit system.')
-        hbox.addWidget(self.cb_units)
         hbox.addStretch(1)
+        hbox.addWidget(self.cb_units)
         vbox.addLayout(hbox)
 
         if self.config.metric:
@@ -96,6 +102,7 @@ class Config_Window(QtGui.QDialog):
             self.cb_units.setCurrentIndex(1)
 
         self.le_num_incr_label = QtGui.QLabel(self.units_label(self.config.metric))
+        self.le_num_incr_label.setAlignment(QtCore.Qt.AlignRight)
         self.le_num_incr = QtGui.QLineEdit(w)
         self.le_num_incr.setFixedWidth(self.line_edit_width)
         self.le_num_incr.setText(str(self.config.num_increments))
@@ -129,7 +136,8 @@ class Config_Window(QtGui.QDialog):
         w =  QtGui.QWidget()
         vbox = QtGui.QVBoxLayout()
 
-        self.le_board_width_label = QtGui.QLabel('Initial Board Width:')
+        self.le_board_width_label = QtGui.QLabel('Initial Board Width ({}):'.format(self.unit_string()))
+        self.le_board_width_label.setAlignment(QtCore.Qt.AlignRight)
         self.le_board_width = QtGui.QLineEdit(w)
         self.le_board_width.setFixedWidth(self.line_edit_width)
         self.le_board_width.setText(str(self.config.board_width))
@@ -142,7 +150,8 @@ class Config_Window(QtGui.QDialog):
         hbox.addWidget(self.le_board_width)
         vbox.addLayout(hbox)
 
-        self.le_db_thick_label = QtGui.QLabel('Initial Double Board Thickness:')
+        self.le_db_thick_label = QtGui.QLabel('Initial Double Board Thickness ({}):'.format(self.unit_string()))
+        self.le_db_thick_label.setAlignment(QtCore.Qt.AlignRight)
         self.le_db_thick = QtGui.QLineEdit(w)
         self.le_db_thick.setFixedWidth(self.line_edit_width)
         self.le_db_thick.setText(str(self.config.double_board_thickness))
@@ -160,6 +169,7 @@ class Config_Window(QtGui.QDialog):
         woodnames = woods.keys()
         woodnames.extend(patterns.keys())
         self.cb_wood_label = QtGui.QLabel('Default Wood Fill:')
+        self.cb_wood_label.setAlignment(QtCore.Qt.AlignRight)
         self.cb_wood = QtGui.QComboBox(self)
         self.set_wood_combobox()
         self.cb_wood.activated.connect(self._on_wood)
@@ -171,6 +181,7 @@ class Config_Window(QtGui.QDialog):
         vbox.addLayout(hbox)
 
         self.le_wood_images_label = QtGui.QLabel('Wood Images Folder:')
+        self.le_wood_images_label.setAlignment(QtCore.Qt.AlignRight)
         self.le_wood_images = QtGui.QLineEdit(w)
         self.le_wood_images.setText(str(self.config.wood_images))
         self.le_wood_images.editingFinished.connect(self._on_wood_images)
@@ -189,7 +200,8 @@ class Config_Window(QtGui.QDialog):
         w =  QtGui.QWidget()
         vbox = QtGui.QVBoxLayout()
 
-        self.le_bit_width_label = QtGui.QLabel('Initial Bit Width:')
+        self.le_bit_width_label = QtGui.QLabel('Initial Bit Width ({}):'.format(self.unit_string()))
+        self.le_bit_width_label.setAlignment(QtCore.Qt.AlignRight)
         self.le_bit_width = QtGui.QLineEdit(w)
         self.le_bit_width.setFixedWidth(self.line_edit_width)
         self.le_bit_width.setText(str(self.config.bit_width))
@@ -202,7 +214,8 @@ class Config_Window(QtGui.QDialog):
         hbox.addWidget(self.le_bit_width)
         vbox.addLayout(hbox)
 
-        self.le_bit_depth_label = QtGui.QLabel('Initial Bit Depth:')
+        self.le_bit_depth_label = QtGui.QLabel('Initial Bit Depth ({}):'.format(self.unit_string()))
+        self.le_bit_depth_label.setAlignment(QtCore.Qt.AlignRight)
         self.le_bit_depth = QtGui.QLineEdit(w)
         self.le_bit_depth.setFixedWidth(self.line_edit_width)
         self.le_bit_depth.setText(str(self.config.bit_depth))
@@ -215,7 +228,8 @@ class Config_Window(QtGui.QDialog):
         hbox.addWidget(self.le_bit_depth)
         vbox.addLayout(hbox)
 
-        self.le_bit_angle_label = QtGui.QLabel('Initial Bit Angle:')
+        self.le_bit_angle_label = QtGui.QLabel('Initial Bit Angle (deg.):')
+        self.le_bit_angle_label.setAlignment(QtCore.Qt.AlignRight)
         self.le_bit_angle = QtGui.QLineEdit(w)
         self.le_bit_angle.setFixedWidth(self.line_edit_width)
         self.le_bit_angle.setText(str(self.config.bit_angle))
@@ -237,21 +251,25 @@ class Config_Window(QtGui.QDialog):
         vbox = QtGui.QVBoxLayout()
 
         self.cb_show_finger_widths = QtGui.QCheckBox('Show Finger Widths', w)
+        self.cb_show_finger_widths.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.cb_show_finger_widths.stateChanged.connect(self._on_show_finger_widths)
         self.cb_show_finger_widths.setToolTip('Display the width of each finger')
         vbox.addWidget(self.cb_show_finger_widths)
 
         self.cb_rpid = QtGui.QCheckBox('Show Router Pass Identifiers', w)
+        self.cb_rpid.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.cb_rpid.stateChanged.connect(self._on_rpid)
         self.cb_rpid.setToolTip('On each router pass, label its identifier')
         vbox.addWidget(self.cb_rpid)
 
         self.cb_rploc = QtGui.QCheckBox('Show Router Pass Locations', w)
+        self.cb_rploc.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.cb_rploc.stateChanged.connect(self._on_rploc)
         self.cb_rploc.setToolTip('On each router pass, label its distance from the right edge')
         vbox.addWidget(self.cb_rploc)
 
         self.le_printsf_label = QtGui.QLabel('Print Scale Factor:')
+        self.le_printsf_label.setAlignment(QtCore.Qt.AlignRight)
         self.le_printsf = QtGui.QLineEdit(w)
         self.le_printsf.setFixedWidth(self.line_edit_width)
         self.le_printsf.setText(str(self.config.print_scale_factor))
@@ -265,6 +283,7 @@ class Config_Window(QtGui.QDialog):
         vbox.addLayout(hbox)
 
         self.le_min_image_label = QtGui.QLabel('Min Image Width:')
+        self.le_min_image_label.setAlignment(QtCore.Qt.AlignRight)
         self.le_min_image = QtGui.QLineEdit(w)
         self.le_min_image.setFixedWidth(self.line_edit_width)
         self.le_min_image.setText(str(self.config.min_image_width))
@@ -278,6 +297,7 @@ class Config_Window(QtGui.QDialog):
         vbox.addLayout(hbox)
 
         self.le_max_image_label = QtGui.QLabel('Max Image Width:')
+        self.le_max_image_label.setAlignment(QtCore.Qt.AlignRight)
         self.le_max_image = QtGui.QLineEdit(w)
         self.le_max_image.setFixedWidth(self.line_edit_width)
         self.le_max_image.setText(str(self.config.max_image_width))
@@ -341,6 +361,7 @@ class Config_Window(QtGui.QDialog):
             label += 'mm'
         else:
             label += 'inch'
+        label +=':'
         return label
 
     @QtCore.pyqtSlot()
