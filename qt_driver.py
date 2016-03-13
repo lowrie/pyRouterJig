@@ -1679,6 +1679,8 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_finger_sizes')
         self.config.label_fingers = self.finger_size_action.isChecked()
+        if self.config_window is not None:
+            self.config_window.update_state('label_fingers')
         if self.config.label_fingers:
             self.status_message('Turned on finger sizes.')
         else:
@@ -1691,6 +1693,8 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_pass_id')
         self.config.show_router_pass_identifiers = self.pass_id_action.isChecked()
+        if self.config_window is not None:
+            self.config_window.update_state('show_router_pass_identifiers')
         if self.config.show_router_pass_identifiers:
             self.status_message('Turned on router pass identifiers.')
         else:
@@ -1703,6 +1707,8 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_pass_locations')
         self.config.show_router_pass_locations = self.pass_location_action.isChecked()
+        if self.config_window is not None:
+            self.config_window.update_state('show_router_pass_locations')
         if self.config.show_router_pass_locations:
             self.status_message('Turned on router pass locations.')
         else:

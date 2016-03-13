@@ -77,6 +77,7 @@ class Config_Window(QtGui.QDialog):
         vbox.addLayout(self.create_buttons())
         self.setLayout(vbox)
         self.initialize()
+        self.change_state = 0
 
     def create_units(self):
         '''Creates the layout for units preferences'''
@@ -197,10 +198,11 @@ class Config_Window(QtGui.QDialog):
         btn_cancel.setAutoDefault(False)
         hbox_btns.addWidget(btn_cancel)
         
-        btn_save = QtGui.QPushButton('Save', self)
-        btn_save.clicked.connect(self._on_save)
-        btn_save.setAutoDefault(False)
-        hbox_btns.addWidget(btn_save)
+        self.btn_save = QtGui.QPushButton('Save', self)
+        self.btn_save.clicked.connect(self._on_save)
+        self.btn_save.setAutoDefault(False)
+        self.btn_save.setEnabled(False)
+        hbox_btns.addWidget(self.btn_save)
         return hbox_btns
 
     def initialize(self):
@@ -212,7 +214,6 @@ class Config_Window(QtGui.QDialog):
         self.cb_label_fingers.setChecked(self.config.label_fingers)
         self.cb_rpid.setChecked(self.config.show_router_pass_identifiers)
         self.cb_rploc.setChecked(self.config.show_router_pass_locations)
-        self.change_state = 0
 
     def update_state(self, key, state=1):
         '''
@@ -220,6 +221,7 @@ class Config_Window(QtGui.QDialog):
         '''
         if self.config.__dict__[key] != self.new_config[key]:
             self.change_state = max(state, self.change_state)
+            self.btn_save.setEnabled(True)
 
     @QtCore.pyqtSlot()
     def _on_cancel(self):
