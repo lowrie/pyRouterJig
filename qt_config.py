@@ -21,6 +21,7 @@
 '''
 This module contains the Qt interface to setting config file parameters.
 '''
+from __future__ import print_function
 
 import os, sys
 from PyQt4 import QtCore, QtGui
@@ -128,18 +129,18 @@ class Config_Window(QtGui.QDialog):
         return w
 
     def set_wood_combobox(self):
+        '''
+        Sets the entries for the wood combox box, and resets the default wood.
+        '''
         (woods, patterns) = qt_utils.create_wood_dict(self.new_config['wood_images'])
         woodnames = woods.keys()
         woodnames.extend(patterns.keys())
         self.cb_wood.clear()
         self.cb_wood.addItems(woodnames)
-        self.set_default_wood()
-
-    def set_default_wood(self):
         i = self.cb_wood.findText(self.new_config['default_wood'])
         if i < 0:
             self.cb_wood.setCurrentIndex(0)
-            self.new_config['default_wood'] = self.cb_wood.currentText()
+            self.new_config['default_wood'] = str(self.cb_wood.currentText())
         else:
             self.cb_wood.setCurrentIndex(i)
 
@@ -305,12 +306,14 @@ class Config_Window(QtGui.QDialog):
         btn_cancel = QtGui.QPushButton('Cancel', self)
         btn_cancel.clicked.connect(self._on_cancel)
         btn_cancel.setAutoDefault(False)
+        btn_cancel.setFocusPolicy(QtCore.Qt.ClickFocus)
         btn_cancel.setToolTip('Discard any preference changes and continue.')
         hbox_btns.addWidget(btn_cancel)
         
         self.btn_save = QtGui.QPushButton('Save', self)
         self.btn_save.clicked.connect(self._on_save)
         self.btn_save.setAutoDefault(False)
+        self.btn_save.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.btn_save.setEnabled(False)
         self.btn_save.setToolTip('Save preference changes permanently to your configuration file.')
         hbox_btns.addWidget(self.btn_save)
@@ -335,7 +338,7 @@ class Config_Window(QtGui.QDialog):
         self.le_max_image.setText(str(self.config.max_image_width))
         self.le_min_finger_width.setText(str(self.config.min_finger_width))
         self.le_caul_trim.setText(str(self.config.caul_trim))
-        self.set_default_wood()
+        self.set_wood_combobox()
 
     def update_state(self, key, state=1):
         '''
@@ -359,10 +362,8 @@ class Config_Window(QtGui.QDialog):
         '''
         Handles Cancel button events.
         '''
-        # Set state to the current configuration
-        self.new_config = self.config.__dict__.copy()
-        self.change_state = 0
-        self.btn_save.setEnabled(False)
+        if self.config.debug:
+            print('_on_cancel')
         self.close()
 
     @QtCore.pyqtSlot()
@@ -370,6 +371,8 @@ class Config_Window(QtGui.QDialog):
         '''
         Handles Save button events.
         '''
+        if self.config.debug:
+            print('_on_save')
         do_save_config = False
         do_restart = False
         if self.change_state == 2:
@@ -403,14 +406,14 @@ class Config_Window(QtGui.QDialog):
             self.config.__dict__.update(self.new_config)
             c = config_file.Configuration()
             c.write_config(self.new_config)
-            self.change_state = 0
-            self.btn_save.setEnabled(False)
         if do_restart:
             os.execv(sys.argv[0], sys.argv)
         self.close()
 
     @QtCore.pyqtSlot(int)
     def _on_units(self, index):
+        if self.config.debug:
+            print('_on_units', index)
         s = str(self.cb_units.itemText(index))
         metric = (s == 'Metric')
         if metric != self.config.metric:
@@ -424,6 +427,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_num_incr(self):
+        if self.config.debug:
+            print('_on_num_incr')
         if self.le_num_incr.isModified():
             text = str(self.le_num_incr.text())
             self.new_config['num_increments'] = int(text)
@@ -431,6 +436,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_bit_width(self):
+        if self.config.debug:
+            print('_on_bit_width')
         if self.le_bit_width.isModified():
             s = str(self.le_bit_width.text())
             if self.units.valid_number(s):
@@ -443,6 +450,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_bit_depth(self):
+        if self.config.debug:
+            print('_on_bit_depth')
         if self.le_bit_depth.isModified():
             s = str(self.le_bit_depth.text())
             if self.units.valid_number(s):
@@ -455,6 +464,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_bit_angle(self):
+        if self.config.debug:
+            print('_on_bit_angle')
         if self.le_bit_angle.isModified():
             s = str(self.le_bit_angle.text())
             if self.units.valid_number(s):
@@ -467,6 +478,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_board_width(self):
+        if self.config.debug:
+            print('_on_board_width')
         if self.le_board_width.isModified():
             s = str(self.le_board_width.text())
             if self.units.valid_number(s):
@@ -479,6 +492,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_db_thick(self):
+        if self.config.debug:
+            print('_on_db_thick')
         if self.le_db_thick.isModified():
             s = str(self.le_db_thick.text())
             if self.units.valid_number(s):
@@ -491,6 +506,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot(int)
     def _on_wood(self, index):
+        if self.config.debug:
+            print('_on_wood', index)
         s = str(self.cb_wood.itemText(index))
         if s != self.config.default_wood:
             self.new_config['default_wood'] = s
@@ -498,6 +515,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_wood_images(self):
+        if self.config.debug:
+            print('_on_wood_images')
         if self.le_wood_images.isModified():
             text = str(self.le_wood_images.text())
             self.new_config['wood_images'] = text
@@ -506,21 +525,29 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_show_finger_widths(self):
+        if self.config.debug:
+            print('_on_show_finger_widths')
         self.new_config['show_finger_widths'] = self.cb_show_finger_widths.isChecked()
         self.update_state('show_finger_widths')
 
     @QtCore.pyqtSlot()
     def _on_rpid(self):
+        if self.config.debug:
+            print('_on_rpid')
         self.new_config['show_router_pass_identifiers'] = self.cb_rpid.isChecked()
         self.update_state('show_router_pass_identifiers')
 
     @QtCore.pyqtSlot()
     def _on_rploc(self):
+        if self.config.debug:
+            print('_on_rploc')
         self.new_config['show_router_pass_locations'] = self.cb_rploc.isChecked()
         self.update_state('show_router_pass_locations')
 
     @QtCore.pyqtSlot()
     def _on_printsf(self):
+        if self.config.debug:
+            print('_on_printsf')
         if self.le_printsf.isModified():
             text = str(self.le_printsf.text())
             self.new_config['print_scale_factor'] = float(text)
@@ -528,6 +555,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_min_image(self):
+        if self.config.debug:
+            print('_on_min_image')
         if self.le_min_image.isModified():
             text = str(self.le_min_image.text())
             self.new_config['min_image_width'] = int(text)
@@ -536,6 +565,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_max_image(self):
+        if self.config.debug:
+            print('_on_max_image')
         if self.le_max_image.isModified():
             text = str(self.le_max_image.text())
             self.new_config['max_image_width'] = int(text)
@@ -543,6 +574,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_min_finger_width(self):
+        if self.config.debug:
+            print('_on_min_finger_width')
         if self.le_min_finger_width.isModified():
             s = str(self.le_min_finger_width.text())
             if self.units.valid_number(s):
@@ -555,6 +588,8 @@ class Config_Window(QtGui.QDialog):
 
     @QtCore.pyqtSlot()
     def _on_caul_trim(self):
+        if self.config.debug:
+            print('_on_caul_trim')
         if self.le_caul_trim.isModified():
             s = str(self.le_caul_trim.text())
             if self.units.valid_number(s):
@@ -564,3 +599,15 @@ class Config_Window(QtGui.QDialog):
                 msg = '"{}" is not a valid caul trim amount'.format(s)
                 QtGui.QMessageBox.warning(self, 'Error', msg)
                 self.le_caul_trim.setText(self.new_config['caul_trim'])
+
+    def closeEvent(self, event):
+        '''
+        For closeEvents (user closes window), ignore and call
+        _on_cancel()
+        '''
+        if self.config.debug:
+            print('closeEvent')
+        # Set state to the current configuration
+        self.new_config = self.config.__dict__.copy()
+        self.change_state = 0
+        self.btn_save.setEnabled(False)
