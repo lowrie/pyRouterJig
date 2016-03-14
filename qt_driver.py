@@ -40,44 +40,6 @@ import threeDS
 
 from PyQt4 import QtCore, QtGui
 
-class MyComboBox(QtGui.QComboBox):
-    '''
-    This comboxbox emits "activated" when hidePopup is called.  This allows
-    for a combobox with a preview mode, so that as each selection is
-    highlighted with the popup open, the figure can be updated.  Once the
-    popup is closed, this hidePopup ensures that the figure is redrawn with
-    the current actual selection.
-
-    '''
-    def __init__(self, parent):
-        QtGui.QComboBox.__init__(self, parent)
-
-    def hidePopup(self):
-        QtGui.QComboBox.hidePopup(self)
-        #print('hidePopup')
-        self.activated.emit(self.currentIndex())
-
-def set_line_style(line):
-    '''Sets the style for create_vline() and create_hline()'''
-    line.setFrameShadow(QtGui.QFrame.Raised)
-    line.setLineWidth(1)
-    line.setMidLineWidth(1)
-    line.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
-
-def create_vline():
-    '''Creates a vertical line'''
-    vline = QtGui.QFrame()
-    vline.setFrameStyle(QtGui.QFrame.VLine)
-    set_line_style(vline)
-    return vline
-
-def create_hline():
-    '''Creates a horizontal line'''
-    hline = QtGui.QFrame()
-    hline.setFrameStyle(QtGui.QFrame.HLine)
-    set_line_style(hline)
-    return hline
-
 class Driver(QtGui.QMainWindow):
     '''
     Qt driver for pyRouterJig
@@ -373,7 +335,7 @@ class Driver(QtGui.QMainWindow):
         Creates a wood selection combox box
         '''
 #        cb = QtGui.QComboBox(self)
-        cb = MyComboBox(self)
+        cb = qt_utils.PreviewComboBox(self)
         # Set the default wood.
         if has_none:
             # If adding NONE, make that the default
@@ -527,7 +489,7 @@ class Driver(QtGui.QMainWindow):
         # ...combox box for fingers
         p = params['Fingers']
         self.cb_vsfingers_label = QtGui.QLabel(labels[0])
-        self.cb_vsfingers = MyComboBox(self.main_frame)
+        self.cb_vsfingers = qt_utils.PreviewComboBox(self.main_frame)
         self.cb_vsfingers.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.update_cb_vsfingers(p.vMin, p.vMax, p.v)
 
@@ -612,31 +574,31 @@ class Driver(QtGui.QMainWindow):
         # this grid contains all the lower-left input stuff
         grid = QtGui.QGridLayout()
 
-        grid.addWidget(create_hline(), 0, 0, 2, 9, QtCore.Qt.AlignTop)
-        grid.addWidget(create_vline(), 0, 0, 9, 1)
+        grid.addWidget(qt_utils.create_hline(), 0, 0, 2, 9, QtCore.Qt.AlignTop)
+        grid.addWidget(qt_utils.create_vline(), 0, 0, 9, 1)
 
         # Add the board width label, board width input line edit,
         # all stacked vertically on the left side.
         grid.addWidget(self.le_board_width_label, 1, 1)
         grid.addWidget(self.le_board_width, 2, 1)
-        grid.addWidget(create_vline(), 0, 2, 9, 1)
+        grid.addWidget(qt_utils.create_vline(), 0, 2, 9, 1)
 
         # Add the bit width label and its line edit
         grid.addWidget(self.le_bit_width_label, 1, 3)
         grid.addWidget(self.le_bit_width, 2, 3)
-        grid.addWidget(create_vline(), 0, 4, 9, 1)
+        grid.addWidget(qt_utils.create_vline(), 0, 4, 9, 1)
 
         # Add the bit depth label and its line edit
         grid.addWidget(self.le_bit_depth_label, 1, 5)
         grid.addWidget(self.le_bit_depth, 2, 5)
-        grid.addWidget(create_vline(), 0, 6, 9, 1)
+        grid.addWidget(qt_utils.create_vline(), 0, 6, 9, 1)
 
         # Add the bit angle label and its line edit
         grid.addWidget(self.le_bit_angle_label, 1, 7)
         grid.addWidget(self.le_bit_angle, 2, 7)
-        grid.addWidget(create_vline(), 0, 8, 9, 1)
+        grid.addWidget(qt_utils.create_vline(), 0, 8, 9, 1)
 
-        grid.addWidget(create_hline(), 3, 0, 2, 9, QtCore.Qt.AlignTop)
+        grid.addWidget(qt_utils.create_hline(), 3, 0, 2, 9, QtCore.Qt.AlignTop)
 
         grid.setRowStretch(2, 10)
 
@@ -656,7 +618,7 @@ class Driver(QtGui.QMainWindow):
         grid.addWidget(self.le_boardm[0], 7, 5)
         grid.addWidget(self.le_boardm[1], 7, 7)
 
-        grid.addWidget(create_hline(), 8, 0, 2, 9, QtCore.Qt.AlignTop)
+        grid.addWidget(qt_utils.create_hline(), 8, 0, 2, 9, QtCore.Qt.AlignTop)
 
         hbox.addLayout(grid)
 
@@ -686,9 +648,9 @@ class Driver(QtGui.QMainWindow):
         # Create the layout of the edit spacing controls
         hbox_edit = QtGui.QHBoxLayout()
         grid_edit = QtGui.QGridLayout()
-        grid_edit.addWidget(create_hline(), 0, 0, 2, 16, QtCore.Qt.AlignTop)
-        grid_edit.addWidget(create_hline(), 2, 0, 2, 16, QtCore.Qt.AlignTop)
-        grid_edit.addWidget(create_vline(), 0, 0, 6, 1)
+        grid_edit.addWidget(qt_utils.create_hline(), 0, 0, 2, 16, QtCore.Qt.AlignTop)
+        grid_edit.addWidget(qt_utils.create_hline(), 2, 0, 2, 16, QtCore.Qt.AlignTop)
+        grid_edit.addWidget(qt_utils.create_vline(), 0, 0, 6, 1)
         label_active_cut_select = QtGui.QLabel('Active Cut Select')
         label_active_cut_select.setToolTip('Tools that select the active cuts')
         grid_edit.addWidget(label_active_cut_select, 1, 1, 1, 3, QtCore.Qt.AlignHCenter)
@@ -697,26 +659,26 @@ class Driver(QtGui.QMainWindow):
         grid_edit.addWidget(edit_btn_cursorR, 4, 2, QtCore.Qt.AlignLeft)
         grid_edit.addWidget(edit_btn_activate_all, 3, 3)
         grid_edit.addWidget(edit_btn_deactivate_all, 4, 3)
-        grid_edit.addWidget(create_vline(), 0, 4, 6, 1)
+        grid_edit.addWidget(qt_utils.create_vline(), 0, 4, 6, 1)
         label_active_cut_ops = QtGui.QLabel('Active Cut Operators')
         label_active_cut_ops.setToolTip('Edit operations applied to active cuts')
         grid_edit.addWidget(label_active_cut_ops, 1, 5, 1, 10, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_move_label, 3, 5, 1, 2, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_moveL, 4, 5, QtCore.Qt.AlignRight)
         grid_edit.addWidget(edit_btn_moveR, 4, 6, QtCore.Qt.AlignLeft)
-        grid_edit.addWidget(create_vline(), 2, 7, 4, 1)
+        grid_edit.addWidget(qt_utils.create_vline(), 2, 7, 4, 1)
         grid_edit.addWidget(edit_widen_label, 3, 8, 1, 2, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_widenL, 4, 8, QtCore.Qt.AlignRight)
         grid_edit.addWidget(edit_btn_widenR, 4, 9, QtCore.Qt.AlignLeft)
-        grid_edit.addWidget(create_vline(), 2, 10, 4, 1)
+        grid_edit.addWidget(qt_utils.create_vline(), 2, 10, 4, 1)
         grid_edit.addWidget(edit_trim_label, 3, 11, 1, 2, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_trimL, 4, 11, QtCore.Qt.AlignRight)
         grid_edit.addWidget(edit_btn_trimR, 4, 12, QtCore.Qt.AlignLeft)
-        grid_edit.addWidget(create_vline(), 2, 13, 4, 1)
+        grid_edit.addWidget(qt_utils.create_vline(), 2, 13, 4, 1)
         grid_edit.addWidget(edit_btn_add, 3, 14)
         grid_edit.addWidget(edit_btn_del, 4, 14)
-        grid_edit.addWidget(create_vline(), 0, 15, 6, 1)
-        grid_edit.addWidget(create_hline(), 5, 0, 2, 16, QtCore.Qt.AlignTop)
+        grid_edit.addWidget(qt_utils.create_vline(), 0, 15, 6, 1)
+        grid_edit.addWidget(qt_utils.create_hline(), 5, 0, 2, 16, QtCore.Qt.AlignTop)
         grid_edit.setSpacing(5)
 
         hbox_edit.addLayout(grid_edit)

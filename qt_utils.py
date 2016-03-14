@@ -30,6 +30,44 @@ import utils
 
 from PyQt4 import QtCore, QtGui
 
+class PreviewComboBox(QtGui.QComboBox):
+    '''
+    This comboxbox emits "activated" when hidePopup is called.  This allows
+    for a combobox with a preview mode, so that as each selection is
+    highlighted with the popup open, the figure can be updated.  Once the
+    popup is closed, this hidePopup ensures that the figure is redrawn with
+    the current actual selection.
+
+    '''
+    def __init__(self, parent):
+        QtGui.QComboBox.__init__(self, parent)
+
+    def hidePopup(self):
+        QtGui.QComboBox.hidePopup(self)
+        #print('hidePopup')
+        self.activated.emit(self.currentIndex())
+
+def set_line_style(line):
+    '''Sets the style for create_vline() and create_hline()'''
+    line.setFrameShadow(QtGui.QFrame.Raised)
+    line.setLineWidth(1)
+    line.setMidLineWidth(1)
+    line.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+
+def create_vline():
+    '''Creates a vertical line'''
+    vline = QtGui.QFrame()
+    vline.setFrameStyle(QtGui.QFrame.VLine)
+    set_line_style(vline)
+    return vline
+
+def create_hline():
+    '''Creates a horizontal line'''
+    hline = QtGui.QFrame()
+    hline.setFrameStyle(QtGui.QFrame.HLine)
+    set_line_style(hline)
+    return hline
+
 def create_wood_dict(wood_images):
     '''
     Creates a dictionary {wood_name : wood_image_filename} by parsing the
