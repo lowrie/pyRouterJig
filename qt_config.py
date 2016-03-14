@@ -133,6 +133,9 @@ class Config_Window(QtGui.QDialog):
         woodnames.extend(patterns.keys())
         self.cb_wood.clear()
         self.cb_wood.addItems(woodnames)
+        self.set_default_wood()
+
+    def set_default_wood(self):
         i = self.cb_wood.findText(self.new_config['default_wood'])
         if i < 0:
             self.cb_wood.setCurrentIndex(0)
@@ -332,6 +335,7 @@ class Config_Window(QtGui.QDialog):
         self.le_max_image.setText(str(self.config.max_image_width))
         self.le_min_finger_width.setText(str(self.config.min_finger_width))
         self.le_caul_trim.setText(str(self.config.caul_trim))
+        self.set_default_wood()
 
     def update_state(self, key, state=1):
         '''
