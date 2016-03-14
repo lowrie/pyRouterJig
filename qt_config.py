@@ -152,7 +152,6 @@ class Config_Window(QtGui.QDialog):
         self.le_board_width_label = QtGui.QLabel('Initial Board Width ({}):'.format(self.unit_string()))
         self.le_board_width = QtGui.QLineEdit(w)
         self.le_board_width.setFixedWidth(self.line_edit_width)
-        self.le_board_width.setText(str(self.config.board_width))
         self.le_board_width.editingFinished.connect(self._on_board_width)
         tt = 'The initial board width when pyRouterJig starts.'
         grid = form_line(self.le_board_width_label, self.le_board_width, tt)
@@ -161,7 +160,6 @@ class Config_Window(QtGui.QDialog):
         self.le_db_thick_label = QtGui.QLabel('Initial Double Board Thickness ({}):'.format(self.unit_string()))
         self.le_db_thick = QtGui.QLineEdit(w)
         self.le_db_thick.setFixedWidth(self.line_edit_width)
-        self.le_db_thick.setText(str(self.config.double_board_thickness))
         self.le_db_thick.editingFinished.connect(self._on_db_thick)
         tt = 'The initial double-board thickness when pyRouterJig starts.'
         grid = form_line(self.le_db_thick_label, self.le_db_thick, tt)
@@ -199,7 +197,6 @@ class Config_Window(QtGui.QDialog):
         self.le_bit_width_label = QtGui.QLabel('Initial Bit Width ({}):'.format(self.unit_string()))
         self.le_bit_width = QtGui.QLineEdit(w)
         self.le_bit_width.setFixedWidth(self.line_edit_width)
-        self.le_bit_width.setText(str(self.config.bit_width))
         self.le_bit_width.editingFinished.connect(self._on_bit_width)
         tt = 'The initial bit width when pyRouterJig starts.'
         grid = form_line(self.le_bit_width_label, self.le_bit_width, tt)
@@ -208,7 +205,6 @@ class Config_Window(QtGui.QDialog):
         self.le_bit_depth_label = QtGui.QLabel('Initial Bit Depth ({}):'.format(self.unit_string()))
         self.le_bit_depth = QtGui.QLineEdit(w)
         self.le_bit_depth.setFixedWidth(self.line_edit_width)
-        self.le_bit_depth.setText(str(self.config.bit_depth))
         self.le_bit_depth.editingFinished.connect(self._on_bit_depth)
         tt = 'The initial bit depth when pyRouterJig starts.'
         grid = form_line(self.le_bit_depth_label, self.le_bit_depth, tt)
@@ -217,7 +213,6 @@ class Config_Window(QtGui.QDialog):
         self.le_bit_angle_label = QtGui.QLabel('Initial Bit Angle (deg.):')
         self.le_bit_angle = QtGui.QLineEdit(w)
         self.le_bit_angle.setFixedWidth(self.line_edit_width)
-        self.le_bit_angle.setText(str(self.config.bit_angle))
         self.le_bit_angle.editingFinished.connect(self._on_bit_angle)
         tt = 'The initial bit angle when pyRouterJig starts.'
         grid = form_line(self.le_bit_angle_label, self.le_bit_angle, tt)
@@ -336,6 +331,11 @@ class Config_Window(QtGui.QDialog):
         self.le_printsf.setText(str(self.config.print_scale_factor))
         self.le_min_image.setText(str(self.config.min_image_width))
         self.le_max_image.setText(str(self.config.max_image_width))
+        self.le_board_width.setText(str(self.config.board_width))
+        self.le_db_thick.setText(str(self.config.double_board_thickness))
+        self.le_bit_width.setText(str(self.config.bit_width))
+        self.le_bit_depth.setText(str(self.config.bit_depth))
+        self.le_bit_angle.setText(str(self.config.bit_angle))
         self.le_min_finger_width.setText(str(self.config.min_finger_width))
         self.le_caul_trim.setText(str(self.config.caul_trim))
         self.set_wood_combobox()
@@ -363,7 +363,7 @@ class Config_Window(QtGui.QDialog):
         Handles Cancel button events.
         '''
         if self.config.debug:
-            print('_on_cancel')
+            print('qt_config:_on_cancel')
         self.close()
 
     @QtCore.pyqtSlot()
@@ -372,7 +372,7 @@ class Config_Window(QtGui.QDialog):
         Handles Save button events.
         '''
         if self.config.debug:
-            print('_on_save')
+            print('qt_config:_on_save')
         do_save_config = False
         do_restart = False
         if self.change_state == 2:
@@ -413,7 +413,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot(int)
     def _on_units(self, index):
         if self.config.debug:
-            print('_on_units', index)
+            print('qt_config:_on_units', index)
         s = str(self.cb_units.itemText(index))
         metric = (s == 'Metric')
         if metric != self.config.metric:
@@ -428,7 +428,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_num_incr(self):
         if self.config.debug:
-            print('_on_num_incr')
+            print('qt_config:_on_num_incr')
         if self.le_num_incr.isModified():
             text = str(self.le_num_incr.text())
             self.new_config['num_increments'] = int(text)
@@ -437,7 +437,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_bit_width(self):
         if self.config.debug:
-            print('_on_bit_width')
+            print('qt_config:_on_bit_width')
         if self.le_bit_width.isModified():
             s = str(self.le_bit_width.text())
             if self.units.valid_number(s):
@@ -451,7 +451,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_bit_depth(self):
         if self.config.debug:
-            print('_on_bit_depth')
+            print('qt_config:_on_bit_depth')
         if self.le_bit_depth.isModified():
             s = str(self.le_bit_depth.text())
             if self.units.valid_number(s):
@@ -465,7 +465,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_bit_angle(self):
         if self.config.debug:
-            print('_on_bit_angle')
+            print('qt_config:_on_bit_angle')
         if self.le_bit_angle.isModified():
             s = str(self.le_bit_angle.text())
             if self.units.valid_number(s):
@@ -479,7 +479,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_board_width(self):
         if self.config.debug:
-            print('_on_board_width')
+            print('qt_config:_on_board_width')
         if self.le_board_width.isModified():
             s = str(self.le_board_width.text())
             if self.units.valid_number(s):
@@ -493,7 +493,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_db_thick(self):
         if self.config.debug:
-            print('_on_db_thick')
+            print('qt_config:_on_db_thick')
         if self.le_db_thick.isModified():
             s = str(self.le_db_thick.text())
             if self.units.valid_number(s):
@@ -507,7 +507,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot(int)
     def _on_wood(self, index):
         if self.config.debug:
-            print('_on_wood', index)
+            print('qt_config:_on_wood', index)
         s = str(self.cb_wood.itemText(index))
         if s != self.config.default_wood:
             self.new_config['default_wood'] = s
@@ -516,7 +516,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_wood_images(self):
         if self.config.debug:
-            print('_on_wood_images')
+            print('qt_config:_on_wood_images')
         if self.le_wood_images.isModified():
             text = str(self.le_wood_images.text())
             self.new_config['wood_images'] = text
@@ -526,28 +526,28 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_show_finger_widths(self):
         if self.config.debug:
-            print('_on_show_finger_widths')
+            print('qt_config:_on_show_finger_widths')
         self.new_config['show_finger_widths'] = self.cb_show_finger_widths.isChecked()
         self.update_state('show_finger_widths')
 
     @QtCore.pyqtSlot()
     def _on_rpid(self):
         if self.config.debug:
-            print('_on_rpid')
+            print('qt_config:_on_rpid')
         self.new_config['show_router_pass_identifiers'] = self.cb_rpid.isChecked()
         self.update_state('show_router_pass_identifiers')
 
     @QtCore.pyqtSlot()
     def _on_rploc(self):
         if self.config.debug:
-            print('_on_rploc')
+            print('qt_config:_on_rploc')
         self.new_config['show_router_pass_locations'] = self.cb_rploc.isChecked()
         self.update_state('show_router_pass_locations')
 
     @QtCore.pyqtSlot()
     def _on_printsf(self):
         if self.config.debug:
-            print('_on_printsf')
+            print('qt_config:_on_printsf')
         if self.le_printsf.isModified():
             text = str(self.le_printsf.text())
             self.new_config['print_scale_factor'] = float(text)
@@ -556,7 +556,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_min_image(self):
         if self.config.debug:
-            print('_on_min_image')
+            print('qt_config:_on_min_image')
         if self.le_min_image.isModified():
             text = str(self.le_min_image.text())
             self.new_config['min_image_width'] = int(text)
@@ -566,7 +566,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_max_image(self):
         if self.config.debug:
-            print('_on_max_image')
+            print('qt_config:_on_max_image')
         if self.le_max_image.isModified():
             text = str(self.le_max_image.text())
             self.new_config['max_image_width'] = int(text)
@@ -575,7 +575,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_min_finger_width(self):
         if self.config.debug:
-            print('_on_min_finger_width')
+            print('qt_config:_on_min_finger_width')
         if self.le_min_finger_width.isModified():
             s = str(self.le_min_finger_width.text())
             if self.units.valid_number(s):
@@ -589,7 +589,7 @@ class Config_Window(QtGui.QDialog):
     @QtCore.pyqtSlot()
     def _on_caul_trim(self):
         if self.config.debug:
-            print('_on_caul_trim')
+            print('qt_config:_on_caul_trim')
         if self.le_caul_trim.isModified():
             s = str(self.le_caul_trim.text())
             if self.units.valid_number(s):
@@ -606,7 +606,7 @@ class Config_Window(QtGui.QDialog):
         _on_cancel()
         '''
         if self.config.debug:
-            print('closeEvent')
+            print('qt_config:closeEvent')
         # Set state to the current configuration
         self.new_config = self.config.__dict__.copy()
         self.change_state = 0
