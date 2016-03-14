@@ -178,9 +178,6 @@ common_vals = {'version':'NONE',
                'wood_images':'NONE',
                'default_wood':'DiagCrossPattern',
                'debug':False,
-               'left_margin':'top_margin',
-               'right_margin':'top_margin',
-               'separation':'top_margin',
                'background_color':(240, 231, 201)}
 
 # default values for english units
@@ -193,7 +190,10 @@ english_vals = {'metric':False,
                 'min_finger_width':'1/16',
                 'caul_trim':'1/32',
                 'top_margin':'1/4',
-                'bottom_margin':'1/2'}
+                'bottom_margin':'1/2',
+                'left_margin':'1/4',
+                'right_margin':'1/4',
+                'separation':'1/4'}
 
 # default values for metric units
 metric_vals = {'metric':True,
@@ -205,7 +205,11 @@ metric_vals = {'metric':True,
                'min_finger_width':2,
                'caul_trim':1,
                'top_margin':6,
-               'bottom_margin':12}
+               'bottom_margin':12,
+               'left_margin':6,
+               'right_margin':6,
+               'separation':6}
+
 
 # values that are migrated to new versions of the config file.  Don't include metric, because it's
 # always migrated.

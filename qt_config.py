@@ -115,15 +115,9 @@ class Config_Window(QtGui.QDialog):
         grid = form_line(self.cb_units_label, self.cb_units)
         vbox.addLayout(grid)
 
-        if self.config.metric:
-            self.cb_units.setCurrentIndex(0)
-        else:
-            self.cb_units.setCurrentIndex(1)
-
         self.le_num_incr_label = QtGui.QLabel(self.units_label(self.config.metric))
         self.le_num_incr = QtGui.QLineEdit(w)
         self.le_num_incr.setFixedWidth(self.line_edit_width)
-        self.le_num_incr.setText(str(self.config.num_increments))
         self.le_num_incr.editingFinished.connect(self._on_num_incr)
         tt = 'The number of increments per unit length.'
         grid = form_line(self.le_num_incr_label, self.le_num_incr, tt)
@@ -182,7 +176,6 @@ class Config_Window(QtGui.QDialog):
 
         self.le_wood_images_label = QtGui.QLabel('Wood Images Folder:')
         self.le_wood_images = QtGui.QLineEdit(w)
-        self.le_wood_images.setText(str(self.config.wood_images))
         self.le_wood_images.editingFinished.connect(self._on_wood_images)
         tt = 'Location of wood images.'
         self.le_wood_images.setToolTip(tt)
@@ -253,7 +246,6 @@ class Config_Window(QtGui.QDialog):
         self.le_printsf_label = QtGui.QLabel('Print Scale Factor:')
         self.le_printsf = QtGui.QLineEdit(w)
         self.le_printsf.setFixedWidth(self.line_edit_width)
-        self.le_printsf.setText(str(self.config.print_scale_factor))
         self.le_printsf.editingFinished.connect(self._on_printsf)
         tt = 'Scale output by this factor when printing.'
         grid = form_line(self.le_printsf_label, self.le_printsf, tt)
@@ -262,7 +254,6 @@ class Config_Window(QtGui.QDialog):
         self.le_min_image_label = QtGui.QLabel('Min Image Width:')
         self.le_min_image = QtGui.QLineEdit(w)
         self.le_min_image.setFixedWidth(self.line_edit_width)
-        self.le_min_image.setText(str(self.config.min_image_width))
         self.le_min_image.editingFinished.connect(self._on_min_image)
         tt = 'On save image, minimum width of image in pixels.'
         grid = form_line(self.le_min_image_label, self.le_min_image, tt)
@@ -271,7 +262,6 @@ class Config_Window(QtGui.QDialog):
         self.le_max_image_label = QtGui.QLabel('Max Image Width:')
         self.le_max_image = QtGui.QLineEdit(w)
         self.le_max_image.setFixedWidth(self.line_edit_width)
-        self.le_max_image.setText(str(self.config.max_image_width))
         self.le_max_image.editingFinished.connect(self._on_max_image)
         tt = 'On save image, maximum width of image in pixels.'
         grid = form_line(self.le_max_image_label, self.le_max_image, tt)
@@ -288,7 +278,6 @@ class Config_Window(QtGui.QDialog):
         self.le_min_finger_width_label = QtGui.QLabel('Min Finger Width ({}):'.format(self.unit_string()))
         self.le_min_finger_width = QtGui.QLineEdit(w)
         self.le_min_finger_width.setFixedWidth(self.line_edit_width)
-        self.le_min_finger_width.setText(str(self.config.min_finger_width))
         self.le_min_finger_width.editingFinished.connect(self._on_min_finger_width)
         tt = 'The minimum allowable finger width.  Currently, only enforced for Equal Spacing.'
         grid = form_line(self.le_min_finger_width_label, self.le_min_finger_width, tt)
@@ -297,7 +286,6 @@ class Config_Window(QtGui.QDialog):
         self.le_caul_trim_label = QtGui.QLabel('Caul Trim ({}):'.format(self.unit_string()))
         self.le_caul_trim = QtGui.QLineEdit(w)
         self.le_caul_trim.setFixedWidth(self.line_edit_width)
-        self.le_caul_trim.setText(str(self.config.caul_trim))
         self.le_caul_trim.editingFinished.connect(self._on_caul_trim)
         tt = 'The distance from the edge of each finger to the edge of the corresponding caul finger.'
         grid = form_line(self.le_caul_trim_label, self.le_caul_trim, tt)
@@ -328,12 +316,22 @@ class Config_Window(QtGui.QDialog):
     def initialize(self):
         '''
         Initializes certain widgets to their current values in the config object.
-        We need this because these values may have changed in the config since
-        the preferences window was created.
         '''
+        if self.config.metric:
+            self.cb_units.setCurrentIndex(0)
+        else:
+            self.cb_units.setCurrentIndex(1)
+
+        self.le_num_incr.setText(str(self.config.num_increments))
+        self.le_wood_images.setText(str(self.config.wood_images))
         self.cb_show_finger_widths.setChecked(self.config.show_finger_widths)
         self.cb_rpid.setChecked(self.config.show_router_pass_identifiers)
         self.cb_rploc.setChecked(self.config.show_router_pass_locations)
+        self.le_printsf.setText(str(self.config.print_scale_factor))
+        self.le_min_image.setText(str(self.config.min_image_width))
+        self.le_max_image.setText(str(self.config.max_image_width))
+        self.le_min_finger_width.setText(str(self.config.min_finger_width))
+        self.le_caul_trim.setText(str(self.config.caul_trim))
 
     def update_state(self, key, state=1):
         '''
@@ -357,6 +355,10 @@ class Config_Window(QtGui.QDialog):
         '''
         Handles Cancel button events.
         '''
+        # Set state to the current configuration
+        self.new_config = self.config.__dict__.copy()
+        self.change_state = 0
+        self.btn_save.setEnabled(False)
         self.close()
 
     @QtCore.pyqtSlot()
@@ -387,6 +389,8 @@ class Config_Window(QtGui.QDialog):
             if box.clickedButton() == buttonRestart:
                 do_save_config = True
                 do_restart = True
+            else:
+                self._on_cancel()
         elif self.change_state == 1:
             # Units was not changed
             do_save_config = True
@@ -395,6 +399,8 @@ class Config_Window(QtGui.QDialog):
             self.config.__dict__.update(self.new_config)
             c = config_file.Configuration()
             c.write_config(self.new_config)
+            self.change_state = 0
+            self.btn_save.setEnabled(False)
         if do_restart:
             os.execv(sys.argv[0], sys.argv)
         self.close()

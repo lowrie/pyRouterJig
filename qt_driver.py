@@ -334,32 +334,37 @@ class Driver(QtGui.QMainWindow):
         '''
         Creates a wood selection combox box
         '''
-#        cb = QtGui.QComboBox(self)
         cb = qt_utils.PreviewComboBox(self)
         # Set the default wood.
         if has_none:
             # If adding NONE, make that the default
-            cb.addItem('NONE')
             defwood = 'NONE'
         else:
             defwood = 'DiagCrossPattern'
             if self.config.default_wood in self.woods.keys():
                 defwood = self.config.default_wood
+        self.populate_wood_combo_box(cb, woods, patterns, defwood, has_none)
+        # Don't let the user change the text for each selection
+        cb.setEditable(False)
+        return cb
+
+    def populate_wood_combo_box(self, cb, woods, patterns, defwood, has_none):
+        cb.clear()
+        if has_none:
+            cb.addItem('NONE')
         # Add the woods in the wood_images directory
         skeys = sorted(woods.keys())
         for k in skeys:
             cb.addItem(k)
         # Next add patterns
-        cb.insertSeparator(len(skeys))
+        if len(skeys) > 0:
+            cb.insertSeparator(len(skeys))
         skeys = sorted(patterns.keys())
         for k in skeys:
             cb.addItem(k)
         # Set the index to the default wood
         i = cb.findText(defwood)
         cb.setCurrentIndex(i)
-        # Don't let the user change the text for each selection
-        cb.setEditable(False)
-        return cb
 
     def create_widgets(self):
         '''
@@ -1334,9 +1339,23 @@ class Driver(QtGui.QMainWindow):
             self.config_window = qt_config.Config_Window(self.config, self.units, self)
         self.config_window.initialize()
         self.config_window.exec_()
+        # Update widgets that may have changed
         self.finger_size_action.setChecked(self.config.show_finger_widths)
         self.pass_id_action.setChecked(self.config.show_router_pass_identifiers)
         self.pass_location_action.setChecked(self.config.show_router_pass_locations)
+        (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images)
+        self.woods = copy.deepcopy(woods)
+        self.woods.update(patterns)
+        for i in range(len(self.boards)):
+            cb = self.cb_wood[i]
+            has_none = (cb.findText('NONE') >= 0)
+            current_wood = str(cb.currentText())
+            if current_wood != 'NONE' and current_wood not in self.woods.keys():
+                current_wood = self.config.default_wood
+            self.populate_wood_combo_box(cb, woods, patterns, current_wood, has_none)
+            if current_wood != 'NONE':
+                self.boards[i].set_wood(current_wood)
+        self.draw()
 
     @QtCore.pyqtSlot()
     def _on_exit(self):
