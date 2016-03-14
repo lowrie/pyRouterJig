@@ -50,6 +50,10 @@ version = '{version}'
 # Options below may be changed
 ######################################################################
 
+######################################################################
+# These options may be set through the pyRouterJig:Preferences menu
+######################################################################
+
 # If True, use metric units.  If False, use English units.
 metric = {metric}
 
@@ -63,9 +67,6 @@ metric = {metric}
 #    32 (metric = False), corresponding to 1/32" resolution
 #    1  (metric = True), corresponding to 1mm resolution
 num_increments = {num_increments}
-
-# For English units, the string separator between the whole and fraction components
-english_separator = '{english_separator}'
 
 # If true, label each finger with its width.  This option may also be turned
 # on and off under the menu "View" and selecting "Finger Widths".
@@ -103,14 +104,6 @@ min_finger_width = {min_finger_width}
 # the optional clamping cauls [inches|mm]
 caul_trim = {caul_trim}
 
-# The margins object controls top, bottom, and side margins, along with the
-# separation between objects in the figure [inches|mm]
-top_margin = {top_margin}
-bottom_margin = {bottom_margin}
-left_margin = {left_margin}
-right_margin = {right_margin}
-separation = {separation}
-
 # On save image, minimum width of image in pixels. Used if the figure width is
 # less than this size.  Does not apply to screenshots, which are done at the
 # resolution of the window.
@@ -136,6 +129,21 @@ wood_images = r'{wood_images}'
 # or the following Qt fill patterns:
 # DiagCrossPattern, BDiagPattern, FDiagPattern, Dense1Pattern, Dense5Pattern
 default_wood = '{default_wood}'
+
+######################################################################
+# These options may NOT be set through the pyRouterJig:Preferences menu
+######################################################################
+
+# For English units, the string separator between the whole and fraction components
+english_separator = '{english_separator}'
+
+# The margins object controls top, bottom, and side margins, along with the
+# separation between objects in the figure [inches|mm]
+top_margin = {top_margin}
+bottom_margin = {bottom_margin}
+left_margin = {left_margin}
+right_margin = {right_margin}
+separation = {separation}
 
 # Set debug to True to turn on debugging.  This will print a lot of output to
 # stdout during a pyRouterJig session.  This option is typically only useful

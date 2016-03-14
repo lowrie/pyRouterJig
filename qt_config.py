@@ -37,9 +37,29 @@ import qt_utils
 #   -right_margin
 #   -separation
 #   -debug
-# Tolerances
-#   min_finger_width
-#   caul_trim
+
+def form_line(label, widget=None, tooltip=None):
+    '''
+    Formats a line as
+
+        label --------------- widget
+
+    and returns the QLayout
+    '''
+    grid = QtGui.QGridLayout()
+    line = qt_utils.create_hline()
+    line.setMinimumWidth(20)
+    if tooltip is not None:
+        label.setToolTip(tooltip)
+        if widget is not None:
+            widget.setToolTip(tooltip)
+        line.setToolTip(tooltip)
+    grid.addWidget(label, 0, 0)
+    grid.addWidget(line, 0, 1)
+    if widget is not None:
+        grid.addWidget(widget, 0, 2)
+    grid.setColumnStretch(1, 5)
+    return grid
 
 class Config_Window(QtGui.QDialog):
     '''
@@ -51,7 +71,8 @@ class Config_Window(QtGui.QDialog):
         self.new_config = config.__dict__.copy()
         self.units = units
         self.line_edit_width = 80
-        title_label = QtGui.QLabel('<font color=blue><b>pyRouterJig Preferences</b></font>')
+        title_label = QtGui.QLabel('<font color=blue size=4><b>pyRouterJig Preferences</b></font>')
+        title_label.setAlignment(QtCore.Qt.AlignHCenter)
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(title_label)
         
@@ -60,8 +81,8 @@ class Config_Window(QtGui.QDialog):
         tabs.addTab(self.create_output(), 'Output')
         tabs.addTab(self.create_boards(), 'Boards')
         tabs.addTab(self.create_bit(), 'Bit')
-        tabs.addTab(self.create_tolerances(), 'Tolerances')
         tabs.addTab(self.create_units(), 'Units')
+        tabs.addTab(self.create_misc(), 'Misc')
 
         vbox.addWidget(tabs)
         vbox.addLayout(self.create_buttons())
@@ -86,15 +107,13 @@ class Config_Window(QtGui.QDialog):
         mesg.setWordWrap(True)
         vbox.addWidget(mesg)
 
-        hbox = QtGui.QHBoxLayout()
+        self.cb_units_label = QtGui.QLabel('Unit System:')
         self.cb_units = QtGui.QComboBox(self)
         self.cb_units.addItem('Metric')
         self.cb_units.addItem('English')
         self.cb_units.activated.connect(self._on_units)
-        self.cb_units.setToolTip('The unit system.')
-        hbox.addStretch(1)
-        hbox.addWidget(self.cb_units)
-        vbox.addLayout(hbox)
+        grid = form_line(self.cb_units_label, self.cb_units)
+        vbox.addLayout(grid)
 
         if self.config.metric:
             self.cb_units.setCurrentIndex(0)
@@ -107,12 +126,9 @@ class Config_Window(QtGui.QDialog):
         self.le_num_incr.setText(str(self.config.num_increments))
         self.le_num_incr.editingFinished.connect(self._on_num_incr)
         tt = 'The number of increments per unit length.'
-        self.le_num_incr.setToolTip(tt)
-        self.le_num_incr_label.setToolTip(tt)
-        hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(self.le_num_incr_label)
-        hbox.addWidget(self.le_num_incr)
-        vbox.addLayout(hbox)
+        grid = form_line(self.le_num_incr_label, self.le_num_incr, tt)
+        vbox.addLayout(grid)
+        vbox.addStretch(1)
 
         w.setLayout(vbox)
         return w
@@ -141,12 +157,8 @@ class Config_Window(QtGui.QDialog):
         self.le_board_width.setText(str(self.config.board_width))
         self.le_board_width.editingFinished.connect(self._on_board_width)
         tt = 'The initial board width when pyRouterJig starts.'
-        self.le_board_width_label.setToolTip(tt)
-        self.le_board_width.setToolTip(tt)
-        hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(self.le_board_width_label)
-        hbox.addWidget(self.le_board_width)
-        vbox.addLayout(hbox)
+        grid = form_line(self.le_board_width_label, self.le_board_width, tt)
+        vbox.addLayout(grid)
 
         self.le_db_thick_label = QtGui.QLabel('Initial Double Board Thickness ({}):'.format(self.unit_string()))
         self.le_db_thick = QtGui.QLineEdit(w)
@@ -154,14 +166,9 @@ class Config_Window(QtGui.QDialog):
         self.le_db_thick.setText(str(self.config.double_board_thickness))
         self.le_db_thick.editingFinished.connect(self._on_db_thick)
         tt = 'The initial double-board thickness when pyRouterJig starts.'
-        self.le_db_thick_label.setToolTip(tt)
-        self.le_db_thick.setToolTip(tt)
-        hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(self.le_db_thick_label)
-        hbox.addWidget(self.le_db_thick)
-        vbox.addLayout(hbox)
+        grid = form_line(self.le_db_thick_label, self.le_db_thick, tt)
+        vbox.addLayout(grid)
 
-        hbox = QtGui.QHBoxLayout()
         (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images)
         woodnames = woods.keys()
         woodnames.extend(patterns.keys())
@@ -170,20 +177,17 @@ class Config_Window(QtGui.QDialog):
         self.set_wood_combobox()
         self.cb_wood.activated.connect(self._on_wood)
         tt = 'The default wood fill for each board.'
-        self.cb_wood.setToolTip(tt)
-        self.cb_wood_label.setToolTip(tt)
-        hbox.addWidget(self.cb_wood_label)
-        hbox.addWidget(self.cb_wood)
-        vbox.addLayout(hbox)
+        grid = form_line(self.cb_wood_label, self.cb_wood, tt)
+        vbox.addLayout(grid)
 
         self.le_wood_images_label = QtGui.QLabel('Wood Images Folder:')
         self.le_wood_images = QtGui.QLineEdit(w)
         self.le_wood_images.setText(str(self.config.wood_images))
         self.le_wood_images.editingFinished.connect(self._on_wood_images)
         tt = 'Location of wood images.'
-        self.le_wood_images_label.setToolTip(tt)
         self.le_wood_images.setToolTip(tt)
-        vbox.addWidget(self.le_wood_images_label)
+        grid = form_line(self.le_wood_images_label, tooltip=tt)
+        vbox.addLayout(grid)
         vbox.addWidget(self.le_wood_images)
         vbox.addStretch(1)
 
@@ -201,12 +205,8 @@ class Config_Window(QtGui.QDialog):
         self.le_bit_width.setText(str(self.config.bit_width))
         self.le_bit_width.editingFinished.connect(self._on_bit_width)
         tt = 'The initial bit width when pyRouterJig starts.'
-        self.le_bit_width_label.setToolTip(tt)
-        self.le_bit_width.setToolTip(tt)
-        hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(self.le_bit_width_label)
-        hbox.addWidget(self.le_bit_width)
-        vbox.addLayout(hbox)
+        grid = form_line(self.le_bit_width_label, self.le_bit_width, tt)
+        vbox.addLayout(grid)
 
         self.le_bit_depth_label = QtGui.QLabel('Initial Bit Depth ({}):'.format(self.unit_string()))
         self.le_bit_depth = QtGui.QLineEdit(w)
@@ -214,12 +214,8 @@ class Config_Window(QtGui.QDialog):
         self.le_bit_depth.setText(str(self.config.bit_depth))
         self.le_bit_depth.editingFinished.connect(self._on_bit_depth)
         tt = 'The initial bit depth when pyRouterJig starts.'
-        self.le_bit_depth_label.setToolTip(tt)
-        self.le_bit_depth.setToolTip(tt)
-        hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(self.le_bit_depth_label)
-        hbox.addWidget(self.le_bit_depth)
-        vbox.addLayout(hbox)
+        grid = form_line(self.le_bit_depth_label, self.le_bit_depth, tt)
+        vbox.addLayout(grid)
 
         self.le_bit_angle_label = QtGui.QLabel('Initial Bit Angle (deg.):')
         self.le_bit_angle = QtGui.QLineEdit(w)
@@ -227,12 +223,9 @@ class Config_Window(QtGui.QDialog):
         self.le_bit_angle.setText(str(self.config.bit_angle))
         self.le_bit_angle.editingFinished.connect(self._on_bit_angle)
         tt = 'The initial bit angle when pyRouterJig starts.'
-        self.le_bit_angle_label.setToolTip(tt)
-        self.le_bit_angle.setToolTip(tt)
-        hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(self.le_bit_angle_label)
-        hbox.addWidget(self.le_bit_angle)
-        vbox.addLayout(hbox)
+        grid = form_line(self.le_bit_angle_label, self.le_bit_angle, tt)
+        vbox.addLayout(grid)
+        vbox.addStretch(1)
 
         w.setLayout(vbox)
         return w
@@ -263,12 +256,8 @@ class Config_Window(QtGui.QDialog):
         self.le_printsf.setText(str(self.config.print_scale_factor))
         self.le_printsf.editingFinished.connect(self._on_printsf)
         tt = 'Scale output by this factor when printing.'
-        self.le_printsf_label.setToolTip(tt)
-        self.le_printsf.setToolTip(tt)
-        hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(self.le_printsf_label)
-        hbox.addWidget(self.le_printsf)
-        vbox.addLayout(hbox)
+        grid = form_line(self.le_printsf_label, self.le_printsf, tt)
+        vbox.addLayout(grid)
 
         self.le_min_image_label = QtGui.QLabel('Min Image Width:')
         self.le_min_image = QtGui.QLineEdit(w)
@@ -276,12 +265,8 @@ class Config_Window(QtGui.QDialog):
         self.le_min_image.setText(str(self.config.min_image_width))
         self.le_min_image.editingFinished.connect(self._on_min_image)
         tt = 'On save image, minimum width of image in pixels.'
-        self.le_min_image.setToolTip(tt)
-        self.le_min_image_label.setToolTip(tt)
-        hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(self.le_min_image_label)
-        hbox.addWidget(self.le_min_image)
-        vbox.addLayout(hbox)
+        grid = form_line(self.le_min_image_label, self.le_min_image, tt)
+        vbox.addLayout(grid)
 
         self.le_max_image_label = QtGui.QLabel('Max Image Width:')
         self.le_max_image = QtGui.QLineEdit(w)
@@ -289,20 +274,37 @@ class Config_Window(QtGui.QDialog):
         self.le_max_image.setText(str(self.config.max_image_width))
         self.le_max_image.editingFinished.connect(self._on_max_image)
         tt = 'On save image, maximum width of image in pixels.'
-        self.le_max_image.setToolTip(tt)
-        self.le_max_image_label.setToolTip(tt)
-        hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(self.le_max_image_label)
-        hbox.addWidget(self.le_max_image)
-        vbox.addLayout(hbox)
+        grid = form_line(self.le_max_image_label, self.le_max_image, tt)
+        vbox.addLayout(grid)
 
         w.setLayout(vbox)
         return w
 
-    def create_tolerances(self):
-        '''Creates the layout for tolerances preferences'''
+    def create_misc(self):
+        '''Creates the layout for misc preferences'''
         w =  QtGui.QWidget()
-        #w.setLayout(vbox)
+        vbox = QtGui.QVBoxLayout()
+
+        self.le_min_finger_width_label = QtGui.QLabel('Min Finger Width ({}):'.format(self.unit_string()))
+        self.le_min_finger_width = QtGui.QLineEdit(w)
+        self.le_min_finger_width.setFixedWidth(self.line_edit_width)
+        self.le_min_finger_width.setText(str(self.config.min_finger_width))
+        self.le_min_finger_width.editingFinished.connect(self._on_min_finger_width)
+        tt = 'The minimum allowable finger width.  Currently, only enforced for Equal Spacing.'
+        grid = form_line(self.le_min_finger_width_label, self.le_min_finger_width, tt)
+        vbox.addLayout(grid)
+
+        self.le_caul_trim_label = QtGui.QLabel('Caul Trim ({}):'.format(self.unit_string()))
+        self.le_caul_trim = QtGui.QLineEdit(w)
+        self.le_caul_trim.setFixedWidth(self.line_edit_width)
+        self.le_caul_trim.setText(str(self.config.caul_trim))
+        self.le_caul_trim.editingFinished.connect(self._on_caul_trim)
+        tt = 'The distance from the edge of each finger to the edge of the corresponding caul finger.'
+        grid = form_line(self.le_caul_trim_label, self.le_caul_trim, tt)
+        vbox.addLayout(grid)
+        vbox.addStretch(1)
+
+        w.setLayout(vbox)
         return w
 
     def create_buttons(self):
@@ -374,8 +376,8 @@ class Config_Window(QtGui.QDialog):
                        ' requires <i>pyRouterJig</i> to restart to take effect.'\
                        ' Your current joint will be lost, unless you have already saved it. <p>'\
                        ' Press <b>Restart</b> to save the settings and restart.<p>'\
-                       ' Press <b>Cancel</b> to discard the changes that you made.'\
-                       ' </font>'
+                       ' Press <b>Cancel</b> to discard the changes to preferences that'\
+                       ' you have made.</font>'
             box.setInformativeText(question)
             buttonRestart = box.addButton('Restart', QtGui.QMessageBox.AcceptRole)
             buttonCancel = box.addButton('Cancel', QtGui.QMessageBox.AcceptRole)
@@ -528,3 +530,27 @@ class Config_Window(QtGui.QDialog):
             text = str(self.le_max_image.text())
             self.new_config['max_image_width'] = int(text)
             self.update_state('max_image_width')
+
+    @QtCore.pyqtSlot()
+    def _on_min_finger_width(self):
+        if self.le_min_finger_width.isModified():
+            s = str(self.le_min_finger_width.text())
+            if self.units.valid_number(s):
+                self.new_config['min_finger_width'] = s
+                self.update_state('min_finger_width')
+            else:
+                msg = '"{}" is not a valid caul trim amount'.format(s)
+                QtGui.QMessageBox.warning(self, 'Error', msg)
+                self.le_min_finger_width.setText(self.new_config['min_finger_width'])
+
+    @QtCore.pyqtSlot()
+    def _on_caul_trim(self):
+        if self.le_caul_trim.isModified():
+            s = str(self.le_caul_trim.text())
+            if self.units.valid_number(s):
+                self.new_config['caul_trim'] = s
+                self.update_state('caul_trim')
+            else:
+                msg = '"{}" is not a valid caul trim amount'.format(s)
+                QtGui.QMessageBox.warning(self, 'Error', msg)
+                self.le_caul_trim.setText(self.new_config['caul_trim'])
