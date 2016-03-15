@@ -47,12 +47,10 @@ class Incra_Template(object):
     height: Dimension in y-coordinate
     margin: Dimension in x-coordinate placed on each end of template
     length: total length of template
-    do_caul: If true, create the caul template
     '''
-    def __init__(self, units, boards, do_caul=False, margin=None, length=None):
+    def __init__(self, units, boards, margin=None, length=None):
         # incra uses 1/2" high templates
         self.height = units.inches_to_increments(0.5)
-        self.do_caul = do_caul
         if margin is None:
             self.margin = units.inches_to_increments(1.0)
         else:
@@ -620,7 +618,7 @@ class Joint_Geometry(object):
     '''
     Computes and stores all of the geometry attributes of the joint.
     '''
-    def __init__(self, template, boards, bit, spacing, margins, caul_trim):
+    def __init__(self, template, boards, bit, spacing, margins, config):
         self.template = template
         self.boards = boards
         self.bit = bit
@@ -668,7 +666,8 @@ class Joint_Geometry(object):
             self.board_TDD = None
 
         # Caul template
-        if self.template.do_caul:
+        if config.show_caul:
+            caul_trim = max(1, bit.units.abstract_to_increments(config.caul_trim))
             self.rect_caul = My_Rectangle(margins.left, y,
                                           template.length, template.height)
             self.board_caul = My_Rectangle(self.rect_caul.xL() + template.margin, y, \

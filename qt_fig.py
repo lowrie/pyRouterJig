@@ -139,7 +139,7 @@ class Qt_Fig(QtGui.QWidget):
         if boards[3].active:
             fig_height += template.height + self.margins.sep
 
-        if template.do_caul:
+        if self.config.show_caul:
             fig_height += template.height + self.margins.sep
 
         min_width = 64
@@ -171,9 +171,8 @@ class Qt_Fig(QtGui.QWidget):
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
         self.woods = woods
-        caul_trim = max(1, bit.units.abstract_to_increments(self.config.caul_trim))
-        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,\
-                                          caul_trim)
+        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,
+                                          self.config)
         self.current_background = self.background
         self.update()
 
@@ -186,9 +185,8 @@ class Qt_Fig(QtGui.QWidget):
 
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
-        caul_trim = max(1, bit.units.abstract_to_increments(self.config.caul_trim))
-        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,\
-                                          caul_trim)
+        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,
+                                          self.config)
 
         # Print through the preview dialog
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
@@ -205,9 +203,8 @@ class Qt_Fig(QtGui.QWidget):
         '''
         self.woods = woods
         self.set_fig_dimensions(template, boards)
-        caul_trim = max(1, bit.units.abstract_to_increments(self.config.caul_trim))
-        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,\
-                                          caul_trim)
+        self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,
+                                          self.config)
         self.current_background = self.background
 
         s = self.size()
@@ -549,7 +546,7 @@ class Qt_Fig(QtGui.QWidget):
         flagsRC = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
 
         # ... draw the caul template and do its passes
-        if self.geom.template.do_caul:
+        if self.config.show_caul:
             rect_caul = self.geom.rect_caul
             board_caul = self.geom.board_caul
             top = self.geom.caul_top

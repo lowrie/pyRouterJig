@@ -258,6 +258,11 @@ class Config_Window(QtGui.QDialog):
         w =  QtGui.QWidget()
         vbox = QtGui.QVBoxLayout()
 
+        self.cb_show_caul = QtGui.QCheckBox('Show Caul Template', w)
+        self.cb_show_caul.stateChanged.connect(self._on_show_caul)
+        self.cb_show_caul.setToolTip('Display the template for clamping cauls')
+        vbox.addWidget(self.cb_show_caul)
+
         self.cb_show_finger_widths = QtGui.QCheckBox('Show Finger Widths', w)
         self.cb_show_finger_widths.stateChanged.connect(self._on_show_finger_widths)
         self.cb_show_finger_widths.setToolTip('Display the width of each finger')
@@ -275,6 +280,7 @@ class Config_Window(QtGui.QDialog):
 
         self.le_printsf_label = QtGui.QLabel('Print Scale Factor:')
         self.le_printsf = QtGui.QLineEdit(w)
+        self.le_printsf.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.le_printsf.setFixedWidth(self.line_edit_width)
         self.le_printsf.editingFinished.connect(self._on_printsf)
         tt = 'Scale output by this factor when printing.'
@@ -357,6 +363,7 @@ class Config_Window(QtGui.QDialog):
         self.le_num_incr.setText(str(self.config.num_increments))
         self.le_wood_images.setText(str(self.config.wood_images))
         self.cb_show_finger_widths.setChecked(self.config.show_finger_widths)
+        self.cb_show_caul.setChecked(self.config.show_caul)
         self.cb_rpid.setChecked(self.config.show_router_pass_identifiers)
         self.cb_rploc.setChecked(self.config.show_router_pass_locations)
         self.le_printsf.setText(str(self.config.print_scale_factor))
@@ -395,6 +402,7 @@ class Config_Window(QtGui.QDialog):
         '''
         if self.config.debug:
             print('qt_config:_on_cancel')
+        self.setResult(0)
         self.close()
 
     @QtCore.pyqtSlot()
@@ -439,6 +447,7 @@ class Config_Window(QtGui.QDialog):
             c.write_config(self.new_config)
         if do_restart:
             os.execv(sys.argv[0], sys.argv)
+        self.setResult(1)
         self.close()
 
     @QtCore.pyqtSlot(int)
@@ -540,6 +549,13 @@ class Config_Window(QtGui.QDialog):
             print('qt_config:_on_show_finger_widths')
         self.new_config['show_finger_widths'] = self.cb_show_finger_widths.isChecked()
         self.update_state('show_finger_widths')
+
+    @QtCore.pyqtSlot()
+    def _on_show_caul(self):
+        if self.config.debug:
+            print('qt_config:_on_show_caul')
+        self.new_config['show_caul'] = self.cb_show_caul.isChecked()
+        self.update_state('show_caul')
 
     @QtCore.pyqtSlot()
     def _on_rpid(self):

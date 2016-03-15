@@ -82,6 +82,10 @@ show_router_pass_identifiers = {show_router_pass_identifiers}
 # "Router Passes", and selecting "Locations"
 show_router_pass_locations = {show_router_pass_locations}
 
+# If true, then show the caul template.  This option may also be turned on and
+# off under the menu "View" and selecting "Caul Template"
+show_caul = {show_caul}
+
 # Initial board width [inches|mm]
 board_width = {board_width}
 
@@ -171,6 +175,7 @@ common_vals = {'version':'NONE',
                'show_finger_widths':True,
                'show_router_pass_identifiers':True,
                'show_router_pass_locations':False,
+               'show_caul':False,
                'bit_angle':0,
                'min_image_width':1440,
                'max_image_width':'min_image_width',

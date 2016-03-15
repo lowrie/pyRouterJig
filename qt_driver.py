@@ -74,8 +74,7 @@ class Driver(QtGui.QMainWindow):
         dbt = self.units.abstract_to_increments(self.config.double_board_thickness)
         self.boards[2].set_height(self.bit, dbt)
         self.boards[3].set_height(self.bit, dbt)
-        self.do_caul = False # if true, do caul template
-        self.template = router.Incra_Template(self.units, self.boards, self.do_caul)
+        self.template = router.Incra_Template(self.units, self.boards)
         self.equal_spacing = spacing.Equally_Spaced(self.bit, self.boards, self.config)
         self.equal_spacing.set_cuts()
         self.var_spacing = spacing.Variable_Spaced(self.bit, self.boards, self.config)
@@ -297,10 +296,11 @@ class Driver(QtGui.QMainWindow):
         fullscreen_action.triggered.connect(self._on_fullscreen)
         view_menu.addAction(fullscreen_action)
 
-        caul_action = QtGui.QAction('Caul Template', self, checkable=True)
-        caul_action.setStatusTip('Toggle caul template')
-        caul_action.triggered.connect(self._on_caul)
-        view_menu.addAction(caul_action)
+        self.caul_action = QtGui.QAction('Caul Template', self, checkable=True)
+        self.caul_action.setStatusTip('Toggle caul template')
+        self.caul_action.triggered.connect(self._on_caul)
+        view_menu.addAction(self.caul_action)
+        self.caul_action.setChecked(self.config.show_caul)
 
         self.finger_size_action = QtGui.QAction('Finger Widths', self, checkable=True)
         self.finger_size_action.setStatusTip('Toggle viewing finger sizes')
@@ -811,7 +811,7 @@ class Driver(QtGui.QMainWindow):
         '''(Re)draws the template and boards'''
         if self.config.debug:
             print('draw')
-        self.template = router.Incra_Template(self.units, self.boards, self.do_caul)
+        self.template = router.Incra_Template(self.units, self.boards)
         self.fig.draw(self.template, self.boards, self.bit, self.spacing, self.woods)
 
     def reinit_spacing(self):
@@ -1169,7 +1169,7 @@ class Driver(QtGui.QMainWindow):
         # Reset the dependent data
         self.units = self.bit.units
         self.doc = doc.Doc(self.units)
-        self.template = router.Incra_Template(self.units, self.boards, self.do_caul)
+        self.template = router.Incra_Template(self.units, self.boards)
 
         # ... set the wood selection for each board.  If the wood does not
         # exist, set to a wood we know exists.  This can happen if the wood
@@ -1317,9 +1317,14 @@ class Driver(QtGui.QMainWindow):
         if self.config_window is None:
             self.config_window = qt_config.Config_Window(self.config, self.units, self)
         self.config_window.initialize()
-        self.config_window.exec_()
+        r = self.config_window.exec_()
+        if r == 0:
+            self.status_message('No changes made to configuration file.')
+        else:
+            self.status_message('Preference changes saved in configuration file.')
         # Update widgets that may have changed
         self.finger_size_action.setChecked(self.config.show_finger_widths)
+        self.caul_action.setChecked(self.config.show_caul)
         self.pass_id_action.setChecked(self.config.show_router_pass_identifiers)
         self.pass_location_action.setChecked(self.config.show_router_pass_locations)
         (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images)
@@ -1611,14 +1616,13 @@ class Driver(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def _on_caul(self):
         '''Handles toggling showing caul template'''
-        if self.config.debug:
-            print('_on_caul')
-        if self.do_caul:
-            self.do_caul = False
-            self.status_message('Turned off caul template.')
-        else:
-            self.do_caul = True
+        self.config.show_caul = self.caul_action.isChecked()
+        if self.config_window is not None:
+            self.config_window.update_state('show_caul')
+        if self.config.show_caul:
             self.status_message('Turned on caul template.')
+        else:
+            self.status_message('Turned off caul template.')
         self.file_saved = False
         self.draw()
 
