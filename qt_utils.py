@@ -27,8 +27,45 @@ from future.utils import lrange
 import os, glob
 
 import utils
+import router
 
 from PyQt4 import QtCore, QtGui
+
+def set_router_value(line_edit, obj, attr, setter, is_float=False, bit=None):
+    # With editingFinished, we also need to check whether the
+    # value actually changed. This is because editingFinished gets
+    # triggered every time focus changes, which can occur many
+    # times when an exception is thrown, or user tries to quit
+    # in the middle of an exception, etc.  This logic also avoids
+    # unnecessary redraws.
+    if not line_edit.isModified():
+        return None
+    line_edit.setModified(False)
+    text = str(line_edit.text())
+    units = getattr(obj, 'units')
+    try:
+        # Call the appropriate setter function.  This is the function that will
+        # throw an exception.
+        if bit is None:
+            getattr(obj, setter)(text)
+        else:
+            getattr(obj, setter)(bit, text)
+        # Set the string value of the new value
+        new_value = getattr(obj, attr)
+        if is_float:
+            text = str(new_value)
+        else:
+            text = units.increments_to_string(new_value)
+        line_edit.setText(text)
+        return text
+    except router.Router_Exception as e:
+        # Notify the user of the error, and set the line editor back to its
+        # original value
+        QtGui.QMessageBox.warning(line_edit.parentWidget(), 'Error', e.msg)
+        old_value = getattr(obj, attr)
+        text = units.increments_to_string(old_value)
+        line_edit.setText(text)
+        return None
 
 class PreviewComboBox(QtGui.QComboBox):
     '''

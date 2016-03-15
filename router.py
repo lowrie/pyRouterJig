@@ -96,61 +96,58 @@ class Router_Bit(object):
         '''
         Sets the width from the string s, following requirements from units.string_to_increments().
         '''
-        msg = 'Bit width is %s\n' % s
-        msg += 'Set to a positive value, such as '
         if self.units.metric:
-            msg += '6'
+            val = '6'
         else:
-            msg += '1/2'
+            val = '1/2'
+        msg = 'Unable to set Bit Width to: {}<p>'\
+              'Set to a positive value, such as: {}'.format(s, val)
         try:
-            self.width = self.units.string_to_increments(s)
-        except ValueError as e:
-            msg = 'ValueError setting bit width: %s\n\n' % (e) + msg
-            raise Router_Exception(msg)
+            width = self.units.string_to_increments(s)
         except:
-            raise
-        if self.width <= 0:
             raise Router_Exception(msg)
-        self.halfwidth = self.width // 2
-        if 2 * self.halfwidth != self.width:
-            pmsg = 'Bit width must be an even number of increments.\n'
-            pmsg += 'The increment size is %s.\n\n' % self.units.increments_to_string(1, True)
-            raise Router_Exception(pmsg + msg)
+        if width <= 0:
+            raise Router_Exception(msg)
+        halfwidth = width // 2
+        if 2 * halfwidth != width:
+            msg += '<p>Bit Width must be an even number of increments.<p>'\
+                   'The increment size is: {}<p>'\
+                   ''.format(self.units.increments_to_string(1, True))
+            raise Router_Exception(msg)
+        self.width = width
+        self.halfwidth = halfwidth
         self.reinit()
     def set_depth_from_string(self, s):
         '''
         Sets the depth from the string s, following requirements from units.string_to_increments().
         '''
-        msg = 'Bit depth is %s\n' % s
-        msg += 'Set to a positive value, such as '
         if self.units.metric:
-            msg += '5'
+            val = '5'
         else:
-            msg += '3/4'
+            val = '3/4'
+        msg = 'Unable to set Bit Depth to: {}<p>'\
+              'Set to a positive value, such as: {}'.format(s, val)
         try:
-            self.depth = self.units.string_to_increments(s)
-        except ValueError as e:
-            msg = 'ValueError setting bit depth: %s\n\n' % (e) + msg
-            raise Router_Exception(msg)
+            depth = self.units.string_to_increments(s)
         except:
-            raise
-        if self.depth <= 0:
             raise Router_Exception(msg)
+        if depth <= 0:
+            raise Router_Exception(msg)
+        self.depth = depth
         self.reinit()
     def set_angle_from_string(self, s):
         '''
         Sets the angle from the string s, where s represents a floating point number or fractional number.
         '''
-        msg = 'Bit angle is %s\nSet to zero or a positive value, such as 7.5 or "7 1/2"' % s
+        msg = 'Unable to set Bit Angle to: {}<p>'\
+              'Set to zero or a positive value, such as 7.5 or "7 1/2"'.format(s)
         try:
-            self.angle = self.units.string_to_float(s)
-        except ValueError as e:
-            msg = 'ValueError setting bit angle: %s\n\n' % (e) + msg
-            raise Router_Exception(msg)
+            angle = self.units.string_to_float(s)
         except:
-            raise
-        if self.angle < 0:
             raise Router_Exception(msg)
+        if angle < 0:
+            raise Router_Exception(msg)
+        self.angle = angle
         self.reinit()
     def reinit(self):
         '''
@@ -239,21 +236,19 @@ class Board(My_Rectangle):
         '''
         Sets the width from the string s, following requirements from units.string_to_increments().
         '''
-        msg = 'Board width is %s\n' % s
-        msg += 'Set to a postive value, such as '
         if self.units.metric:
-            msg += '52'
+            val = '52'
         else:
-            msg += '7 1/2'
+            val = '7 1/2'
+        msg = 'Unable to set Board Width to: {}<p>'\
+              'Set to a postive value, such as: {}'.format(s, val)
         try:
-            self.width = self.units.string_to_increments(s)
-        except ValueError as e:
-            msg = 'ValueError setting board width: %s\n\n' % (e) + msg
-            raise Router_Exception(msg)
+            width = self.units.string_to_increments(s)
         except:
-            raise
-        if self.width <= 0:
             raise Router_Exception(msg)
+        if width <= 0:
+            raise Router_Exception(msg)
+        self.width = width
     def set_height(self, bit, dheight=None):
         '''
         Sets the height from the router bit depth of cut
@@ -274,19 +269,16 @@ class Board(My_Rectangle):
         '''
         # TODO: This is called "thickness" because we set this only for
         # double* boards, for which we call this the thickness.
-        msg = 'Board thickness is %s\n' % s
-        msg += 'Set to a postive value, such as '
         if self.units.metric:
-            msg += '4'
+            val = '4'
         else:
-            msg += '1/8'
+            val = '1/8'
+        msg = 'Unable to set board Thickness to: {}<p>'\
+              'Set to a postive value, such as: {}'.format(s, val)
         try:
             t = self.units.string_to_increments(s)
-        except ValueError as e:
-            msg = 'ValueError setting board thickness increment: %s\n\n' % (e) + msg
-            raise Router_Exception(msg)
         except:
-            raise
+            raise Router_Exception(msg)
         if t <= 0:
             raise Router_Exception(msg)
         self.set_height(bit, t)

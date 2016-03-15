@@ -328,7 +328,7 @@ class Configuration(object):
         units = utils.Units(vals['english_separator'], vals['metric'])
         w = vals.copy()
         for i in dim_vals:
-            if isinstance(w[i], str) and units.valid_number(w[i]):
+            if isinstance(w[i], str):
                 w[i] = "'{}'".format(w[i])
         content = _CONFIG_INIT.format(**w)
         fd = open(self.filename, 'w')

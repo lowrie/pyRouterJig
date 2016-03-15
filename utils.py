@@ -229,19 +229,6 @@ class Units(object):
             return self.string_to_increments(a)
         else:
             return self.length_to_increments(float(a))
-    def valid_number(self, a):
-        '''
-        Returns true if a represents a valid number, either a string that can
-        be converted to a number, or a number itself.
-        '''
-        try:
-            i = self.abstract_to_increments(a)
-            if i >= 0:
-                return True
-            else:
-                return False
-        except:
-            return False
 
 class Margins(object):
     '''

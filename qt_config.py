@@ -28,6 +28,7 @@ from PyQt4 import QtCore, QtGui
 
 import config_file
 import qt_utils
+import router
 
 # Output
 #   background_color
@@ -62,6 +63,25 @@ def form_line(label, widget=None, tooltip=None):
     grid.setColumnStretch(1, 5)
     return grid
 
+class Misc_Value(object):
+    '''
+    Helper class to wrap dimensional values for use with qt_utils.set_router_value()
+    '''
+    def __init__(self, value, units, name):
+        self.value = value
+        self.units = units
+        self.name = name
+    def set_value_from_string(self, s):
+        msg = 'Unable to set {} to: {}<p>'\
+              'Set to a positive number.'.format(self.name, s)
+        try:
+            value = self.units.string_to_increments(s)
+        except:
+            raise router.Router_Exception(msg)
+        if value <= 0:
+            raise router.Router_Exception(msg)
+        self.value = value
+
 class Config_Window(QtGui.QDialog):
     '''
     Qt interface to config file parameters
@@ -70,8 +90,18 @@ class Config_Window(QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent)
         self.config = config
         self.new_config = config.__dict__.copy()
-        self.units = units
         self.line_edit_width = 80
+        self.units = units
+
+        # Form these objects so that we can do error checking on their changes
+        bit_width = self.units.abstract_to_increments(self.config.bit_width)
+        bit_depth = self.units.abstract_to_increments(self.config.bit_depth)
+        bit_angle = self.units.abstract_to_float(self.config.bit_angle)
+        self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle)
+        board_width = self.units.abstract_to_increments(self.config.board_width)
+        self.board = router.Board(self.bit, width=board_width)
+
+        # Form the tabs and their contents
         title_label = QtGui.QLabel('<font color=blue size=4><b>pyRouterJig Preferences</b></font>')
         title_label.setAlignment(QtCore.Qt.AlignHCenter)
         vbox = QtGui.QVBoxLayout()
@@ -88,6 +118,7 @@ class Config_Window(QtGui.QDialog):
         vbox.addWidget(tabs)
         vbox.addLayout(self.create_buttons())
         self.setLayout(vbox)
+
         self.initialize()
         self.change_state = 0
 
@@ -438,71 +469,51 @@ class Config_Window(QtGui.QDialog):
     def _on_bit_width(self):
         if self.config.debug:
             print('qt_config:_on_bit_width')
-        if self.le_bit_width.isModified():
-            s = str(self.le_bit_width.text())
-            if self.units.valid_number(s):
-                self.new_config['bit_width'] = s
-                self.update_state('bit_width')
-            else:
-                msg = '"{}" is not a valid bit width'.format(s)
-                QtGui.QMessageBox.warning(self, 'Error', msg)
-                self.le_bit_width.setText(self.new_config['bit_width'])
+        val = qt_utils.set_router_value(self.le_bit_width, self.bit, 'width',
+                                        'set_width_from_string')
+        if val is not None:
+            self.new_config['bit_width'] = val
+            self.update_state('bit_width')
 
     @QtCore.pyqtSlot()
     def _on_bit_depth(self):
         if self.config.debug:
             print('qt_config:_on_bit_depth')
-        if self.le_bit_depth.isModified():
-            s = str(self.le_bit_depth.text())
-            if self.units.valid_number(s):
-                self.new_config['bit_depth'] = s
-                self.update_state('bit_depth')
-            else:
-                msg = '"{}" is not a valid bit depth'.format(s)
-                QtGui.QMessageBox.warning(self, 'Error', msg)
-                self.le_bit_depth.setText(self.new_config['bit_depth'])
+        val = qt_utils.set_router_value(self.le_bit_depth, self.bit, 'depth',
+                                        'set_depth_from_string')
+        if val is not None:
+            self.new_config['bit_depth'] = val
+            self.update_state('bit_depth')
 
     @QtCore.pyqtSlot()
     def _on_bit_angle(self):
         if self.config.debug:
             print('qt_config:_on_bit_angle')
-        if self.le_bit_angle.isModified():
-            s = str(self.le_bit_angle.text())
-            if self.units.valid_number(s):
-                self.new_config['bit_angle'] = s
-                self.update_state('bit_angle')
-            else:
-                msg = '"{}" is not a valid bit angle'.format(s)
-                QtGui.QMessageBox.warning(self, 'Error', msg)
-                self.le_bit_angle.setText(self.new_config['bit_angle'])
+        val = qt_utils.set_router_value(self.le_bit_angle, self.bit, 'angle',
+                                        'set_angle_from_string', True)
+        if val is not None:
+            self.new_config['bit_angle'] = val
+            self.update_state('bit_angle')
 
     @QtCore.pyqtSlot()
     def _on_board_width(self):
         if self.config.debug:
             print('qt_config:_on_board_width')
-        if self.le_board_width.isModified():
-            s = str(self.le_board_width.text())
-            if self.units.valid_number(s):
-                self.new_config['board_width'] = s
-                self.update_state('board_width')
-            else:
-                msg = '"{}" is not a valid board width'.format(s)
-                QtGui.QMessageBox.warning(self, 'Error', msg)
-                self.le_board_width.setText(self.new_config['board_width'])
+        val = qt_utils.set_router_value(self.le_board_width, self.board, 'width',
+                                        'set_width_from_string')
+        if val is not None:
+            self.new_config['board_width'] = val
+            self.update_state('board_width')
 
     @QtCore.pyqtSlot()
     def _on_db_thick(self):
         if self.config.debug:
             print('qt_config:_on_db_thick')
-        if self.le_db_thick.isModified():
-            s = str(self.le_db_thick.text())
-            if self.units.valid_number(s):
-                self.new_config['double_board_thickness'] = s
-                self.update_state('double_board_thickness')
-            else:
-                msg = '"{}" is not a valid board width'.format(s)
-                QtGui.QMessageBox.warning(self, 'Error', msg)
-                self.le_db_thick.setText(self.new_config['double_board_thickness'])
+        val = qt_utils.set_router_value(self.le_db_thick, self.board, 'dheight',
+                                        'set_height_from_string', bit=self.bit)
+        if val is not None:
+            self.new_config['double_board_thickness'] = val
+            self.update_state('double_board_thickness')
 
     @QtCore.pyqtSlot(int)
     def _on_wood(self, index):
@@ -549,56 +560,94 @@ class Config_Window(QtGui.QDialog):
         if self.config.debug:
             print('qt_config:_on_printsf')
         if self.le_printsf.isModified():
-            text = str(self.le_printsf.text())
-            self.new_config['print_scale_factor'] = float(text)
-            self.update_state('print_scale_factor')
+            self.le_printsf.setModified(False)
+            s = str(self.le_printsf.text())
+            ok = True
+            try:
+                new_value = float(s)
+                if new_value <= 0:
+                    ok = False
+            except:
+                ok = False
+            if ok:
+                self.new_config['print_scale_factor'] = float(s)
+                self.update_state('print_scale_factor')
+            else:
+                msg = 'Unable to set Print Scale Factor to: {}<p>'\
+                      'Set to a positive number.'.format(s)
+                QtGui.QMessageBox.warning(self, 'Error', msg)
+                self.le_printsf.setText(str(self.new_config['print_scale_factor']))
 
     @QtCore.pyqtSlot()
     def _on_min_image(self):
         if self.config.debug:
             print('qt_config:_on_min_image')
         if self.le_min_image.isModified():
-            text = str(self.le_min_image.text())
-            self.new_config['min_image_width'] = int(text)
-            self.change_state = max(1, self.change_state)
-            self.update_state('min_image_width')
+            self.le_min_image.setModified(False)
+            s = str(self.le_min_image.text())
+            ok = True
+            try:
+                new_value = int(s)
+                if new_value <= 0:
+                    ok = False
+            except:
+                ok = False
+            if ok:
+                self.new_config['min_image_width'] = int(s)
+                self.update_state('min_image_width')
+            else:
+                msg = 'Unable to set Min Image Width to: {}<p>'\
+                      'Set to a positive integer.'.format(s)
+                QtGui.QMessageBox.warning(self, 'Error', msg)
+                self.le_min_image.setText(str(self.new_config['min_image_width']))
 
     @QtCore.pyqtSlot()
     def _on_max_image(self):
         if self.config.debug:
             print('qt_config:_on_max_image')
         if self.le_max_image.isModified():
-            text = str(self.le_max_image.text())
-            self.new_config['max_image_width'] = int(text)
-            self.update_state('max_image_width')
+            self.le_max_image.setModified(False)
+            s = str(self.le_max_image.text())
+            ok = True
+            min_value = int(self.new_config['min_image_width'])
+            try:
+                new_value = int(s)
+                if new_value <= min_value:
+                    ok = False
+            except:
+                ok = False
+            if ok:
+                self.new_config['max_image_width'] = int(s)
+                self.update_state('max_image_width')
+            else:
+                msg = 'Unable to set Max Image Width to: {}<p>'\
+                      'Set to a positive integer >= Min Image Width ({})'.format(s, min_value)
+                QtGui.QMessageBox.warning(self, 'Error', msg)
+                self.le_max_image.setText(str(self.new_config['max_image_width']))
 
     @QtCore.pyqtSlot()
     def _on_min_finger_width(self):
         if self.config.debug:
             print('qt_config:_on_min_finger_width')
-        if self.le_min_finger_width.isModified():
-            s = str(self.le_min_finger_width.text())
-            if self.units.valid_number(s):
-                self.new_config['min_finger_width'] = s
-                self.update_state('min_finger_width')
-            else:
-                msg = '"{}" is not a valid caul trim amount'.format(s)
-                QtGui.QMessageBox.warning(self, 'Error', msg)
-                self.le_min_finger_width.setText(self.new_config['min_finger_width'])
+        i = self.units.abstract_to_increments(self.new_config['min_finger_width'])
+        v = Misc_Value(i, self.units, 'Min Finger Width')
+        val = qt_utils.set_router_value(self.le_min_finger_width, v, 'value',
+                                        'set_value_from_string')
+        if val is not None:
+            self.new_config['min_finger_width'] = s
+            self.update_state('min_finger_width')
 
     @QtCore.pyqtSlot()
     def _on_caul_trim(self):
         if self.config.debug:
             print('qt_config:_on_caul_trim')
-        if self.le_caul_trim.isModified():
-            s = str(self.le_caul_trim.text())
-            if self.units.valid_number(s):
-                self.new_config['caul_trim'] = s
-                self.update_state('caul_trim')
-            else:
-                msg = '"{}" is not a valid caul trim amount'.format(s)
-                QtGui.QMessageBox.warning(self, 'Error', msg)
-                self.le_caul_trim.setText(self.new_config['caul_trim'])
+        i = self.units.abstract_to_increments(self.new_config['caul_trim'])
+        v = Misc_Value(i, self.units, 'Caul Trim')
+        val = qt_utils.set_router_value(self.le_caul_trim, v, 'value',
+                                        'set_value_from_string')
+        if val is not None:
+            self.new_config['caul_trim'] = val
+            self.update_state('caul_trim')
 
     def closeEvent(self, event):
         '''

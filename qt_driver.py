@@ -952,24 +952,12 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to bit width'''
         if self.config.debug:
             print('_on_bit_width')
-        # With editingFinished, we also need to check whether the
-        # value actually changed. This is because editingFinished gets
-        # triggered every time focus changes, which can occur many
-        # times when an exception is thrown, or user tries to quit
-        # in the middle of an exception, etc.  This logic also avoids
-        # unnecessary redraws.
-        if self.le_bit_width.isModified():
-            if self.config.debug:
-                print(' bit_width modified')
-            self.le_bit_width.setModified(False)
-            text = str(self.le_bit_width.text())
-            self.bit.set_width_from_string(text)
+        val = qt_utils.set_router_value(self.le_bit_width, self.bit, 'width',
+                                        'set_width_from_string')
+        if val is not None:
             self.reinit_spacing()
             self.draw()
-            # because of possible rounding, we need to reset the text in the line edit
-            self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
-            text = str(self.le_bit_width.text())
-            self.status_message('Changed bit width to ' + text)
+            self.status_message('Changed bit width to ' + val)
             self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -977,17 +965,13 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to bit depth'''
         if self.config.debug:
             print('_on_bit_depth')
-        if self.le_bit_depth.isModified():
-            self.le_bit_depth.setModified(False)
-            text = str(self.le_bit_depth.text())
-            self.bit.set_depth_from_string(text)
+        val = qt_utils.set_router_value(self.le_bit_depth, self.bit, 'depth',
+                                        'set_depth_from_string')
+        if val is not None:
             for b in self.boards:
                 b.set_height(self.bit)
             self.draw()
-            # because of possible rounding, we need to reset the text in the line edit
-            self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
-            text = str(self.le_bit_depth.text())
-            self.status_message('Changed bit depth to ' + text)
+            self.status_message('Changed bit depth to ' + val)
             self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -995,13 +979,12 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to bit angle'''
         if self.config.debug:
             print('_on_bit_angle')
-        if self.le_bit_angle.isModified():
-            self.le_bit_angle.setModified(False)
-            text = str(self.le_bit_angle.text())
-            self.bit.set_angle_from_string(text)
+        val = qt_utils.set_router_value(self.le_bit_angle, self.bit, 'angle',
+                                        'set_angle_from_string', True)
+        if val is not None:
             self.reinit_spacing()
             self.draw()
-            self.status_message('Changed bit angle to ' + text)
+            self.status_message('Changed bit angle to ' + val)
             self.file_saved = False
             self.threeDS_enabler()
 
@@ -1010,18 +993,14 @@ class Driver(QtGui.QMainWindow):
         '''Handles changes to board width'''
         if self.config.debug:
             print('_on_board_width')
-        if self.le_board_width.isModified():
-            self.le_board_width.setModified(False)
-            text = str(self.le_board_width.text())
-            self.boards[0].set_width_from_string(text)
+        val = qt_utils.set_router_value(self.le_board_width, self.boards[0], 'width',
+                                        'set_width_from_string')
+        if val is not None:
             for b in self.boards[1:]:
                 b.width = self.boards[0].width
             self.reinit_spacing()
             self.draw()
-            # because of possible rounding, we need to reset the text in the line edit
-            self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
-            text = str(self.le_board_width.text())
-            self.status_message('Changed board width to ' + text)
+            self.status_message('Changed board width to ' + val)
             self.file_saved = False
 
     @QtCore.pyqtSlot(int)
@@ -1463,20 +1442,15 @@ class Driver(QtGui.QMainWindow):
 
     def _on_boardm(self, i):
         '''Handles changes board-M height changes'''
-        if self.le_boardm[i].isModified():
-            if self.config.debug:
-                print('_on_boardm', i)
-            self.le_boardm[i].setModified(False)
-            text = str(self.le_boardm[i].text())
-            self.boards[i + 2].set_height_from_string(self.bit, text)
+        if self.config.debug:
+            print('_on_boardm', i)
+        val = qt_utils.set_router_value(self.le_boardm[i], self.boards[i + 2], 'dheight',
+                                        'set_height_from_string', bit=self.bit)
+        if val is not None:
             self.reinit_spacing()
             self.draw()
             labels = ['Double', 'Double-Double']
-            # because of possible rounding, we need to reset the text in the line edit
-            self.le_boardm[i].setText(self.units.increments_to_string(self.boards[i + 2].dheight))
-            text = str(self.le_boardm[i].text())
-            self.status_message(('Changed %s Board thickness to ' + text) % labels[i])
-            self.reinit_spacing()
+            self.status_message('Changed {} Board thickness to {}'.format(labels[i], val))
             self.file_saved = False
 
     @QtCore.pyqtSlot()
