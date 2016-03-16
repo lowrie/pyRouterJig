@@ -175,19 +175,22 @@ class Units(object):
         if with_units:
             r += self.units_string()
         return r
-    def units_string(self, verbose=False, noTick=False):
+    def units_string(self, verbose=False, withParens=False):
         '''Returns a string that represents the units'''
+        form = ' {}'
+        if withParens:
+            form = ' ({})'
         if self.metric:
             if verbose:
-                return ' millimeters'
+                return form.format('millimeters')
             else:
-                return ' mm'
+                return form.format('mm')
         else:
             if verbose:
-                return ' inches'
+                return form.format('inches')
             else:
-                if noTick:
-                    return 'in.'
+                if withParens:
+                    return form.format('in.')
                 else:
                     return '"'
     def length_to_increments(self, v):
