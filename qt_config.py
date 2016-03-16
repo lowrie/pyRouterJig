@@ -30,16 +30,6 @@ import config_file
 import qt_utils
 import router
 
-# Output
-#   background_color
-#   -english_separator
-#   -top_margin
-#   -bottom_margin
-#   -left_margin
-#   -right_margin
-#   -separation
-#   -debug
-
 def form_line(label, widget=None, tooltip=None):
     '''
     Formats a line as
@@ -207,7 +197,13 @@ class Config_Window(QtGui.QDialog):
         self.le_wood_images.editingFinished.connect(self._on_wood_images)
         tt = 'Location of wood images.'
         self.le_wood_images.setToolTip(tt)
-        grid = form_line(self.le_wood_images_label, tooltip=tt)
+        grid = QtGui.QGridLayout()
+        grid.addWidget(qt_utils.create_vline(), 0, 0, 4, 1)
+        grid.addWidget(qt_utils.create_vline(), 0, 3, 4, 1)
+        grid.addWidget(qt_utils.create_hline(), 0, 0, 1, 4)
+        grid.addWidget(self.le_wood_images_label, 1, 1)
+        grid.addWidget(self.le_wood_images, 2, 1)
+        grid.addWidget(qt_utils.create_hline(), 3, 0, 1, 4)
         vbox.addLayout(grid)
         vbox.addWidget(self.le_wood_images)
         vbox.addStretch(1)
