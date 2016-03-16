@@ -175,7 +175,7 @@ class Units(object):
         if with_units:
             r += self.units_string()
         return r
-    def units_string(self, verbose=False):
+    def units_string(self, verbose=False, noTick=False):
         '''Returns a string that represents the units'''
         if self.metric:
             if verbose:
@@ -186,7 +186,10 @@ class Units(object):
             if verbose:
                 return ' inches'
             else:
-                return '"'
+                if noTick:
+                    return 'in.'
+                else:
+                    return '"'
     def length_to_increments(self, v):
         '''
         Converts v to increments, where v is [inches|mm]

@@ -122,12 +122,6 @@ class Config_Window(QtGui.QDialog):
         self.initialize()
         self.change_state = 0
 
-    def unit_string(self):
-        if self.new_config['metric']:
-            return 'mm'
-        else:
-            return 'in.'
-
     def create_units(self):
         '''Creates the layout for units preferences'''
         w =  QtGui.QWidget()
@@ -180,7 +174,8 @@ class Config_Window(QtGui.QDialog):
         w =  QtGui.QWidget()
         vbox = QtGui.QVBoxLayout()
 
-        self.le_board_width_label = QtGui.QLabel('Initial Board Width ({}):'.format(self.unit_string()))
+        us = self.units.units_string(noTick=True)
+        self.le_board_width_label = QtGui.QLabel('Initial Board Width ({}):'.format(us))
         self.le_board_width = QtGui.QLineEdit(w)
         self.le_board_width.setFixedWidth(self.line_edit_width)
         self.le_board_width.editingFinished.connect(self._on_board_width)
@@ -188,7 +183,7 @@ class Config_Window(QtGui.QDialog):
         grid = form_line(self.le_board_width_label, self.le_board_width, tt)
         vbox.addLayout(grid)
 
-        self.le_db_thick_label = QtGui.QLabel('Initial Double Board Thickness ({}):'.format(self.unit_string()))
+        self.le_db_thick_label = QtGui.QLabel('Initial Double Board Thickness ({}):'.format(us))
         self.le_db_thick = QtGui.QLineEdit(w)
         self.le_db_thick.setFixedWidth(self.line_edit_width)
         self.le_db_thick.editingFinished.connect(self._on_db_thick)
@@ -225,7 +220,8 @@ class Config_Window(QtGui.QDialog):
         w =  QtGui.QWidget()
         vbox = QtGui.QVBoxLayout()
 
-        self.le_bit_width_label = QtGui.QLabel('Initial Bit Width ({}):'.format(self.unit_string()))
+        us = self.units.units_string(noTick=True)
+        self.le_bit_width_label = QtGui.QLabel('Initial Bit Width ({}):'.format(us))
         self.le_bit_width = QtGui.QLineEdit(w)
         self.le_bit_width.setFixedWidth(self.line_edit_width)
         self.le_bit_width.editingFinished.connect(self._on_bit_width)
@@ -233,7 +229,7 @@ class Config_Window(QtGui.QDialog):
         grid = form_line(self.le_bit_width_label, self.le_bit_width, tt)
         vbox.addLayout(grid)
 
-        self.le_bit_depth_label = QtGui.QLabel('Initial Bit Depth ({}):'.format(self.unit_string()))
+        self.le_bit_depth_label = QtGui.QLabel('Initial Bit Depth ({}):'.format(us))
         self.le_bit_depth = QtGui.QLineEdit(w)
         self.le_bit_depth.setFixedWidth(self.line_edit_width)
         self.le_bit_depth.editingFinished.connect(self._on_bit_depth)
@@ -287,19 +283,19 @@ class Config_Window(QtGui.QDialog):
         grid = form_line(self.le_printsf_label, self.le_printsf, tt)
         vbox.addLayout(grid)
 
-        self.le_min_image_label = QtGui.QLabel('Min Image Width:')
+        self.le_min_image_label = QtGui.QLabel('Min Image Width (pixels):')
         self.le_min_image = QtGui.QLineEdit(w)
         self.le_min_image.setFixedWidth(self.line_edit_width)
         self.le_min_image.editingFinished.connect(self._on_min_image)
-        tt = 'On save image, minimum width of image in pixels.'
+        tt = 'On save image, minimum width of image.'
         grid = form_line(self.le_min_image_label, self.le_min_image, tt)
         vbox.addLayout(grid)
 
-        self.le_max_image_label = QtGui.QLabel('Max Image Width:')
+        self.le_max_image_label = QtGui.QLabel('Max Image Width (pixels):')
         self.le_max_image = QtGui.QLineEdit(w)
         self.le_max_image.setFixedWidth(self.line_edit_width)
         self.le_max_image.editingFinished.connect(self._on_max_image)
-        tt = 'On save image, maximum width of image in pixels.'
+        tt = 'On save image, maximum width of image.'
         grid = form_line(self.le_max_image_label, self.le_max_image, tt)
         vbox.addLayout(grid)
 
@@ -311,7 +307,8 @@ class Config_Window(QtGui.QDialog):
         w =  QtGui.QWidget()
         vbox = QtGui.QVBoxLayout()
 
-        self.le_min_finger_width_label = QtGui.QLabel('Min Finger Width ({}):'.format(self.unit_string()))
+        us = self.units.units_string(noTick=True)
+        self.le_min_finger_width_label = QtGui.QLabel('Min Finger Width ({}):'.format(us))
         self.le_min_finger_width = QtGui.QLineEdit(w)
         self.le_min_finger_width.setFixedWidth(self.line_edit_width)
         self.le_min_finger_width.editingFinished.connect(self._on_min_finger_width)
@@ -319,7 +316,7 @@ class Config_Window(QtGui.QDialog):
         grid = form_line(self.le_min_finger_width_label, self.le_min_finger_width, tt)
         vbox.addLayout(grid)
 
-        self.le_caul_trim_label = QtGui.QLabel('Caul Trim ({}):'.format(self.unit_string()))
+        self.le_caul_trim_label = QtGui.QLabel('Caul Trim ({}):'.format(us))
         self.le_caul_trim = QtGui.QLineEdit(w)
         self.le_caul_trim.setFixedWidth(self.line_edit_width)
         self.le_caul_trim.editingFinished.connect(self._on_caul_trim)

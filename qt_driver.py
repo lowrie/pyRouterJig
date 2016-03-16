@@ -373,6 +373,7 @@ class Driver(QtGui.QMainWindow):
         self.main_frame = QtGui.QWidget()
 
         lineEditWidth = 80
+        us = self.units.units_string(noTick=True)
 
         # Create the figure canvas, using mpl interface
         self.fig = qt_fig.Qt_Fig(self.template, self.boards, self.config)
@@ -382,7 +383,7 @@ class Driver(QtGui.QMainWindow):
         self.fig.canvas.setFocus()
 
         # Board width line edit
-        self.le_board_width_label = QtGui.QLabel('Board Width')
+        self.le_board_width_label = QtGui.QLabel('Board Width ({})'.format(us))
         self.le_board_width = QtGui.QLineEdit(self.main_frame)
         self.le_board_width.setFixedWidth(lineEditWidth)
         self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
@@ -390,21 +391,21 @@ class Driver(QtGui.QMainWindow):
         self.le_board_width.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
 
         # Bit width line edit
-        self.le_bit_width_label = QtGui.QLabel('Bit Width')
+        self.le_bit_width_label = QtGui.QLabel('Bit Width ({})'.format(us))
         self.le_bit_width = QtGui.QLineEdit(self.main_frame)
         self.le_bit_width.setFixedWidth(lineEditWidth)
         self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
         self.le_bit_width.editingFinished.connect(self._on_bit_width)
 
         # Bit depth line edit
-        self.le_bit_depth_label = QtGui.QLabel('Bit Depth')
+        self.le_bit_depth_label = QtGui.QLabel('Bit Depth ({})'.format(us))
         self.le_bit_depth = QtGui.QLineEdit(self.main_frame)
         self.le_bit_depth.setFixedWidth(lineEditWidth)
         self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.le_bit_depth.editingFinished.connect(self._on_bit_depth)
 
         # Bit angle line edit
-        self.le_bit_angle_label = QtGui.QLabel('Bit Angle')
+        self.le_bit_angle_label = QtGui.QLabel('Bit Angle (deg.)')
         self.le_bit_angle = QtGui.QLineEdit(self.main_frame)
         self.le_bit_angle.setFixedWidth(lineEditWidth)
         self.le_bit_angle.setText('%g' % self.bit.angle)
@@ -414,7 +415,7 @@ class Driver(QtGui.QMainWindow):
         self.le_boardm_label = []
         self.le_boardm = []
         for i in lrange(2):
-            self.le_boardm_label.append(QtGui.QLabel('Thickness'))
+            self.le_boardm_label.append(QtGui.QLabel('Thickness ({})'.format(us)))
             self.le_boardm.append(QtGui.QLineEdit(self.main_frame))
             self.le_boardm[i].setFixedWidth(lineEditWidth)
             s = self.units.increments_to_string(self.boards[i+2].dheight)
