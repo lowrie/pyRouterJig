@@ -1101,8 +1101,7 @@ class Driver(QtGui.QMainWindow):
         if self.screenshot_index is None:
             self.screenshot_index = utils.get_file_index(self.working_dir, prefix, suffix)
         fname = prefix
-        if self.screenshot_index > 0:
-            fname += str(self.screenshot_index)
+        fname += str(self.screenshot_index)
 
         # Get the file name.  The default name is indexed on the number of
         # times this function is called.  If a screenshot, don't prompt for
