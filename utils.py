@@ -276,19 +276,19 @@ class Margins(object):
         else:
             self.top = top
 
-def get_file_index(path, prefix, postfix):
+def get_file_index(path, prefix, suffix):
     '''
     Finds the next index available for files that match the signature
 
-      path/prefixINDEXpostfix
+      path/prefixINDEX.suffix
 
     where INDEX is largest integer found, plus 1.  If no files are found, zero is returned.
     '''
     index = -1
-    globber = os.path.join(path, prefix + '*' + postfix)
+    globber = os.path.join(path, prefix + '*.' + suffix)
     files = glob.glob(globber)
     npre = len(prefix)
-    npost = len(postfix)
+    npost = len(suffix) + 1
     for f in files:
         name = os.path.basename(f)
         name = name[:-npost]

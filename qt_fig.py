@@ -25,6 +25,8 @@ from __future__ import print_function
 from __future__ import division
 from future.utils import lrange
 
+import time
+
 import router
 import utils
 
@@ -99,7 +101,12 @@ class Qt_Fig(QtGui.QWidget):
         self.current_background = self.background
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
-        self.font_size = {'title':4, 'fingers':3, 'template':3, 'boards':4, 'template_labels':3}
+        self.font_size = {'title':4,
+                          'fingers':3,
+                          'template':3,
+                          'boards':4,
+                          'template_labels':3,
+                          'watermark':4}
 
     def minimumSizeHint(self):
         '''
@@ -164,24 +171,26 @@ class Qt_Fig(QtGui.QWidget):
 
         return dimensions_changed
 
-    def draw(self, template, boards, bit, spacing, woods):
+    def draw(self, template, boards, bit, spacing, woods, description):
         '''
         Draws the figure
         '''
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
         self.woods = woods
+        self.description = description
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,
                                           self.config)
         self.current_background = self.background
         self.update()
 
-    def print(self, template, boards, bit, spacing, woods):
+    def print(self, template, boards, bit, spacing, woods, description):
         '''
         Prints the figure
         '''
         self.woods = woods
         self.current_background = None
+        self.description = description
 
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
@@ -197,11 +206,12 @@ class Qt_Fig(QtGui.QWidget):
         pdialog.paintRequested.connect(self.preview_requested)
         return pdialog.exec_()
 
-    def image(self, template, boards, bit, spacing, woods):
+    def image(self, template, boards, bit, spacing, woods, description):
         '''
         Prints the figure to a QImage object
         '''
         self.woods = woods
+        self.description = description
         self.set_fig_dimensions(template, boards)
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,
                                           self.config)
@@ -436,6 +446,18 @@ class Qt_Fig(QtGui.QWidget):
         # Draw the template bounding box
         painter.drawRect(r.xL(), r.yB(), r.width, r.height)
 
+        # Label the template with a watermark
+        if self.description is not None:
+            painter.save()
+            self.set_font_size(painter, 'watermark')
+            color = QtGui.QColor(0, 0, 0, 75)
+            painter.setPen(color)
+            flags = QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter
+            x = r.xL() + r.width // 2
+            y = r.yB() + r.height // 2
+            paint_text(painter, self.description, (x, y), flags)
+            painter.restore()
+
     def draw_template(self, painter):
         '''
         Draws the Incra templates
@@ -546,6 +568,7 @@ class Qt_Fig(QtGui.QWidget):
         flagsRC = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
 
         # ... draw the caul template and do its passes
+        datetime = time.strftime('\n%d %b %Y %H:%M', time.localtime())
         if self.config.show_caul:
             rect_caul = self.geom.rect_caul
             board_caul = self.geom.board_caul
@@ -567,7 +590,7 @@ class Qt_Fig(QtGui.QWidget):
             else:
                 painter.setPen(QtCore.Qt.DashLine)
                 painter.drawLine(xMid, rect_caul.yB(), xMid, rect_caul.yT())
-            paint_text(painter, label, (rect_caul.xL(), rect_caul.yMid()), flagsLC, (5, 0))
+            paint_text(painter, label + datetime, (rect_caul.xL(), rect_caul.yMid()), flagsLC, (5, 0))
             paint_text(painter, label, (rect_caul.xR(), rect_caul.yMid()), flagsRC, (-5, 0))
 
         # Label the templates
@@ -577,7 +600,7 @@ class Qt_Fig(QtGui.QWidget):
         else:
             painter.setPen(QtCore.Qt.DashLine)
             painter.drawLine(xMid, rect_T.yB(), xMid, rect_T.yT())
-        paint_text(painter, label_bottom, (rect_T.xL(), rect_T.yMid()), flagsLC, (5, 0))
+        paint_text(painter, label_bottom + datetime, (rect_T.xL(), rect_T.yMid()), flagsLC, (5, 0))
         paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsRC, (-5, 0))
         if label_top is not None:
             if len(centerline_TDD) > 0:
@@ -585,7 +608,7 @@ class Qt_Fig(QtGui.QWidget):
             else:
                 painter.setPen(QtCore.Qt.DashLine)
                 painter.drawLine(xMid, rect_TDD.yB(), xMid, rect_TDD.yT())
-            paint_text(painter, label_top, (rect_TDD.xL(), rect_TDD.yMid()), flagsLC, (5, 0))
+            paint_text(painter, label_top + datetime, (rect_TDD.xL(), rect_TDD.yMid()), flagsLC, (5, 0))
             paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsRC, (-5, 0))
 
         self.draw_alignment(painter)

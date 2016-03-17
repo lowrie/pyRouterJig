@@ -83,6 +83,7 @@ class Driver(QtGui.QMainWindow):
         self.edit_spacing.set_cuts(self.equal_spacing.cuts)
         self.spacing = self.equal_spacing # the default
         self.spacing_index = None # to be set in layout_widgets()
+        self.description = None
 
         # Create the main frame and menus
         self.create_status_bar()
@@ -136,8 +137,8 @@ class Driver(QtGui.QMainWindow):
                            ' The configuration file<p><tt>{}</tt><p>'\
                            ' will be created to store this setting,'\
                            ' along with additional default settings.  These options'\
-                           ' may be changed later by editing the configuration file and'\
-                           ' restarting <i>pyRouterJig</i>.</font>'.format(c.filename)
+                           ' may be changed later by selecting <b>Preferences</b> under'\
+                           ' the <b>pyRouterJig</b> menu.</font>'.format(c.filename)
                 box.setInformativeText(question)
                 buttonMetric = box.addButton('Metric (millimeters)', QtGui.QMessageBox.AcceptRole)
                 buttonEnglish = box.addButton('English (inches)', QtGui.QMessageBox.AcceptRole)
@@ -166,7 +167,8 @@ class Driver(QtGui.QMainWindow):
                                '<p><i>metric = {}</i><p>has been migrated.'\
                                ' But any other changes that you may have made'\
                                ' to the old file will need to be migrated to the'\
-                               ' new file.'.format(metric)
+                               ' new file, or by selecting <b>Preferences</b>'\
+                               ' under the <b>pyRouterJig</b> menu.'.format(metric)
                 else:
                     warning += 'The old configuration values were migrated'\
                                ' and any new values were set to their default.'
@@ -562,6 +564,12 @@ class Driver(QtGui.QMainWindow):
         edit_btn_deactivate_all.clicked.connect(self._on_edit_deactivate_all)
         edit_btn_deactivate_all.setToolTip('Set no cuts to be active')
 
+        # Add the description line edit
+        self.le_description = qt_utils.ShadowTextLineEdit(self.main_frame,
+                                                          'Enter description here for template watermark')
+        self.le_description.editingFinished.connect(self._on_description)
+        self.le_description.setAlignment(QtCore.Qt.AlignHCenter)
+
         ######################################################################
         # Layout widgets in the main frame
         ######################################################################
@@ -717,6 +725,7 @@ class Driver(QtGui.QMainWindow):
         # either add the spacing Tabs to the right of the line edits
         vbox_tabs = QtGui.QVBoxLayout()
         vbox_tabs.addWidget(self.tabs_spacing)
+        vbox_tabs.addWidget(self.le_description)
         vbox_tabs.addStretch(1)
         hbox.addStretch(1)
         hbox.addLayout(vbox_tabs)
@@ -813,7 +822,8 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('draw')
         self.template = router.Incra_Template(self.units, self.boards)
-        self.fig.draw(self.template, self.boards, self.bit, self.spacing, self.woods)
+        self.fig.draw(self.template, self.boards, self.bit, self.spacing, self.woods,
+                      self.description)
 
     def reinit_spacing(self):
         '''
@@ -1004,6 +1014,17 @@ class Driver(QtGui.QMainWindow):
             self.status_message('Changed board width to ' + val)
             self.file_saved = False
 
+    @QtCore.pyqtSlot()
+    def _on_description(self):
+        '''Handles changes to description'''
+        if self.config.debug:
+            print('_on_description')
+        if self.le_description.isModified():
+            self.description = str(self.le_description.text())
+            self.draw()
+            self.status_message('Changed description to "{}"'.format(self.description))
+            self.file_saved = False
+
     @QtCore.pyqtSlot(int)
     def _on_es_slider0(self, value):
         '''Handles changes to the equally-spaced slider spacing'''
@@ -1072,12 +1093,16 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_save')
 
-        prefix = 'pyrouterjig_'
-        postfix = '.png'
+        # Form the default filename prefix
+        prefix = 'pyrouterjig'
+#        if self.description is not None:
+#            prefix = self.description
+        suffix = 'png'
         if self.screenshot_index is None:
-            self.screenshot_index = utils.get_file_index(self.working_dir, prefix, postfix)
-
-        fname = prefix + str(self.screenshot_index) + postfix
+            self.screenshot_index = utils.get_file_index(self.working_dir, prefix, suffix)
+        fname = prefix
+        if self.screenshot_index > 0:
+            fname += str(self.screenshot_index)
 
         # Get the file name.  The default name is indexed on the number of
         # times this function is called.  If a screenshot, don't prompt for
@@ -1093,6 +1118,7 @@ class Driver(QtGui.QMainWindow):
             # ... so here is now we do it:
             dialog = QtGui.QFileDialog(self, 'Save file', defname, \
                                        'Portable Network Graphics (*.png)')
+            dialog.setDefaultSuffix(suffix)
             dialog.setFileMode(QtGui.QFileDialog.AnyFile)
             dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
             filename = None
@@ -1112,9 +1138,10 @@ class Driver(QtGui.QMainWindow):
         if do_screenshot:
             image = QtGui.QPixmap.grabWindow(self.winId()).toImage()
         else:
-            image = self.fig.image(self.template, self.boards, self.bit, self.spacing, self.woods)
+            image = self.fig.image(self.template, self.boards, self.bit, self.spacing,
+                                   self.woods, self.description)
 
-        s = serialize.serialize(self.bit, self.boards, self.spacing, \
+        s = serialize.serialize(self.bit, self.boards, self.spacing,
                                 self.config)
         image.setText('pyRouterJig', s)
         r = image.save(filename, 'png')
@@ -1272,7 +1299,7 @@ class Driver(QtGui.QMainWindow):
             print('_on_print')
 
         r = self.fig.print(self.template, self.boards, self.bit, self.spacing,
-                           self.woods)
+                           self.woods, self.description)
         if r:
             self.status_message('Figure printed')
         else:
@@ -1285,11 +1312,11 @@ class Driver(QtGui.QMainWindow):
             print('_on_print_table')
 
         prefix = 'table_'
-        postfix = '.txt'
+        suffix = '.txt'
         if self.table_index is None:
-            self.table_index = utils.get_file_index(self.working_dir, prefix, postfix)
+            self.table_index = utils.get_file_index(self.working_dir, prefix, suffix)
 
-        fname = prefix + str(self.table_index) + postfix
+        fname = prefix + str(self.table_index) + suffix
         filename = os.path.join(self.working_dir, fname)
         title = router.create_title(self.boards, self.bit, self.spacing)
         utils.print_table(filename, self.boards, title)

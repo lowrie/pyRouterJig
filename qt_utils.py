@@ -84,6 +84,36 @@ class PreviewComboBox(QtGui.QComboBox):
         #print('hidePopup')
         self.activated.emit(self.currentIndex())
 
+class ShadowTextLineEdit(QtGui.QLineEdit):
+    '''
+    This line edit sets a grayed shadow text, until focus is received and text
+    is entered.  Shadow text is the text displayed when the line edit is empty.
+    '''
+    def __init__(self, parent, shadow_text):
+        QtGui.QLineEdit.__init__(self, parent)
+        self.shadow_text = shadow_text
+        self.initialize_shadow()
+
+    def initialize_shadow(self):
+        self.setText(self.shadow_text)
+        self.setStyleSheet('color: gray;')
+        self.has_real_text = False
+
+    def focusInEvent(self, event):
+        QtGui.QLineEdit.focusInEvent(self, event)
+        # If no real text, clear the shadow text and darken the text
+        if not self.has_real_text:
+            self.clear()
+            self.setStyleSheet('color: black;')
+
+    def focusOutEvent(self, event):
+        QtGui.QLineEdit.focusOutEvent(self, event)
+        # If there's no text, set it back to the shadow
+        if len(str(self.text())) == 0:
+            self.initialize_shadow()
+        else:
+            self.has_real_text = True
+
 def set_line_style(line):
     '''Sets the style for create_vline() and create_hline()'''
     line.setFrameShadow(QtGui.QFrame.Raised)
