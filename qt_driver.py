@@ -1108,7 +1108,7 @@ class Driver(QtGui.QMainWindow):
         # the filename and use the default name
         defname = os.path.join(self.working_dir, fname)
         if do_screenshot:
-            filename = defname
+            filename = defname + '.' + suffix
         else:
             # This is the simple approach to set the filename, but doesn't allow
             # us to update the working_dir, if the user changes it.
