@@ -216,33 +216,7 @@ class Driver(QtGui.QMainWindow):
         self.menubar = self.menuBar()
 
         # always attach the menubar to the application window, even on the Mac
-        self.menubar.setNativeMenuBar(False)
-
-        # Add pyRouterJig menu
-
-        pyr_menu = self.menubar.addMenu('pyRouterJig')
-
-        about_action = QtGui.QAction('&About pyRouterJig', self)
-        about_action.setShortcut('Ctrl+A')
-        about_action.setStatusTip('About this program')
-        about_action.triggered.connect(self._on_about)
-        pyr_menu.addAction(about_action)
-
-        pyr_menu.addSeparator()
-
-        pref_action = QtGui.QAction('Preferences...', self)
-        pref_action.setShortcut('Ctrl+,')
-        pref_action.setStatusTip('Open preferences')
-        pref_action.triggered.connect(self._on_preferences)
-        pyr_menu.addAction(pref_action)
-
-        pyr_menu.addSeparator()
-
-        exit_action = QtGui.QAction('&Quit pyRouterJig', self)
-        exit_action.setShortcut('Ctrl+Q')
-        exit_action.setStatusTip('Quit pyRouterJig')
-        exit_action.triggered.connect(self._on_exit)
-        pyr_menu.addAction(exit_action)
+        #self.menubar.setNativeMenuBar(False)
 
         # Add the file menu
 
@@ -260,11 +234,7 @@ class Driver(QtGui.QMainWindow):
         save_action.triggered.connect(self._on_save)
         file_menu.addAction(save_action)
 
-        screenshot_action = QtGui.QAction('Screenshot...', self)
-        screenshot_action.setShortcut('Ctrl+W')
-        screenshot_action.setStatusTip('Saves an image of the pyRouterJig window to a file')
-        screenshot_action.triggered.connect(self._on_screenshot)
-        file_menu.addAction(screenshot_action)
+        file_menu.addSeparator()
 
         print_action = QtGui.QAction('&Print...', self)
         print_action.setShortcut('Ctrl+P')
@@ -272,21 +242,20 @@ class Driver(QtGui.QMainWindow):
         print_action.triggered.connect(self._on_print)
         file_menu.addAction(print_action)
 
+        file_menu.addSeparator()
+
+        exit_action = QtGui.QAction('&Quit pyRouterJig', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.setStatusTip('Quit pyRouterJig')
+        exit_action.triggered.connect(self._on_exit)
+        file_menu.addSeparator()
+        file_menu.addAction(exit_action)
+
         # comment out for now...
         #table_action = QtGui.QAction('Print Table...', self)
         #table_action.setStatusTip('Print a table of router pass locations')
         #table_action.triggered.connect(self._on_print_table)
         #file_menu.addAction(table_action)
-
-        # ... we need to make this action persistent, so that we can
-        # enable and disable it (until all of its functionality is
-        # written)
-        self.threeDS_action = QtGui.QAction('&Export 3DS...', self)
-        self.threeDS_action.setShortcut('Ctrl+E')
-        self.threeDS_action.setStatusTip('Export the joint to a 3DS file')
-        self.threeDS_action.triggered.connect(self._on_3ds)
-        file_menu.addAction(self.threeDS_action)
-        self.threeDS_enabler()
 
         # Add view menu
 
@@ -297,6 +266,8 @@ class Driver(QtGui.QMainWindow):
         fullscreen_action.setStatusTip('Toggle full-screen mode')
         fullscreen_action.triggered.connect(self._on_fullscreen)
         view_menu.addAction(fullscreen_action)
+
+        view_menu.addSeparator()
 
         self.caul_action = QtGui.QAction('Caul Template', self, checkable=True)
         self.caul_action.setStatusTip('Toggle caul template')
@@ -309,6 +280,8 @@ class Driver(QtGui.QMainWindow):
         self.finger_size_action.triggered.connect(self._on_finger_sizes)
         view_menu.addAction(self.finger_size_action)
         self.finger_size_action.setChecked(self.config.show_finger_widths)
+
+        view_menu.addSeparator()
 
         pass_menu = view_menu.addMenu('Router Passes')
         self.pass_id_action = QtGui.QAction('Identifiers', self, checkable=True)
@@ -323,9 +296,45 @@ class Driver(QtGui.QMainWindow):
         pass_menu.addAction(self.pass_location_action)
         self.pass_location_action.setChecked(self.config.show_router_pass_locations)
 
+        # Add Tools menu
+
+        tools_menu = self.menubar.addMenu('Tools')
+
+        screenshot_action = QtGui.QAction('Screenshot...', self)
+        screenshot_action.setShortcut('Ctrl+W')
+        screenshot_action.setStatusTip('Saves an image of the pyRouterJig window to a file')
+        screenshot_action.triggered.connect(self._on_screenshot)
+        tools_menu.addAction(screenshot_action)
+
+        # We need to make this action persistent, so that we can
+        # enable and disable it (until all of its functionality is
+        # written)
+        self.threeDS_action = QtGui.QAction('&Export 3DS...', self)
+        self.threeDS_action.setShortcut('Ctrl+E')
+        self.threeDS_action.setStatusTip('Export the joint to a 3DS file')
+        self.threeDS_action.triggered.connect(self._on_3ds)
+        tools_menu.addAction(self.threeDS_action)
+        self.threeDS_enabler()
+
+        tools_menu.addSeparator()
+
+        pref_action = QtGui.QAction('Preferences...', self)
+        pref_action.setShortcut('Ctrl+,')
+        pref_action.setStatusTip('Open preferences')
+        pref_action.triggered.connect(self._on_preferences)
+        tools_menu.addAction(pref_action)
+
         # Add the help menu
 
         help_menu = self.menubar.addMenu('Help')
+
+        about_action = QtGui.QAction('&About pyRouterJig', self)
+        about_action.setShortcut('Ctrl+A')
+        about_action.setStatusTip('About this program')
+        about_action.triggered.connect(self._on_about)
+        help_menu.addAction(about_action)
+
+        view_menu.addSeparator()
 
         doclink_action = QtGui.QAction('&Documentation...', self)
         doclink_action.setStatusTip('Opens documentation page in web browser')
