@@ -292,9 +292,12 @@ def get_file_index(path, prefix, suffix):
     for f in files:
         name = os.path.basename(f)
         name = name[:-npost]
-        i = int(name[npre:])
-        if i > index:
-            index = i
+        try:
+            i = int(name[npre:])
+            if i > index:
+                index = i
+        except:
+            continue
     index += 1
     return index
 
