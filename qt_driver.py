@@ -321,7 +321,7 @@ class Driver(QtGui.QMainWindow):
 
         tools_menu.addSeparator()
 
-        pref_action = QtGui.QAction('Options...', self)
+        pref_action = QtGui.QAction('Preferences...', self)
         pref_action.setShortcut('Ctrl+,')
         pref_action.setStatusTip('Open preferences')
         pref_action.triggered.connect(self._on_preferences)
