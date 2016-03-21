@@ -126,6 +126,9 @@ class Driver(QtGui.QMainWindow):
         c = config_file.Configuration()
         r = c.read_config()
         if r > 0:
+            tools = 'Tools'
+            if utils.isMac():
+                tools = 'pyRouterJig'
             if r == 1:
                 # The config file does not exist.  Ask the user whether they want metric or english
                 # units
@@ -138,7 +141,7 @@ class Driver(QtGui.QMainWindow):
                            ' will be created to store this setting,'\
                            ' along with additional default settings.  These options'\
                            ' may be changed later by selecting <b>Preferences</b> under'\
-                           ' the <b>pyRouterJig</b> menu.</font>'.format(c.filename)
+                           ' the <b>{}</b> menu.</font>'.format(c.filename, tools)
                 box.setInformativeText(question)
                 buttonMetric = box.addButton('Metric (millimeters)', QtGui.QMessageBox.AcceptRole)
                 buttonEnglish = box.addButton('English (inches)', QtGui.QMessageBox.AcceptRole)
@@ -168,7 +171,7 @@ class Driver(QtGui.QMainWindow):
                                ' But any other changes that you may have made'\
                                ' to the old file will need to be migrated to the'\
                                ' new file, or by selecting <b>Preferences</b>'\
-                               ' under the <b>pyRouterJig</b> menu.'.format(metric)
+                               ' under the <b>{}</b> menu.'.format(metric, tools)
                 else:
                     warning += 'The old configuration values were migrated'\
                                ' and any new values were set to their default.'
@@ -318,7 +321,7 @@ class Driver(QtGui.QMainWindow):
 
         tools_menu.addSeparator()
 
-        pref_action = QtGui.QAction('Preferences...', self)
+        pref_action = QtGui.QAction('Options...', self)
         pref_action.setShortcut('Ctrl+,')
         pref_action.setStatusTip('Open preferences')
         pref_action.triggered.connect(self._on_preferences)

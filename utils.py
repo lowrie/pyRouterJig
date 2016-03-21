@@ -23,7 +23,7 @@ This module contains base utilities for pyRouterJig
 '''
 from __future__ import division
 
-import math, fractions, os, glob
+import math, fractions, os, glob, platform
 
 VERSION = '0.8.9'
 
@@ -32,6 +32,9 @@ def my_round(f):
     Rounds to the nearest integer
     '''
     return int(round(f))
+
+def isMac():
+    return (platform.system() == 'Darwin')
 
 class My_Fraction(object):
     '''
