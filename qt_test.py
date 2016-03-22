@@ -27,6 +27,7 @@ from builtins import str
 import sys
 import unittest
 from qt_driver import Driver
+import utils
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4.QtTest import QTest
@@ -43,6 +44,8 @@ class Driver_Test(unittest.TestCase):
         self.d.raise_()
         self.debug = self.d.config.debug
         QTest.qWaitForWindowShown(self.d)
+        if not utils.isMac():
+            self.d.working_dir = 'Z:\Windows\pyRouterJig\images'
     def test_options(self):
         self.assertFalse(self.debug)
     def test_defaults(self):
@@ -61,8 +64,10 @@ class Driver_Test(unittest.TestCase):
         self.screenshot()
         # default with caul
         print('************ caul')
+        self.d.caul_action.setChecked(True)
         self.d._on_caul()
         self.screenshot()
+        self.d.caul_action.setChecked(False)
         self.d._on_caul()
         # dovetail
         print('************ dovetail')
