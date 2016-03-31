@@ -1,6 +1,6 @@
 ---
 layout: page_doc
-title: Other Resources
+title: Additional Resources
 ---
 
 In addition to the documentation here, I highly recommend [this tutorial put

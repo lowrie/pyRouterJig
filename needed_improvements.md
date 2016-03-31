@@ -35,7 +35,7 @@ upgrade to both Python 3.5 and PyQt5.
     <a href="{{ site.baseurl }}/saving_preferences/">Prev: Saving Preferences</a>
   </p>
   <p class="alignright">
-    <a href="{{ site.baseurl }}/other_resources/">Next: Other Resources</a>
+    <a href="{{ site.baseurl }}/additional_resources/">Next: Additional Resources</a>
   </p>
 </div>
 <div style="clear: both;"></div>

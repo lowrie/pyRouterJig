@@ -26,7 +26,7 @@ open-source software efforts:
 
 <div id="textbox">
   <p class="alignleft">
-    <a href="{{ site.baseurl }}/other_resources/">Prev: Other Resources</a>
+    <a href="{{ site.baseurl }}/additional_resources/">Prev: Additional Resources</a>
   </p>
 </div>
 <div style="clear: both;"></div>
