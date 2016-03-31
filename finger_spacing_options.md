@@ -11,7 +11,9 @@ The automatic spacing options are <b>Equal</b> and <b>Variable</b>, located at
 tabs in the lower-right portion of the window.  Each option has its own
 controls, described below:
 
-* <b>Equal:</b> In this case, the fingers are equally spaced.  
+
+* <a name="equal_spacing"></a>
+  <b>Equal:</b> In this case, the fingers are equally spaced.  
   <a data-featherlight="{{ site.baseurl }}/images/opening_screen_shot.png">The
   opening screenshot</a> is an example.
   There are three inputs that affect this algorithm:
@@ -68,7 +70,9 @@ Width</b> has been changed to 7" and the <b>Centered</b> option unclicked.
 </figcaption>
 </figure>
 
-* <b>Variable:</b> In this case a large finger is centered on the board,
+
+* <a name="variable_spacing"></a>
+  <b>Variable:</b> In this case a large finger is centered on the board,
   and the fingers decrease in size proportional to the distance to the center.
   There is one input that affects this algorithm:
 
@@ -78,7 +82,7 @@ Width</b> has been changed to 7" and the <b>Centered</b> option unclicked.
     the same as equally-spaced with zero \"Spacing\", zero \"Width\", and
     the \"Centered\" option checked.
 
-[Figure 7](#figure7) shows an example of a Variable-spaced box joint.
+  [Figure 7](#figure7) shows an example of a Variable-spaced box joint.
 
 <figure class="zoomable">
 <a name="figure7">

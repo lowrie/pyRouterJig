@@ -28,7 +28,6 @@ upgrade to both Python 3.5 and PyQt5.
   * Define an option for \"fold-over templates\" that are appropriate for
     laying out hand-cut joints.
   * More spacing options.
-  * Cleaning up these web pages. Create a web page with more example joints.
 
 <div id="textbox">
   <p class="alignleft">
