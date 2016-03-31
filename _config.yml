@@ -25,5 +25,9 @@ author:
   url:               http://github.com/lowrie/
   email:             pyrouterjig@gmail.com
 
+# Github location
+github:
+  url:               http://github.com/lowrie/pyRouterJig
+
 # Custom vars
 version:             0.8.9
