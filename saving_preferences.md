@@ -82,3 +82,13 @@ to update your `.pyrouterjig` file.  {{ site.codename }} will attempt to
 migrate settings.  If unable to migrate settings, default settings are used.
 Regardless, your old `.pyrouterjig` is moved to `.pyrouterjigX.X.X`,
 where `X.X.X` is the code version that created the file.
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="{{ site.baseurl }}/template/">Prev: Template Details</a>
+  </p>
+  <p class="alignright">
+    <a href="{{ site.baseurl }}/needed_improvements/">Next: Needed Improvements</a>
+  </p>
+</div>
+<div style="clear: both;"></div>

@@ -40,3 +40,13 @@ website](http://www.wood-database.com/).
 the Top and Bottom Boards.
 </figcaption>
 </figure>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="{{ site.baseurl }}/overview/">Prev: Overview</a>
+  </p>
+  <p class="alignright">
+    <a href="{{ site.baseurl }}/finger_spacing_options/">Next: Finger Spacing Options</a>
+  </p>
+</div>
+<div style="clear: both;"></div>

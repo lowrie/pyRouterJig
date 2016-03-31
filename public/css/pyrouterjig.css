@@ -28,3 +28,14 @@ a[data-featherlight] {
   padding-top: 0;
 }
 
+/* alignment for footers */
+
+.alignleft {
+	float: left;
+}
+
+.alignright {
+	float: right;
+}
+
+

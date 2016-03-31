@@ -29,3 +29,13 @@ upgrade to both Python 3.5 and PyQt5.
     laying out hand-cut joints.
   * More spacing options.
   * Cleaning up these web pages. Create a web page with more example joints.
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="{{ site.baseurl }}/saving_preferences/">Prev: Saving Preferences</a>
+  </p>
+  <p class="alignright">
+    <a href="{{ site.baseurl }}/other_resources/">Next: Other Resources</a>
+  </p>
+</div>
+<div style="clear: both;"></div>

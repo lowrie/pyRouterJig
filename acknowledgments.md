@@ -23,3 +23,10 @@ open-source software efforts:
 * [Anaconda](https://www.continuum.io/)
 * [Featherlight](http://noelboss.github.io/featherlight/)
 * [Hyde](http://hyde.getpoole.com/)
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="{{ site.baseurl }}/other_resources/">Prev: Other Resources</a>
+  </p>
+</div>
+<div style="clear: both;"></div>

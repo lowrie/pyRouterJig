@@ -48,3 +48,13 @@ some explanation:
   can easily add to the router pass locations displayed in Step 1.
   1. For each pass, the template will get you close.  But you can also use the
   ruler to double check that the fence is at the precise location.
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="{{ site.baseurl }}/menus/">Prev: Drop-down menus</a>
+  </p>
+  <p class="alignright">
+    <a href="{{ site.baseurl }}/saving_preferences/">Next: Saving Preferences</a>
+  </p>
+</div>
+<div style="clear: both;"></div>

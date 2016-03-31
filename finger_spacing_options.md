@@ -83,3 +83,13 @@ Width</b> has been changed to 7" and the <b>Centered</b> option unclicked.
 value of 5.
 </figcaption>
 </figure>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="{{ site.baseurl }}/wood_patterns/">Prev: Wood Pattern Selection</a>
+  </p>
+  <p class="alignright">
+    <a href="{{ site.baseurl }}/editor/">Next: Editor</a>
+  </p>
+</div>
+<div style="clear: both;"></div>

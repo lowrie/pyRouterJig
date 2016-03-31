@@ -65,3 +65,13 @@ starting point of invoking the <b>Editor</b>.
 
 Note that if you make changes in the <b>Editor</b>, and then go back to either
 <b>Equal</b> or <b>Variable</b> options, the changes will be lost.
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="{{ site.baseurl }}/finger_spacing_options/">Prev: Finger Spacing Options</a>
+  </p>
+  <p class="alignright">
+    <a href="{{ site.baseurl }}/alignment/">Next: Alignment of Router Passes</a>
+  </p>
+</div>
+<div style="clear: both;"></div>

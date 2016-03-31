@@ -85,3 +85,10 @@ dovetail joint shown in [Figure 2](#figure2) below:
 has been changed to 7 degrees.
 </figcaption>
 </figure>
+
+<div id="textbox">
+  <p class="alignright">
+    <a href="{{ site.baseurl }}/wood_patterns/">Next: Wood Pattern Selection</a>
+  </p>
+</div>
+<div style="clear: both;"></div>

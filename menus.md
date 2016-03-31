@@ -96,3 +96,13 @@ will create a clamping caul for the Top Board, while the B-cuts create a
 clamping caul for the Bottom Board.
 </figcaption>
 </figure>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="{{ site.baseurl }}/alignment/">Prev: Alignment of Router Passes</a>
+  </p>
+  <p class="alignright">
+    <a href="{{ site.baseurl }}/template/">Next: Template Details</a>
+  </p>
+</div>
+<div style="clear: both;"></div>

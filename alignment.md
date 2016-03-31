@@ -22,3 +22,13 @@ possible to position the fence at a lock position of the INCRA fence.
 If not using an INCRA fence, then you may want to increase the resolution.
 This may be accomplished through the <b>Increments per inch</b> (or per mm) parameter in the
 <b>Preferences</b>; see the section [Saving Preferences](#saving-preferences).
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="{{ site.baseurl }}/editor/">Prev: Editor</a>
+  </p>
+  <p class="alignright">
+    <a href="{{ site.baseurl }}/menus/">Next: Drop-down Menus</a>
+  </p>
+</div>
+<div style="clear: both;"></div>
