@@ -12,7 +12,8 @@ tabs in the lower-right portion of the window.  Each option has its own
 controls, described below:
 
 * <b>Equal:</b> In this case, the fingers are equally spaced.  
-  Figures [1](#figure1) and [2](#figure2) are examples.
+  <a data-featherlight="{{ site.baseurl }}/images/opening_screen_shot.png">The
+  opening screenshot</a> is an example.
   There are three inputs that affect this algorithm:
 
   1. <b>Spacing:</b> This slider allows you to specify additional spacing between
@@ -31,6 +32,42 @@ controls, described below:
   slider and using the left and right arrow keys for small changes and Page Up
   and Page Down for large changes.
 
+<figure class="zoomable">
+<a name="figure4">
+<img src="{{ site.baseurl }}/images/bspacing_screen_shot.png">
+</a>
+<figcaption>
+<b>Figure 4.</b>  Effect of Spacing option.  Compared to 
+<a data-featherlight="{{ site.baseurl }}/images/opening_screen_shot.png">the
+opening screenshot</a>, the <b>Spacing</b>
+slider been moved to a value of 1 17/32".
+</figcaption>
+</figure>
+
+<figure class="zoomable">
+<a name="figure5">
+<img src="{{ site.baseurl }}/images/width_screen_shot.png">
+</a>
+<figcaption>
+<b>Figure 5.</b>  Effect of Width option.  Compared to 
+<a data-featherlight="{{ site.baseurl }}/images/opening_screen_shot.png">the
+opening screenshot</a>, the <b>Width</b>
+slider been moved to a value of 27/32".
+</figcaption>
+</figure>
+
+<figure class="zoomable">
+<a name="figure6">
+<img src="{{ site.baseurl }}/images/centered_screen_shot.png">
+</a>
+<figcaption>
+<b>Figure 6.</b>  Effect of Centered option.  Compared to 
+<a data-featherlight="{{ site.baseurl }}/images/opening_screen_shot.png">the
+opening screenshot</a>, the <b>Board
+Width</b> has been changed to 7" and the <b>Centered</b> option unclicked.
+</figcaption>
+</figure>
+
 * <b>Variable:</b> In this case a large finger is centered on the board,
   and the fingers decrease in size proportional to the distance to the center.
   There is one input that affects this algorithm:
@@ -44,41 +81,13 @@ controls, described below:
 [Figure 7](#figure7) shows an example of a Variable-spaced box joint.
 
 <figure class="zoomable">
-<a name="figure4">
-<img src="{{ site.baseurl }}/images/bspacing_screen_shot.png">
-</a>
-<figcaption>
-<b>Figure 4.</b>  Effect of Spacing option.  Compared to Fig. 1, the <b>Spacing</b>
-slider been moved to a value of 1 17/32".
-</figcaption>
-</figure>
-
-<figure class="zoomable">
-<a name="figure5">
-<img src="{{ site.baseurl }}/images/width_screen_shot.png">
-</a>
-<figcaption>
-<b>Figure 5.</b>  Effect of Width option.  Compared to Fig. 1, the <b>Width</b>
-slider been moved to a value of 27/32".
-</figcaption>
-</figure>
-
-<figure class="zoomable">
-<a name="figure6">
-<img src="{{ site.baseurl }}/images/centered_screen_shot.png">
-</a>
-<figcaption>
-<b>Figure 6.</b>  Effect of Centered option.  Compared to Fig. 1, the <b>Board
-Width</b> has been changed to 7" and the <b>Centered</b> option unclicked.
-</figcaption>
-</figure>
-
-<figure class="zoomable">
 <a name="figure7">
 <img src="{{ site.baseurl }}/images/variable_screen_shot.png">
 </a>
 <figcaption>
-<b>Figure 7.</b>  Variable spacing option.  Compared to Fig. 1, the
+<b>Figure 7.</b>  Variable spacing option.  Compared to 
+<a data-featherlight="{{ site.baseurl }}/images/opening_screen_shot.png">the
+opening screenshot</a>, the
 <b>Variable</b> tab has been clicked and the <b>Fingers</b> input has a
 value of 5.
 </figcaption>

@@ -9,7 +9,7 @@ like to work in, as shown below:
 <img src="{{ site.baseurl }}/images/select_units.png" alt="Select units window">
 
 Your choice of unit system will be saved in a configuration file, which is
-described in the section [Saving Preferences](#saving-preferences), and you
+described in the <a href="{{ site.baseurl }}/saving_preferences/">section Saving Preferences</a>, and you
 will not be asked again.
 
 After selecting the units, a new window is created, and you should see something like the image
@@ -33,8 +33,9 @@ width of 7 1/2\".  The upper portion of the window draws the current joint.
 Each finger is labeled with its width.
 
 Below the boards is the corresponding template that may be
-cut out and used in an INCRA LS Positioner. See [Template
-Details](#incra-template-details) for more details on the templates.  Below the template is a concise
+cut out and used in an INCRA LS Positioner. See 
+<a href="{{ site.baseurl }}/template/">Template Details</a>
+for more details on the templates.  Below the template is a concise
 title that summarizes the properties of the joint.  The graphics containing the boards,
 template, and title may be printed by selecting <b>Print</b> in the
 <b>File</b> pull-down menu, or by pressing the key combination `Ctrl-P`
@@ -70,8 +71,9 @@ Note that the whitespace around the \"`/`\" is ignored.
 The values with length dimension (inches or mm) are rounded to the nearest
 alignment point.  By default for English units, values are rounded to the nearest
 1/32\".  By default for metric, values are rounded to the  nearest
-millimeter.  See section [Alignment of Router Passes](#alignment) for more
-information about alignment.
+millimeter.  See <a href="{{ site.baseurl }}/alignment/">section Alignment of
+Router Passes</a>
+for more information about alignment.
 
 To create a dovetail joint, change <b>Bit Angle</b> to 7 degrees, and we obtain the
 dovetail joint shown in [Figure 2](#figure2) below:
@@ -81,7 +83,9 @@ dovetail joint shown in [Figure 2](#figure2) below:
 <img src="{{ site.baseurl }}/images/dovetail_screen_shot.png">
 </a>
 <figcaption>
-<b>Figure 2.</b>  Dovetail example.  Compared to Fig. 1, the <b>Bit Angle</b>
+<b>Figure 2.</b>  Dovetail example.  Compared to 
+<a data-featherlight="{{ site.baseurl }}/images/opening_screen_shot.png">the
+opening screenshot</a>, the <b>Bit Angle</b>
 has been changed to 7 degrees.
 </figcaption>
 </figure>

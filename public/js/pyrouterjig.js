@@ -18,6 +18,6 @@ $(function() {
         if(figcaption.length) {
             img.attr('alt', figcaption.text());
         }
-        $(this).find('a').attr('data-featherlight', img.attr('src'));
+        $(this).first('a').attr('data-featherlight', img.attr('src'));
     });
 });

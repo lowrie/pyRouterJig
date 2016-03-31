@@ -13,7 +13,9 @@ these are set to their final values under either <b>Equal</b> or
 <b>Variable</b> before switching to the <b>Editor</b>.
 
 [Figure 8](#figure8) shows an example of entering the <b>Editor</b>, after
-setting up the joint as in [Fig. 7](#figure7).  An active cut is highlighted
+setting up the joint as in
+<a data-featherlight="{{ site.baseurl }}/images/variable_screen_shot.png">Fig. 7 of the previous section</a>.
+An active cut is highlighted
 in red and is the cut which is to be edited, using either the buttons under
 the <b>Editor</b> tab, or using keyboard shortcuts.  Again, active cuts are
 always on the A-cuts of the Top Board.  The blue outline on a cut indicates
@@ -26,7 +28,8 @@ cuts can be moved or widened, limited by the bit width.
 <img src="{{ site.baseurl }}/images/editor_screen_shot.png">
 </a>
 <figcaption>
-<b>Figure 8.</b>  Editor mode, following Variable spacing set up as in Fig. 7.
+<b>Figure 8.</b>  Editor mode, following Variable spacing set up as in
+<a data-featherlight="{{ site.baseurl }}/images/variable_screen_shot.png">Fig. 7 of the previous section</a>.
 The first three cuts on the Top Board are active, with the cut cursor on the
 center cut.
 </figcaption>
@@ -71,7 +74,7 @@ Note that if you make changes in the <b>Editor</b>, and then go back to either
     <a href="{{ site.baseurl }}/finger_spacing_options/">Prev: Finger Spacing Options</a>
   </p>
   <p class="alignright">
-    <a href="{{ site.baseurl }}/alignment/">Next: Alignment of Router Passes</a>
+    <a href="{{ site.baseurl }}/double_joints/">Next: Double Joints</a>
   </p>
 </div>
 <div style="clear: both;"></div>

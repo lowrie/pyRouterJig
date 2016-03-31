@@ -4,7 +4,8 @@ title: Alignment of Router Passes
 ---
 
 This section discusses how router passes are positioned in general.  For
-template alignment, see the section [Template Details](#incra-template-details).
+template alignment, see the
+<a href="{{ site.baseurl }}/template/">section Template Details</a>.
 
 {{ site.codename }} aligns each router pass on equally-spaced \"increments.\"  By default,
 
@@ -21,11 +22,12 @@ possible to position the fence at a lock position of the INCRA fence.
 
 If not using an INCRA fence, then you may want to increase the resolution.
 This may be accomplished through the <b>Increments per inch</b> (or per mm) parameter in the
-<b>Preferences</b>; see the section [Saving Preferences](#saving-preferences).
+<b>Preferences</b>; see the 
+<a href="{{ site.baseurl }}/saving_preferences/">section Saving Preferences</a>.
 
 <div id="textbox">
   <p class="alignleft">
-    <a href="{{ site.baseurl }}/editor/">Prev: Editor</a>
+    <a href="{{ site.baseurl }}/double_joints/">Prev: Double Joints</a>
   </p>
   <p class="alignright">
     <a href="{{ site.baseurl }}/menus/">Next: Drop-down Menus</a>
