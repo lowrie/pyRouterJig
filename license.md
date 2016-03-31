@@ -1,12 +1,9 @@
 ---
-layout: default
-title: pyRouterJig License
+layout: page
+title: License
 ---
 
-Software License
-================
-
-Copyright 2015-2016 [Robert B. Lowrie](https://github.com/lowrie)
+Copyright 2015-{{ site.time | date: '%Y' }} [Robert B. Lowrie](https://github.com/lowrie)
 
 pyRouterJig is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -22,9 +19,6 @@ License along with pyRouterJig; see the file LICENSE. If not, see
 
 Disclaimer
 ==========
-
-Please read the following:
---------------------------
 
 * This software and its output is not an INCRA product.  The authors have no
 connection with INCRA (or Taylor Design Group, Inc.), aside from being users

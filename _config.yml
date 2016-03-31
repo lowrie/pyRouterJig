@@ -1,2 +1,29 @@
 baseurl: /pyRouterJig
-codename: "_pyRouterJig_"
+codename: "<em>pyRouterJig</em>"
+
+# Lanyon variables..........................................................
+#
+# Permalinks
+#
+# Use of `relative_permalinks` ensures post links from the index work properly.
+permalink:           pretty
+
+# Setup
+title:               pyRouterJig
+tagline:             'A woodworking layout tool for creating box and dovetail joints'
+description:         'A woodworking layout tool for creating box and dovetail joints'
+url:                 http://lowrie.github.io/pyRouterJig/
+baseurl:             '/pyRouterJig'
+gems:                [jekyll-paginate]
+paginate:            5
+paginate_path:       "page:num"
+
+# About/contact
+author:
+  name:              Robert B. Lowrie
+  moniker:           lowrie
+  url:               http://github.com/lowrie/
+  email:             pyrouterjig@gmail.com
+
+# Custom vars
+version:             0.8.9

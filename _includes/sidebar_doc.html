@@ -1,0 +1,34 @@
+<div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="{{ site.baseurl }}/">
+          {{ site.title }}
+        </a>
+      </h1>
+      <p><a href="{{ site.baseurl }}/"> {{ site.title }} </a>documentation is split into the sections below.</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/overview/">Overview</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/wood_patterns/">Wood Pattern Selection</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/finger_spacing_options/">Finger Spacing Options</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/editor/">Editor</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/alignment/">Alignment of Router Passes</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/menus/">Drop-down Menus</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/template/">Template Details</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/saving_preferences/">Saving Preferences</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/needed_improvements/">Needed Improvements</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/other_resources/">Other Resources</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/acknowledgements">Acknowledgements</a>
+    </nav>
+
+    <div class="sidebar-item">
+      <p>
+        {{ site.author.name }} (<a href="{{ site.author.url }}"
+                                   class="user-mention">@{{ site.author.moniker }}</a>)<br>
+        &copy; 2015-{{ site.time | date: '%Y' }}. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>

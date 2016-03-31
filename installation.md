@@ -1,11 +1,11 @@
 ---
-layout: default
-title: pyRouterJig Installation
+layout: page
+title: Installation
 ---
 
 
-Installation for Windows and Mac
-================================
+Windows and Mac
+---------------
 
 Pre-compiled binaries for Windows and Mac (thanks to
 [PyInstaller](http://www.pyinstaller.org/)) are available on the [home
@@ -24,7 +24,7 @@ work, as long as you have 10.5.x or later.
 Please let me know if you have issues with these executables.
 
 Installation from source
-========================
+------------------------
 
 This approach may be a challenge unless you are familiar working with
 [Python](http://www.python.org), the language that {{ site.codename }} uses.

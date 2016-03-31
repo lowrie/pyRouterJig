@@ -1,0 +1,30 @@
+
+/* featherlight adjustments */
+
+a[data-featherlight] {
+    cursor: -webkit-zoom-in;
+    cursor: -moz-zoom-in;
+    cursor: zoom-in;
+}
+
+.featherlight, .featherlight img {
+    cursor: -webkit-zoom-out;
+    cursor: -moz-zoom-out;
+    cursor: zoom-out;
+}
+
+.caption {
+    text-align: center;
+}
+
+/* hyde adjustments */
+
+.sidebar-about h1 {
+  font-size: 2.0rem;
+  padding-top: 1.0rem;
+}
+
+.container {
+  padding-top: 0;
+}
+
