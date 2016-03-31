@@ -24,6 +24,13 @@
   padding-top: 1.0rem;
 }
 
+.sidebar-closing {
+    position: absolute;
+    right:  1rem;
+    bottom: 1rem;
+    left:   1rem;
+}
+
 .container {
   padding-top: 0;
 }
