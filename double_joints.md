@@ -10,7 +10,7 @@ its default of 1/8", similar to parameters such as <b>Board Width</b>.
 
 <figure class="zoomable">
 <a name="figure9">
-<img src="{{ site.baseurl }}/images/double_screen_shot.png" alt="Double joint example." data-action="zoom">
+<img src="{{ site.baseurl }}/images/double_screen_shot.png">
 </a>
 <figcaption>
 <b>Figure 9.</b>  Example of a Double joint, following the Equal spacing set

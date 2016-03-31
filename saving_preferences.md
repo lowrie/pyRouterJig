@@ -24,29 +24,36 @@ Each tab and its preferences are as follows:
 for the main application window, for printing, and for saving images.
   * <b>Show Caul Template:</b> If checked, the clamping caul template is
   displayed.  This option may be also set under the menu <b>View : Caul
-  Template</b>; [see its documentation](#view-caul-template) for more information.
+  Template</b>; 
+  <a href="{{ site.baseurl }}/menus/index.html#view-caul-template">see its documentation</a>
+  for more information.
   * <b>Show Finger Widths:</b> If checked, each finger is labeled with its width.
   This option may be also set under the menu <b>View : Finger Widths</b>.
   * <b>Show Router Pass Identifiers:</b> If checked, each router pass is
   labeled with its router pass identifier.
   This option may be also set under the menu <b>View : Router Passes :
-  Identifiers</b>;  [see its documentation](#view-router-passes) for more information.
+  Identifiers</b>;
+  <a href="{{ site.baseurl }}/menus/index.html#view-router-passes">see its documentation</a>
+  for more information.
   * <b>Show Router Pass Locations:</b> If checked, each router pass is labeled
   with its distance from the right edge.
   This option may be also set under the menu <b>View : Router Passes :
-  Locations</b> ;  [see its documentation](#view-router-passes) for more information.
+  Locations</b>;
+  <a href="{{ site.baseurl }}/menus/index.html#view-router-passes">see its documentation</a>
+  for more information.
 * <b>Boards:</b> This tab contains preferences related to the Boards.  The
 only parameter here that needs explanation is the <b>Wood Images Folder</b>,
 which is the directory where wood image files are located.  See the section
-[Wood Pattern Selection](#wood-pattern) for more information.
+<a href="{{ site.baseurl }}/wood_patterns/">Wood Pattern Selection</a>
+for more information.
 * <b>Bit:</b> This tab contains preferences related to the Bits and are self explanatory.
 * <b>Units:</b> This tab allows you to change the unit system.  Note that any
 changes under this tab, if saved, will require {{ site.codename }} to
 restart, and you will loose any unsaved work that you have done on the current
 joint.  A setting here is <b>Increments per [inch|mm]</b>, which
-is an advanced setting described in the section [Alignment of Router
-Passes](#alignment).  Do not change this value if you plan to use the
-templates with the Incra LS Positioner.
+is an advanced setting described in the section
+<a href="{{ site.baseurl }}/alignment/">Alignment of Router Passes</a>.
+Do not change this value if you plan to use the templates with the Incra LS Positioner.
 * <b>Misc:</b> Two parameters may be set under this tab:
   * <b>Min Finger Width:</b>  This is the minimum allowable finger width.
   Currently, this value is enforced only for the <b>Equal</b> spacing

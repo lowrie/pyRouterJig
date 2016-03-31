@@ -22,7 +22,7 @@ Portable Network Graphics - PNG) to draw the board.  At startup,
 and assumes any file in this folder is an image file.  It then makes these
 images available to draw any of the boards.  The name and location of the
 folder may be changed under the <b>Preferences</b> window; see the section
-[Saving Preferences](#saving-preferences).
+<a href="{{ site.baseurl }}/saving_preferences/">Saving Preferences</a>.
 
 A starting `wood_images` can be downloaded [from this link]({{ site.baseurl }}/wood_images.zip).
 Unzip this file in your home directory and you should be
