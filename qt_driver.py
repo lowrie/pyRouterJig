@@ -111,7 +111,11 @@ class Driver(QtGui.QMainWindow):
         self.shift_key = False
         self.alt_key = False
 
-        self.config_window = None
+        # Initialize the configuration window, even though we might not use
+        # it.  We do this so that if certain preferences are changed via the
+        # menus, such as show_caul, the config window keeps track whether any such
+        # changes have occurred, in order to enable its Save button.
+        self.config_window = qt_config.Config_Window(self.config, self.units, self)
 
         # ... show the status message from reading the configuration file
         self.statusbar.showMessage(msg)
@@ -363,6 +367,7 @@ class Driver(QtGui.QMainWindow):
         return cb
 
     def populate_wood_combo_box(self, cb, woods, patterns, defwood, has_none):
+        cb.blockSignals(True)
         cb.clear()
         if has_none:
             cb.addItem('NONE')
@@ -379,6 +384,7 @@ class Driver(QtGui.QMainWindow):
         # Set the index to the default wood
         i = cb.findText(defwood)
         cb.setCurrentIndex(i)
+        cb.blockSignals(False)
 
     def create_widgets(self):
         '''
@@ -1353,8 +1359,6 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_preferences')
 
-        if self.config_window is None:
-            self.config_window = qt_config.Config_Window(self.config, self.units, self)
         self.config_window.initialize()
         r = self.config_window.exec_()
         if r == 0:
@@ -1362,10 +1366,18 @@ class Driver(QtGui.QMainWindow):
         else:
             self.status_message('Preference changes saved in configuration file.')
         # Update widgets that may have changed
+        actions = [self.finger_size_action,
+                   self.caul_action,
+                   self.pass_id_action,
+                   self.pass_location_action]
+        for a in actions:
+            a.blockSignals(True)
         self.finger_size_action.setChecked(self.config.show_finger_widths)
         self.caul_action.setChecked(self.config.show_caul)
         self.pass_id_action.setChecked(self.config.show_router_pass_identifiers)
         self.pass_location_action.setChecked(self.config.show_router_pass_locations)
+        for a in actions:
+            a.blockSignals(False)
         (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images)
         self.woods = copy.deepcopy(woods)
         self.woods.update(patterns)

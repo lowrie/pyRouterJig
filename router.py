@@ -677,6 +677,8 @@ class Joint_Geometry(object):
         else:
             self.rect_caul = None
             self.board_caul = None
+            self.caul_top = None
+            self.caul_bottom = None
 
 def create_title(boards, bit, spacing):
     '''

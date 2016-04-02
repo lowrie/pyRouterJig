@@ -79,7 +79,7 @@ class Config_Window(QtGui.QDialog):
     def __init__(self, config, units, parent=None):
         QtGui.QDialog.__init__(self, parent)
         self.config = config
-        self.new_config = config.__dict__.copy()
+        self.new_config = self.config.__dict__.copy()
         self.line_edit_width = 80
         self.units = units
 
@@ -375,6 +375,8 @@ class Config_Window(QtGui.QDialog):
         Updates the change state of the configuration
         '''
         if self.config.__dict__[key] != self.new_config[key]:
+            if self.config.debug:
+                print('qt_config:update_state {} {}'.format(key, self.new_config[key]))
             self.change_state = max(state, self.change_state)
             self.btn_save.setEnabled(True)
 
@@ -568,6 +570,8 @@ class Config_Window(QtGui.QDialog):
         if self.config.debug:
             print('qt_config:_on_printsf')
         if self.le_printsf.isModified():
+            if self.config.debug:
+                print('  _on_printsf modified')
             self.le_printsf.setModified(False)
             s = str(self.le_printsf.text())
             ok = True

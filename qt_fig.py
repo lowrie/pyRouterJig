@@ -567,9 +567,11 @@ class Qt_Fig(QtGui.QWidget):
         flagsLC = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
         flagsRC = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
 
-        # ... draw the caul template and do its passes
+        # ... draw the caul template and do its passes.  Draw events may be
+        # triggered before we have the ability to recreate the geom object,
+        # so we have to ensure the caul_top object actually exists.
         datetime = time.strftime('\n%d %b %Y %H:%M', time.localtime())
-        if self.config.show_caul:
+        if self.config.show_caul and self.geom.caul_top is not None:
             rect_caul = self.geom.rect_caul
             board_caul = self.geom.board_caul
             top = self.geom.caul_top
