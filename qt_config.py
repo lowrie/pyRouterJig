@@ -109,8 +109,8 @@ class Config_Window(QtGui.QDialog):
         vbox.addLayout(self.create_buttons())
         self.setLayout(vbox)
 
-        self.initialize()
         self.change_state = 0
+        self.initialize()
 
     def create_units(self):
         '''Creates the layout for units preferences'''
@@ -347,6 +347,8 @@ class Config_Window(QtGui.QDialog):
         '''
         Initializes certain widgets to their current values in the config object.
         '''
+        self.change_state_on_init = self.change_state
+
         if self.config.metric:
             self.cb_units.setCurrentIndex(0)
         else:
@@ -397,6 +399,9 @@ class Config_Window(QtGui.QDialog):
         if self.config.debug:
             print('qt_config:_on_cancel')
         self.setResult(0)
+        # Set state back to the current configuration
+        self.new_config = self.config.__dict__.copy()
+        self.change_state = self.change_state_on_init
         self.close()
 
     @QtCore.pyqtSlot()
@@ -432,7 +437,7 @@ class Config_Window(QtGui.QDialog):
             else:
                 self._on_cancel()
         elif self.change_state == 1:
-            # Units was not changed
+            # Units were not changed
             do_save_config = True
         if do_save_config:
             config_file.set_default_dimensions(self.new_config)
@@ -442,7 +447,17 @@ class Config_Window(QtGui.QDialog):
         if do_restart:
             os.execv(sys.argv[0], sys.argv)
         self.setResult(1)
+        self.change_state = 0
+        self.btn_save.setEnabled(False)
         self.close()
+
+    def closeEvent(self, event):
+        '''
+        This is called on save, cancel, and if user closes the window.
+        '''
+        if self.config.debug:
+            print('qt_config:closeEvent')
+        self.btn_save.setEnabled(self.change_state > 0)
 
     @QtCore.pyqtSlot(int)
     def _on_units(self, index):
@@ -660,15 +675,3 @@ class Config_Window(QtGui.QDialog):
         if val is not None:
             self.new_config['caul_trim'] = val
             self.update_state('caul_trim')
-
-    def closeEvent(self, event):
-        '''
-        For closeEvents (user closes window), ignore and call
-        _on_cancel()
-        '''
-        if self.config.debug:
-            print('qt_config:closeEvent')
-        # Set state to the current configuration
-        self.new_config = self.config.__dict__.copy()
-        self.change_state = 0
-        self.btn_save.setEnabled(False)
