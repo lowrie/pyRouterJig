@@ -45,4 +45,9 @@
 	float: right;
 }
 
+.floater {
+    float: right;
+    margin: 0 0 2px 2px;
+}
+
 

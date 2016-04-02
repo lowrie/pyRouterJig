@@ -4,8 +4,8 @@ title: Overview
 ---
 
 When you start {{ site.codename }}, it will prompt you for the units you would
-like to work in, as shown below:
-<img src="{{ site.baseurl }}/images/select_units.png" 
+like to work in, as shown in the right window.
+<img class="floater" src="{{ site.baseurl }}/images/select_units.png" 
      alt="Select units window" width="512">
 Your choice of unit system will be saved in a configuration file, which is
 described in the <a href="{{ site.baseurl }}/saving_preferences/">section Saving Preferences</a>, and you
