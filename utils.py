@@ -22,6 +22,7 @@
 This module contains base utilities for pyRouterJig
 '''
 from __future__ import division
+from __future__ import print_function
 
 import math, fractions, os, glob, platform
 
@@ -48,8 +49,12 @@ class My_Fraction(object):
       fractions.Fraction(whole * denominator + numerator, denominator)
     '''
     def __init__(self, english_separator, whole=0, numerator=0, denominator=None):
-        self.whole = whole
-        self.numerator = numerator
+        if whole < 0 or numerator < 0:
+            self.sign = -1
+        else:
+            self.sign = 1
+        self.whole = abs(whole)
+        self.numerator = abs(numerator)
         self.denominator = denominator
         self.english_separator = english_separator
     def reduce(self):
@@ -71,11 +76,13 @@ class My_Fraction(object):
         '''
         self.reduce()
         s = ''
+        if self.sign < 0:
+            s = '-'
         if self.whole > 0:
             s = '%d' % self.whole
-            if self.numerator > 0:
+            if self.numerator != 0:
                 s += self.english_separator
-        if self.numerator > 0:
+        if self.numerator != 0:
             s += '%d/%d' % (self.numerator, self.denominator)
         elif self.whole == 0:
             s = '0'
@@ -166,12 +173,11 @@ class Units(object):
         if self.metric:
             r = '%g' % (increments / float(self.num_increments))
         else:
-            whole = increments // self.increments_per_inch
-            numer = increments - self.increments_per_inch * whole
+            numer = increments
             denom = self.increments_per_inch
-            frac = My_Fraction(self.english_separator, whole, numer, denom)
+            frac = My_Fraction(self.english_separator, 0, numer, denom)
             frac.reduce()
-            if frac.numerator > 0 and frac.denominator not in [1, 2, 4, 8, 16, 32, 64]:
+            if frac.numerator != 0 and frac.denominator not in [1, 2, 4, 8, 16, 32, 64]:
                 r = '%.3f' % (increments / float(self.num_increments))
             else:
                 r = frac.to_string()

@@ -387,7 +387,7 @@ class Qt_Fig(QtGui.QWidget):
             if not template and self.config.show_router_pass_locations:
                 if len(label) > 0:
                     label += ': '
-                loc = self.geom.bit.units.increments_to_string(board_T.width - xp[i])
+                loc = self.geom.bit.units.increments_to_string(board_T.xR() - xpShift)
                 label += loc
             r = paint_text(painter, label, (xpShift, y1), flagsv, shift, -90, fill=brush)
             # Determine the line starting point from the size of the text.

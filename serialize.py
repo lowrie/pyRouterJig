@@ -36,7 +36,7 @@ import spacing
 def serialize(bit, boards, sp, config):
     '''
     Serializes the arguments. Returns the serialized string, which can
-    later be used to reconstruct the arguments using unserialize_joint()
+    later be used to reconstruct the arguments using unserialize()
     '''
     out = StringIO()
     p = pickle.Pickler(out)

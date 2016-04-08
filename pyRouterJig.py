@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env pythonw
 ###########################################################################
 #
 # Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
