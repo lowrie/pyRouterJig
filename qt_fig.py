@@ -652,44 +652,45 @@ class Qt_Fig(QtGui.QWidget):
             self.draw_one_board(painter, self.geom.boards[i], self.geom.bit)
 
         # Label the boards
-        painter.setPen(QtCore.Qt.SolidLine)
-        x1 = self.geom.boards[0].xL() - self.geom.bit.width // 2
-        x2 = self.geom.boards[0].xL() - self.geom.bit.width // 4
-        flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
-        self.set_font_size(painter, 'boards')
+        if self.config.show_router_pass_identifiers or self.config.show_router_pass_locations:
+            painter.setPen(QtCore.Qt.SolidLine)
+            x1 = self.geom.boards[0].xL() - self.geom.bit.width // 2
+            x2 = self.geom.boards[0].xL() - self.geom.bit.width // 4
+            flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+            self.set_font_size(painter, 'boards')
 
-        y = self.geom.boards[0].yB()
-        p = (x1, y)
-        paint_text(painter, 'A', p, flags, (-3, 0))
-        painter.drawLine(x1, y, x2, y)
-
-        i = 0 # index in self.labels
-
-        if self.geom.boards[3].active:
-            y = self.geom.boards[3].yT()
+            y = self.geom.boards[0].yB()
             p = (x1, y)
-            paint_text(painter, 'B', p, flags, (-3, 0))
+            paint_text(painter, 'A', p, flags, (-3, 0))
             painter.drawLine(x1, y, x2, y)
-            y = self.geom.boards[3].yB()
-            p = (x1, y)
-            paint_text(painter, 'C', p, flags, (-3, 0))
-            painter.drawLine(x1, y, x2, y)
-            i = 2
-        if self.geom.boards[2].active:
-            y = self.geom.boards[2].yT()
+
+            i = 0 # index in self.labels
+
+            if self.geom.boards[3].active:
+                y = self.geom.boards[3].yT()
+                p = (x1, y)
+                paint_text(painter, 'B', p, flags, (-3, 0))
+                painter.drawLine(x1, y, x2, y)
+                y = self.geom.boards[3].yB()
+                p = (x1, y)
+                paint_text(painter, 'C', p, flags, (-3, 0))
+                painter.drawLine(x1, y, x2, y)
+                i = 2
+            if self.geom.boards[2].active:
+                y = self.geom.boards[2].yT()
+                p = (x1, y)
+                paint_text(painter, self.labels[i], p, flags, (-3, 0))
+                painter.drawLine(x1, y, x2, y)
+                y = self.geom.boards[2].yB()
+                p = (x1, y)
+                paint_text(painter, self.labels[i + 1], p, flags, (-3, 0))
+                painter.drawLine(x1, y, x2, y)
+                i += 2
+
+            y = self.geom.boards[1].yT()
             p = (x1, y)
             paint_text(painter, self.labels[i], p, flags, (-3, 0))
             painter.drawLine(x1, y, x2, y)
-            y = self.geom.boards[2].yB()
-            p = (x1, y)
-            paint_text(painter, self.labels[i + 1], p, flags, (-3, 0))
-            painter.drawLine(x1, y, x2, y)
-            i += 2
-
-        y = self.geom.boards[1].yT()
-        p = (x1, y)
-        paint_text(painter, self.labels[i], p, flags, (-3, 0))
-        painter.drawLine(x1, y, x2, y)
 
     def cut_polygon(self, c):
         '''

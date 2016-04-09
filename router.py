@@ -625,6 +625,10 @@ class Joint_Geometry(object):
         self.spacing = spacing
         self.margins = margins
 
+        board_sep = margins.sep
+        if config.show_fit:
+            board_sep = -bit.depth
+
         cut_boards(boards, bit, spacing)
 
         # Create the corners of the template
@@ -640,15 +644,15 @@ class Joint_Geometry(object):
 
         # Set bottom board origin
         self.boards[1].set_origin(x, y)
-        y = self.boards[1].yT() + margins.sep
+        y = self.boards[1].yT() + board_sep
 
         # Set double and double-double origins
         if self.boards[2].active:
             self.boards[2].set_origin(x, y)
-            y = self.boards[2].yT() + margins.sep
+            y = self.boards[2].yT() + board_sep
             if self.boards[3].active:
                 self.boards[3].set_origin(x, y)
-                y = self.boards[3].yT() + margins.sep
+                y = self.boards[3].yT() + board_sep
 
         # Set top board origin
         self.boards[0].set_origin(x, y)

@@ -260,6 +260,11 @@ class Config_Window(QtGui.QDialog):
         self.cb_show_finger_widths.setToolTip('Display the width of each finger')
         vbox.addWidget(self.cb_show_finger_widths)
 
+        self.cb_show_fit = QtGui.QCheckBox('Show Fit', w)
+        self.cb_show_fit.stateChanged.connect(self._on_show_caul)
+        self.cb_show_fit.setToolTip('Display fit of joint')
+        vbox.addWidget(self.cb_show_fit)
+
         self.cb_rpid = QtGui.QCheckBox('Show Router Pass Identifiers', w)
         self.cb_rpid.stateChanged.connect(self._on_rpid)
         self.cb_rpid.setToolTip('On each router pass, label its identifier')
@@ -358,6 +363,7 @@ class Config_Window(QtGui.QDialog):
         self.le_wood_images.setText(str(self.config.wood_images))
         self.cb_show_finger_widths.setChecked(self.config.show_finger_widths)
         self.cb_show_caul.setChecked(self.config.show_caul)
+        self.cb_show_fit.setChecked(self.config.show_fit)
         self.cb_rpid.setChecked(self.config.show_router_pass_identifiers)
         self.cb_rploc.setChecked(self.config.show_router_pass_locations)
         self.le_printsf.setText(str(self.config.print_scale_factor))
@@ -565,6 +571,13 @@ class Config_Window(QtGui.QDialog):
             print('qt_config:_on_show_caul')
         self.new_config['show_caul'] = self.cb_show_caul.isChecked()
         self.update_state('show_caul')
+
+    @QtCore.pyqtSlot()
+    def _on_show_fit(self):
+        if self.config.debug:
+            print('qt_config:_on_show_fit')
+        self.new_config['show_fit'] = self.cb_show_fit.isChecked()
+        self.update_state('show_fit')
 
     @QtCore.pyqtSlot()
     def _on_rpid(self):

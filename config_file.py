@@ -86,6 +86,10 @@ show_router_pass_locations = {show_router_pass_locations}
 # off under the menu "View" and selecting "Caul Template"
 show_caul = {show_caul}
 
+# If true, then show the fit of the joint.  This option may also be turned on and
+# off under the menu "View" and selecting "Fit"
+show_fit = {show_fit}
+
 # Initial board width [inches|mm]
 board_width = {board_width}
 
@@ -176,6 +180,7 @@ common_vals = {'version':'NONE',
                'show_router_pass_identifiers':True,
                'show_router_pass_locations':False,
                'show_caul':False,
+               'show_fit':False,
                'bit_angle':0,
                'min_image_width':1440,
                'max_image_width':'min_image_width',
@@ -221,6 +226,8 @@ metric_vals = {'metric':True,
 migrate = ['english_separator',  # common_vals
            'show_finger_widths',
            'show_router_passes',
+           'show_caul',
+           'show_fit',
            'bit_angle',
            'min_image_width',
            'max_image_width',
@@ -279,7 +286,7 @@ class Configuration(object):
         # config file must be updated if it was created with an earlier number.
         # Update this value when new parameters are added to the config file,
         # or any parameter's type changes,
-        self.create_version_number = 87
+        self.create_version_number = 90
         # config file cannot be migrated from versions earlier than this.
         # This value is currently set at the version that all dimensions and bit_angle
         # were consistent types and dimensions.

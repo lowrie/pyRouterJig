@@ -288,6 +288,12 @@ class Driver(QtGui.QMainWindow):
         view_menu.addAction(self.finger_size_action)
         self.finger_size_action.setChecked(self.config.show_finger_widths)
 
+        self.fit_action = QtGui.QAction('Fit', self, checkable=True)
+        self.fit_action.setStatusTip('Toggle showing fit of joint')
+        self.fit_action.triggered.connect(self._on_fit)
+        view_menu.addAction(self.fit_action)
+        self.fit_action.setChecked(self.config.show_fit)
+
         view_menu.addSeparator()
 
         pass_menu = view_menu.addMenu('Router Passes')
@@ -1374,6 +1380,7 @@ class Driver(QtGui.QMainWindow):
             a.blockSignals(True)
         self.finger_size_action.setChecked(self.config.show_finger_widths)
         self.caul_action.setChecked(self.config.show_caul)
+        self.fit_action.setChecked(self.config.show_fit)
         self.pass_id_action.setChecked(self.config.show_router_pass_identifiers)
         self.pass_location_action.setChecked(self.config.show_router_pass_locations)
         for a in actions:
@@ -1689,6 +1696,19 @@ class Driver(QtGui.QMainWindow):
             self.status_message('Turned on finger widths.')
         else:
             self.status_message('Turned off finger widths.')
+        self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_fit(self):
+        '''Handles toggling showing fit of joint'''
+        self.config.show_fit = self.fit_action.isChecked()
+        if self.config_window is not None:
+            self.config_window.update_state('show_fit')
+        if self.config.show_fit:
+            self.status_message('Turned on fit view.')
+        else:
+            self.status_message('Turned off fit view.')
+        self.file_saved = False
         self.draw()
 
     @QtCore.pyqtSlot()
