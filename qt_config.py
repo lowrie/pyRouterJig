@@ -261,7 +261,7 @@ class Config_Window(QtGui.QDialog):
         vbox.addWidget(self.cb_show_finger_widths)
 
         self.cb_show_fit = QtGui.QCheckBox('Show Fit', w)
-        self.cb_show_fit.stateChanged.connect(self._on_show_caul)
+        self.cb_show_fit.stateChanged.connect(self._on_show_fit)
         self.cb_show_fit.setToolTip('Display fit of joint')
         vbox.addWidget(self.cb_show_fit)
 
