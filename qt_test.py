@@ -99,7 +99,7 @@ class Driver_Test(unittest.TestCase):
             cuts = self.d.boards[0].bottom_cuts
             bcuts = self.d.boards[1].top_cuts
             spacing = (cuts[2].passes[0] - cuts[1].passes[0]) / 32.
-            print(spacing, c.spacing, spacing - c.spacing)
+            print(c.angle, spacing, c.spacing, spacing - c.spacing)
             self.screenshot()
     def test_screenshots(self):
         # default
@@ -203,32 +203,6 @@ class Driver_Test(unittest.TestCase):
         # save option
         print('************ save')
         self.screenshot(False)
-    def test_cases(self):
-        self.d.pass_id_action.setChecked(False)
-        self.d._on_pass_id()
-        self.d.pass_location_action.setChecked(True)
-        self.d._on_pass_location()
-        for c in cases:
-            clears = [self.d.le_bit_width,
-                      self.d.le_bit_depth,
-                      self.d.le_bit_angle,
-                      self.d.le_board_width]
-            for cl in clears:
-                cl.clear()
-            QTest.keyClicks(self.d.le_bit_width, '{}'.format(c.width))
-            self.d._on_bit_width()
-            QTest.keyClicks(self.d.le_bit_depth, '{}'.format(c.depth))
-            self.d._on_bit_depth()
-            QTest.keyClicks(self.d.le_bit_angle, '{}'.format(c.angle))
-            self.d._on_bit_angle()
-            QTest.keyClicks(self.d.le_board_width, '{}'.format(c.board_width))
-            self.d._on_board_width()
-            cuts = self.d.boards[0].bottom_cuts
-            bcuts = self.d.boards[1].top_cuts
-            spacing = (cuts[2].passes[0] - cuts[1].passes[0]) / 32.
-            bspacing = (bcuts[2].passes[0] - bcuts[1].passes[0]) / 32.
-            print(c.spacing, spacing, spacing - c.spacing, bspacing, bspacing - c.spacing)
-            self.screenshot()
 
 if __name__ == '__main__':
     unittest.main()

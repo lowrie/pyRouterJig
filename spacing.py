@@ -137,6 +137,9 @@ class Equally_Spaced(Base_Spacing):
         Sets the cuts to make the joint
         '''
         spacing = self.params['Spacing'].v - 2 * self.dhtot
+        # Bump up the minimum spacing if the effective bit width is too small
+        if utils.my_round(self.bit.neck) + 2 * utils.my_round(self.bit.offset) < self.bit.width:
+            spacing += 1
         width = self.params['Width'].v
         centered = self.params['Centered'].v
 
