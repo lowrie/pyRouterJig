@@ -42,6 +42,8 @@ class Case(object):
         self.spacing = spacing
         self.board_width = board_width
 
+# These cases are the dovetails in the Incra Master Guide.  The spacing argument is what the
+# Guide recommends.
 cases = [Case(7  , '3/4' , '3/4' , 1.3125),
          Case(7  , '3/4' , '1/2' , 1.375),
          Case(7  , '5/8' , '3/4' , 1.0625),
@@ -76,7 +78,8 @@ class Driver_Test(unittest.TestCase):
         QTest.qWaitForWindowShown(self.d)
         QTest.qWait(100)
         self.d._on_save(do_screenshot)
-    def test_cases(self):
+    def test_incra_dovetail_cases(self):
+        # Run the Incra guide test cases
         self.d.pass_id_action.setChecked(False)
         self.d._on_pass_id()
         self.d.pass_location_action.setChecked(True)
@@ -99,8 +102,9 @@ class Driver_Test(unittest.TestCase):
             cuts = self.d.boards[0].bottom_cuts
             bcuts = self.d.boards[1].top_cuts
             spacing = (cuts[2].passes[0] - cuts[1].passes[0]) / 32.
-            print(c.angle, spacing, c.spacing, spacing - c.spacing)
-            self.screenshot()
+            print('incra', c.angle, spacing, c.spacing, spacing - c.spacing)
+            self.assertTrue(abs(spacing - c.spacing) < 1.0e-5)
+            # self.screenshot()
     def test_screenshots(self):
         # default
         print('************ default')

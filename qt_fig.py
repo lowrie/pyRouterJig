@@ -926,7 +926,7 @@ class Qt_Fig(QtGui.QWidget):
             print('mouse moved here: {} {}'.format(pos.x(), pos.y()))
         diffx = (pos.x() - self.mouse_pos.x())
         diffy = (pos.y() - self.mouse_pos.y())
-        if abs(diffx) + abs(diffy) > 1:
+        if abs(diffx) + abs(diffy) > 1: # avoid teeny-tiny moves
             self.translate[0] += diffx / self.scaling
             self.translate[1] += diffy / self.scaling
             self.mouse_pos = pos
