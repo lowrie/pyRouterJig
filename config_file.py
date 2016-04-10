@@ -176,7 +176,7 @@ debug = {debug}
 # Background color
 background_color = {background_color}
 
-# The board fill colors, for the 'Solid Fill' option
+# The board fill colors, for the 'Solid Fill' board selection
 board_fill_colors = {board_fill_colors}
 '''
 

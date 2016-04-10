@@ -113,6 +113,9 @@ class Qt_Fig(QtGui.QWidget):
         self.scaling = 1.0
         self.translate = [0.0, 0.0]
 
+        # Initialize keyboard modifiers
+        self.shift_key = False
+
     def minimumSizeHint(self):
         '''
         Minimum size for this widget
@@ -826,64 +829,95 @@ class Qt_Fig(QtGui.QWidget):
 
     def keyPressEvent(self, event):
         '''
-        Handles key press events
+        Handles key press events.  At this level, we handle zooming.
         '''
+
+        # Keyboard zooming mode works only if the shift key is pressed.
+        if event.key() == QtCore.Qt.Key_Shift:
+            self.shift_key = True
+        elif event.key() == QtCore.Qt.Key_Escape:
+            self.scaling = 1.0
+            self.translate = [0.0, 0.0]
+            self.update()
+        elif not self.shift_key:
+            event.ignore()
+            return
+
         dx = 4.0 / self.scaling
         scale_factor = 1.1
+
         if event.key() == QtCore.Qt.Key_Left:
-            if self.scaling > 1.0:
-                self.translate[0] -= dx
-                self.update()
+            self.translate[0] -= dx
+            self.update()
         elif event.key() == QtCore.Qt.Key_Right:
-            if self.scaling > 1.0:
-                self.translate[0] += dx
-                self.update()
+            self.translate[0] += dx
+            self.update()
         elif event.key() == QtCore.Qt.Key_Up:
-            if self.scaling > 1.0:
-                self.translate[1] += dx
-                self.update()
+            self.translate[1] += dx
+            self.update()
         elif event.key() == QtCore.Qt.Key_Down:
-            if self.scaling > 1.0:
-                self.translate[1] -= dx
-                self.update()
+            self.translate[1] -= dx
+            self.update()
         elif event.key() == QtCore.Qt.Key_Z:
             self.scaling *= scale_factor
             self.update()
-        elif event.key() == QtCore.Qt.Key_U:
+        elif event.key() == QtCore.Qt.Key_X:
             self.scaling /= scale_factor
             self.update()
-        elif event.key() == QtCore.Qt.Key_Escape:
+        else:
+            event.ignore()
+
+    def keyReleaseEvent(self, event):
+        '''
+        Handles key release events
+        '''
+        if event.key() == QtCore.Qt.Key_Shift:
+            self.shift_key = False
+        else:
+            event.ignore()
+
+    def wheelEvent(self, event):
+        '''
+        Handles mouse wheel events, which is used for zooming in and out.
+        '''
+        if self.config.debug:
+            print('qt_fig.wheelEvent', event.delta())
+        self.scaling *= 1 + 0.05 * event.delta() / 120
+        self.update()
+
+    def mousePressEvent(self, event):
+        '''
+        Handles mouse button press:
+           left: start a move at that location
+           right: reset view
+        '''
+        if event.button() == QtCore.Qt.LeftButton:
+            self.mouse_pos = self.base_transform.map(event.pos())
+            if self.config.debug:
+                print('mouse pressed here: {} {}'.format(self.mouse_pos.x(),
+                                                         self.mouse_pos.y()))
+        elif event.button() == QtCore.Qt.RightButton:
             self.scaling = 1.0
             self.translate = [0.0, 0.0]
             self.update()
         else:
             event.ignore()
 
-    def wheelEvent(self, event):
-        '''
-        Handles mount wheel events
-        '''
-        if self.config.debug:
-            print('qt_fig.wheelEvent', event.delta())
-        self.scaling *= 1 + 0.05 * event.delta() / 120
-        if self.scaling < 1.0:
-            self.scaling = 1.0
-            self.translate = [0.0, 0.0]
-        self.update()
-
-    def mousePressEvent(self, event):
-        if event.button() != QtCore.Qt.LeftButton:
-            event.ignore()
-            return
-        self.mouse_pos = self.base_transform.map(event.pos())
-        if self.config.debug:
-            print('mouse pressed here: {} {}'.format(self.mouse_pos.x(),
-                                                     self.mouse_pos.y()))
-
     def mouseReleaseEvent(self, event):
-        self.mouse_pos = None
+        '''
+        Handles mouse button release:
+           left: end the move
+        '''
+        if event.button() == QtCore.Qt.LeftButton:
+            self.mouse_pos = None
+        else:
+            event.ignore()
 
     def mouseMoveEvent(self, event):
+        '''
+        Handles mouse move, when a button is pressed.  In this case, we keep track
+        of the translation under zoom.
+        '''
         if self.mouse_pos is None:
             event.ignore()
             return

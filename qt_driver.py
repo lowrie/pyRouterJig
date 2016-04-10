@@ -108,7 +108,6 @@ class Driver(QtGui.QMainWindow):
 
         # Initialize keyboard modifiers
         self.control_key = False
-        self.shift_key = False
         self.alt_key = False
 
         # Initialize the configuration window, even though we might not use
@@ -1759,15 +1758,13 @@ class Driver(QtGui.QMainWindow):
         '''
         Handles key press events
         '''
-        # return if not edit spacing
+        # return if not in Editor spacing mode
         if self.tabs_spacing.currentIndex() != self.edit_spacing_id:
             event.ignore()
             return
 
         msg = None
-        if event.key() == QtCore.Qt.Key_Shift:
-            self.shift_key = True
-        elif event.key() == QtCore.Qt.Key_Control:
+        if event.key() == QtCore.Qt.Key_Control:
             self.control_key = True
         elif event.key() == QtCore.Qt.Key_Alt:
             self.alt_key = True
@@ -1791,7 +1788,7 @@ class Driver(QtGui.QMainWindow):
             msg = self.spacing.cut_add()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Left:
-            if self.shift_key:
+            if self.control_key and self.alt_key:
                 msg = self.spacing.cut_widen_left()
             elif self.control_key:
                 msg = self.spacing.cut_trim_left()
@@ -1801,7 +1798,7 @@ class Driver(QtGui.QMainWindow):
                 msg = self.spacing.cut_increment_cursor(-1)
             self.draw()
         elif event.key() == QtCore.Qt.Key_Right:
-            if self.shift_key:
+            if self.control_key and self.alt_key:
                 msg = self.spacing.cut_widen_right()
             elif self.control_key:
                 msg = self.spacing.cut_trim_right()
@@ -1830,9 +1827,7 @@ class Driver(QtGui.QMainWindow):
             event.ignore()
             return
 
-        if event.key() == QtCore.Qt.Key_Shift:
-            self.shift_key = False
-        elif event.key() == QtCore.Qt.Key_Control:
+        if event.key() == QtCore.Qt.Key_Control:
             self.control_key = False
         elif event.key() == QtCore.Qt.Key_Alt:
             self.alt_key = False
