@@ -96,8 +96,8 @@ class Qt_Fig(QtGui.QWidget):
         self.fig_height = -1
         self.set_fig_dimensions(template, boards)
         self.geom = None
-        (r, g, b) = config.background_color
-        self.background = QtGui.QBrush(QtGui.QColor(r, g, b))
+        color = QtGui.QColor(*config.background_color)
+        self.background = QtGui.QBrush(color)
         self.current_background = self.background
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
@@ -107,6 +107,11 @@ class Qt_Fig(QtGui.QWidget):
                           'boards':4,
                           'template_labels':3,
                           'watermark':4}
+        self.transform = None
+        self.base_transform = None
+        self.mouse_pos = None
+        self.scaling = 1.0
+        self.translate = [0.0, 0.0]
 
     def minimumSizeHint(self):
         '''
@@ -305,11 +310,20 @@ class Qt_Fig(QtGui.QWidget):
             painter.translate(0, window_height)
             scale = float(dpi) / units.increments_per_inch
         painter.scale(scale, -scale)
+
+        # Save the inverse of the un-zoomed transform
+        (self.base_transform, invertable) = painter.transform().inverted()
+
+        # Apply the zoom, zooming on the current figure center
+        painter.scale(self.scaling, self.scaling)
+        factor = 0.5 - 0.5 / self.scaling
+        x = self.translate[0] - self.fig_width * factor
+        y = self.translate[1] - self.fig_height * factor
+        painter.translate(x, y)
         self.transform = painter.transform()
 
-        painter.setPen(QtCore.Qt.black)
-
         # draw the objects
+        painter.setPen(QtCore.Qt.black)
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
@@ -615,7 +629,7 @@ class Qt_Fig(QtGui.QWidget):
 
         self.draw_alignment(painter)
 
-    def draw_one_board(self, painter, board, bit):
+    def draw_one_board(self, painter, board, bit, fill_color):
         '''
         Draws a single board
         '''
@@ -631,7 +645,11 @@ class Qt_Fig(QtGui.QWidget):
             if isinstance(icon, str):
                 brush = QtGui.QBrush(QtGui.QPixmap(icon))
             else:
-                brush = QtGui.QBrush(QtCore.Qt.black, icon)
+                if icon == QtCore.Qt.SolidPattern:
+                    color = QtGui.QColor(*fill_color)
+                else:
+                    color = QtCore.Qt.black
+                brush = QtGui.QBrush(color, icon)
             (inverted, invertable) = self.transform.inverted()
             brush.setMatrix(inverted.toAffine())
             painter.setBrush(brush)
@@ -647,9 +665,10 @@ class Qt_Fig(QtGui.QWidget):
         Draws all the boards
         '''
 
-        # Draw the A and B boards
+        # Draw all of the boards
         for i in lrange(4):
-            self.draw_one_board(painter, self.geom.boards[i], self.geom.bit)
+            self.draw_one_board(painter, self.geom.boards[i], self.geom.bit,
+                                self.config.board_fill_colors[i])
 
         # Label the boards
         if self.config.show_router_pass_identifiers or self.config.show_router_pass_locations:
@@ -805,3 +824,73 @@ class Qt_Fig(QtGui.QWidget):
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill=self.current_background)
 
+    def keyPressEvent(self, event):
+        '''
+        Handles key press events
+        '''
+        dx = 4.0 / self.scaling
+        scale_factor = 1.1
+        if event.key() == QtCore.Qt.Key_Left:
+            if self.scaling > 1.0:
+                self.translate[0] -= dx
+                self.update()
+        elif event.key() == QtCore.Qt.Key_Right:
+            if self.scaling > 1.0:
+                self.translate[0] += dx
+                self.update()
+        elif event.key() == QtCore.Qt.Key_Up:
+            if self.scaling > 1.0:
+                self.translate[1] += dx
+                self.update()
+        elif event.key() == QtCore.Qt.Key_Down:
+            if self.scaling > 1.0:
+                self.translate[1] -= dx
+                self.update()
+        elif event.key() == QtCore.Qt.Key_Z:
+            self.scaling *= scale_factor
+            self.update()
+        elif event.key() == QtCore.Qt.Key_U:
+            self.scaling /= scale_factor
+            self.update()
+        elif event.key() == QtCore.Qt.Key_Escape:
+            self.scaling = 1.0
+            self.translate = [0.0, 0.0]
+            self.update()
+        else:
+            event.ignore()
+
+    def wheelEvent(self, event):
+        '''
+        Handles mount wheel events
+        '''
+        if self.config.debug:
+            print('qt_fig.wheelEvent', event.delta())
+        self.scaling *= 1 + 0.05 * event.delta() / 120
+        if self.scaling < 1.0:
+            self.scaling = 1.0
+            self.translate = [0.0, 0.0]
+        self.update()
+
+    def mousePressEvent(self, event):
+        if event.button() != QtCore.Qt.LeftButton:
+            event.ignore()
+            return
+        self.mouse_pos = self.base_transform.map(event.pos())
+        if self.config.debug:
+            print('mouse pressed here: {} {}'.format(self.mouse_pos.x(),
+                                                     self.mouse_pos.y()))
+
+    def mouseReleaseEvent(self, event):
+        self.mouse_pos = None
+
+    def mouseMoveEvent(self, event):
+        if self.mouse_pos is None:
+            event.ignore()
+            return
+        pos = self.base_transform.map(event.posF())
+        if self.config.debug:
+            print('mouse moved here: {} {}'.format(pos.x(), pos.y()))
+        self.translate[0] += (pos.x() - self.mouse_pos.x()) / self.scaling
+        self.translate[1] += (pos.y() - self.mouse_pos.y()) / self.scaling
+        self.mouse_pos = pos
+        self.update()

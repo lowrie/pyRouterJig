@@ -167,10 +167,17 @@ debug = {debug}
 # (255, 255, 255) white
 # (0, 0, 0) black
 #
+# In addition, you can add an optional alpha value between 0 and 255, where
+# 0 is transparent and 255 opaque, as
+#     (red, green, blue, alpha)
+#
 # Useful site: http://www.colorpicker.com/
 
 # Background color
 background_color = {background_color}
+
+# The board fill colors, for the 'Solid Fill' option
+board_fill_colors = {board_fill_colors}
 '''
 
 # common default values
@@ -188,7 +195,11 @@ common_vals = {'version':'NONE',
                'wood_images':'NONE',
                'default_wood':'DiagCrossPattern',
                'debug':False,
-               'background_color':(240, 231, 201)}
+               'background_color':(240, 231, 201),
+               'board_fill_colors':[(255, 0, 0, 100),
+                                    (0, 255, 0, 100),
+                                    (0, 0, 255, 100),
+                                    (0, 255, 0, 100)]}
 
 # default values for english units
 english_vals = {'metric':False,
@@ -238,6 +249,7 @@ migrate = ['english_separator',  # common_vals
            'right_margin',
            'separation',
            'background_color',
+           'board_fill_colors',
            'num_increments', # metric_vals or english_vals
            'board_width',
            'bit_width',

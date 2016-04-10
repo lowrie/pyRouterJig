@@ -159,5 +159,6 @@ def create_wood_dict(wood_images):
                 'FDiagPattern':QtCore.Qt.FDiagPattern,\
                 'Dense1Pattern':QtCore.Qt.Dense1Pattern,\
                 'Dense5Pattern':QtCore.Qt.Dense5Pattern,\
-                'No fill':None}
+                'Solid Fill':QtCore.Qt.SolidPattern,\
+                'No Fill':None}
     return (woods, patterns)
