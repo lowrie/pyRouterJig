@@ -924,7 +924,10 @@ class Qt_Fig(QtGui.QWidget):
         pos = self.base_transform.map(event.posF())
         if self.config.debug:
             print('mouse moved here: {} {}'.format(pos.x(), pos.y()))
-        self.translate[0] += (pos.x() - self.mouse_pos.x()) / self.scaling
-        self.translate[1] += (pos.y() - self.mouse_pos.y()) / self.scaling
-        self.mouse_pos = pos
-        self.update()
+        diffx = (pos.x() - self.mouse_pos.x())
+        diffy = (pos.y() - self.mouse_pos.y())
+        if abs(diffx) + abs(diffy) > 1:
+            self.translate[0] += diffx / self.scaling
+            self.translate[1] += diffy / self.scaling
+            self.mouse_pos = pos
+            self.update()
