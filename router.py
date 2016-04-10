@@ -157,12 +157,14 @@ class Router_Bit(object):
         if self.angle > 0:
             self.offset = self.depth * math.tan(self.angle * math.pi / 180)
         self.neck = self.width - 2 * self.offset
-    def scale(self, s):
-        '''Scales dimensions by the factor s'''
-        self.width = utils.my_round(self.width * s)
-        self.width += self.width % 2 # ensure even
-        self.depth = utils.my_round(self.depth * s)
-        self.reinit()
+    def dovetail_correction(self):
+        '''
+        Correction for rounding the offset
+        '''
+        if utils.my_round(self.neck) + 2 * utils.my_round(self.offset) < self.width:
+            return 1
+        else:
+            return 0
 
 class My_Rectangle(object):
     '''

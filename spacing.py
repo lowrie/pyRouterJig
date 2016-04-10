@@ -137,9 +137,7 @@ class Equally_Spaced(Base_Spacing):
         Sets the cuts to make the joint
         '''
         spacing = self.params['Spacing'].v - 2 * self.dhtot
-        # Bump up the minimum spacing if the effective bit width is too small
-        if utils.my_round(self.bit.neck) + 2 * utils.my_round(self.bit.offset) < self.bit.width:
-            spacing += 1
+        spacing += self.bit.dovetail_correction()
         width = self.params['Width'].v
         centered = self.params['Centered'].v
 
@@ -212,7 +210,8 @@ class Variable_Spaced(Base_Spacing):
         Base_Spacing.__init__(self, bit, boards, config)
         # eff_width is the effective width, an average of the bit width
         # and the neck width
-        self.eff_width = utils.my_round(0.5 * (self.bit.width + self.bit.neck)) + 2 * self.dhtot
+        self.eff_width = utils.my_round(self.bit.width - self.bit.offset) + 2 * self.dhtot
+        self.eff_width += self.bit.dovetail_correction()
         self.wb = self.boards[0].width // self.eff_width
         self.alpha = (self.wb + 1) % 2
         # min and max number of fingers
@@ -261,7 +260,8 @@ class Variable_Spaced(Base_Spacing):
             print('v-s increments', increments)
         # Adjustments for dovetails
         deltaP = self.bit.width + 2 * self.dhtot - self.eff_width
-        deltaM = utils.my_round(self.eff_width - self.bit.neck - 2 * self.dhtot)
+        deltaM = utils.my_round(self.eff_width - self.bit.neck - 2 * self.dhtot) - \
+                 self.bit.dovetail_correction()
         # put a cut at the center of the board
         xMid = board_width // 2
         width = increments[0] + deltaP
