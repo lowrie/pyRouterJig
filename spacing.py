@@ -246,7 +246,7 @@ class Variable_Spaced(Base_Spacing):
         increments = [0] * (m + 1)
         ivals = 0
         for i in lrange(1, m + 1):
-            increments[i] = max(2, int(c - d * i))
+            increments[i] = max(self.bit.width, int(c - d * i))
             ivals += 2 * increments[i]
         # Set the center increment.  This takes up the slop in the rounding and increment
         # resolution.

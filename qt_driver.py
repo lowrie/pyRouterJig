@@ -1004,6 +1004,7 @@ class Driver(QtGui.QMainWindow):
         if val is not None:
             for b in self.boards:
                 b.set_height(self.bit)
+            self.reinit_spacing()
             self.draw()
             self.status_message('Changed bit depth to ' + val)
             self.file_saved = False

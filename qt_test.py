@@ -55,6 +55,8 @@ cases = [Case(7  , '3/4' , '3/4' , 1.3125),
          Case(9  , '5/16', '3/16', .5625),
          Case(7.5, '1/4' , '1/4' , .4375)]
 
+do_all_screenshots = False
+
 class Driver_Test(unittest.TestCase):
     '''
     Tests Driver
@@ -78,33 +80,6 @@ class Driver_Test(unittest.TestCase):
         QTest.qWaitForWindowShown(self.d)
         QTest.qWait(100)
         self.d._on_save(do_screenshot)
-    def test_incra_dovetail_cases(self):
-        # Run the Incra guide test cases
-        self.d.pass_id_action.setChecked(False)
-        self.d._on_pass_id()
-        self.d.pass_location_action.setChecked(True)
-        self.d._on_pass_location()
-        for c in cases:
-            clears = [self.d.le_bit_width,
-                      self.d.le_bit_depth,
-                      self.d.le_bit_angle,
-                      self.d.le_board_width]
-            for cl in clears:
-                cl.clear()
-            QTest.keyClicks(self.d.le_bit_width, '{}'.format(c.width))
-            self.d._on_bit_width()
-            QTest.keyClicks(self.d.le_bit_depth, '{}'.format(c.depth))
-            self.d._on_bit_depth()
-            QTest.keyClicks(self.d.le_bit_angle, '{}'.format(c.angle))
-            self.d._on_bit_angle()
-            QTest.keyClicks(self.d.le_board_width, '{}'.format(c.board_width))
-            self.d._on_board_width()
-            cuts = self.d.boards[0].bottom_cuts
-            bcuts = self.d.boards[1].top_cuts
-            spacing = (cuts[2].passes[0] - cuts[1].passes[0]) / 32.
-            print('incra', c.angle, spacing, c.spacing, spacing - c.spacing)
-            self.assertTrue(abs(spacing - c.spacing) < 1.0e-5)
-            # self.screenshot()
     def test_screenshots(self):
         # default
         print('************ default')
@@ -207,6 +182,66 @@ class Driver_Test(unittest.TestCase):
         # save option
         print('************ save')
         self.screenshot(False)
+    def test_incra_dovetail_cases(self):
+        # Run the Incra guide test cases
+        self.d.pass_id_action.setChecked(False)
+        self.d._on_pass_id()
+        self.d.pass_location_action.setChecked(True)
+        self.d._on_pass_location()
+        for c in cases:
+            clears = [self.d.le_bit_width,
+                      self.d.le_bit_depth,
+                      self.d.le_bit_angle,
+                      self.d.le_board_width]
+            for cl in clears:
+                cl.clear()
+            QTest.keyClicks(self.d.le_bit_width, '{}'.format(c.width))
+            self.d._on_bit_width()
+            QTest.keyClicks(self.d.le_bit_depth, '{}'.format(c.depth))
+            self.d._on_bit_depth()
+            QTest.keyClicks(self.d.le_bit_angle, '{}'.format(c.angle))
+            self.d._on_bit_angle()
+            QTest.keyClicks(self.d.le_board_width, '{}'.format(c.board_width))
+            self.d._on_board_width()
+            cuts = self.d.boards[0].bottom_cuts
+            bcuts = self.d.boards[1].top_cuts
+            spacing = (cuts[2].passes[0] - cuts[1].passes[0]) / 32.
+            print('incra', c.angle, spacing, c.spacing, spacing - c.spacing)
+            self.assertTrue(abs(spacing - c.spacing) < 1.0e-5)
+            if do_all_screenshots:
+                self.screenshot()
+    def test_variable_spaced(self):
+        self.d.pass_id_action.setChecked(False)
+        self.d._on_pass_id()
+        self.d.pass_location_action.setChecked(False)
+        self.d._on_pass_location()
+        self.d.tabs_spacing.setCurrentIndex(self.d.var_spacing_id)
+        for c in cases:
+            print('doing variable', c.angle, c.width, c.depth)
+            clears = [self.d.le_bit_width,
+                      self.d.le_bit_depth,
+                      self.d.le_bit_angle,
+                      self.d.le_board_width]
+            for cl in clears:
+                cl.clear()
+            QTest.keyClicks(self.d.le_bit_width, '{}'.format(c.width))
+            self.d._on_bit_width()
+            QTest.keyClicks(self.d.le_bit_depth, '{}'.format(c.depth))
+            self.d._on_bit_depth()
+            QTest.keyClicks(self.d.le_bit_angle, '{}'.format(c.angle))
+            self.d._on_bit_angle()
+            QTest.keyClicks(self.d.le_board_width, '{}'.format(c.board_width))
+            self.d._on_board_width()
+            n = self.d.cb_vsfingers.count()
+            for i in range(n):
+                self.d.cb_vsfingers.setCurrentIndex(i)
+                self.d._on_cb_vsfingers(i)
+                cuts = self.d.boards[0].bottom_cuts
+                bcuts = self.d.boards[1].top_cuts
+                spacing = (cuts[2].passes[0] - cuts[1].passes[0]) / 32.
+                print(spacing)
+                if do_all_screenshots:
+                    self.screenshot()
 
 if __name__ == '__main__':
     unittest.main()
