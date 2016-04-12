@@ -349,7 +349,6 @@ class Configuration(object):
         '''
         Writes the configuration file using the dictionary vals.
         '''
-        units = utils.Units(vals['english_separator'], vals['metric'])
         w = vals.copy()
         for i in dim_vals:
             if isinstance(w[i], str):

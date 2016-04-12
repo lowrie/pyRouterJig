@@ -117,7 +117,7 @@ class Driver(QtGui.QMainWindow):
         self.config_window = qt_config.Config_Window(self.config, self.units, self)
 
         # ... show the status message from reading the configuration file
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
 
     def load_config(self):
         '''
@@ -838,7 +838,28 @@ class Driver(QtGui.QMainWindow):
         main frame.
         '''
         self.statusbar = self.statusBar()
-        self.statusbar.showMessage('Ready')
+        self.statusLeft = QtGui.QLabel('LEFT')
+        self.statusLeft.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Sunken)
+        self.statusbar.addPermanentWidget(self.statusLeft, 1)
+        self.statusRight = QtGui.QLabel('RIGHT')
+        self.statusbar.addPermanentWidget(self.statusRight, 1)
+        self.statusRight.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Sunken)
+        self.status_message('Ready')
+        self.status_interference()
+
+    def status_message(self, msg, flash_len_ms=None):
+        '''
+        Displays a message to the status bar
+        '''
+        self.statusLeft.setText(msg)
+        if flash_len_ms is not None:
+            QtCore.QTimer.singleShot(flash_len_ms, self._on_flash_status_off)
+
+    def status_interference(self):
+        '''
+        Updates the fit interference amount in the status bar.
+        '''
+        self.statusRight.setText('Fit Interfence = 0 in.')
 
     def draw(self):
         '''(Re)draws the template and boards'''
@@ -1437,7 +1458,7 @@ class Driver(QtGui.QMainWindow):
             self.reinit_spacing()
         self.draw()
         msg = 'Changed %s to %s' % (label, s)
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
 
     @QtCore.pyqtSlot(int)
     def _on_wood0(self, index):
@@ -1532,7 +1553,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_undo')
         self.spacing.undo()
-        self.statusbar.showMessage('Undo')
+        self.status_message('Undo')
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1541,7 +1562,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_moveL')
         msg = self.spacing.cut_move_left()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1550,7 +1571,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_moveR')
         msg = self.spacing.cut_move_right()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1559,7 +1580,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_widenL')
         msg = self.spacing.cut_widen_left()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1568,7 +1589,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_widenR')
         msg = self.spacing.cut_widen_right()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1577,7 +1598,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_trimL')
         msg = self.spacing.cut_trim_left()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1586,7 +1607,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_trimR')
         msg = self.spacing.cut_trim_right()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1595,7 +1616,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_toggle')
         msg = self.spacing.cut_toggle()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1604,7 +1625,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_cursorL')
         msg = self.spacing.cut_increment_cursor(-1)
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1613,7 +1634,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_cursorR')
         msg = self.spacing.cut_increment_cursor(1)
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1622,7 +1643,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_activate_all')
         msg = self.spacing.cut_all_active()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1631,7 +1652,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_deactivate_all')
         msg = self.spacing.cut_all_not_active()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1640,7 +1661,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_add')
         msg = self.spacing.cut_add()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1649,7 +1670,7 @@ class Driver(QtGui.QMainWindow):
         if self.config.debug:
             print('_on_edit_del')
         msg = self.spacing.cut_delete_active()
-        self.statusbar.showMessage(msg)
+        self.status_message(msg)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1657,7 +1678,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles event to turn off statusbar message'''
         if self.config.debug:
             print('_on_flash_status_off')
-        self.statusbar.showMessage('')
+        self.statusLeft.setText('')
 
     @QtCore.pyqtSlot()
     def _on_fullscreen(self):
@@ -1738,12 +1759,6 @@ class Driver(QtGui.QMainWindow):
         else:
             self.status_message('Turned off router pass locations.')
         self.draw()
-
-    def status_message(self, msg, flash_len_ms=None):
-        '''Flashes a status message to the status bar'''
-        self.statusbar.showMessage(msg)
-        if flash_len_ms is not None:
-            QtCore.QTimer.singleShot(flash_len_ms, self._on_flash_status_off)
 
     def closeEvent(self, event):
         '''

@@ -440,13 +440,14 @@ class Config_Window(QtGui.QDialog):
             if box.clickedButton() == buttonRestart:
                 do_save_config = True
                 do_restart = True
+                if self.new_config['metric'] != self.config.metric:
+                    config_file.set_default_dimensions(self.new_config)
             else:
                 self._on_cancel()
         elif self.change_state == 1:
             # Units were not changed
             do_save_config = True
         if do_save_config:
-            config_file.set_default_dimensions(self.new_config)
             self.config.__dict__.update(self.new_config)
             c = config_file.Configuration()
             c.write_config(self.new_config)
