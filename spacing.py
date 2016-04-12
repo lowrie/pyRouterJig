@@ -137,7 +137,6 @@ class Equally_Spaced(Base_Spacing):
         Sets the cuts to make the joint
         '''
         spacing = self.params['Spacing'].v - 2 * self.dhtot
-        spacing += self.bit.dovetail_correction()
         width = self.params['Width'].v
         centered = self.params['Centered'].v
 
@@ -150,7 +149,7 @@ class Equally_Spaced(Base_Spacing):
         self.description = 'Equally spaced (' + self.labels[0] + \
                            ', ' + self.labels[1] + ')'
         self.cuts = [] # return value
-        neck_width = utils.my_round(self.bit.neck + width - self.bit.width + spacing)
+        neck_width = width + spacing - 2 * utils.my_round(self.bit.offset)
         if neck_width < 1:
             raise Spacing_Exception('Specified bit paramters give a zero'
                                     ' or negative cut width (%d increments) at'
