@@ -294,11 +294,11 @@ class Board(My_Rectangle):
         self.top_cuts = cuts
     def _do_cuts(self, bit, cuts, y_nocut, y_cut):
         '''Creates the perimeter coordinates for the given cuts'''
-        x = [self.xL()]
+        x = []
+        y = []
         if cuts[0].xmin > 0:
+            x = [self.xL()]
             y = [y_nocut]
-        else:
-            y = [y_cut]
         # loop through the cuts and add them to the perimeter
         for c in cuts:
             if c.xmin > 0:
@@ -306,19 +306,19 @@ class Board(My_Rectangle):
                 x.append(c.xmin + x[0] + bit.offset)
                 y.append(y_nocut)
             # at the cut depth, start of cut
-            x.append(c.xmin + x[0])
+            x.append(c.xmin + self.xL())
             y.append(y_cut)
             # at the cut depth, end of cut
-            x.append(c.xmax + x[0])
+            x.append(c.xmax + self.xL())
             y.append(y_cut)
             if c.xmax < self.width:
                 # at the surface, end of cut
-                x.append(c.xmax + x[0] - bit.offset)
+                x.append(c.xmax + self.xL() - bit.offset)
                 y.append(y_nocut)
         # add the last point on the top and bottom, at the right edge,
         # accounting for whether the last cut includes this edge or not.
         if cuts[-1].xmax < self.width:
-            x.append(x[0] + self.width)
+            x.append(self.xL() + self.width)
             y.append(y_nocut)
         return (x, y)
     def do_all_cuts(self, bit):
@@ -604,9 +604,10 @@ def cut_boards(boards, bit, spacing):
     '''
     Determines the cuts for each board for the given bit and spacing
     '''
-    # determine all the cuts from the a-cuts (index 0)
+    # determine all the cuts from the A-cuts (index 0) on the top board.
     last = spacing.cuts
     boards[0].set_bottom_cuts(last, bit)
+
     if boards[3].active:
         # double-double case
         top = adjoining_cuts(last, bit, boards[0])
@@ -635,11 +636,12 @@ class Joint_Geometry(object):
         self.spacing = spacing
         self.margins = margins
 
+        cut_boards(boards, bit, spacing)
+        self.compute_fit()
+
         board_sep = margins.sep
         if config.show_fit:
             board_sep = -bit.depth
-
-        cut_boards(boards, bit, spacing)
 
         # Create the corners of the template
         self.rect_T = My_Rectangle(margins.left, margins.bottom,
@@ -693,6 +695,69 @@ class Joint_Geometry(object):
             self.board_caul = None
             self.caul_top = None
             self.caul_bottom = None
+
+    def compute_fit(self):
+        '''
+        Sets the maximum gap and overlap over all joints.
+        '''
+        # Determine the board indices for each joint.
+        if self.boards[2].active:
+            joints = [[1, 2]]
+            if self.boards[3].active:
+                joints.append([2, 3])
+                joints.append([3, 0])
+            else:
+                joints.append([2, 0])
+        else:
+            joints = [[1, 0]]
+
+        # Load up the coordinates for the boards
+        coords = []
+        for i in range(4):
+            if self.boards[i].active:
+                coords.append(self.boards[i].do_all_cuts(self.bit))
+
+        # Determine the max gap and overlap
+        self.max_gap = 0
+        self.max_overlap = 0
+        for j in joints:
+            # Here, bottom and top are with respect to the joint, not the
+            # boards, so they're flipped. Roughly, should have ybot < ytop.
+            xbot = coords[j[0]][0]
+            ybot = coords[j[0]][1]
+            xtop = coords[j[1]][2]
+            ytop = coords[j[1]][3]
+            n = len(xtop)
+            yshift = self.boards[j[1]].yB() - self.boards[j[0]].yT() +\
+                     self.bit.depth
+            for i in range(n):
+                ybot[i] += yshift
+            for i in range(n - 1):
+                d = gap_overlap((xbot[i], xbot[i+1]),
+                                (ybot[i], ybot[i+1]),
+                                (xtop[i], xtop[i+1]),
+                                (ytop[i], ytop[i+1]))
+                if d > 0:
+                    self.max_gap = max(self.max_gap, d)
+                else:
+                    self.max_overlap = max(self.max_overlap, -d)
+
+def gap_overlap(xbot, ybot, xtop, ytop):
+    '''
+    Returns the distance between the midpoint of (xbot, ybot) to the 
+    line (xtop, ytop).  If positive, then a gap; otherwise, an overlap.
+    '''
+    # find unit normal from bottom line
+    dxbot = xbot[1] - xbot[0]
+    dybot = ybot[1] - ybot[0]
+    norm = 1.0 / math.sqrt(dxbot * dxbot + dybot * dybot)
+    nx = -dybot * norm
+    ny = dxbot * norm
+    # vector connecting midpoints
+    dx = 0.5 * (xtop[1] + xtop[0] - xbot[1] - xbot[0])
+    dy = 0.5 * (ytop[1] + ytop[0] - ybot[1] - ybot[0])
+    # the dot product is our result
+    return dx * nx + dy * ny
 
 def create_title(boards, bit, spacing):
     '''

@@ -845,7 +845,6 @@ class Driver(QtGui.QMainWindow):
         self.statusbar.addPermanentWidget(self.statusRight, 1)
         self.statusRight.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Sunken)
         self.status_message('Ready')
-        self.status_interference()
 
     def status_message(self, msg, flash_len_ms=None):
         '''
@@ -855,11 +854,20 @@ class Driver(QtGui.QMainWindow):
         if flash_len_ms is not None:
             QtCore.QTimer.singleShot(flash_len_ms, self._on_flash_status_off)
 
-    def status_interference(self):
+    def status_fit(self):
         '''
-        Updates the fit interference amount in the status bar.
+        Updates the fit parameters in the status bar.
         '''
-        self.statusRight.setText('Fit Interfence = 0 in.')
+        if self.fig.geom is None:
+            return
+        msg = 'Max gap = %.3f%s, Max overlap = %.3f%s'
+        gap = self.fig.geom.max_gap
+        overlap = self.fig.geom.max_overlap
+        u = self.units.units_string()
+        if not self.units.metric:
+            gap /= self.units.num_increments
+            overlap /= self.units.num_increments
+        self.statusRight.setText(msg % (gap, u, overlap, u))
 
     def draw(self):
         '''(Re)draws the template and boards'''
@@ -868,6 +876,7 @@ class Driver(QtGui.QMainWindow):
         self.template = router.Incra_Template(self.units, self.boards)
         self.fig.draw(self.template, self.boards, self.bit, self.spacing, self.woods,
                       self.description)
+        self.status_fit()
 
     def reinit_spacing(self):
         '''
