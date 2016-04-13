@@ -321,6 +321,29 @@ class Board(My_Rectangle):
             x.append(x[0] + self.width)
             y.append(y_nocut)
         return (x, y)
+    def do_all_cuts(self, bit):
+        '''
+        Returns (xtop, ytop, xbottom, ybottom), which are the coordinates of the top and 
+        bottom cuts, ordered left to right.  If the edge has no cuts, just the endpoints
+        of the board are returned.
+        '''
+        # Do the top edge
+        y_nocut = self.yT() # y-location of uncut edge
+        if self.top_cuts is None:
+            xtop = [self.xL(), self.xR()]
+            ytop = [y_nocut, y_nocut]
+        else:
+            y_cut = y_nocut - bit.depth   # y-location of routed edge
+            (xtop, ytop) = self._do_cuts(bit, self.top_cuts, y_nocut, y_cut)
+        # Do the bottom edge
+        y_nocut = self.yB() # y-location of uncut edge
+        if self.bottom_cuts is None:
+            xb = [self.xL(), self.xR()]
+            yb = [y_nocut, y_nocut]
+        else:
+            y_cut = y_nocut + bit.depth   # y-location of routed edge
+            (xb, yb) = self._do_cuts(bit, self.bottom_cuts, y_nocut, y_cut)
+        return (xtop, ytop, xb, yb)
     def perimeter(self, bit):
         '''
         Compute the perimeter coordinates of the board.
@@ -330,22 +353,7 @@ class Board(My_Rectangle):
         Returns (x, y) coordinates of perimeter, ordred clockwise around
         perimeter.
         '''
-        # Do the top edge
-        y_nocut = self.yT() # y-location of uncut edge
-        if self.top_cuts is None:
-            x = [self.xL(), self.xR()]
-            y = [y_nocut, y_nocut]
-        else:
-            y_cut = y_nocut - bit.depth   # y-location of routed edge
-            (x, y) = self._do_cuts(bit, self.top_cuts, y_nocut, y_cut)
-        # Do the bottom edge
-        y_nocut = self.yB() # y-location of uncut edge
-        if self.bottom_cuts is None:
-            xb = [self.xL(), self.xR()]
-            yb = [y_nocut, y_nocut]
-        else:
-            y_cut = y_nocut + bit.depth   # y-location of routed edge
-            (xb, yb) = self._do_cuts(bit, self.bottom_cuts, y_nocut, y_cut)
+        (x, y, xb, yb) = self.do_all_cuts(bit)
         # merge the top and bottom
         xb.reverse()
         yb.reverse()
