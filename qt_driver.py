@@ -837,25 +837,29 @@ class Driver(QtGui.QMainWindow):
         Creates a status message bar that is placed at the bottom of the
         main frame.
         '''
+        # Create the label widgets
         font = QtGui.QFont('Times', 16)
         style = QtGui.QFrame.Panel | QtGui.QFrame.Raised
+        self.status_message_label = QtGui.QLabel('MESSAGE')
+        self.status_message_label.setFont(font)
+        self.status_message_label.setFrameStyle(style)
+        self.status_fit_label = QtGui.QLabel('FIT')
+        self.status_fit_label.setFont(font)
+        self.status_fit_label.setFrameStyle(style)
+
+        # Add labels to statusbar
         self.statusbar = self.statusBar()
-        self.statusLeft = QtGui.QLabel('LEFT')
-        self.statusLeft.setFont(font)
-        self.statusLeft.setFrameStyle(style)
-        self.statusbar.addPermanentWidget(self.statusLeft, 1)
-        self.statusRight = QtGui.QLabel('RIGHT')
-        self.statusRight.setFont(font)
-        self.statusbar.addPermanentWidget(self.statusRight, 1)
-        self.statusRight.setFrameStyle(style)
-        self.statusRight.setAlignment(QtCore.Qt.AlignRight)
+        self.status_message_label.setAlignment(QtCore.Qt.AlignRight)
+        self.statusbar.addPermanentWidget(self.status_fit_label, 1)
+        self.statusbar.addPermanentWidget(self.status_message_label, 1)
+
         self.status_message('Ready')
 
     def status_message(self, msg, flash_len_ms=None):
         '''
         Displays a message to the status bar
         '''
-        self.statusLeft.setText(msg)
+        self.status_message_label.setText(msg)
         if flash_len_ms is not None:
             QtCore.QTimer.singleShot(flash_len_ms, self._on_flash_status_off)
 
@@ -872,12 +876,12 @@ class Driver(QtGui.QMainWindow):
         warn_overlap = self.units.abstract_to_increments(self.config.warn_overlap, False)
         u = self.units.units_string()
         if overlap > warn_overlap or gap > warn_gap:
-            self.statusRight.setStyleSheet('color: red')
+            self.status_fit_label.setStyleSheet('color: red')
         else:
-            self.statusRight.setStyleSheet('color: black')
+            self.status_fit_label.setStyleSheet('color: black')
         gap /= self.units.num_increments
         overlap /= self.units.num_increments
-        self.statusRight.setText(msg % (gap, u, overlap, u))
+        self.status_fit_label.setText(msg % (gap, u, overlap, u))
 
     def draw(self):
         '''(Re)draws the template and boards'''
@@ -1697,7 +1701,7 @@ class Driver(QtGui.QMainWindow):
         '''Handles event to turn off statusbar message'''
         if self.config.debug:
             print('_on_flash_status_off')
-        self.statusLeft.setText('')
+        self.status_message_label.setText('')
 
     @QtCore.pyqtSlot()
     def _on_fullscreen(self):
