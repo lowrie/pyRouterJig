@@ -162,22 +162,31 @@ class Units(object):
             self.increments_per_inch = self.mm_per_inch * self.num_increments
         else: # english units
             self.increments_per_inch = self.num_increments
-    def increments_to_inches(self, increments_):
+    def increments_to_inches(self, increments):
         '''Converts increments to inches.'''
-        return float(increments_) / self.increments_per_inch
-    def inches_to_increments(self, inches_):
+        return float(increments) / self.increments_per_inch
+    def inches_to_increments(self, inches):
         '''Converts the input inches to increments'''
-        return my_round(self.increments_per_inch * inches_)
+        return my_round(self.increments_per_inch * inches)
     def increments_to_string(self, increments, with_units=False):
-        '''A string representation of the value increments'''
+        '''
+        A string representation of the value increments, converted to
+        its respective units.
+        '''
         if self.metric:
             r = '%g' % (increments / float(self.num_increments))
         else:
-            numer = increments
-            denom = self.increments_per_inch
+            allow_denoms = [1, 2, 4, 8, 16, 32, 64]
+            if isinstance(increments, float):
+                precision = 100
+                numer = int(precision * increments)
+                denom = precision * self.increments_per_inch
+            else:
+                numer = increments
+                denom = self.increments_per_inch
             frac = My_Fraction(self.english_separator, 0, numer, denom)
             frac.reduce()
-            if frac.numerator != 0 and frac.denominator not in [1, 2, 4, 8, 16, 32, 64]:
+            if frac.numerator != 0 and frac.denominator not in allow_denoms:
                 r = '%.3f' % (increments / float(self.num_increments))
             else:
                 r = frac.to_string()
@@ -202,11 +211,15 @@ class Units(object):
                     return form.format('in.')
                 else:
                     return '"'
-    def length_to_increments(self, v):
+    def length_to_increments(self, v, as_integer=True):
         '''
         Converts v to increments, where v is [inches|mm]
         '''
-        return my_round(v * self.num_increments)
+        i = v * self.num_increments
+        if as_integer:
+            return my_round(i)
+        else:
+            return i
     def string_to_float(self, s):
         '''
         Converts a string representation to a floating-point value, where
@@ -227,23 +240,23 @@ class Units(object):
             return self.string_to_float(a)
         else:
             return float(a)
-    def string_to_increments(self, s):
+    def string_to_increments(self, s, as_integer=True):
         '''
         Converts a string representation to the number of increments.
         Assumes the string is in inches or mm, depending on the metric
         attribute.
         '''
-        return self.length_to_increments(self.string_to_float(s))
-    def abstract_to_increments(self, a):
+        return self.length_to_increments(self.string_to_float(s), as_integer)
+    def abstract_to_increments(self, a, as_integer=True):
         '''
         Converts a value to increments.  If a is a string, then
         string_to_increments() is called.  Otherwise, length_to_increments()
         is called.
         '''
         if isinstance(a, str):
-            return self.string_to_increments(a)
+            return self.string_to_increments(a, as_integer)
         else:
-            return self.length_to_increments(float(a))
+            return self.length_to_increments(float(a), as_integer)
 
 class Margins(object):
     '''

@@ -85,7 +85,7 @@ class Config_Window(QtGui.QDialog):
 
         # Form these objects so that we can do error checking on their changes
         bit_width = self.units.abstract_to_increments(self.config.bit_width)
-        bit_depth = self.units.abstract_to_increments(self.config.bit_depth)
+        bit_depth = self.units.abstract_to_increments(self.config.bit_depth, False)
         bit_angle = self.units.abstract_to_float(self.config.bit_angle)
         self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle)
         board_width = self.units.abstract_to_increments(self.config.board_width)

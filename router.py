@@ -66,18 +66,18 @@ class Router_Bit(object):
 
     Input attributes (after creation, use setter functions to set these)
 
-    angle: measured from y-axis, in degrees, following dovetail bit
+    angle: (float) measured from y-axis, in degrees, following dovetail bit
            standard. Zero for straight bit.
 
-    width: max cutting width.  This is the bottom of a dovetail bit.
+    width: (integer) max cutting width.  This is the bottom of a dovetail bit.
            For now, this must be an even number.
 
-    depth: cutting depth. Equals board thickness for through dovetails
-            and box joints.
+    depth: (float) cutting depth. Equals board thickness for through dovetails
+           and box joints.
 
     Computed attributes:
 
-    offset: x-dimension between max-width point and point at board's
+    offset: (float) x-dimension between max-width point and point at board's
             surface.  Zero for angle=0.
 
     neck: width of bit at board surface.
@@ -126,7 +126,7 @@ class Router_Bit(object):
         msg = 'Unable to set Bit Depth to: {}<p>'\
               'Set to a positive value, such as: {}'.format(s, val)
         try:
-            depth = self.units.string_to_increments(s)
+            depth = self.units.string_to_increments(s, False)
         except:
             raise Router_Exception(msg)
         if depth <= 0:
