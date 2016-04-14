@@ -53,22 +53,31 @@ def form_line(label, widget=None, tooltip=None):
     grid.setColumnStretch(1, 5)
     return grid
 
+def is_positive(v):
+    return v > 0
+
+def is_nonnegative(v):
+    return v >= 0
+
 class Misc_Value(object):
     '''
     Helper class to wrap dimensional values for use with qt_utils.set_router_value()
     '''
-    def __init__(self, value, units, name):
+    def __init__(self, value, units, name, as_integer=True,
+                 is_valid=is_positive):
         self.value = value
         self.units = units
         self.name = name
+        self.as_integer = as_integer
+        self.is_valid = is_valid
     def set_value_from_string(self, s):
         msg = 'Unable to set {} to: {}<p>'\
               'Set to a positive number.'.format(self.name, s)
         try:
-            value = self.units.string_to_increments(s)
+            value = self.units.string_to_increments(s, self.as_integer)
         except:
             raise router.Router_Exception(msg)
-        if value <= 0:
+        if not self.is_valid(value):
             raise router.Router_Exception(msg)
         self.value = value
 
@@ -306,8 +315,8 @@ class Config_Window(QtGui.QDialog):
         '''Creates the layout for misc preferences'''
         w =  QtGui.QWidget()
         vbox = QtGui.QVBoxLayout()
-
         us = self.units.units_string(withParens=True)
+
         self.le_min_finger_width_label = QtGui.QLabel('Min Finger Width{}:'.format(us))
         self.le_min_finger_width = QtGui.QLineEdit(w)
         self.le_min_finger_width.setFixedWidth(self.line_edit_width)
@@ -323,6 +332,23 @@ class Config_Window(QtGui.QDialog):
         tt = 'The distance from the edge of each finger to the edge of the corresponding caul finger.'
         grid = form_line(self.le_caul_trim_label, self.le_caul_trim, tt)
         vbox.addLayout(grid)
+
+        self.le_warn_gap_label = QtGui.QLabel('Warning gap{}:'.format(us))
+        self.le_warn_gap = QtGui.QLineEdit(w)
+        self.le_warn_gap.setFixedWidth(self.line_edit_width)
+        self.le_warn_gap.editingFinished.connect(self._on_warn_gap)
+        tt = 'If the gap in the joint exceeds this value, warn the user.'
+        grid = form_line(self.le_warn_gap_label, self.le_warn_gap, tt)
+        vbox.addLayout(grid)
+
+        self.le_warn_overlap_label = QtGui.QLabel('Warning overlap{}:'.format(us))
+        self.le_warn_overlap = QtGui.QLineEdit(w)
+        self.le_warn_overlap.setFixedWidth(self.line_edit_width)
+        self.le_warn_overlap.editingFinished.connect(self._on_warn_overlap)
+        tt = 'If the overlap in the joint exceeds this value, warn the user.'
+        grid = form_line(self.le_warn_overlap_label, self.le_warn_overlap, tt)
+        vbox.addLayout(grid)
+
         vbox.addStretch(1)
 
         w.setLayout(vbox)
@@ -376,6 +402,8 @@ class Config_Window(QtGui.QDialog):
         self.le_bit_angle.setText(str(self.config.bit_angle))
         self.le_min_finger_width.setText(str(self.config.min_finger_width))
         self.le_caul_trim.setText(str(self.config.caul_trim))
+        self.le_warn_gap.setText(str(self.config.warn_gap))
+        self.le_warn_overlap.setText(str(self.config.warn_overlap))
         self.set_wood_combobox()
 
     def update_state(self, key, state=1):
@@ -689,3 +717,29 @@ class Config_Window(QtGui.QDialog):
         if val is not None:
             self.new_config['caul_trim'] = val
             self.update_state('caul_trim')
+
+    @QtCore.pyqtSlot()
+    def _on_warn_gap(self):
+        if self.config.debug:
+            print('qt_config:_on_warn_gap')
+        i = self.units.abstract_to_increments(self.new_config['warn_gap'])
+        v = Misc_Value(i, self.units, 'Warning Overlap', False,
+                       is_nonnegative)
+        val = qt_utils.set_router_value(self.le_warn_gap, v, 'value',
+                                        'set_value_from_string')
+        if val is not None:
+            self.new_config['warn_gap'] = val
+            self.update_state('warn_gap')
+
+    @QtCore.pyqtSlot()
+    def _on_warn_overlap(self):
+        if self.config.debug:
+            print('qt_config:_on_warn_overlap')
+        i = self.units.abstract_to_increments(self.new_config['warn_overlap'])
+        v = Misc_Value(i, self.units, 'Warning Overlap', False,
+                       is_nonnegative)
+        val = qt_utils.set_router_value(self.le_warn_overlap, v, 'value',
+                                        'set_value_from_string')
+        if val is not None:
+            self.new_config['warn_overlap'] = val
+            self.update_state('warn_overlap')

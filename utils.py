@@ -89,11 +89,11 @@ class My_Fraction(object):
         return s
     def set_from_string(self, s):
         '''
-        Initialize from a string assumed to be of the form:
+        Initialize from a string assumed either of the form:
 
         [whitespace][integer][whitespace][integer][whitespace]/[whitespace][integer][whitespace]
 
-        where each of the [] are optional.
+        where each of the [] are optional, or, a floating-point number (without exponentiation).
         '''
         msg = 'Bad number specification: %s'
         self.whole = 0
@@ -133,7 +133,7 @@ class My_Fraction(object):
             rest = s[dotloc+1:].strip()
             if len(rest) > 0:
                 self.numerator = int(rest)
-                self.denominator = my_round(math.pow(10, int(math.log10(self.numerator))+1))
+                self.denominator = int(math.pow(10, len(rest)))
                 self.reduce()
 
 class Units(object):

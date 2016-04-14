@@ -837,13 +837,18 @@ class Driver(QtGui.QMainWindow):
         Creates a status message bar that is placed at the bottom of the
         main frame.
         '''
+        font = QtGui.QFont('Times', 16)
+        style = QtGui.QFrame.Panel | QtGui.QFrame.Raised
         self.statusbar = self.statusBar()
         self.statusLeft = QtGui.QLabel('LEFT')
-        self.statusLeft.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Sunken)
+        self.statusLeft.setFont(font)
+        self.statusLeft.setFrameStyle(style)
         self.statusbar.addPermanentWidget(self.statusLeft, 1)
         self.statusRight = QtGui.QLabel('RIGHT')
+        self.statusRight.setFont(font)
         self.statusbar.addPermanentWidget(self.statusRight, 1)
-        self.statusRight.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Sunken)
+        self.statusRight.setFrameStyle(style)
+        self.statusRight.setAlignment(QtCore.Qt.AlignRight)
         self.status_message('Ready')
 
     def status_message(self, msg, flash_len_ms=None):
@@ -860,13 +865,18 @@ class Driver(QtGui.QMainWindow):
         '''
         if self.fig.geom is None:
             return
-        msg = 'Max gap = %.3f%s, Max overlap = %.3f%s'
+        msg = 'Max gap = %.3f%s  Max overlap = %.3f%s'
         gap = self.fig.geom.max_gap
         overlap = self.fig.geom.max_overlap
+        warn_gap = self.units.abstract_to_increments(self.config.warn_gap, False)
+        warn_overlap = self.units.abstract_to_increments(self.config.warn_overlap, False)
         u = self.units.units_string()
-        if not self.units.metric:
-            gap /= self.units.num_increments
-            overlap /= self.units.num_increments
+        if overlap > warn_overlap or gap > warn_gap:
+            self.statusRight.setStyleSheet('color: red')
+        else:
+            self.statusRight.setStyleSheet('color: black')
+        gap /= self.units.num_increments
+        overlap /= self.units.num_increments
         self.statusRight.setText(msg % (gap, u, overlap, u))
 
     def draw(self):

@@ -112,6 +112,12 @@ min_finger_width = {min_finger_width}
 # the optional clamping cauls [inches|mm]
 caul_trim = {caul_trim}
 
+# If the gap in the joint exceeds this value, warn the user [inches|mm]
+warn_gap = {warn_gap}
+
+# If the overlap in the joint exceeds this value, warn the user [inches|mm]
+warn_overlap = {warn_overlap}
+
 # On save image, minimum width of image in pixels. Used if the figure width is
 # less than this size.  Does not apply to screenshots, which are done at the
 # resolution of the window.
@@ -210,6 +216,8 @@ english_vals = {'metric':False,
                 'double_board_thickness':'1/8',
                 'min_finger_width':'1/16',
                 'caul_trim':'1/32',
+                'warn_gap':0.005,
+                'warn_overlap':0.001,
                 'top_margin':'1/4',
                 'bottom_margin':'1/2',
                 'left_margin':'1/4',
@@ -225,6 +233,8 @@ metric_vals = {'metric':True,
                'double_board_thickness':4,
                'min_finger_width':2,
                'caul_trim':1,
+               'warn_gap':0.05,
+               'warn_overlap':0.01,
                'top_margin':6,
                'bottom_margin':12,
                'left_margin':6,
@@ -257,6 +267,8 @@ migrate = ['english_separator',  # common_vals
            'double_board_thickness',
            'min_finger_width',
            'caul_trim',
+           'warn_gap',
+           'warn_overlap',
            'top_margin',
            'bottom_margin']
 
@@ -269,6 +281,8 @@ dim_vals = ['separation',
             'double_board_thickness',
             'min_finger_width',
             'caul_trim',
+            'warn_gap',
+            'warn_overlap',
             'top_margin',
             'bottom_margin',
             'left_margin',
@@ -298,7 +312,7 @@ class Configuration(object):
         # config file must be updated if it was created with an earlier number.
         # Update this value when new parameters are added to the config file,
         # or any parameter's type changes,
-        self.create_version_number = 90
+        self.create_version_number = 91
         # config file cannot be migrated from versions earlier than this.
         # This value is currently set at the version that all dimensions and bit_angle
         # were consistent types and dimensions.
