@@ -879,8 +879,8 @@ class Driver(QtGui.QMainWindow):
             self.status_fit_label.setStyleSheet('color: red')
         else:
             self.status_fit_label.setStyleSheet('color: black')
-        gap /= self.units.num_increments
-        overlap /= self.units.num_increments
+        gap = self.units.increments_to_length(gap)
+        overlap = self.units.increments_to_length(overlap)
         self.status_fit_label.setText(msg % (gap, u, overlap, u))
 
     def draw(self):

@@ -165,6 +165,9 @@ class Units(object):
     def increments_to_inches(self, increments):
         '''Converts increments to inches.'''
         return float(increments) / self.increments_per_inch
+    def increments_to_length(self, increments):
+        '''Converts increments to the current unit length.'''
+        return float(increments) / self.num_increments
     def inches_to_increments(self, inches):
         '''Converts the input inches to increments'''
         return my_round(self.increments_per_inch * inches)
