@@ -837,28 +837,52 @@ class Driver(QtGui.QMainWindow):
         Creates a status message bar that is placed at the bottom of the
         main frame.
         '''
-        # Create the label widgets
         font = QtGui.QFont('Times', 16)
+        fm = QtGui.QFontMetrics(font)
+        fontL = QtGui.QFont(font)
+        fontL.setBold(True)
+        fmL = QtGui.QFontMetrics(fontL)
+
+        fit_text = 'Fit:'
+        fit = QtGui.QLabel(fit_text)
+        fit.setFont(fontL)
+        fit.setFixedWidth(fmL.width(fit_text))
+
+        status_text = 'Status:'
+        status = QtGui.QLabel(status_text)
+        status.setFont(fontL)
+        status.setFixedWidth(fmL.width(status_text))
+
+        # Create the label widgets
         style = QtGui.QFrame.Panel | QtGui.QFrame.Raised
         self.status_message_label = QtGui.QLabel('MESSAGE')
         self.status_message_label.setFont(font)
         self.status_message_label.setFrameStyle(style)
         self.status_fit_label = QtGui.QLabel('FIT')
+        w = fm.width('Max gap = 0.0000 mm  Max overlap = 0.0000 mm')
+        self.status_fit_label.setFixedWidth(w)
         self.status_fit_label.setFont(font)
         self.status_fit_label.setFrameStyle(style)
 
         # Add labels to statusbar
         self.statusbar = self.statusBar()
-        self.status_message_label.setAlignment(QtCore.Qt.AlignRight)
-        self.statusbar.addPermanentWidget(self.status_fit_label, 1)
-        self.statusbar.addPermanentWidget(self.status_message_label, 1)
+        #self.status_message_label.setAlignment(QtCore.Qt.AlignRight)
+        self.statusbar.addPermanentWidget(fit, 1)
+        self.statusbar.addPermanentWidget(self.status_fit_label, 2)
+        self.statusbar.addPermanentWidget(status, 1)
+        self.statusbar.addPermanentWidget(self.status_message_label, 2)
 
         self.status_message('Ready')
 
-    def status_message(self, msg, flash_len_ms=None):
+    def status_message(self, msg, warning=False, flash_len_ms=None):
         '''
         Displays a message to the status bar
         '''
+        if warning:
+            style = 'background-color: red; color: white'
+            self.status_message_label.setStyleSheet(style)
+        else:
+            self.status_message_label.setStyleSheet('color: green')
         self.status_message_label.setText(msg)
         if flash_len_ms is not None:
             QtCore.QTimer.singleShot(flash_len_ms, self._on_flash_status_off)
@@ -876,9 +900,10 @@ class Driver(QtGui.QMainWindow):
         warn_overlap = self.units.abstract_to_increments(self.config.warn_overlap, False)
         u = self.units.units_string()
         if overlap > warn_overlap or gap > warn_gap:
-            self.status_fit_label.setStyleSheet('color: red')
+            style = 'background-color: red; color: white'
+            self.status_fit_label.setStyleSheet(style)
         else:
-            self.status_fit_label.setStyleSheet('color: black')
+            self.status_fit_label.setStyleSheet('color: green')
         gap = self.units.increments_to_length(gap)
         overlap = self.units.increments_to_length(overlap)
         self.status_fit_label.setText(msg % (gap, u, overlap, u))
@@ -1198,7 +1223,7 @@ class Driver(QtGui.QMainWindow):
                 self.working_dir = d
                 filename = str(filenames[0]).strip()
             if filename is None:
-                self.status_message('File not saved')
+                self.status_message('File not saved', warning=True)
                 return
 
         # Save the file with metadata
@@ -1218,7 +1243,8 @@ class Driver(QtGui.QMainWindow):
                 self.screenshot_index += 1
             self.file_saved = True
         else:
-            self.status_message('Unable to save to file %s' % filename)
+            self.status_message('Unable to save to file %s' % filename,
+                                warning=True)
 
     @QtCore.pyqtSlot()
     def _on_open(self):
@@ -1248,7 +1274,7 @@ class Driver(QtGui.QMainWindow):
                                                      'Portable Network Graphics (*.png)')
         filename = str(filename).strip()
         if len(filename) == 0:
-            self.status_message('File open aborted')
+            self.status_message('File open aborted', warning=True)
             return
 
         # From the image file, parse the metadata.
@@ -1353,7 +1379,7 @@ class Driver(QtGui.QMainWindow):
             self.working_dir = d
             filename = str(filenames[0]).strip()
         if filename is None:
-            self.status_message('Joint not exported')
+            self.status_message('Joint not exported', warning=True)
             return
 
         threeDS.joint_to_3ds(filename, self.boards, self.bit, self.spacing)
@@ -1370,7 +1396,7 @@ class Driver(QtGui.QMainWindow):
         if r:
             self.status_message('Figure printed')
         else:
-            self.status_message('Figure not printed')
+            self.status_message('Figure not printed', warning=True)
 
     @QtCore.pyqtSlot()
     def _on_print_table(self):
@@ -1412,7 +1438,8 @@ class Driver(QtGui.QMainWindow):
         self.config_window.initialize()
         r = self.config_window.exec_()
         if r == 0:
-            self.status_message('No changes made to configuration file.')
+            self.status_message('No changes made to configuration file.',
+                                warning=True)
         else:
             self.status_message('Preference changes saved in configuration file.')
         # Update widgets that may have changed
@@ -1584,8 +1611,8 @@ class Driver(QtGui.QMainWindow):
         '''Handles move left event'''
         if self.config.debug:
             print('_on_edit_moveL')
-        msg = self.spacing.cut_move_left()
-        self.status_message(msg)
+        (msg, warning) = self.spacing.cut_move_left()
+        self.status_message(msg, warning)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1593,8 +1620,8 @@ class Driver(QtGui.QMainWindow):
         '''Handles move right event'''
         if self.config.debug:
             print('_on_edit_moveR')
-        msg = self.spacing.cut_move_right()
-        self.status_message(msg)
+        (msg, warning) = self.spacing.cut_move_right()
+        self.status_message(msg, warning)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1602,8 +1629,8 @@ class Driver(QtGui.QMainWindow):
         '''Handles widen left event'''
         if self.config.debug:
             print('_on_edit_widenL')
-        msg = self.spacing.cut_widen_left()
-        self.status_message(msg)
+        (msg, warning) = self.spacing.cut_widen_left()
+        self.status_message(msg, warning)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1611,8 +1638,8 @@ class Driver(QtGui.QMainWindow):
         '''Handles widen right event'''
         if self.config.debug:
             print('_on_edit_widenR')
-        msg = self.spacing.cut_widen_right()
-        self.status_message(msg)
+        (msg, warning) = self.spacing.cut_widen_right()
+        self.status_message(msg, warning)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1620,8 +1647,8 @@ class Driver(QtGui.QMainWindow):
         '''Handles trim left event'''
         if self.config.debug:
             print('_on_edit_trimL')
-        msg = self.spacing.cut_trim_left()
-        self.status_message(msg)
+        (msg, warning) = self.spacing.cut_trim_left()
+        self.status_message(msg, warning)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1629,8 +1656,8 @@ class Driver(QtGui.QMainWindow):
         '''Handles trim right event'''
         if self.config.debug:
             print('_on_edit_trimR')
-        msg = self.spacing.cut_trim_right()
-        self.status_message(msg)
+        (msg, warning) = self.spacing.cut_trim_right()
+        self.status_message(msg, warning)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1683,8 +1710,8 @@ class Driver(QtGui.QMainWindow):
         '''Handles add cut event'''
         if self.config.debug:
             print('_on_edit_add')
-        msg = self.spacing.cut_add()
-        self.status_message(msg)
+        (msg, warning) = self.spacing.cut_add()
+        self.status_message(msg, warning)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1692,8 +1719,8 @@ class Driver(QtGui.QMainWindow):
         '''Handles delete cuts event'''
         if self.config.debug:
             print('_on_edit_del')
-        msg = self.spacing.cut_delete_active()
-        self.status_message(msg)
+        (msg, warning) = self.spacing.cut_delete_active()
+        self.status_message(msg, warning)
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1803,6 +1830,7 @@ class Driver(QtGui.QMainWindow):
             return
 
         msg = None
+        warning = False
         if event.key() == QtCore.Qt.Key_Control:
             self.control_key = True
         elif event.key() == QtCore.Qt.Key_Alt:
@@ -1821,33 +1849,34 @@ class Driver(QtGui.QMainWindow):
             msg = self.spacing.cut_toggle()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Minus:
-            msg = self.spacing.cut_delete_active()
+            (msg, warning) = self.spacing.cut_delete_active()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Plus:
-            msg = self.spacing.cut_add()
+            (msg, warning) = self.spacing.cut_add()
             self.draw()
         elif event.key() == QtCore.Qt.Key_Left:
             if self.control_key and self.alt_key:
-                msg = self.spacing.cut_widen_left()
+                (msg, warning) = self.spacing.cut_widen_left()
             elif self.control_key:
-                msg = self.spacing.cut_trim_left()
+                (msg, warning) = self.spacing.cut_trim_left()
             elif self.alt_key:
-                msg = self.spacing.cut_move_left()
+                (msg, warning) = self.spacing.cut_move_left()
             else:
                 msg = self.spacing.cut_increment_cursor(-1)
             self.draw()
         elif event.key() == QtCore.Qt.Key_Right:
             if self.control_key and self.alt_key:
-                msg = self.spacing.cut_widen_right()
+                (msg, warning) = self.spacing.cut_widen_right()
             elif self.control_key:
-                msg = self.spacing.cut_trim_right()
+                (msg, warning) = self.spacing.cut_trim_right()
             elif self.alt_key:
-                msg = self.spacing.cut_move_right()
+                (msg, warning) = self.spacing.cut_move_right()
             else:
                 msg = self.spacing.cut_increment_cursor(1)
             self.draw()
         else:
             msg = 'You pressed an unrecognized key: '
+            warning = True
             s = event.text()
             if len(s) > 0:
                 msg += s
@@ -1855,7 +1884,7 @@ class Driver(QtGui.QMainWindow):
                 msg += '%x' % event.key()
             event.ignore()
         if msg is not None:
-            self.status_message(msg)
+            self.status_message(msg, warning)
 
     def keyReleaseEvent(self, event):
         '''
