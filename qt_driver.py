@@ -838,7 +838,7 @@ class Driver(QtGui.QMainWindow):
         main frame.
         '''
         # Create the fonts and labels for each field
-        font = QtGui.QFont('Times', 16)
+        font = QtGui.QFont('Times', 14)
         fm = QtGui.QFontMetrics(font)
         fontL = QtGui.QFont(font)
         fontL.setBold(True)
