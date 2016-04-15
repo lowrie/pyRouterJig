@@ -74,6 +74,10 @@ Note that on the Mac, the keyboard shortcuts use the `Command` key rather than `
    </figure>
 *  <b>Finger Widths</b> Toggles whether the finger widths are displayed on
    each finger of each board.
+*  <b>Fit</b> Toggles a view of the joint assembled.  By "assembled", we mean
+a flattened, two-dimensional view.  This view is useful for checking the fit
+of dovetail joints, which because of the Incra's positioning at discrete
+increments, can result in a small amount of overlap in the fit.
 *  <b>Router Passes</b>  <a name="view-router-passes"></a>Options under this menu control if and how router
    passes are drawn on each board.  If all options are unchecked, then no router
    passes are drawn.  The values are:
