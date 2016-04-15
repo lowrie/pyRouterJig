@@ -837,6 +837,7 @@ class Driver(QtGui.QMainWindow):
         Creates a status message bar that is placed at the bottom of the
         main frame.
         '''
+        # Create the fonts and labels for each field
         font = QtGui.QFont('Times', 16)
         fm = QtGui.QFontMetrics(font)
         fontL = QtGui.QFont(font)
@@ -853,7 +854,7 @@ class Driver(QtGui.QMainWindow):
         status.setFont(fontL)
         status.setFixedWidth(fmL.width(status_text))
 
-        # Create the label widgets
+        # Create the label widgets that will change their text
         style = QtGui.QFrame.Panel | QtGui.QFrame.Raised
         self.status_message_label = QtGui.QLabel('MESSAGE')
         self.status_message_label.setFont(font)
