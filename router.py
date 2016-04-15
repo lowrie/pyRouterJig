@@ -630,6 +630,8 @@ class Joint_Geometry(object):
     Computes and stores all of the geometry attributes of the joint.
     '''
     def __init__(self, template, boards, bit, spacing, margins, config):
+        if config.debug:
+            print('construct Joint_Geometry')
         self.template = template
         self.boards = boards
         self.bit = bit
@@ -637,7 +639,6 @@ class Joint_Geometry(object):
         self.margins = margins
 
         cut_boards(boards, bit, spacing)
-        self.compute_fit()
 
         board_sep = margins.sep
         if config.show_fit:
@@ -696,11 +697,14 @@ class Joint_Geometry(object):
             self.caul_top = None
             self.caul_bottom = None
 
+        self.compute_fit()
+
     def compute_fit(self):
         '''
         Sets the maximum gap and overlap over all joints.
         '''
-        # Determine the board indices for each joint.
+        # Determine the board indices for each joint:
+        #     [board index top_cut, board index bottom_cut]
         if self.boards[2].active:
             joints = [[1, 2]]
             if self.boards[3].active:
