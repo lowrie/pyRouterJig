@@ -762,6 +762,8 @@ class Qt_Fig(QtGui.QWidget):
         painter.save()
         brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 75))
         painter.setBrush(brush)
+        pen = QtGui.QPen(QtCore.Qt.red)
+        painter.setPen(pen)
         for f in self.geom.spacing.active_cuts:
             poly = self.cut_polygon(self.geom.boards[0].bottom_cuts[f])
             painter.drawPolygon(poly)
@@ -769,6 +771,13 @@ class Qt_Fig(QtGui.QWidget):
             (xmin, xmax) = self.geom.spacing.get_limits(f)
             xminG = min(xminG, xmin)
             xmaxG = max(xmaxG, xmax)
+            # label the polygon with its index
+            xText = 0.5 * (poly[0].x() + poly[1].x())
+            yText = 0.5 * (poly[0].y() + poly[1].y())
+            text = '%d' % f
+            flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
+            paint_text(painter, text, (xText, yText), flags, (0, -5),
+                       fill=self.background)
         painter.restore()
 
         # draw the limits
