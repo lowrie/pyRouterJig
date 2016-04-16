@@ -837,6 +837,11 @@ class Driver(QtGui.QMainWindow):
         Creates a status message bar that is placed at the bottom of the
         main frame.
         '''
+        tt_message = 'Status of the last operation.'
+        tt_fit = 'Maximum overlap and gap for the current joint.'\
+                 ' Too much overlap will cause an interference fit,'\
+                 ' while too much gap will result in a loose-fitting joint.'
+
         # Create the fonts and labels for each field
         font = QtGui.QFont('Times', 14)
         fm = QtGui.QFontMetrics(font)
@@ -848,22 +853,27 @@ class Driver(QtGui.QMainWindow):
         fit = QtGui.QLabel(fit_text)
         fit.setFont(fontL)
         fit.setFixedWidth(fmL.width(fit_text))
+        fit.setToolTip(tt_fit)
 
         status_text = 'Status:'
         status = QtGui.QLabel(status_text)
         status.setFont(fontL)
         status.setFixedWidth(fmL.width(status_text))
+        status.setToolTip(tt_message)
 
         # Create the label widgets that will change their text
         style = QtGui.QFrame.Panel | QtGui.QFrame.Raised
         self.status_message_label = QtGui.QLabel('MESSAGE')
         self.status_message_label.setFont(font)
         self.status_message_label.setFrameStyle(style)
+        self.status_message_label.setToolTip(tt_message)
+
         self.status_fit_label = QtGui.QLabel('FIT')
         w = fm.width('Max gap = 0.0000 mm  Max overlap = 0.0000 mm')
         self.status_fit_label.setFixedWidth(w)
         self.status_fit_label.setFont(font)
         self.status_fit_label.setFrameStyle(style)
+        self.status_fit_label.setToolTip(tt_fit)
 
         # Add labels to statusbar
         self.statusbar = self.statusBar()
