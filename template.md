@@ -16,10 +16,13 @@ some explanation:
   1. Using the centerline of the template and the procedure explained in the
   INCRA manual.  For each template, either the centerline is shown as a dashed
   line that spans the template height, or if the centerline coincides with a
-  cut, that cut denoted on each end of the template.  For example, in [Figure
-  11](#figure11), the bottom template indicates that the centerline coincides with
+  cut, that cut denoted on each end of the template. 
+  <a data-featherlight="{{ site.baseurl }}/images/dd_fig_center.png">In this
+  example</a>, the bottom template indicates that the centerline coincides with
   cut `3E`, whereas the top template draws the centerline between cuts `5C`
   and `6C`.
+<img class="floater" src="{{ site.baseurl }}/images/align_line.png" 
+     alt="Select units window" width="256">
   1. The `ALIGN` line is located 1/2 the bit width on the outside of the right
   edge of the board.  Therefore, if you align your bit flush with the fence and
   then position the template at the `ALIGN` line, your template will be
@@ -54,7 +57,7 @@ some explanation:
     <a href="{{ site.baseurl }}/menus/">Prev: Drop-down menus</a>
   </p>
   <p class="alignright">
-    <a href="{{ site.baseurl }}/saving_preferences/">Next: Saving Preferences</a>
+    <a href="{{ site.baseurl }}/dovetails/">Next: Dovetail Specifics</a>
   </p>
 </div>
 <div style="clear: both;"></div>

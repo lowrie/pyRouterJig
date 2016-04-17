@@ -92,7 +92,7 @@ where `X.X.X` is the code version that created the file.
 
 <div id="textbox">
   <p class="alignleft">
-    <a href="{{ site.baseurl }}/template/">Prev: Template Details</a>
+    <a href="{{ site.baseurl }}/dovetails/">Prev: Dovetail Specifics</a>
   </p>
   <p class="alignright">
     <a href="{{ site.baseurl }}/needed_improvements/">Next: Needed Improvements</a>

@@ -30,7 +30,8 @@ cuts can be moved or widened, limited by the bit width.
 <figcaption>
 <b>Figure 8.</b>  Editor mode, following Variable spacing set up as in
 <a data-featherlight="{{ site.baseurl }}/images/variable_screen_shot.png">Fig. 7 of the previous section</a>.
-The first three cuts on the Top Board are active, with the cut cursor on the
+The first three cuts on the Top Board are active.  Each active cut is labled
+by its index in red, with the cut cursor (blue outline, index 2) on the
 center cut.
 </figcaption>
 </figure>
@@ -52,7 +53,7 @@ The buttons and shortcuts are as follows:
 * <b>Active Cut Operators</b>: This category applies editing operators to
   the active cuts, and its buttons are as follows:
   * <b>Move:</b> (keyboard: Hold `Alt` key, along with left and right arrow keys) The arrows move the active cuts 1 increment to the left or right, if possible.
-  * <b>Widen:</b> (keyboard: Hold `Shift` key, along with left and right arrow keys) Widens the active cuts on their left or right side by 1 increment, if possible.
+  * <b>Widen:</b> (keyboard: Hold `Alt`+`Control` key, along with left and right arrow keys) Widens the active cuts on their left or right side by 1 increment, if possible.
   * <b>Trim:</b> (keyboard: Hold `Control` key, along with left or right arrows) Trims the active cuts on their left or right side by 1 increment, if possible.
   * Moves the cut cursor to the right or left
   cut to the right or left to be the active cut.
@@ -65,6 +66,12 @@ The buttons and shortcuts are as follows:
 Finally, the <b>Undo</b> button  (keyboard: `u`) reverses the last editing
 operation.  Undo may be applied repeatedly, until the joint is back to the
 starting point of invoking the <b>Editor</b>.
+
+As each operation is performed, the status is reported at the bottom of the
+screen in the <b>Status</b> bar.  The status will be red if the operation
+failed.  A failure isn't serious; it usually means that the operation can't be
+performed because it would result in a joint that cannot be cut with the
+current bit.
 
 Note that if you make changes in the <b>Editor</b>, and then go back to either
 <b>Equal</b> or <b>Variable</b> options, the changes will be lost.

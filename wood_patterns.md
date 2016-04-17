@@ -3,12 +3,12 @@ layout: page_doc
 title: Wood Pattern Selection
 ---
 
-On the bottom row of the lower-left input parameters are <b>Top Board</b>,
+On the bottom row of the lower-left grid parameters are <b>Top Board</b>,
 <b>Bottom Board</b>, <b>Double Board</b>, and <b>Double-Double Board</b>,
 which allow you to select the pattern or wood images used to draw these
 boards, along with parameters for Double and Double-Double joints.  The Double
-and Double-Double joints are explained in the 
-<a href="{{ site.baseurl }}/double_joints/">section Double Joints</a>.
+and Double-Double joints are explained in the section
+[Double Joints]({{ site.baseurl }}/double_joints/)
 In this section, we cover how to specify
 patterns for any board and how to add image files to simulate
 the appearance of wood grain.

@@ -90,7 +90,8 @@ increments, can result in a small amount of overlap in the fit.
 1. <b>Tools:</b>
 *  <b>Screenshot (`Ctrl-W`)</b> Similar to <b>Save</b>, but includes the entire
    {{ site.codename }} application window.  The image size is the same as your
-   current window size.  Figures 1 through 10 were created with
+   current window size.  <a data-featherlight="{{ site.baseurl }}/images/opening_screen_shot.png">
+   The opening screenshot image</a> was created with
    <b>Screenshot</b>.  Screenshots always use the default filename for output and
    are meant to be used to quickly generate image files (such as for this documentation!).
 *  <b>Export 3DS (`Ctrl-E`)</b> Allows you to export certain joints to a 3DS

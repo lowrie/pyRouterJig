@@ -41,7 +41,9 @@ template, and title may be printed by selecting <b>Print</b> in the
 (`Command-P` on Mac).
 
 The lower part of the window allows you to change interactively the parameters
-for the joint.  The joint is re-drawn after each change.  At the lower left,
+for the joint.  The joint is re-drawn after each change.  In the lower-left grid,
+<img class="floater" src="{{ site.baseurl }}/images/lower_left.png" 
+     alt="Select units window" width="512">
 you can see two rows of input parameters, which are available for any
 finger-spacing algorithm.  On the top row, we have
 
@@ -54,25 +56,23 @@ finger-spacing algorithm.  On the top row, we have
 These parameters are changed by entering text for the dimension in their
 respective text boxes, shown in the image above.  Moving the cursor outside
 the text box, or hitting the Enter key, will automatically update the value
-and redraw the joint with the new value.  For English units, the length
-values are in inches, while for metric, the values are in millimeters (mm).
-The values may be specified as either a fraction or decimal.
-For example, the following are equivalent:
+and redraw the joint with the new value.  The values may be specified as
+either a fraction or decimal.  For example, the following are equivalent:
 
-* `7 1/2`
-* `7.5`
-* `7 1 / 2`
-* `7 1 /2`
-* `7 1/ 2`
+`7 1/2` or `7.5` or `7 1 / 2` or `7 1 /2` or `7 1/ 2`
 
-Note that the whitespace around the \"`/`\" is ignored.
+Note that the whitespace around the \"`/`\" is ignored. The board and bit
+widths are rounded to the nearest alignment point.  By default these values
+are rounded to the nearest 1/32\" (or 1 mm for metric).  See section <a href="{{
+site.baseurl }}/alignment/">Alignment of Router Passes</a> for more
+information about alignment.
 
-The values with length dimension (inches or mm) are rounded to the nearest
-alignment point.  By default for English units, values are rounded to the nearest
-1/32\".  By default for metric, values are rounded to the  nearest
-millimeter.  See <a href="{{ site.baseurl }}/alignment/">section Alignment of
-Router Passes</a>
-for more information about alignment.
+On the bottom row of the lower-left grid parameters are <b>Top Board</b>,
+<b>Bottom Board</b>, <b>Double Board</b>, and <b>Double-Double Board</b>,
+which allow you to select the pattern or wood images used to draw these
+boards, along with parameters for Double and Double-Double joints.
+See the sections [Wood Pattern Selection]({{ site.baseurl }}/wood_patterns/)
+and [Double Joints]({{ site.baseurl }}/double_joints/) for more information.
 
 To create a dovetail joint, change <b>Bit Angle</b> to 7 degrees, and we obtain the
 dovetail joint shown in [Figure 2](#figure2) below:
