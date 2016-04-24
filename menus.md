@@ -49,7 +49,6 @@ Note that on the Mac, the keyboard shortcuts use the `Command` key rather than `
 *  <b>Quit (`Ctrl-Q`)</b> Quits {{ site.codename}} (on Mac, located under the <b>pyRouterJig</b> menu).  If you\'ve made any changes
    to the joint and haven\'t saved it, then you\'ll be warned.
 1. <b>View:</b>
-*  <b>Fullscreen (`Ctrl-F`)</b> Toggles full-screen mode.
 *  <b>Caul Template</b> <a name="view-caul-template"></a>
    Toggles the caul template (default may be set under <b>Preferences</b>). The caul template is an
    additional template that can be used to create clamping cauls for the
@@ -87,6 +86,10 @@ increments, can result in a small amount of overlap in the fit.
      aligning the Incra ruler to the right side of the board, the locations may
      be used to double-check the alignment of each router pass.  This can be
      useful if your printer is not very accurate.
+*  <b>Full Screen Mode (`Ctrl-F`)</b> Toggles full-screen mode.  On the Mac,
+this menu item is called <b>Enter Full Screen</b>, there is no keyboard
+shortcut, and the menu bar is hidden in full screen mode unless the cursor 
+is at the top of the screen (these are Mac menu uniformity issues). 
 1. <b>Tools:</b>
 *  <b>Screenshot (`Ctrl-W`)</b> Similar to <b>Save</b>, but includes the entire
    {{ site.codename }} application window.  The image size is the same as your
