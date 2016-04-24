@@ -293,6 +293,13 @@ class Driver(QtGui.QMainWindow):
         view_menu.addAction(self.fit_action)
         self.fit_action.setChecked(self.config.show_fit)
 
+        self.zoom_action = QtGui.QAction('Zoom Mode', self, checkable=True)
+        self.zoom_action.setStatusTip('Toggle zoom mode')
+        self.zoom_action.triggered.connect(self._on_zoom)
+        view_menu.addAction(self.zoom_action)
+        self.fig.enable_zoom_mode(False)
+        self.fit_action.setChecked(self.fig.zoom_mode)
+
         view_menu.addSeparator()
 
         pass_menu = view_menu.addMenu('Router Passes')
@@ -1792,6 +1799,15 @@ class Driver(QtGui.QMainWindow):
             self.status_message('Turned off fit view.')
         self.file_saved = False
         self.draw()
+
+    @QtCore.pyqtSlot()
+    def _on_zoom(self):
+        '''Handles toggling zoom mode'''
+        self.fig.enable_zoom_mode(self.zoom_action.isChecked())
+        if self.fig.zoom_mode:
+            self.status_message('Turned on zoom mode.')
+        else:
+            self.status_message('Turned off zoom mode.')
 
     @QtCore.pyqtSlot()
     def _on_pass_id(self):

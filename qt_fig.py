@@ -112,6 +112,7 @@ class Qt_Fig(QtGui.QWidget):
         self.mouse_pos = None
         self.scaling = 1.0
         self.translate = [0.0, 0.0]
+        self.zoom_mode = False
 
         # Initialize keyboard modifiers
         self.shift_key = False
@@ -127,6 +128,12 @@ class Qt_Fig(QtGui.QWidget):
         Size hint for this widget
         '''
         return QtCore.QSize(self.window_width, self.window_height)
+
+    def enable_zoom_mode(self, mode):
+        '''
+        Sets the zoom mode
+        '''
+        self.zoom_mode = mode
 
     def set_fig_dimensions(self, template, boards):
         '''
@@ -841,6 +848,10 @@ class Qt_Fig(QtGui.QWidget):
         Handles key press events.  At this level, we handle zooming.
         '''
 
+        if not self.zoom_mode:
+            event.ignore()
+            return
+
         # Keyboard zooming mode works only if the shift key is pressed.
         if event.key() == QtCore.Qt.Key_Shift:
             self.shift_key = True
@@ -889,6 +900,10 @@ class Qt_Fig(QtGui.QWidget):
         '''
         Handles mouse wheel events, which is used for zooming in and out.
         '''
+        if not self.zoom_mode:
+            event.ignore()
+            return
+
         if self.config.debug:
             print('qt_fig.wheelEvent', event.delta())
         self.scaling *= 1 + 0.05 * event.delta() / 120
@@ -900,6 +915,10 @@ class Qt_Fig(QtGui.QWidget):
            left: start a move at that location
            right: reset view
         '''
+        if not self.zoom_mode:
+            event.ignore()
+            return
+
         if event.button() == QtCore.Qt.LeftButton:
             self.mouse_pos = self.base_transform.map(event.pos())
             if self.config.debug:
@@ -917,6 +936,10 @@ class Qt_Fig(QtGui.QWidget):
         Handles mouse button release:
            left: end the move
         '''
+        if not self.zoom_mode:
+            event.ignore()
+            return
+
         if event.button() == QtCore.Qt.LeftButton:
             self.mouse_pos = None
         else:
@@ -927,9 +950,10 @@ class Qt_Fig(QtGui.QWidget):
         Handles mouse move, when a button is pressed.  In this case, we keep track
         of the translation under zoom.
         '''
-        if self.mouse_pos is None:
+        if not self.zoom_mode or self.mouse_pos is None:
             event.ignore()
             return
+
         pos = self.base_transform.map(event.posF())
         if self.config.debug:
             print('mouse moved here: {} {}'.format(pos.x(), pos.y()))
