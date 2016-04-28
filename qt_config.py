@@ -73,10 +73,11 @@ class Color_Button(QtGui.QPushButton):
         Sets the color of the button.
         '''
         c = QtGui.QColor(*color)
-        self.setStyleSheet('border-width: 1px; '
+        self.setStyleSheet('QPushButton {{'
+                           'border-width: 1px; '
                            'border-style: outset; '
                            'border-color: black; '
-                           'background-color: rgba{}; '.format(c.getRgb()))
+                           'background-color: rgba{}; }}'.format(c.getRgb()))
 
 def add_color_to_dialog(color):
     count = QtGui.QColorDialog.customCount()
