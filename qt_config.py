@@ -286,17 +286,62 @@ class Config_Window(QtGui.QDialog):
     def create_colors(self):
         '''Creates the layout for color preferences'''
         w =  QtGui.QWidget()
-        vbox = QtGui.QVBoxLayout()
+        grid = QtGui.QGridLayout()
+        flag_label = QtCore.Qt.AlignRight
+        flag_color = QtCore.Qt.AlignLeft
 
         self.btn_background_color_label = QtGui.QLabel('Background')
         self.btn_background_color = Color_Button(self.new_config['background_color'], w)
-        #self.btn_background_color.clicked.connect(self._on_background_color)
         self.btn_background_color.clicked.connect(lambda: self._on_set_color('background_color', self.btn_background_color))
         tt = 'Sets the background color of the figure.'
-        grid = form_line(self.btn_background_color_label, self.btn_background_color, tt)
-        vbox.addLayout(grid)
+        self.btn_background_color.setToolTip(tt)
+        grid.addWidget(self.btn_background_color_label, 0, 0, flag_label)
+        grid.addWidget(self.btn_background_color, 0, 1, flag_color)
 
+        self.btn_top_board_color_label = QtGui.QLabel('Top Board')
+        self.btn_top_board_color = Color_Button(self.new_config['top_board_color'], w)
+        self.btn_top_board_color.clicked.connect(lambda: self._on_set_color('top_board_color', self.btn_top_board_color))
+        tt = 'Sets the top board color, for Solid Fill.'
+        self.btn_top_board_color.setToolTip(tt)
+        grid.addWidget(self.btn_top_board_color_label, 1, 0, flag_label)
+        grid.addWidget(self.btn_top_board_color, 1, 1, flag_color)
+
+        self.btn_bottom_board_color_label = QtGui.QLabel('Bottom Board')
+        self.btn_bottom_board_color = Color_Button(self.new_config['bottom_board_color'], w)
+        self.btn_bottom_board_color.clicked.connect(lambda: self._on_set_color('bottom_board_color', self.btn_bottom_board_color))
+        tt = 'Sets the bottom board color, for Solid Fill.'
+        self.btn_bottom_board_color.setToolTip(tt)
+        grid.addWidget(self.btn_bottom_board_color_label, 2, 0, flag_label)
+        grid.addWidget(self.btn_bottom_board_color, 2, 1, flag_color)
+
+        self.btn_double_board_color_label = QtGui.QLabel('Double Board')
+        self.btn_double_board_color = Color_Button(self.new_config['double_board_color'], w)
+        self.btn_double_board_color.clicked.connect(lambda: self._on_set_color('double_board_color', self.btn_double_board_color))
+        tt = 'Sets the double board color, for Solid Fill.'
+        self.btn_double_board_color.setToolTip(tt)
+        grid.addWidget(self.btn_double_board_color_label, 3, 0, flag_label)
+        grid.addWidget(self.btn_double_board_color, 3, 1, flag_color)
+
+        self.btn_doubledouble_board_color_label = QtGui.QLabel('D-D Board')
+        self.btn_doubledouble_board_color = Color_Button(self.new_config['doubledouble_board_color'], w)
+        self.btn_doubledouble_board_color.clicked.connect(lambda: self._on_set_color('doubledouble_board_color', self.btn_doubledouble_board_color))
+        tt = 'Sets the double-double board color, for Solid Fill.'
+        self.btn_doubledouble_board_color.setToolTip(tt)
+        grid.addWidget(self.btn_doubledouble_board_color_label, 4, 0, flag_label)
+        grid.addWidget(self.btn_doubledouble_board_color, 4, 1, flag_color)
+
+        self.btn_watermark_color_label = QtGui.QLabel('Watermark')
+        self.btn_watermark_color = Color_Button(self.new_config['watermark_color'], w)
+        self.btn_watermark_color.clicked.connect(lambda: self._on_set_color('watermark_color', self.btn_watermark_color))
+        tt = 'Sets the watermark color.'
+        self.btn_watermark_color.setToolTip(tt)
+        grid.addWidget(self.btn_watermark_color_label, 0, 2, flag_label)
+        grid.addWidget(self.btn_watermark_color, 0, 3, flag_color)
+
+        vbox = QtGui.QVBoxLayout()
+        vbox.addLayout(grid)
         vbox.addStretch(1)
+
         w.setLayout(vbox)
         return w
 

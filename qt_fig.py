@@ -189,6 +189,7 @@ class Qt_Fig(QtGui.QWidget):
         self.colors = {}
         if do_color:
             self.colors['background'] = QtGui.QColor(*self.config.background_color)
+            self.colors['watermark'] = QtGui.QColor(*self.config.watermark_color)
         else:
             for c in color_names:
                 self.colors[c] = None
@@ -486,7 +487,7 @@ class Qt_Fig(QtGui.QWidget):
         if self.description is not None:
             painter.save()
             self.set_font_size(painter, 'watermark')
-            color = QtGui.QColor(0, 0, 0, 75)
+            color = self.colors['watermark']
             painter.setPen(color)
             flags = QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter
             x = r.xL() + r.width // 2
@@ -688,9 +689,13 @@ class Qt_Fig(QtGui.QWidget):
         '''
 
         # Draw all of the boards
+        bc = [self.config.top_board_color,
+              self.config.bottom_board_color,
+              self.config.double_board_color,
+              self.config.doubledouble_board_color]
         for i in lrange(4):
             self.draw_one_board(painter, self.geom.boards[i], self.geom.bit,
-                                self.config.board_fill_colors[i])
+                                bc[i])
 
         # Label the boards
         if self.config.show_router_pass_identifiers or self.config.show_router_pass_locations:

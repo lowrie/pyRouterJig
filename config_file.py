@@ -144,6 +144,33 @@ wood_images = r'{wood_images}'
 # DiagCrossPattern, BDiagPattern, FDiagPattern, Dense1Pattern, Dense5Pattern
 default_wood = '{default_wood}'
 
+# Colors are specified as a mix of three values between 0 and 255, as
+#     (red, green, blue)
+# Examples:
+# (255, 0, 0) red
+# (0, 255, 0) green
+# (0, 0, 255) blue
+# (255, 255, 255) white
+# (0, 0, 0) black
+#
+# In addition, you can add an optional alpha value between 0 and 255, where
+# 0 is transparent and 255 opaque, as
+#     (red, green, blue, alpha)
+#
+# Useful site: http://www.colorpicker.com/
+
+# Background color
+background_color = {background_color}
+
+# Watermark color
+watermark_color = {watermark_color}
+
+# The board fill colors, for the 'Solid Fill' board selection
+top_board_color = {top_board_color}
+bottom_board_color = {bottom_board_color}
+double_board_color = {double_board_color}
+doubledouble_board_color = {doubledouble_board_color}
+
 ######################################################################
 # These options may NOT be set through the pyRouterJig:Preferences menu
 ######################################################################
@@ -163,27 +190,6 @@ separation = {separation}
 # stdout during a pyRouterJig session.  This option is typically only useful
 # for developers.
 debug = {debug}
-
-# Colors are specified as a mix of three values between 0 and 255, as
-#     (red, green, blue)
-# Examples:
-# (255, 0, 0) red
-# (0, 255, 0) green
-# (0, 0, 255) blue
-# (255, 255, 255) white
-# (0, 0, 0) black
-#
-# In addition, you can add an optional alpha value between 0 and 255, where
-# 0 is transparent and 255 opaque, as
-#     (red, green, blue, alpha)
-#
-# Useful site: http://www.colorpicker.com/
-
-# Background color
-background_color = {background_color}
-
-# The board fill colors, for the 'Solid Fill' board selection
-board_fill_colors = {board_fill_colors}
 '''
 
 # common default values
@@ -202,10 +208,11 @@ common_vals = {'version':'NONE',
                'default_wood':'DiagCrossPattern',
                'debug':False,
                'background_color':(240, 231, 201, 255),
-               'board_fill_colors':[(255, 0, 0, 100),
-                                    (0, 255, 0, 100),
-                                    (0, 0, 255, 100),
-                                    (0, 255, 0, 100)]}
+               'watermark_color':(0, 0, 0, 75),
+               'top_board_color':(255, 0, 0, 100),
+               'bottom_board_color':(0, 255, 0, 100),
+               'double_board_color':(0, 0, 255, 100),
+               'doubledouble_board_color':(0, 255, 0, 100)}
 
 # default values for english units
 english_vals = {'metric':False,
@@ -312,7 +319,7 @@ class Configuration(object):
         # config file must be updated if it was created with an earlier number.
         # Update this value when new parameters are added to the config file,
         # or any parameter's type changes,
-        self.create_version_number = 91
+        self.create_version_number = 93
         # config file cannot be migrated from versions earlier than this.
         # This value is currently set at the version that all dimensions and bit_angle
         # were consistent types and dimensions.
