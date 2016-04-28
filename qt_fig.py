@@ -33,7 +33,7 @@ import utils
 from PyQt4 import QtCore, QtGui
 #from PySide import QtCore, QtGui
 
-def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
+def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill_color=None):
     '''
     Puts text at coord with alignment flags.  Returns a QRect of the bounding box
     of the text that was painted.
@@ -44,7 +44,7 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
     flags: QtCore.Qt alignment flags
     shift: Adjustments in coord, in pixels
     angle: Rotation angle
-    fill: If not None, a QBrush that fills the bounding rectangle behind the text.
+    fill_color: If not None, QColor that fills the bounding rectangle behind the text.
     '''
     # Save the current transform, then switch to transform that places the origin
     # at coord and rotated by angle.
@@ -71,8 +71,9 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill=None):
     rect = QtCore.QRectF(xorg, yorg, big, big)
     rect = painter.boundingRect(rect, flags, text)
     # Draw the text
-    if fill is not None:
-        painter.fillRect(rect, fill)
+    if fill_color is not None:
+        b = QtGui.QBrush(fill_color)
+        painter.fillRect(rect, b)
     painter.drawText(rect, flags, text)
     # Find the text rectangle in our original coordinate system
     rect1 = painter.transform().mapRect(rect)
@@ -96,9 +97,6 @@ class Qt_Fig(QtGui.QWidget):
         self.fig_height = -1
         self.set_fig_dimensions(template, boards)
         self.geom = None
-        color = QtGui.QColor(*config.background_color)
-        self.background = QtGui.QBrush(color)
-        self.current_background = self.background
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
         self.font_size = {'title':4,
@@ -186,6 +184,15 @@ class Qt_Fig(QtGui.QWidget):
 
         return dimensions_changed
 
+    def set_colors(self, do_color):
+        color_names = ['background']
+        self.colors = {}
+        if do_color:
+            self.colors['background'] = QtGui.QColor(*self.config.background_color)
+        else:
+            for c in color_names:
+                self.colors[c] = None
+
     def draw(self, template, boards, bit, spacing, woods, description):
         '''
         Draws the figure
@@ -196,7 +203,6 @@ class Qt_Fig(QtGui.QWidget):
         self.description = description
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,
                                           self.config)
-        self.current_background = self.background
         self.update()
 
     def print(self, template, boards, bit, spacing, woods, description):
@@ -204,8 +210,8 @@ class Qt_Fig(QtGui.QWidget):
         Prints the figure
         '''
         self.woods = woods
-        self.current_background = None
         self.description = description
+        self.set_colors(False)
 
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
@@ -230,7 +236,7 @@ class Qt_Fig(QtGui.QWidget):
         self.set_fig_dimensions(template, boards)
         self.geom = router.Joint_Geometry(template, boards, bit, spacing, self.margins,
                                           self.config)
-        self.current_background = self.background
+        self.set_colors(True)
 
         s = self.size()
         window_ar = float(s.width()) / s.height()
@@ -247,7 +253,9 @@ class Qt_Fig(QtGui.QWidget):
         painter = QtGui.QPainter()
         painter.begin(im)
         size = im.size()
-        painter.fillRect(0, 0, size.width(), size.height(), self.background)
+        if self.colors['background'] is not None:
+            b = QtGui.QBrush(self.colors['background'])
+            painter.fillRect(0, 0, size.width(), size.height(), b)
         self.paint_all(painter)
         painter.end()
         return im
@@ -269,10 +277,13 @@ class Qt_Fig(QtGui.QWidget):
         if self.geom is None:
             return
 
+        self.set_colors(True)
         painter = QtGui.QPainter(self)
         size = self.size()
         # on the screen, we add a background color:
-        painter.fillRect(0, 0, size.width(), size.height(), self.background)
+        if self.colors['background'] is not None:
+            b = QtGui.QBrush(self.colors['background'])
+            painter.fillRect(0, 0, size.width(), size.height(), b)
         # paint all of the objects
         self.window_width, self.window_height = self.paint_all(painter)
         # on the screen, highlight the active cuts
@@ -359,8 +370,8 @@ class Qt_Fig(QtGui.QWidget):
         Returns the pass label if a pass matches xMid, None otherwise
         '''
         board_T = self.geom.board_T
-        #brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 100))
-        brush = None
+        #brush_color = QtGui.QColor(255, 0, 0, 100)
+        brush_color = None
         shift = (0, 0) # for adjustments of text
         passMid = None # location of board-center pass (return value)
         font_type = 'template'
@@ -413,7 +424,8 @@ class Qt_Fig(QtGui.QWidget):
                     label += ': '
                 loc = self.geom.bit.units.increments_to_string(board_T.xR() - xpShift)
                 label += loc
-            r = paint_text(painter, label, (xpShift, y1), flagsv, shift, -90, fill=brush)
+            r = paint_text(painter, label, (xpShift, y1), flagsv, shift, -90,
+                           fill_color=brush_color)
             # Determine the line starting point from the size of the text.
             # Create a small margin so that the starting point is not too
             # close to the text.
@@ -784,7 +796,7 @@ class Qt_Fig(QtGui.QWidget):
             text = '%d' % f
             flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
             paint_text(painter, text, (xText, yText), flags, (0, -5),
-                       fill=self.background)
+                       fill_color=self.colors['background'])
         painter.restore()
 
         # draw the limits
@@ -832,7 +844,7 @@ class Qt_Fig(QtGui.QWidget):
             y = self.geom.boards[1].yT()
             label = units.increments_to_string(c.xmax - c.xmin)
             p = (x, y)
-            paint_text(painter, label, p, flags, shift, fill=self.current_background)
+            paint_text(painter, label, p, flags, shift, fill_color=self.colors['background'])
         # ... do the A cuts
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         shift = (0, -8)
@@ -841,7 +853,7 @@ class Qt_Fig(QtGui.QWidget):
             y = self.geom.boards[0].yB()
             label = units.increments_to_string(c.xmax - c.xmin)
             p = (x, y)
-            paint_text(painter, label, p, flags, shift, fill=self.current_background)
+            paint_text(painter, label, p, flags, shift, fill_color=self.colors['background'])
 
     def keyPressEvent(self, event):
         '''

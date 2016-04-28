@@ -59,6 +59,34 @@ def is_positive(v):
 def is_nonnegative(v):
     return v >= 0
 
+class Color_Button(QtGui.QPushButton):
+    '''
+    A QPushButton that is simply a rectangle of a single color.
+    '''
+    def __init__(self, color, parent):
+        QtGui.QPushButton.__init__(self, parent)
+        size = QtCore.QSize(80, 20)
+        self.setFixedSize(size)
+        self.set_color(color)
+    def set_color(self, color):
+        '''
+        Sets the color of the button.
+        '''
+        c = QtGui.QColor(*color)
+        self.setStyleSheet('border-width: 1px; '
+                           'border-style: outset; '
+                           'border-color: black; '
+                           'background-color: rgba{}; '.format(c.getRgb()))
+
+def add_color_to_dialog(color):
+    count = QtGui.QColorDialog.customCount()
+    cprev = QtGui.QColorDialog.customColor(0)
+    for i in range(1, count):
+        c = QtGui.QColorDialog.customColor(i)
+        QtGui.QColorDialog.setCustomColor(i, cprev)
+        cprev = c
+    QtGui.QColorDialog.setCustomColor(0, color.rgba())
+
 class Misc_Value(object):
     '''
     Helper class to wrap dimensional values for use with qt_utils.set_router_value()
@@ -112,6 +140,7 @@ class Config_Window(QtGui.QDialog):
         tabs.addTab(self.create_boards(), 'Boards')
         tabs.addTab(self.create_bit(), 'Bit')
         tabs.addTab(self.create_units(), 'Units')
+        tabs.addTab(self.create_colors(), 'Colors')
         tabs.addTab(self.create_misc(), 'Misc')
 
         vbox.addWidget(tabs)
@@ -251,6 +280,23 @@ class Config_Window(QtGui.QDialog):
         vbox.addLayout(grid)
         vbox.addStretch(1)
 
+        w.setLayout(vbox)
+        return w
+
+    def create_colors(self):
+        '''Creates the layout for color preferences'''
+        w =  QtGui.QWidget()
+        vbox = QtGui.QVBoxLayout()
+
+        self.btn_background_color_label = QtGui.QLabel('Background')
+        self.btn_background_color = Color_Button(self.new_config['background_color'], w)
+        #self.btn_background_color.clicked.connect(self._on_background_color)
+        self.btn_background_color.clicked.connect(lambda: self._on_set_color('background_color', self.btn_background_color))
+        tt = 'Sets the background color of the figure.'
+        grid = form_line(self.btn_background_color_label, self.btn_background_color, tt)
+        vbox.addLayout(grid)
+
+        vbox.addStretch(1)
         w.setLayout(vbox)
         return w
 
@@ -743,3 +789,16 @@ class Config_Window(QtGui.QDialog):
         if val is not None:
             self.new_config['warn_overlap'] = val
             self.update_state('warn_overlap')
+
+    @QtCore.pyqtSlot(str, Color_Button)
+    def _on_set_color(self, name, btn):
+        if self.config.debug:
+            print('qt_config:set_color {}'.format(name))
+        init_color = QtGui.QColor(*self.new_config[name])
+        flags = QtGui.QColorDialog.ShowAlphaChannel | QtGui.QColorDialog.DontUseNativeDialog
+        color = QtGui.QColorDialog.getColor(init_color, self, 'Select {}'.format(name), flags)
+        if color.isValid():
+            self.new_config[name] = color.getRgb()
+            self.update_state(name)
+            btn.set_color(self.new_config[name])
+            add_color_to_dialog(color)
