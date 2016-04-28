@@ -339,6 +339,14 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_watermark_color_label, 0, 2, flag_label)
         grid.addWidget(self.btn_watermark_color, 0, 3, flag_color)
 
+        self.btn_template_margin_color_label = QtGui.QLabel('Template Margin')
+        self.btn_template_margin_color = Color_Button(self.new_config['template_margin_color'], w)
+        self.btn_template_margin_color.clicked.connect(lambda: self._on_set_color('template_margin_color', self.btn_template_margin_color))
+        tt = 'Sets the template margin color.'
+        self.btn_template_margin_color.setToolTip(tt)
+        grid.addWidget(self.btn_template_margin_color_label, 1, 2, flag_label)
+        grid.addWidget(self.btn_template_margin_color, 1, 3, flag_color)
+
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(grid)
         vbox.addStretch(1)

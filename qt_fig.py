@@ -190,6 +190,7 @@ class Qt_Fig(QtGui.QWidget):
         if do_color:
             self.colors['background'] = QtGui.QColor(*self.config.background_color)
             self.colors['watermark'] = QtGui.QColor(*self.config.watermark_color)
+            self.colors['template_margin'] = QtGui.QColor(*self.config.template_margin_color)
         else:
             for c in color_names:
                 self.colors[c] = None
@@ -476,7 +477,7 @@ class Qt_Fig(QtGui.QWidget):
         painter.fillRect(r.xL(), r.yB(), r.width, r.height, QtCore.Qt.white)
 
         # Fill the template margins with a grayshade
-        brush = QtGui.QBrush(QtGui.QColor(220, 220, 220))
+        brush = QtGui.QBrush(QtGui.QColor(self.colors['template_margin']))
         painter.fillRect(r.xL(), r.yB(), b.xL() - r.xL(), r.height, brush)
         painter.fillRect(b.xR(), r.yB(), r.xR() - b.xR(), r.height, brush)
 

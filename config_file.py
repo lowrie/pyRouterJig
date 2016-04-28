@@ -159,11 +159,14 @@ default_wood = '{default_wood}'
 #
 # Useful site: http://www.colorpicker.com/
 
-# Background color
+# Background
 background_color = {background_color}
 
-# Watermark color
+# Watermark
 watermark_color = {watermark_color}
+
+# Template margin
+template_margin_color = {template_margin_color}
 
 # The board fill colors, for the 'Solid Fill' board selection
 top_board_color = {top_board_color}
@@ -209,6 +212,7 @@ common_vals = {'version':'NONE',
                'debug':False,
                'background_color':(240, 231, 201, 255),
                'watermark_color':(0, 0, 0, 75),
+               'template_margin_color':(0, 0, 0, 50),
                'top_board_color':(255, 0, 0, 100),
                'bottom_board_color':(0, 255, 0, 100),
                'double_board_color':(0, 0, 255, 100),
