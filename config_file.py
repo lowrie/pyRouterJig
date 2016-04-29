@@ -178,6 +178,9 @@ board_foreground = {board_foreground}
 pass_color = {pass_color}
 pass_alt_color = {pass_alt_color}
 
+# Foreground color the template centerline
+center_color = {center_color}
+
 ######################################################################
 # These options may NOT be set through the pyRouterJig:Preferences menu
 ######################################################################
@@ -222,7 +225,8 @@ common_vals = {'version':'NONE',
                'board_background':(255, 0, 0, 100),
                'board_foreground':(0, 0, 0, 255),
                'pass_color':(0, 0, 0, 255),
-               'pass_alt_color':(255, 0, 0, 255)}
+               'pass_alt_color':(255, 0, 0, 255),
+               'center_color':(0, 200, 0, 255)}
 
 # default values for english units
 english_vals = {'metric':False,

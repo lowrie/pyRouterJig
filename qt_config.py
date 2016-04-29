@@ -352,6 +352,16 @@ class Config_Window(QtGui.QDialog):
         self.btn_pass_alt_color.setToolTip(tt)
         grid.addWidget(self.btn_pass_alt_color_label, row, col, flag_label)
         grid.addWidget(self.btn_pass_alt_color, row, col+1, flag_color)
+
+        row += 1
+        self.btn_center_color_label = QtGui.QLabel('Center Pass')
+        self.btn_center_color = Color_Button(self.new_config['center_color'], w)
+        self.btn_center_color.clicked.connect(lambda: self._on_set_color('center_color', self.btn_center_color))
+        tt = 'Sets the template foreground color for the center pass.'
+        self.btn_center_color.setToolTip(tt)
+        grid.addWidget(self.btn_center_color_label, row, col, flag_label)
+        grid.addWidget(self.btn_center_color, row, col+1, flag_color)
+
         max_row = max(row, max_row)
 
         row += 1

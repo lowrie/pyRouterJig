@@ -195,7 +195,8 @@ class Qt_Fig(QtGui.QWidget):
                        'template_margin_background',
                        'template_margin_foreground',
                        'pass_color',
-                       'pass_alt_color']
+                       'pass_alt_color',
+                       'center_color']
         self.colors = {}
         for c in color_names:
             self.colors[c] = QtGui.QColor(*self.config.__dict__[c])
@@ -425,15 +426,22 @@ class Qt_Fig(QtGui.QWidget):
             xpShift = xp[i] + board_T.xL()
             # Draw the text label for this pass
             label = ''
+            this_is_midpoint = False
             if is_template or self.config.show_router_pass_identifiers:
                 label = '%d%s' % (i + 1, blabel)
                 if xpShift == xMid:
                     passMid = label
+                    this_is_midpoint = True
             if not is_template and self.config.show_router_pass_locations:
                 if len(label) > 0:
                     label += ': '
                 loc = self.geom.bit.units.increments_to_string(board_T.xR() - xpShift)
                 label += loc
+            painter.save()
+            if this_is_midpoint and is_template:
+                pen = painter.pen()
+                pen.setColor(self.colors['center_color'])
+                painter.setPen(pen)
             r = paint_text(painter, label, (xpShift, y1), flagsv, shift, -90)
             # Determine the line starting point from the size of the text.
             # Create a small margin so that the starting point is not too
@@ -452,6 +460,7 @@ class Qt_Fig(QtGui.QWidget):
                 p1 = QtCore.QPointF(xpShift, y1text)
                 p2 = QtCore.QPointF(xpShift, y2)
                 painter.drawLine(p1, p2)
+            painter.restore()
         return passMid
 
     def draw_alignment(self, painter):
@@ -658,8 +667,9 @@ class Qt_Fig(QtGui.QWidget):
             if len(centerline_caul) > 0:
                 label += '\nCenter: ' + centerline_caul[0]
             else:
-                painter.setPen(QtCore.Qt.DashLine)
-                painter.setPen(QtCore.Qt.black)
+                pen = QtGui.QPen(QtCore.Qt.DashLine)
+                pen.setColor(self.colors['center_color'])
+                painter.setPen(pen)
                 painter.drawLine(xMid, rect_caul.yB(), xMid, rect_caul.yT())
             painter.setPen(self.colors['template_margin_foreground'])
             paint_text(painter, label + datetime, (rect_caul.xL(), rect_caul.yMid()), flagsLC, (5, 0))
@@ -667,7 +677,7 @@ class Qt_Fig(QtGui.QWidget):
 
         # Label the templates
         pen = QtGui.QPen(QtCore.Qt.DashLine)
-        pen.setColor(QtCore.Qt.black)
+        pen.setColor(self.colors['center_color'])
         self.set_font_size(painter, 'template_labels')
         if len(centerline) > 0:
             label_bottom += '\nCenter: ' + centerline[0]
