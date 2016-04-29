@@ -159,20 +159,24 @@ default_wood = '{default_wood}'
 #
 # Useful site: http://www.colorpicker.com/
 
-# Background
-background_color = {background_color}
+# Canvas colors
+canvas_background = {canvas_background}
+canvas_foreground = {canvas_foreground}
 
 # Watermark
 watermark_color = {watermark_color}
 
 # Template margin
-template_margin_color = {template_margin_color}
+template_margin_background = {template_margin_background}
+template_margin_foreground = {template_margin_foreground}
 
-# The board fill colors, for the 'Solid Fill' board selection
-top_board_color = {top_board_color}
-bottom_board_color = {bottom_board_color}
-double_board_color = {double_board_color}
-doubledouble_board_color = {doubledouble_board_color}
+# The board colors.  Background mainly for the 'Solid Fill' board selection.
+board_background = {board_background}
+board_foreground = {board_foreground}
+
+# Foreground colors for each pass on the template
+pass_color = {pass_color}
+pass_alt_color = {pass_alt_color}
 
 ######################################################################
 # These options may NOT be set through the pyRouterJig:Preferences menu
@@ -210,13 +214,15 @@ common_vals = {'version':'NONE',
                'wood_images':'NONE',
                'default_wood':'DiagCrossPattern',
                'debug':False,
-               'background_color':(240, 231, 201, 255),
+               'canvas_background':(240, 231, 201, 255),
+               'canvas_foreground':(0, 0, 0, 255),
                'watermark_color':(0, 0, 0, 75),
-               'template_margin_color':(0, 0, 0, 50),
-               'top_board_color':(255, 0, 0, 100),
-               'bottom_board_color':(0, 255, 0, 100),
-               'double_board_color':(0, 0, 255, 100),
-               'doubledouble_board_color':(0, 255, 0, 100)}
+               'template_margin_background':(0, 0, 0, 50),
+               'template_margin_foreground':(0, 0, 0, 255),
+               'board_background':(255, 0, 0, 100),
+               'board_foreground':(0, 0, 0, 255),
+               'pass_color':(0, 0, 0, 255),
+               'pass_alt_color':(255, 0, 0, 255)}
 
 # default values for english units
 english_vals = {'metric':False,

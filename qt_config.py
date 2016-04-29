@@ -80,12 +80,17 @@ class Color_Button(QtGui.QPushButton):
                            'background-color: rgba{}; }}'.format(c.getRgb()))
 
 def add_color_to_dialog(color):
+    '''
+    Adds color to the QColorDialog custom colors.
+    '''
     count = QtGui.QColorDialog.customCount()
     cprev = QtGui.QColorDialog.customColor(0)
+    # shift all the current colors by one index
     for i in range(1, count):
         c = QtGui.QColorDialog.customColor(i)
         QtGui.QColorDialog.setCustomColor(i, cprev)
         cprev = c
+    # add the new color to the first index
     QtGui.QColorDialog.setCustomColor(0, color.rgba())
 
 class Misc_Value(object):
@@ -291,61 +296,90 @@ class Config_Window(QtGui.QDialog):
         flag_label = QtCore.Qt.AlignRight
         flag_color = QtCore.Qt.AlignLeft
 
-        self.btn_background_color_label = QtGui.QLabel('Background')
-        self.btn_background_color = Color_Button(self.new_config['background_color'], w)
-        self.btn_background_color.clicked.connect(lambda: self._on_set_color('background_color', self.btn_background_color))
-        tt = 'Sets the background color of the figure.'
-        self.btn_background_color.setToolTip(tt)
-        grid.addWidget(self.btn_background_color_label, 0, 0, flag_label)
-        grid.addWidget(self.btn_background_color, 0, 1, flag_color)
+        row = 0
+        col = 0
+        self.btn_canvas_background_label = QtGui.QLabel('Canvas Background')
+        self.btn_canvas_background = Color_Button(self.new_config['canvas_background'], w)
+        self.btn_canvas_background.clicked.connect(lambda: self._on_set_color('canvas_background', self.btn_canvas_background))
+        tt = 'Sets the background color of the canvas.'
+        self.btn_canvas_background.setToolTip(tt)
+        grid.addWidget(self.btn_canvas_background_label, row, col, flag_label)
+        grid.addWidget(self.btn_canvas_background, row, col+1, flag_color)
 
-        self.btn_top_board_color_label = QtGui.QLabel('Top Board')
-        self.btn_top_board_color = Color_Button(self.new_config['top_board_color'], w)
-        self.btn_top_board_color.clicked.connect(lambda: self._on_set_color('top_board_color', self.btn_top_board_color))
-        tt = 'Sets the top board color, for Solid Fill.'
-        self.btn_top_board_color.setToolTip(tt)
-        grid.addWidget(self.btn_top_board_color_label, 1, 0, flag_label)
-        grid.addWidget(self.btn_top_board_color, 1, 1, flag_color)
+        row += 1
+        self.btn_canvas_foreground_label = QtGui.QLabel('Canvas Foreground')
+        self.btn_canvas_foreground = Color_Button(self.new_config['canvas_foreground'], w)
+        self.btn_canvas_foreground.clicked.connect(lambda: self._on_set_color('canvas_foreground', self.btn_canvas_foreground))
+        tt = 'Sets the foreground color of the canvas.'
+        self.btn_canvas_foreground.setToolTip(tt)
+        grid.addWidget(self.btn_canvas_foreground_label, row, col, flag_label)
+        grid.addWidget(self.btn_canvas_foreground, row, col+1, flag_color)
 
-        self.btn_bottom_board_color_label = QtGui.QLabel('Bottom Board')
-        self.btn_bottom_board_color = Color_Button(self.new_config['bottom_board_color'], w)
-        self.btn_bottom_board_color.clicked.connect(lambda: self._on_set_color('bottom_board_color', self.btn_bottom_board_color))
-        tt = 'Sets the bottom board color, for Solid Fill.'
-        self.btn_bottom_board_color.setToolTip(tt)
-        grid.addWidget(self.btn_bottom_board_color_label, 2, 0, flag_label)
-        grid.addWidget(self.btn_bottom_board_color, 2, 1, flag_color)
+        row += 1
+        self.btn_board_background_label = QtGui.QLabel('Board Background')
+        self.btn_board_background = Color_Button(self.new_config['board_background'], w)
+        self.btn_board_background.clicked.connect(lambda: self._on_set_color('board_background', self.btn_board_background))
+        tt = 'Sets the top board background color.'
+        self.btn_board_background.setToolTip(tt)
+        grid.addWidget(self.btn_board_background_label, row, col, flag_label)
+        grid.addWidget(self.btn_board_background, row, col+1, flag_color)
 
-        self.btn_double_board_color_label = QtGui.QLabel('Double Board')
-        self.btn_double_board_color = Color_Button(self.new_config['double_board_color'], w)
-        self.btn_double_board_color.clicked.connect(lambda: self._on_set_color('double_board_color', self.btn_double_board_color))
-        tt = 'Sets the double board color, for Solid Fill.'
-        self.btn_double_board_color.setToolTip(tt)
-        grid.addWidget(self.btn_double_board_color_label, 3, 0, flag_label)
-        grid.addWidget(self.btn_double_board_color, 3, 1, flag_color)
+        row += 1
+        self.btn_board_foreground_label = QtGui.QLabel('Board Foreground')
+        self.btn_board_foreground = Color_Button(self.new_config['board_foreground'], w)
+        self.btn_board_foreground.clicked.connect(lambda: self._on_set_color('board_foreground', self.btn_board_foreground))
+        tt = 'Sets the top board foreground color.'
+        self.btn_board_foreground.setToolTip(tt)
+        grid.addWidget(self.btn_board_foreground_label, row, col, flag_label)
+        grid.addWidget(self.btn_board_foreground, row, col+1, flag_color)
 
-        self.btn_doubledouble_board_color_label = QtGui.QLabel('D-D Board')
-        self.btn_doubledouble_board_color = Color_Button(self.new_config['doubledouble_board_color'], w)
-        self.btn_doubledouble_board_color.clicked.connect(lambda: self._on_set_color('doubledouble_board_color', self.btn_doubledouble_board_color))
-        tt = 'Sets the double-double board color, for Solid Fill.'
-        self.btn_doubledouble_board_color.setToolTip(tt)
-        grid.addWidget(self.btn_doubledouble_board_color_label, 4, 0, flag_label)
-        grid.addWidget(self.btn_doubledouble_board_color, 4, 1, flag_color)
+        max_row = row
+        row = 0
+        col += 2
+        self.btn_pass_color_label = QtGui.QLabel('Pass')
+        self.btn_pass_color = Color_Button(self.new_config['pass_color'], w)
+        self.btn_pass_color.clicked.connect(lambda: self._on_set_color('pass_color', self.btn_pass_color))
+        tt = 'Sets the template foreground color for each pass.'
+        self.btn_pass_color.setToolTip(tt)
+        grid.addWidget(self.btn_pass_color_label, row, col, flag_label)
+        grid.addWidget(self.btn_pass_color, row, col+1, flag_color)
 
+        row += 1
+        self.btn_pass_alt_color_label = QtGui.QLabel('Pass-Alt')
+        self.btn_pass_alt_color = Color_Button(self.new_config['pass_alt_color'], w)
+        self.btn_pass_alt_color.clicked.connect(lambda: self._on_set_color('pass_alt_color', self.btn_pass_alt_color))
+        tt = 'Sets the template foreground alternate color for each pass.'
+        self.btn_pass_alt_color.setToolTip(tt)
+        grid.addWidget(self.btn_pass_alt_color_label, row, col, flag_label)
+        grid.addWidget(self.btn_pass_alt_color, row, col+1, flag_color)
+        max_row = max(row, max_row)
+
+        row += 1
         self.btn_watermark_color_label = QtGui.QLabel('Watermark')
         self.btn_watermark_color = Color_Button(self.new_config['watermark_color'], w)
         self.btn_watermark_color.clicked.connect(lambda: self._on_set_color('watermark_color', self.btn_watermark_color))
         tt = 'Sets the watermark color.'
         self.btn_watermark_color.setToolTip(tt)
-        grid.addWidget(self.btn_watermark_color_label, 0, 2, flag_label)
-        grid.addWidget(self.btn_watermark_color, 0, 3, flag_color)
+        grid.addWidget(self.btn_watermark_color_label, row, col, flag_label)
+        grid.addWidget(self.btn_watermark_color, row, col+1, flag_color)
 
-        self.btn_template_margin_color_label = QtGui.QLabel('Template Margin')
-        self.btn_template_margin_color = Color_Button(self.new_config['template_margin_color'], w)
-        self.btn_template_margin_color.clicked.connect(lambda: self._on_set_color('template_margin_color', self.btn_template_margin_color))
-        tt = 'Sets the template margin color.'
-        self.btn_template_margin_color.setToolTip(tt)
-        grid.addWidget(self.btn_template_margin_color_label, 1, 2, flag_label)
-        grid.addWidget(self.btn_template_margin_color, 1, 3, flag_color)
+        row = max_row + 11
+        self.btn_template_margin_background_label = QtGui.QLabel('Template Margin Background')
+        self.btn_template_margin_background = Color_Button(self.new_config['template_margin_background'], w)
+        self.btn_template_margin_background.clicked.connect(lambda: self._on_set_color('template_margin_background', self.btn_template_margin_background))
+        tt = 'Sets the template margin background color.'
+        self.btn_template_margin_background.setToolTip(tt)
+        grid.addWidget(self.btn_template_margin_background_label, row, col-2, 1, 3, flag_label)
+        grid.addWidget(self.btn_template_margin_background, row, col+1, flag_color)
+
+        row += 1
+        self.btn_template_margin_foreground_label = QtGui.QLabel('Template Margin Foreground')
+        self.btn_template_margin_foreground = Color_Button(self.new_config['template_margin_foreground'], w)
+        self.btn_template_margin_foreground.clicked.connect(lambda: self._on_set_color('template_margin_foreground', self.btn_template_margin_foreground))
+        tt = 'Sets the template margin foreground color.'
+        self.btn_template_margin_foreground.setToolTip(tt)
+        grid.addWidget(self.btn_template_margin_foreground_label, row, col-2, 1, 3, flag_label)
+        grid.addWidget(self.btn_template_margin_foreground, row, col+1, flag_color)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(grid)

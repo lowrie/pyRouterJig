@@ -31,7 +31,6 @@ import router
 import utils
 
 from PyQt4 import QtCore, QtGui
-#from PySide import QtCore, QtGui
 
 def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill_color=None):
     '''
@@ -185,15 +184,27 @@ class Qt_Fig(QtGui.QWidget):
         return dimensions_changed
 
     def set_colors(self, do_color):
-        color_names = ['background']
+        '''
+        Sets the colors to be used from the configuration.
+        '''
+        color_names = ['board_background',
+                       'board_foreground',
+                       'canvas_background',
+                       'canvas_foreground',
+                       'watermark_color',
+                       'template_margin_background',
+                       'template_margin_foreground',
+                       'pass_color',
+                       'pass_alt_color']
         self.colors = {}
-        if do_color:
-            self.colors['background'] = QtGui.QColor(*self.config.background_color)
-            self.colors['watermark'] = QtGui.QColor(*self.config.watermark_color)
-            self.colors['template_margin'] = QtGui.QColor(*self.config.template_margin_color)
-        else:
+        for c in color_names:
+            self.colors[c] = QtGui.QColor(*self.config.__dict__[c])
+        if not do_color:
             for c in color_names:
-                self.colors[c] = None
+                g = self.colors[c].lightness()
+                self.colors[c].setRed(g)
+                self.colors[c].setGreen(g)
+                self.colors[c].setBlue(g)
 
     def draw(self, template, boards, bit, spacing, woods, description):
         '''
@@ -255,8 +266,8 @@ class Qt_Fig(QtGui.QWidget):
         painter = QtGui.QPainter()
         painter.begin(im)
         size = im.size()
-        if self.colors['background'] is not None:
-            b = QtGui.QBrush(self.colors['background'])
+        if self.colors['canvas_background'] is not None:
+            b = QtGui.QBrush(self.colors['canvas_background'])
             painter.fillRect(0, 0, size.width(), size.height(), b)
         self.paint_all(painter)
         painter.end()
@@ -283,8 +294,8 @@ class Qt_Fig(QtGui.QWidget):
         painter = QtGui.QPainter(self)
         size = self.size()
         # on the screen, we add a background color:
-        if self.colors['background'] is not None:
-            b = QtGui.QBrush(self.colors['background'])
+        if self.colors['canvas_background'] is not None:
+            b = QtGui.QBrush(self.colors['canvas_background'])
             painter.fillRect(0, 0, size.width(), size.height(), b)
         # paint all of the objects
         self.window_width, self.window_height = self.paint_all(painter)
@@ -346,7 +357,6 @@ class Qt_Fig(QtGui.QWidget):
         self.transform = painter.transform()
 
         # draw the objects
-        painter.setPen(QtCore.Qt.black)
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
@@ -356,7 +366,7 @@ class Qt_Fig(QtGui.QWidget):
         return (window_width, window_height)
 
     def draw_passes(self, painter, blabel, cuts, y1, y2, flags, xMid,
-                    template=True):
+                    is_template=True):
         '''
         Draws and labels the router passes on a template or board.
 
@@ -367,13 +377,11 @@ class Qt_Fig(QtGui.QWidget):
         y2: y-location where end of line is located
         flags: Horizontal alignment for label
         xMid: x-location of board center
-        template: If true, then a template
+        is_template: If true, then a template
 
         Returns the pass label if a pass matches xMid, None otherwise
         '''
         board_T = self.geom.board_T
-        #brush_color = QtGui.QColor(255, 0, 0, 100)
-        brush_color = None
         shift = (0, 0) # for adjustments of text
         passMid = None # location of board-center pass (return value)
         font_type = 'template'
@@ -417,17 +425,16 @@ class Qt_Fig(QtGui.QWidget):
             xpShift = xp[i] + board_T.xL()
             # Draw the text label for this pass
             label = ''
-            if template or self.config.show_router_pass_identifiers:
+            if is_template or self.config.show_router_pass_identifiers:
                 label = '%d%s' % (i + 1, blabel)
                 if xpShift == xMid:
                     passMid = label
-            if not template and self.config.show_router_pass_locations:
+            if not is_template and self.config.show_router_pass_locations:
                 if len(label) > 0:
                     label += ': '
                 loc = self.geom.bit.units.increments_to_string(board_T.xR() - xpShift)
                 label += loc
-            r = paint_text(painter, label, (xpShift, y1), flagsv, shift, -90,
-                           fill_color=brush_color)
+            r = paint_text(painter, label, (xpShift, y1), flagsv, shift, -90)
             # Determine the line starting point from the size of the text.
             # Create a small margin so that the starting point is not too
             # close to the text.
@@ -456,9 +463,10 @@ class Qt_Fig(QtGui.QWidget):
         board_caul = self.geom.board_caul
 
         # draw the alignment lines on both templates
-        #x = board_T.xL() + passes[iMax] - pMax // 2
         x = board_T.xR() + self.geom.bit.width // 2
-        painter.setPen(QtCore.Qt.SolidLine)
+        pen = QtGui.QPen(QtCore.Qt.SolidLine)
+        pen.setColor(self.colors['template_margin_foreground'])
+        painter.setPen(pen)
         self.set_font_size(painter, 'template')
         label = 'ALIGN'
         flags = QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter
@@ -477,7 +485,7 @@ class Qt_Fig(QtGui.QWidget):
         painter.fillRect(r.xL(), r.yB(), r.width, r.height, QtCore.Qt.white)
 
         # Fill the template margins with a grayshade
-        brush = QtGui.QBrush(QtGui.QColor(self.colors['template_margin']))
+        brush = QtGui.QBrush(QtGui.QColor(self.colors['template_margin_background']))
         painter.fillRect(r.xL(), r.yB(), b.xL() - r.xL(), r.height, brush)
         painter.fillRect(b.xR(), r.yB(), r.xR() - b.xR(), r.height, brush)
 
@@ -488,8 +496,7 @@ class Qt_Fig(QtGui.QWidget):
         if self.description is not None:
             painter.save()
             self.set_font_size(painter, 'watermark')
-            color = self.colors['watermark']
-            painter.setPen(color)
+            painter.setPen(self.colors['watermark_color'])
             flags = QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter
             x = r.xL() + r.width // 2
             y = r.yB() + r.height // 2
@@ -507,6 +514,13 @@ class Qt_Fig(QtGui.QWidget):
         xMid = board_T.xMid()
         centerline = []
         centerline_TDD = []
+
+        pen_canvas = QtGui.QPen(QtCore.Qt.SolidLine)
+        pen_canvas.setColor(self.colors['canvas_foreground'])
+        penA = QtGui.QPen(QtCore.Qt.SolidLine)
+        penA.setColor(self.colors['pass_color'])
+        penB = QtGui.QPen(QtCore.Qt.DashLine)
+        penB.setColor(self.colors['pass_alt_color'])
 
         self.draw_template_rectangle(painter, rect_T, board_T)
         if boards[3].active:
@@ -527,6 +541,7 @@ class Qt_Fig(QtGui.QWidget):
         # ... do the top board passes
         y1 = boards[0].yB() - sepOver2
         y2 = boards[0].yB() + frac_depth
+        painter.setPen(penA)
         pm = self.draw_passes(painter, 'A', boards[0].bottom_cuts, rect_top.yMid(),
                               rect_top.yT(), flagsR, xMid)
         if pm is not None:
@@ -535,6 +550,7 @@ class Qt_Fig(QtGui.QWidget):
             else:
                 centerline.append(pm)
         if show_passes:
+            painter.setPen(pen_canvas)
             self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2,
                              flagsL, xMid, False)
         label_bottom = 'A,B'
@@ -542,24 +558,27 @@ class Qt_Fig(QtGui.QWidget):
         i = 0
         # Do double-double passes
         if boards[3].active:
-            painter.setPen(QtCore.Qt.DashLine)
             y1 = boards[3].yT() + sepOver2
             y2 = boards[3].yT() - frac_depth
+            painter.setPen(penB)
             pm = self.draw_passes(painter, self.labels[i], boards[3].top_cuts, rect_TDD.yMid(),
                                   rect_TDD.yT(), flagsR, xMid)
             if pm is not None:
                 centerline_TDD.append(pm)
             if show_passes:
+                painter.setPen(pen_canvas)
                 self.draw_passes(painter, self.labels[i], boards[3].top_cuts, y1, y2,
                                  flagsR, xMid, False)
-            painter.setPen(QtCore.Qt.SolidLine)
+
             y1 = boards[3].yB() - sepOver2
             y2 = boards[3].yB() + frac_depth
+            painter.setPen(penB)
             pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(), \
                                   rect_TDD.yB(), flagsL, xMid) 
             if pm is not None:
                 centerline_TDD.append(pm)
             if show_passes:
+                painter.setPen(pen_canvas)
                 self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, y1, y2,
                                  flagsL, xMid, False)
             label_bottom = 'D,E,F'
@@ -567,26 +586,28 @@ class Qt_Fig(QtGui.QWidget):
             i += 2
         # Do double passes
         if boards[2].active:
-            painter.setPen(QtCore.Qt.DashLine)
             y1 = boards[2].yT() + sepOver2
             y2 = boards[2].yT() - frac_depth
+            painter.setPen(penB)
             pm = self.draw_passes(painter, self.labels[i], boards[2].top_cuts, rect_T.yMid(),
                                   rect_T.yT(), flagsR, xMid)
             if pm is not None:
                 centerline.append(pm)
             if show_passes:
+                painter.setPen(pen_canvas)
                 self.draw_passes(painter, self.labels[i], boards[2].top_cuts, y1, y2,
                                  flagsR, xMid, False)
             y1 = boards[2].yB() - sepOver2
             y2 = boards[2].yB() + frac_depth
+            painter.setPen(penB)
             pm = self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, rect_T.yMid(),
                                   rect_T.yB(), flagsL, xMid)
             if pm is not None:
                 centerline.append(pm)
             if show_passes:
+                painter.setPen(pen_canvas)
                 self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, y1, y2,
                                  flagsL, xMid, False)
-            painter.setPen(QtCore.Qt.SolidLine)
             if not boards[3].active:
                 label_bottom = 'A,B,C,D'
             i += 2
@@ -594,11 +615,13 @@ class Qt_Fig(QtGui.QWidget):
         # ... do the bottom board passes
         y1 = boards[1].yT() + sepOver2
         y2 = boards[1].yT() - frac_depth
+        painter.setPen(penA)
         pm = self.draw_passes(painter, self.labels[i], boards[1].top_cuts, rect_T.yMid(),
                               rect_T.yB(), flagsL, xMid)
         if pm is not None:
             centerline.append(pm)
         if show_passes:
+            painter.setPen(pen_canvas)
             self.draw_passes(painter, self.labels[i], boards[1].top_cuts, y1, y2,
                              flagsR, xMid, False)
 
@@ -616,6 +639,7 @@ class Qt_Fig(QtGui.QWidget):
             bottom = self.geom.caul_bottom
             self.draw_template_rectangle(painter, rect_caul, board_caul)
             centerline_caul = []
+            painter.setPen(penA)
             pm = self.draw_passes(painter, 'A', top, rect_caul.yMid(), rect_caul.yT(), flagsR, xMid)
             if pm is not None:
                 centerline_caul.append(pm)
@@ -629,25 +653,31 @@ class Qt_Fig(QtGui.QWidget):
                 label += '\nCenter: ' + centerline_caul[0]
             else:
                 painter.setPen(QtCore.Qt.DashLine)
+                painter.setPen(QtCore.Qt.black)
                 painter.drawLine(xMid, rect_caul.yB(), xMid, rect_caul.yT())
+            painter.setPen(self.colors['template_margin_foreground'])
             paint_text(painter, label + datetime, (rect_caul.xL(), rect_caul.yMid()), flagsLC, (5, 0))
             paint_text(painter, label, (rect_caul.xR(), rect_caul.yMid()), flagsRC, (-5, 0))
 
         # Label the templates
+        pen = QtGui.QPen(QtCore.Qt.DashLine)
+        pen.setColor(QtCore.Qt.black)
         self.set_font_size(painter, 'template_labels')
         if len(centerline) > 0:
             label_bottom += '\nCenter: ' + centerline[0]
         else:
-            painter.setPen(QtCore.Qt.DashLine)
+            painter.setPen(pen)
             painter.drawLine(xMid, rect_T.yB(), xMid, rect_T.yT())
+        painter.setPen(self.colors['template_margin_foreground'])
         paint_text(painter, label_bottom + datetime, (rect_T.xL(), rect_T.yMid()), flagsLC, (5, 0))
         paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsRC, (-5, 0))
         if label_top is not None:
             if len(centerline_TDD) > 0:
                 label_top += '\nCenter: ' + centerline_TDD[0]
             else:
-                painter.setPen(QtCore.Qt.DashLine)
+                painter.setPen(pen)
                 painter.drawLine(xMid, rect_TDD.yB(), xMid, rect_TDD.yT())
+            painter.setPen(self.colors['template_margin_foreground'])
             paint_text(painter, label_top + datetime, (rect_TDD.xL(), rect_TDD.yMid()), flagsLC, (5, 0))
             paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsRC, (-5, 0))
 
@@ -659,28 +689,37 @@ class Qt_Fig(QtGui.QWidget):
         '''
         if not board.active:
             return
+        # form the polygon to draw
         (x, y) = board.perimeter(bit)
+        n = len(x)
+        poly = QtGui.QPolygonF()
+        for i in lrange(n):
+            poly.append(QtCore.QPointF(x[i], y[i]))
+        # paint it
         painter.save()
-        pen = QtGui.QPen(QtCore.Qt.black)
+        pen = QtGui.QPen(self.colors['board_foreground'])
         pen.setWidthF(0)
         painter.setPen(pen)
         icon = self.woods[board.wood]
         if icon is not None:
             if isinstance(icon, str):
+                # then it's an image file
                 brush = QtGui.QBrush(QtGui.QPixmap(icon))
             else:
+                # oterhwise, if must be a pattern fill
                 if icon == QtCore.Qt.SolidPattern:
-                    color = QtGui.QColor(*fill_color)
+                    color = fill_color
                 else:
-                    color = QtCore.Qt.black
+                    # It's not a solid fill, so the polygon with the background color, first
+                    color = self.colors['board_background']
+                    brush = QtGui.QBrush(color)
+                    painter.setBrush(brush)
+                    painter.drawPolygon(poly)
+                    color = self.colors['board_foreground']
                 brush = QtGui.QBrush(color, icon)
             (inverted, invertable) = self.transform.inverted()
             brush.setMatrix(inverted.toAffine())
             painter.setBrush(brush)
-        n = len(x)
-        poly = QtGui.QPolygonF()
-        for i in lrange(n):
-            poly.append(QtCore.QPointF(x[i], y[i]))
         painter.drawPolygon(poly)
         painter.restore()
 
@@ -690,21 +729,20 @@ class Qt_Fig(QtGui.QWidget):
         '''
 
         # Draw all of the boards
-        bc = [self.config.top_board_color,
-              self.config.bottom_board_color,
-              self.config.double_board_color,
-              self.config.doubledouble_board_color]
         for i in lrange(4):
             self.draw_one_board(painter, self.geom.boards[i], self.geom.bit,
-                                bc[i])
+                                self.colors['board_background'])
 
         # Label the boards
         if self.config.show_router_pass_identifiers or self.config.show_router_pass_locations:
-            painter.setPen(QtCore.Qt.SolidLine)
+            self.set_font_size(painter, 'boards')
+            pen = QtGui.QPen(QtCore.Qt.SolidLine)
+            pen.setColor(self.colors['canvas_foreground'])
+            painter.setPen(pen)
+
             x1 = self.geom.boards[0].xL() - self.geom.bit.width // 2
             x2 = self.geom.boards[0].xL() - self.geom.bit.width // 4
             flags = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
-            self.set_font_size(painter, 'boards')
 
             y = self.geom.boards[0].yB()
             p = (x1, y)
@@ -789,6 +827,8 @@ class Qt_Fig(QtGui.QWidget):
         painter.setBrush(brush)
         pen = QtGui.QPen(QtCore.Qt.red)
         painter.setPen(pen)
+        fcolor = QtGui.QColor(self.colors['board_background'])
+        fcolor.setAlphaF(1.0)
         for f in self.geom.spacing.active_cuts:
             poly = self.cut_polygon(self.geom.boards[0].bottom_cuts[f])
             painter.drawPolygon(poly)
@@ -802,7 +842,7 @@ class Qt_Fig(QtGui.QWidget):
             text = '%d' % f
             flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
             paint_text(painter, text, (xText, yText), flags, (0, -5),
-                       fill_color=self.colors['background'])
+                       fill_color=fcolor)
         painter.restore()
 
         # draw the limits
@@ -821,6 +861,7 @@ class Qt_Fig(QtGui.QWidget):
         Draws the title
         '''
         self.set_font_size(painter, 'title')
+        painter.setPen(self.colors['canvas_foreground'])
         title = router.create_title(self.geom.boards, self.geom.bit, self.geom.spacing)
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         p = (self.geom.board_T.xMid(), self.margins.bottom)
@@ -832,6 +873,9 @@ class Qt_Fig(QtGui.QWidget):
         '''
         units = self.geom.bit.units
         self.set_font_size(painter, 'template')
+        painter.setPen(self.colors['board_foreground'])
+        fcolor = QtGui.QColor(self.colors['board_background'])
+        fcolor.setAlphaF(1.0)
         # Determine the cuts that are adjacent to board-A and board-B
         acuts = self.geom.boards[1].top_cuts
         bcuts = self.geom.boards[0].bottom_cuts
@@ -850,7 +894,7 @@ class Qt_Fig(QtGui.QWidget):
             y = self.geom.boards[1].yT()
             label = units.increments_to_string(c.xmax - c.xmin)
             p = (x, y)
-            paint_text(painter, label, p, flags, shift, fill_color=self.colors['background'])
+            paint_text(painter, label, p, flags, shift, fill_color=fcolor)
         # ... do the A cuts
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom
         shift = (0, -8)
@@ -859,7 +903,7 @@ class Qt_Fig(QtGui.QWidget):
             y = self.geom.boards[0].yB()
             label = units.increments_to_string(c.xmax - c.xmin)
             p = (x, y)
-            paint_text(painter, label, p, flags, shift, fill_color=self.colors['background'])
+            paint_text(painter, label, p, flags, shift, fill_color=fcolor)
 
     def keyPressEvent(self, event):
         '''

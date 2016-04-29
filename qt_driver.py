@@ -308,13 +308,13 @@ class Driver(QtGui.QMainWindow):
         self.pass_location_action.setChecked(self.config.show_router_pass_locations)
 
         # The Mac automatically adds full screen to the View menu, but do so for other platforms
-        if not utils.isMac():
-            view_menu.addSeparator()
-            fullscreen_action = QtGui.QAction('Full Screen Mode', self, checkable=True)
-            fullscreen_action.setShortcut('Ctrl+F')
-            fullscreen_action.setStatusTip('Toggle full-screen mode')
-            fullscreen_action.triggered.connect(self._on_fullscreen)
-            view_menu.addAction(fullscreen_action)
+        #if not utils.isMac():
+        view_menu.addSeparator()
+        fullscreen_action = QtGui.QAction('Full Screen Mode', self, checkable=True)
+        fullscreen_action.setShortcut('Ctrl+F')
+        fullscreen_action.setStatusTip('Toggle full-screen mode')
+        fullscreen_action.triggered.connect(self._on_fullscreen)
+        view_menu.addAction(fullscreen_action)
 
         # Add Tools menu
 
