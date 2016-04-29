@@ -292,6 +292,8 @@ class Config_Window(QtGui.QDialog):
     def create_colors(self):
         '''Creates the layout for color preferences'''
         w =  QtGui.QWidget()
+        vbox = QtGui.QVBoxLayout()
+
         grid = QtGui.QGridLayout()
         flag_label = QtCore.Qt.AlignRight
         flag_color = QtCore.Qt.AlignLeft
@@ -362,8 +364,6 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_center_color_label, row, col, flag_label)
         grid.addWidget(self.btn_center_color, row, col+1, flag_color)
 
-        max_row = max(row, max_row)
-
         row += 1
         self.btn_watermark_color_label = QtGui.QLabel('Watermark')
         self.btn_watermark_color = Color_Button(self.new_config['watermark_color'], w)
@@ -373,13 +373,17 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_watermark_color_label, row, col, flag_label)
         grid.addWidget(self.btn_watermark_color, row, col+1, flag_color)
 
-        row = max_row + 11
+        vbox.addLayout(grid)
+        grid = QtGui.QGridLayout()
+
+        row = 0
+        col = 0
         self.btn_template_margin_background_label = QtGui.QLabel('Template Margin Background')
         self.btn_template_margin_background = Color_Button(self.new_config['template_margin_background'], w)
         self.btn_template_margin_background.clicked.connect(lambda: self._on_set_color('template_margin_background', self.btn_template_margin_background))
         tt = 'Sets the template margin background color.'
         self.btn_template_margin_background.setToolTip(tt)
-        grid.addWidget(self.btn_template_margin_background_label, row, col-2, 1, 3, flag_label)
+        grid.addWidget(self.btn_template_margin_background_label, row, col, flag_label)
         grid.addWidget(self.btn_template_margin_background, row, col+1, flag_color)
 
         row += 1
@@ -388,10 +392,9 @@ class Config_Window(QtGui.QDialog):
         self.btn_template_margin_foreground.clicked.connect(lambda: self._on_set_color('template_margin_foreground', self.btn_template_margin_foreground))
         tt = 'Sets the template margin foreground color.'
         self.btn_template_margin_foreground.setToolTip(tt)
-        grid.addWidget(self.btn_template_margin_foreground_label, row, col-2, 1, 3, flag_label)
+        grid.addWidget(self.btn_template_margin_foreground_label, row, col, flag_label)
         grid.addWidget(self.btn_template_margin_foreground, row, col+1, flag_color)
 
-        vbox = QtGui.QVBoxLayout()
         vbox.addLayout(grid)
         vbox.addStretch(1)
 
