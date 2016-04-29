@@ -294,6 +294,11 @@ class Config_Window(QtGui.QDialog):
         w =  QtGui.QWidget()
         vbox = QtGui.QVBoxLayout()
 
+        self.cb_print_color = QtGui.QCheckBox('Print in Color', w)
+        self.cb_print_color.stateChanged.connect(self._on_print_color)
+        self.cb_print_color.setToolTip('If true, print in color.  Otherwise, converts to black and white.')
+        vbox.addWidget(self.cb_print_color)
+
         grid = QtGui.QGridLayout()
         flag_label = QtCore.Qt.AlignRight
         flag_color = QtCore.Qt.AlignLeft
@@ -396,8 +401,8 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_template_margin_foreground, row, col+1, flag_color)
 
         vbox.addLayout(grid)
-        vbox.addStretch(1)
 
+        vbox.addStretch(1)
         w.setLayout(vbox)
         return w
 
@@ -539,6 +544,7 @@ class Config_Window(QtGui.QDialog):
         self.cb_show_fit.setChecked(self.config.show_fit)
         self.cb_rpid.setChecked(self.config.show_router_pass_identifiers)
         self.cb_rploc.setChecked(self.config.show_router_pass_locations)
+        self.cb_print_color.setChecked(self.config.print_color)
         self.le_printsf.setText(str(self.config.print_scale_factor))
         self.le_min_image.setText(str(self.config.min_image_width))
         self.le_max_image.setText(str(self.config.max_image_width))
@@ -733,6 +739,13 @@ class Config_Window(QtGui.QDialog):
             self.new_config['wood_images'] = text
             self.set_wood_combobox()
             self.update_state('wood_images')
+
+    @QtCore.pyqtSlot()
+    def _on_print_color(self):
+        if self.config.debug:
+            print('qt_config:_on_print_color')
+        self.new_config['print_color'] = self.cb_print_color.isChecked()
+        self.update_state('print_color')
 
     @QtCore.pyqtSlot()
     def _on_show_finger_widths(self):

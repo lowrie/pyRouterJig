@@ -225,7 +225,7 @@ class Qt_Fig(QtGui.QWidget):
         '''
         self.woods = woods
         self.description = description
-        self.set_colors(False)
+        self.set_colors(self.config.print_color)
 
         # Generate the new geometry layout
         self.set_fig_dimensions(template, boards)
@@ -281,6 +281,7 @@ class Qt_Fig(QtGui.QWidget):
         dpi = printer.resolution() * self.config.print_scale_factor
         painter = QtGui.QPainter()
         painter.begin(printer)
+        self.set_colors(self.config.print_color)
         self.paint_all(painter, dpi)
         painter.end()
 

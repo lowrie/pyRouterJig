@@ -181,6 +181,9 @@ pass_alt_color = {pass_alt_color}
 # Foreground color the template centerline
 center_color = {center_color}
 
+# If true, print color.  Otherwise, colors are converted to black and white when printing.
+print_color = {print_color}
+
 ######################################################################
 # These options may NOT be set through the pyRouterJig:Preferences menu
 ######################################################################
@@ -217,6 +220,7 @@ common_vals = {'version':'NONE',
                'wood_images':'NONE',
                'default_wood':'DiagCrossPattern',
                'debug':False,
+               'print_color':False,
                'canvas_background':(240, 231, 201, 255),
                'canvas_foreground':( 82,  78,  68, 255),
                'watermark_color':(0, 0, 0, 75),
