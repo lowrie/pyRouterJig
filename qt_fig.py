@@ -572,7 +572,7 @@ class Qt_Fig(QtGui.QWidget):
 
             y1 = boards[3].yB() - sepOver2
             y2 = boards[3].yB() + frac_depth
-            painter.setPen(penB)
+            painter.setPen(penA)
             pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(), \
                                   rect_TDD.yB(), flagsL, xMid) 
             if pm is not None:
@@ -588,7 +588,10 @@ class Qt_Fig(QtGui.QWidget):
         if boards[2].active:
             y1 = boards[2].yT() + sepOver2
             y2 = boards[2].yT() - frac_depth
-            painter.setPen(penB)
+            if boards[3].active:
+                painter.setPen(penA)
+            else:
+                painter.setPen(penB)
             pm = self.draw_passes(painter, self.labels[i], boards[2].top_cuts, rect_T.yMid(),
                                   rect_T.yT(), flagsR, xMid)
             if pm is not None:
@@ -599,7 +602,7 @@ class Qt_Fig(QtGui.QWidget):
                                  flagsR, xMid, False)
             y1 = boards[2].yB() - sepOver2
             y2 = boards[2].yB() + frac_depth
-            painter.setPen(penB)
+            painter.setPen(penA)
             pm = self.draw_passes(painter, self.labels[i + 1], boards[2].bottom_cuts, rect_T.yMid(),
                                   rect_T.yB(), flagsL, xMid)
             if pm is not None:
@@ -615,7 +618,10 @@ class Qt_Fig(QtGui.QWidget):
         # ... do the bottom board passes
         y1 = boards[1].yT() + sepOver2
         y2 = boards[1].yT() - frac_depth
-        painter.setPen(penA)
+        if boards[2].active or boards[3].active:
+            painter.setPen(penB)
+        else:
+            painter.setPen(penA)
         pm = self.draw_passes(painter, self.labels[i], boards[1].top_cuts, rect_T.yMid(),
                               rect_T.yB(), flagsL, xMid)
         if pm is not None:
