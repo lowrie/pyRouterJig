@@ -205,7 +205,8 @@ separation = {separation}
 debug = {debug}
 '''
 
-# common default values
+# common default values.  The canvas, board, and template colors from
+# http://paletton.com/#uid=50F0u0kllllaFw0g0qFqFg0-obq
 common_vals = {'version':'NONE',
                'english_separator':' ',
                'show_finger_widths':True,
@@ -224,8 +225,8 @@ common_vals = {'version':'NONE',
                'canvas_background':(255, 232, 170, 255),
                'canvas_foreground':( 91,  67,  0, 255),
                'watermark_color':(0, 0, 0, 75),
-               'template_margin_background':(0, 0, 0, 50),
-               'template_margin_foreground':(0, 0, 0, 255),
+               'template_margin_background':(255, 190, 170, 255),
+               'template_margin_foreground':( 92,  22,   0, 255),
                'board_background':(255, 217, 170, 255),
                'board_foreground':( 91,  50,   0, 255),
                'pass_color':(0, 0, 0, 255),
