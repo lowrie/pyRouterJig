@@ -128,7 +128,7 @@ class Driver_Test(unittest.TestCase):
             self.d._on_wood(w)
         self.screenshot()
         for w in [0, 1]:
-            i = self.d.cb_wood[w].findText('DiagCrossPattern')
+            i = self.d.cb_wood[w].findText('Solid Fill')
             self.assertTrue(i >= 0)
             self.d.cb_wood[w].setCurrentIndex(i)
             self.d._on_wood(w)
