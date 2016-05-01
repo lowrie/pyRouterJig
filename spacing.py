@@ -232,8 +232,8 @@ class Variable_Spaced(Base_Spacing):
         '''
         board_width = self.boards[0].width
         m = self.params['Fingers'].v
-        self.labels = [self.keys[0] + ': %d' % m]
-        self.description = 'Variable Spaced (' + self.labels[0] + ')'
+        self.labels = [self.keys[0] + ':']
+        self.description = 'Variable Spaced (' + self.keys[0] + ': {})'.format(m)
         # c is the ideal center-cut width
         c = self.eff_width * ((m - 1.0) * self.wb - \
                               m * (m + 1.0) + self.alpha * m) /\
