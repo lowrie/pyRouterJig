@@ -88,12 +88,12 @@ has been changed to 7 degrees.
 </figcaption>
 </figure>
 
-On the bottom right of the window various finger pattern options are
-available.  See the section [Finger Pattern Options]({{ site.baseurl
+On the bottom right of the window various finger layout options are
+available.  See the section [Finger Layout Options]({{ site.baseurl
 }}/finger_spacing_options/) for information about <b>Equal</b> and
 <b>Variable</b>.  The <b>Editor</b> always you to customize the finger
 patterns even further and is described in the section [Editor]({{ site.baseurl
-}}/editor/).  Below the finger pattern options is the template watermark text box,
+}}/editor/).  Below the finger layout options is the template watermark text box,
 which may be used to label the template.
 
 <div id="textbox">
