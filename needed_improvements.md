@@ -18,16 +18,19 @@ upgrade to both Python 3.5 and PyQt5.
   what appears to be the same bug.  Once the folks at Qt fix this issue, I'll
   release a new version.  Note that the actual printout should look fine; it's
   the Preview that looks strange.
+  * On the Mac, an additional "Enter Full Screen" menu item is automatically
+  added, either by the operating system or Qt.  This choice works the same as
+  "Full Screen Mode", but causes a crash if the Preferences window has been
+  opened.  So, avoid using "Enter Full Screen" and use "Full Screen Mode", instead.
 * <b>Features.</b> I\'m working on or considering the following features:
   * In Editor mode, allow for certain changes in parameters, such as board width
   and bit width.  The reason changes are disabled now is that parameter changes
   may create errors that are difficult to recover from.
-  * Specification of color schemes.
   * Export to Sketchup, or a file that it can import.  This is underway, via
   `Export 3DS`, but not all joints are supported yet.
   * Define an option for \"fold-over templates\" that are appropriate for
     laying out hand-cut joints.
-  * More spacing options.
+  * More layout options.
 
 <div id="textbox">
   <p class="alignleft">

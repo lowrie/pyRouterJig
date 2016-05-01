@@ -24,9 +24,11 @@ Bottom image shows joint detail.
 </figcaption>
 </figure>
 In order to see the fit better, through the menus, we've also toggled off
-<b>View : Finger Widths</b> and <b>View : Router Passes : Identifiers</b>,
-and toggled on <b>View : Fit</b>.  We also set <b>Top Board</b> and <b>Bottom Board</b>
-to `Solid Fill`.  The red warning banner at the lower left of the window
+<b>View : Router Passes : Identifiers</b>
+and toggled on <b>View : Fit</b>.  For the zoomed images, we also changed the `Alpha Channel` in the
+`Board Background` color preference to a value of 100, which makes the boards
+semi-transparent, so that any overlap is
+easily viewed.  The red warning banner at the lower left of the window
 indicates that the joint's maximum overlap of `0.008"` exceeds the value <b>Warning
 overlap</b>, which defaults to `0"` and 
 may be [set in the Preferences under the <b>Misc</b> tab]({{ site.baseurl }}/saving_preferences/).

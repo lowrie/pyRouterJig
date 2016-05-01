@@ -25,7 +25,7 @@ Note that on the Mac, the keyboard shortcuts use the `Command` key rather than `
    in your own `wood_images` folder, then a simple pattern is substituted.
 *  <b>Save (`Ctrl-S`)</b> Saves the joint figure as a `PNG` file.  By
    default, the image files are placed in your home directory, numbered sequentially as
-   `pyrouterjig_0.png`, `pyrouterjig_1.png`, `pyrouterjig_2.png`, and so on.  The
+   `pyrouterjig0.png`, `pyrouterjig1.png`, `pyrouterjig2.png`, and so on.  The
    image size is the same as your current window size, but no smaller than
    `Min Image Width` and no bigger than `Max Image Width`, both of which 
    may be set under <b>Preferences</b>.  By default, both are
@@ -87,9 +87,8 @@ increments, can result in a small amount of overlap in the fit.
      be used to double-check the alignment of each router pass.  This can be
      useful if your printer is not very accurate.
 *  <b>Full Screen Mode (`Ctrl-F`)</b> Toggles full-screen mode.  On the Mac,
-this menu item is called <b>Enter Full Screen</b>, there is no keyboard
-shortcut, and the menu bar is hidden in full screen mode unless the cursor 
-is at the top of the screen (these are Mac menu uniformity issues). 
+the operating system adds an additional menu item called <b>Enter Full Screen</b>,
+which is buggy.  Use <b>Full Screen Mode</b> instead.
 1. <b>Tools:</b>
 *  <b>Screenshot (`Ctrl-W`)</b> Similar to <b>Save</b>, but includes the entire
    {{ site.codename }} application window.  The image size is the same as your

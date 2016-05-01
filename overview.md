@@ -29,7 +29,6 @@ This documentation is focused on using English units, but any important
 differences will be discussed compared with metric units.
 The default joint is a box joint, with the fingers equally spaced, over a
 width of 7 1/2\".  The upper portion of the window draws the current joint.
-Each finger is labeled with its width.
 
 Below the boards is the corresponding template that may be
 cut out and used in an INCRA LS Positioner. See 
@@ -45,7 +44,7 @@ for the joint.  The joint is re-drawn after each change.  In the lower-left grid
 <img class="floater" src="{{ site.baseurl }}/images/lower_left.png" 
      alt="Select units window" width="512">
 you can see two rows of input parameters, which are available for any
-finger-spacing algorithm.  On the top row, we have
+finger-pattern algorithm.  On the top row, we have
 
 * <b>Board Width [inches|mm]:</b> The board width of the joint.
 * <b>Bit Width [inches|mm]:</b>  The maximum cutting width of the router bit.
@@ -62,8 +61,8 @@ either a fraction or decimal.  For example, the following are equivalent:
 `7 1/2` or `7.5` or `7 1 / 2` or `7 1 /2` or `7 1/ 2`
 
 Note that the whitespace around the \"`/`\" is ignored. The board and bit
-widths are rounded to the nearest alignment point.  By default these values
-are rounded to the nearest 1/32\" (or 1 mm for metric).  See section <a href="{{
+widths are rounded to the nearest alignment point.  By default, alignment is
+every 1/32\" (or 1 mm for metric).  See section <a href="{{
 site.baseurl }}/alignment/">Alignment of Router Passes</a> for more
 information about alignment.
 
@@ -88,6 +87,14 @@ opening screenshot</a>, the <b>Bit Angle</b>
 has been changed to 7 degrees.
 </figcaption>
 </figure>
+
+On the bottom right of the window various finger pattern options are
+available.  See the section [Finger Pattern Options]({{ site.baseurl
+}}/finger_spacing_options/) for information about <b>Equal</b> and
+<b>Variable</b>.  The <b>Editor</b> always you to customize the finger
+patterns even further and is described in the section [Editor]({{ site.baseurl
+}}/editor/).  Below the finger pattern options is the template watermark text box,
+which may be used to label the template.
 
 <div id="textbox">
   <p class="alignright">

@@ -29,6 +29,8 @@ for the main application window, for printing, and for saving images.
   for more information.
   * <b>Show Finger Widths:</b> If checked, each finger is labeled with its width.
   This option may be also set under the menu <b>View : Finger Widths</b>.
+  * <b>Show Fit:</b> If checked, the joint is shown assembled in the view.
+  This option may be also set under the menu <b>View : Fit</b>.
   * <b>Show Router Pass Identifiers:</b> If checked, each router pass is
   labeled with its router pass identifier.
   This option may be also set under the menu <b>View : Router Passes :
@@ -53,10 +55,16 @@ restart, and you will loose any unsaved work that you have done on the current
 joint.  A setting here is <b>Increments per [inch|mm]</b>, which
 is an advanced setting described in the section
 <a href="{{ site.baseurl }}/alignment/">Alignment of Router Passes</a>.
-Do not change this value if you plan to use the templates with the Incra LS Positioner.
+Do not change this value if you plan to use the templates with the Incra LS
+Positioner.
+* <b>Colors:</b> The colors used may be set under this tab.
+  * <b>Print in Color</b>.  If checked, then the same colors are used when
+  printing, except for the Canvas Background, which is always uncolored for
+  printouts. If not checked, the colors are converted to a gray scale before
+  printing.
 * <b>Misc:</b> Two parameters may be set under this tab:
   * <b>Min Finger Width:</b>  This is the minimum allowable finger width.
-  Currently, this value is enforced only for the <b>Equal</b> spacing
+  Currently, this value is enforced only for the <b>Equal</b> layout
   algorithm.
   * <b>Caul Trim:</b>  This value is used to determine the width of each
   clamping caul finger.  It's the distance from the edge of each

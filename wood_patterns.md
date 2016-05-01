@@ -8,15 +8,15 @@ On the bottom row of the lower-left grid parameters are <b>Top Board</b>,
 which allow you to select the pattern or wood images used to draw these
 boards, along with parameters for Double and Double-Double joints.  The Double
 and Double-Double joints are explained in the section
-[Double Joints]({{ site.baseurl }}/double_joints/)
+[Double Joints]({{ site.baseurl }}/double_joints/).
 In this section, we cover how to specify
 patterns for any board and how to add image files to simulate
 the appearance of wood grain.
 
 The patterns for Boards may be selected under each respective board header
 (Top, Bottom, Double, and Double-Double).  By default, {{ site.codename }}
-uses simple patterns to draw the board, such as the default `DiagCrossPattern`
-shown in the figures above.  You may also specify any image file (such as a
+uses simple patterns to draw the board, such as the default `Solid Fill`
+shown in the figures above.   You may also specify any image file (such as a
 Portable Network Graphics - PNG) to draw the board.  At startup, 
 {{ site.codename }} looks in the `wood_images` folder in your home directory
 and assumes any file in this folder is an image file.  It then makes these
@@ -49,7 +49,7 @@ the Top and Bottom Boards.
     <a href="{{ site.baseurl }}/overview/">Prev: Overview</a>
   </p>
   <p class="alignright">
-    <a href="{{ site.baseurl }}/finger_spacing_options/">Next: Finger Spacing Options</a>
+    <a href="{{ site.baseurl }}/finger_spacing_options/">Next: Finger Layout Options</a>
   </p>
 </div>
 <div style="clear: both;"></div>

@@ -13,9 +13,9 @@ its default of 1/8", similar to parameters such as <b>Board Width</b>.
 <img src="{{ site.baseurl }}/images/double_screen_shot.png">
 </a>
 <figcaption>
-<b>Figure 9.</b>  Example of a Double joint, following the Equal spacing set
-up as in 
-<a data-featherlight="{{ site.baseurl }}/images/opening_screen_shot.png">the opening screenshot</a>.
+<b>Figure 9.</b>  Example of a Double joint, setting the <b>Double Board</b>
+to black walnut in 
+<a data-featherlight="{{ site.baseurl }}/images/woods_screen_shot.png">this example</a>.
 </figcaption>
 </figure>
 

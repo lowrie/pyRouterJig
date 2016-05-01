@@ -1,13 +1,13 @@
 ---
 layout: page_doc
-title: Finger Spacing Options
+title: Finger Layout Options
 ---
 
 Throughout the documentation of {{ site.codename }}, we refer to a \"finger\" not only
 as the traditional finger of a box joint, but also generically to refer to a
-pin or tail of a dovetail joint.  There are currently two automatic finger-spacing
+pin or tail of a dovetail joint.  There are currently two automatic finger-layout
 algorithms, along with an editor to allow specification of arbitrary joints.
-The automatic spacing options are <b>Equal</b> and <b>Variable</b>, located at
+The automatic layout options are <b>Equal</b> and <b>Variable</b>, located at
 tabs in the lower-right portion of the window.  Each option has its own
 controls, described below:
 
@@ -20,10 +20,12 @@ controls, described below:
 
   1. <b>Spacing:</b> This slider allows you to specify additional spacing between
     the A-cuts.  [Figure 4](#figure4) shows an example of increasing this parameter.
+    <img class="floater" src="{{ site.baseurl }}/images/equal_spacing_options.png" 
+     alt="Finger pattern options" width="512">
   2. <b>Width:</b> This slider allows you to specify additional width added
     to the A-cuts.
     [Figure 5](#figure5) shows an example of increasing this parameter.
-  3. <b>Centered:</b> This input is only available for straight bits (bit
+  3. <b>Centered:</b> This input is available only for straight bits (bit
     angle = 0).  If this box is checked, a finger is always centered on
     the board.  Otherwise, a full finger is started on the left edge, which
     will result in a centered finger only if the finger width divides into the
