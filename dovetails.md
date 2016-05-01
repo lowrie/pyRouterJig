@@ -43,7 +43,7 @@ which is shown in Fig. 14 below:
 </a>
 </a>
 <figcaption>
-<b>Figure 14.</b> Dovetail joint that has an overlap of 0.002".
+<b>Figure 14.</b> Dovetail joint that has an gap of 0.002".
 Compared to Fig. 13, the bit depth was changed to `3/16`.
 </figcaption>
 </figure>
