@@ -73,18 +73,17 @@ THIS SECTION IS UNDER DEVELOPMENT
 
 For a given dovetail spacing or template,
 
-* <b>if you have an intereference fit (too much overlap), then *decrease* the bit depth;</b>
+* <b>if you have an interference fit (too much overlap), then *decrease* the bit depth;</b>
 * <b>if the fit is too loose (too much gap), then *increase* the bit depth.</b>
 
 It's that simple, at least for half-blind dovetails, where increasing or
-decreasing the depth a small amount is straightforward.  But that may not be
+decreasing the depth a small amount is not an issue.  But that may not be
 feasible if you're doing through dovetails and really want a particular stock
 thickness.  Even for half-blinds, it's helpful to know good starting points
-for the depth and facts such as that the larger the bit angle, the more
-sensitive the fit is to changes in depth.  That's where the remainder of this
+for the depth.  That's where the remainder of this
 section may help.
 
-The rest of this section gives some details on how to determine the gap and
+The rest of this section gives details on how to determine the gap and
 overlap for a given bit.  Some math is required, but it's not too bad, and you
 can always skip the math go to right to the tables below.  And in the end, don't
 trust my math.  Always use scrap wood to test the fit.
