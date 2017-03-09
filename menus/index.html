@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+      pyRouterJig &middot; A woodworking layout tool for creating box and dovetail joints
+  </title>
+
+  
+  <!-- canonical link -->
+  <link rel="canonical" href="http://lowrie.github.io/pyRouterJig//menus/">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/pyRouterJig/public/css/poole.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/syntax.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/hyde.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.gallery.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/pyrouterjig.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Scripts -->
+  <script src="/pyRouterJig/public/js/jquery-2.2.2.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.gallery.min.js"></script>
+  <script src="/pyRouterJig/public/js/pyrouterjig.js"></script>
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/pyRouterJig/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/pyRouterJig/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="layout-reverse theme-base-08">
+
+    <div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="/pyRouterJig/">
+          pyRouterJig
+        </a>
+      </h1>
+      <p align="center">Documentation</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/pyRouterJig/overview/">Overview</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/finger_spacing_options/">Finger Layout Options</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/editor/">Editor</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/double_joints/">Double Joints</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/alignment/">Alignment of Router Passes</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/menus/">Drop-down Menus</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/template/">Template Details</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/dovetails/">Dovetail Specifics</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/saving_preferences/">Saving Preferences</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/needed_improvements/">Needed Improvements</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/additional_resources/">Additional Resources</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/acknowledgments">Acknowledgments</a>
+    </nav>
+
+    <div class="sidebar-closing">
+      <p>
+        <a href="http://github.com/lowrie/" class="user-mention">Robert B. Lowrie</a><br>
+        &copy; 2015-2017. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/pyRouterJig/" title="Home">pyRouterJig</a>
+            <small>A woodworking layout tool for creating box and dovetail joints</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Drop-down menus</h1>
+  <p>Drop-down menus are located at the top of the application window, except for
+the Mac, where menus are placed in the menubar at the top of the screen.
+There are four menus available (on the Mac, five menus, with some items noted
+below under the <em>pyRouterJig</em> menu), described below.
+Note that on the Mac, the keyboard shortcuts use the <code class="highlighter-rouge">Command</code> key rather than <code class="highlighter-rouge">Ctrl</code>.</p>
+
+<ol>
+  <li><b>File:</b>
+    <ul>
+      <li><b>Open (<code class="highlighter-rouge">Ctrl-O</code>)</b> Opens a previously saved or screenshot file (see
+<b>Save</b> and <b>Screenshot</b>).
+<em>pyRouterJig</em> embeds the joint data in the <code class="highlighter-rouge">PNG</code> image files that it
+saves.  Opening the <code class="highlighter-rouge">PNG</code> file will allow you to start work again where you
+left off.  Note that in the <b>Editor</b> mode, the Undo history is
+not saved.   Any of the images in this documentation page may be opened with
+<em>pyRouterJig</em>.  For the wood images described in the
+<a href="/pyRouterJig/wood_patterns/">section Wood Pattern Selection</a>,
+only the name of the wood image is saved.  So
+if the image uses wood images, such as the <code class="highlighter-rouge">black-walnut</code> and <code class="highlighter-rouge">mahogany</code> in
+<a data-featherlight="/pyRouterJig/images/dd_screen_shot.png">this
+example</a>,  and those images are not found
+in your own <code class="highlighter-rouge">wood_images</code> folder, then a simple pattern is substituted.</li>
+      <li><b>Save (<code class="highlighter-rouge">Ctrl-S</code>)</b> Saves the joint figure as a <code class="highlighter-rouge">PNG</code> file.  By
+default, the image files are placed in your home directory, numbered sequentially as
+<code class="highlighter-rouge">pyrouterjig0.png</code>, <code class="highlighter-rouge">pyrouterjig1.png</code>, <code class="highlighter-rouge">pyrouterjig2.png</code>, and so on.  The
+image size is the same as your current window size, but no smaller than
+<code class="highlighter-rouge">Min Image Width</code> and no bigger than <code class="highlighter-rouge">Max Image Width</code>, both of which 
+may be set under <b>Preferences</b>.  By default, both are
+set to <code class="highlighter-rouge">1440</code>, meaning that all saved images are of this width.
+<a href="#figure11">Figure 11</a> shows an example saved image.</li>
+    </ul>
+    <figure class="zoomable">
+<a name="figure11">
+<img src="/pyRouterJig/images/dd_fig.png" />
+</a>
+<figcaption>
+<b>Figure 11.</b> The same case as
+<a data-featherlight="/pyRouterJig/images/dd_screen_shot.png">this
+example</a>, but using <b>Save</b> rather than
+<b>Screenshot</b> to create the image file.
+</figcaption>
+</figure>
+    <ul>
+      <li><b>Print (<code class="highlighter-rouge">Ctrl-P</code>)</b> Allows you to print the joint diagram (including print
+to a file). <em>pyRouterJig</em> prints through a preview screen.  Press the printer icon
+at the upper-right of the preview screen to either select the printer, or to
+print to a file.</li>
+      <li><b>Quit (<code class="highlighter-rouge">Ctrl-Q</code>)</b> Quits <em>pyRouterJig</em> (on Mac, located under the <b>pyRouterJig</b> menu).  If you've made any changes
+to the joint and haven't saved it, then you'll be warned.</li>
+    </ul>
+  </li>
+  <li><b>View:</b>
+    <ul>
+      <li><b>Caul Template</b> <a name="view-caul-template"></a>
+Toggles the caul template (default may be set under <b>Preferences</b>). The caul template is an
+additional template that can be used to create clamping cauls for the
+joint with the INCRA LS Positioner.  It’s assumed that a straight router bit of the
+same width is used to create the cauls.  The template follows the same pattern as that for the
+Top and Bottom Boards, but with narrower fingers.  By default, 1
+increment is removed from the side of each finger. <a href="#figure12">Figure 12</a>
+shows an example of the caul template.  Phil Barrett also has a <a href="http://philliplynebarrett.wix.com/philsbunker#!creating-box-joint-cauls/q2r7v">very nice
+tutorial on clamping cauls using <em>pyRouterJig</em></a>.</li>
+    </ul>
+    <figure class="zoomable">
+<a name="figure12">
+<img src="/pyRouterJig/images/caul_screen_shot.png" />
+</a>
+<figcaption>
+<b>Figure 12.</b> The same as 
+<a data-featherlight="/pyRouterJig/images/opening_screen_shot.png">the
+opening screenshot</a>, but after toggling <b>Caul
+Template</b> under the <b>View</b> menu.  The A-cuts on the Cauls template
+will create a clamping caul for the Top Board, while the B-cuts create a
+clamping caul for the Bottom Board.
+</figcaption>
+</figure>
+    <ul>
+      <li><b>Finger Widths</b> Toggles whether the finger widths are displayed on
+each finger of each board.</li>
+      <li><b>Fit</b> Toggles a view of the joint assembled.  By “assembled”, we mean
+a flattened, two-dimensional view.  This view is useful for checking the fit
+of dovetail joints, which because of the Incra’s positioning at discrete
+increments, can result in a small amount of overlap in the fit.</li>
+      <li><b>Router Passes</b>  <a name="view-router-passes"></a>Options under this menu control if and how router
+passes are drawn on each board.  If all options are unchecked, then no router
+passes are drawn.  The values are:</li>
+      <li><b>Identifiers</b> Toggles whether the pass identifier is included in the label.</li>
+      <li><b>Locations</b> Toggles whether the pass location is included in the
+  label.  The location is measured from the right side of the board.  By
+  aligning the Incra ruler to the right side of the board, the locations may
+  be used to double-check the alignment of each router pass.  This can be
+  useful if your printer is not very accurate.</li>
+      <li><b>Full Screen Mode (<code class="highlighter-rouge">Ctrl-F</code>)</b> Toggles full-screen mode.  On the Mac,
+the operating system adds an additional menu item called <b>Enter Full Screen</b>,
+which is buggy.  Use <b>Full Screen Mode</b> instead.</li>
+    </ul>
+  </li>
+  <li><b>Tools:</b>
+    <ul>
+      <li><b>Screenshot (<code class="highlighter-rouge">Ctrl-W</code>)</b> Similar to <b>Save</b>, but includes the entire
+<em>pyRouterJig</em> application window.  The image size is the same as your
+current window size.  <a data-featherlight="/pyRouterJig/images/opening_screen_shot.png">
+The opening screenshot image</a> was created with
+<b>Screenshot</b>.  Screenshots always use the default filename for output and
+are meant to be used to quickly generate image files (such as for this documentation!).</li>
+      <li><b>Export 3DS (<code class="highlighter-rouge">Ctrl-E</code>)</b> Allows you to export certain joints to a 3DS
+file.  A 3DS file may be imported into SketchUp.  This feature is under
+development and currently unavailable for dovetail bits, Double joints, and
+Double-Double joints.</li>
+      <li><b>Preferences (<code class="highlighter-rouge">Ctrl-,</code>)</b> Opens the Preferences window (on Mac, located under the <b>pyRouterJig</b> menu).</li>
+    </ul>
+  </li>
+  <li><b>Help:</b>
+    <ul>
+      <li><b>About (<code class="highlighter-rouge">Ctrl-A</code>)</b> Pops up a window showing the version and license (on Mac, located under the <b>pyRouterJig</b> menu).</li>
+      <li><b>Documentation</b> Opens your default browser and goes to the
+documentation page you are now reading.  You must have an Internet connection for
+this operation to work.</li>
+    </ul>
+  </li>
+</ol>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="/pyRouterJig/alignment/">Prev: Alignment of Router Passes</a>
+  </p>
+  <p class="alignright">
+    <a href="/pyRouterJig/template/">Next: Template Details</a>
+  </p>
+</div>
+<div style="clear: both;"></div>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+
+  </body>
+</html>

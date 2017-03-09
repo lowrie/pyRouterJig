@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+      pyRouterJig &middot; A woodworking layout tool for creating box and dovetail joints
+  </title>
+
+  
+  <!-- canonical link -->
+  <link rel="canonical" href="http://lowrie.github.io/pyRouterJig//alignment/">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/pyRouterJig/public/css/poole.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/syntax.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/hyde.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.gallery.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/pyrouterjig.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Scripts -->
+  <script src="/pyRouterJig/public/js/jquery-2.2.2.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.gallery.min.js"></script>
+  <script src="/pyRouterJig/public/js/pyrouterjig.js"></script>
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/pyRouterJig/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/pyRouterJig/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="layout-reverse theme-base-08">
+
+    <div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="/pyRouterJig/">
+          pyRouterJig
+        </a>
+      </h1>
+      <p align="center">Documentation</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/pyRouterJig/overview/">Overview</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/finger_spacing_options/">Finger Layout Options</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/editor/">Editor</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/double_joints/">Double Joints</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/alignment/">Alignment of Router Passes</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/menus/">Drop-down Menus</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/template/">Template Details</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/dovetails/">Dovetail Specifics</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/saving_preferences/">Saving Preferences</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/needed_improvements/">Needed Improvements</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/additional_resources/">Additional Resources</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/acknowledgments">Acknowledgments</a>
+    </nav>
+
+    <div class="sidebar-closing">
+      <p>
+        <a href="http://github.com/lowrie/" class="user-mention">Robert B. Lowrie</a><br>
+        &copy; 2015-2017. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/pyRouterJig/" title="Home">pyRouterJig</a>
+            <small>A woodworking layout tool for creating box and dovetail joints</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Alignment of Router Passes</h1>
+  <p>This section discusses how router passes are positioned in general.  For
+template alignment, see the
+<a href="/pyRouterJig/template/">section Template Details</a>.</p>
+
+<p><em>pyRouterJig</em> aligns each router pass on equally-spaced "increments."  By default,</p>
+
+<ul>
+  <li>1 increment = 1/32" (English units)</li>
+  <li>1 increment = 1 mm (metric units)</li>
+</ul>
+
+<p>An increment is effectively the resolution of <em>pyRouterJig</em>.  All dimensions used by
+<em>pyRouterJig</em>, such as the router-bit width, are rounded to the nearest
+number of increments.  The reason for the default choices above is that these
+are the resolutions of the respective <a href="http://www.incra.com/router_table_fences-ls_positiners.html">INCRA LS Positioner
+fence</a> (unless
+the micro-knob is used).  By using increments, we ensure that it's
+possible to position the fence at a lock position of the INCRA fence.</p>
+
+<p>If not using an INCRA fence, then you may want to increase the resolution.
+This may be accomplished through the <b>Increments per inch</b> (or per mm) parameter in the
+<b>Preferences</b>; see the 
+<a href="/pyRouterJig/saving_preferences/">section Saving Preferences</a>.</p>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="/pyRouterJig/double_joints/">Prev: Double Joints</a>
+  </p>
+  <p class="alignright">
+    <a href="/pyRouterJig/menus/">Next: Drop-down Menus</a>
+  </p>
+</div>
+<div style="clear: both;"></div>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+
+  </body>
+</html>

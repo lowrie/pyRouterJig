@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+      pyRouterJig &middot; A woodworking layout tool for creating box and dovetail joints
+  </title>
+
+  
+  <!-- canonical link -->
+  <link rel="canonical" href="http://lowrie.github.io/pyRouterJig//installation/">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/pyRouterJig/public/css/poole.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/syntax.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/hyde.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.gallery.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/pyrouterjig.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Scripts -->
+  <script src="/pyRouterJig/public/js/jquery-2.2.2.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.gallery.min.js"></script>
+  <script src="/pyRouterJig/public/js/pyrouterjig.js"></script>
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/pyRouterJig/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/pyRouterJig/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="layout-reverse theme-base-08">
+
+    <div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="/pyRouterJig/">
+          pyRouterJig
+        </a>
+      </h1>
+      <p align="center">Currently version 0.9.3</p>
+    </div>
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item active" href="/pyRouterJig/installation/">Installation</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/pyRouterJig/license/">License</a>
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+
+      <a class="sidebar-nav-item" href="/pyRouterJig/overview/">Documentation</a>
+      <a class="sidebar-nav-item" href="http://github.com/lowrie/pyRouterJig/releases/download/0.9.3/pyRouterJig.exe">Download for Windows</a>
+      <a class="sidebar-nav-item" href="http://github.com/lowrie/pyRouterJig/releases/download/0.9.3/pyRouterJig.app.zip">Download for Mac</a>
+      <a class="sidebar-nav-item" href="http://github.com/lowrie/pyRouterJig/releases/">Release History</a>
+      <a class="sidebar-nav-item" href="http://github.com/lowrie/pyRouterJig">GitHub Project</a>
+    </nav>
+
+    <div class="sidebar-closing">
+      <p>
+        <a href="http://github.com/lowrie/" class="user-mention">Robert B. Lowrie</a><br>
+        &copy; 2015-2017. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/pyRouterJig/" title="Home">pyRouterJig</a>
+            <small>A woodworking layout tool for creating box and dovetail joints</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Installation</h1>
+  <h2 id="windows-and-mac">Windows and Mac</h2>
+
+<p>Pre-compiled binaries for Windows and Mac (thanks to
+<a href="http://www.pyinstaller.org/">PyInstaller</a>) are available on the <a href="http://lowrie.github.io/pyRouterJig/">home
+page</a>.  For Windows, clicking on the
+<code class="highlighter-rouge">Download for Windows</code> button will download the <code class="highlighter-rouge">pyRouterJig.exe</code> file,
+double-click on it, and the program should run.  This executable is 32-bit and
+has been tested on Windows 7, 10, and XP.</p>
+
+<p>For Mac, clicking on the <code class="highlighter-rouge">Download for Mac</code> will download the
+<code class="highlighter-rouge">pyRouterJig.app.zip</code> file.  Unzip this file by double-clicking on it, which
+should create the folder <code class="highlighter-rouge">pyRouterJig.app</code>.  Double-clicking on this folder
+should start the application.  I have tested <em>pyRouterJig</em> on Mac
+versions 10.9.x and 10.11.x.  This app is 64-bit and other Mac versions should
+work, as long as you have 10.5.x or later.</p>
+
+<p>Please let me know if you have issues with these executables.</p>
+
+<h2 id="installation-from-source">Installation from source</h2>
+
+<p>This approach may be a challenge unless you are familiar working with
+<a href="http://www.python.org">Python</a>, the language that <em>pyRouterJig</em> uses.
+To obtain the source code for a release, go to the <a href="https://github.com/lowrie/pyRouterJig/releases">github release
+site</a>, download either the
+<code class="highlighter-rouge">.zip</code> or <code class="highlighter-rouge">.tar.gz</code> file (your preference), and decompress the file.  This
+should create a folder <code class="highlighter-rouge">pyRouterJig-X.X.X</code>, where <code class="highlighter-rouge">X.X.X</code> is the release
+number.  In this folder, the script <code class="highlighter-rouge">pyRouterJig.py</code> should start the
+application, if you happen to already satisfy the prerequisites below.</p>
+
+<p><em>pyRouterJig</em> depends upon the following <a href="http://www.python.org">Python</a>
+packages, which must be installed in order to run <em>pyRouterJig</em>:</p>
+
+<ul>
+  <li><a href="http://www.python.org">Python</a>.  Python is installed by default on
+the Mac, but I use a different installation, discussed below.</li>
+  <li><a href="http://pyqt.sourceforge.net">PyQt4</a>.  This package is used as the
+graphical user interface (GUI).</li>
+  <li><a href="http://python-future.org/overview.html">Python-Future</a>, which is used so 
+that <em>pyRouterJig</em> works for both python 2.7 and 3.5
+(these are the versions that I have tested; intermediate versions should work
+also)</li>
+</ul>
+
+<p>I install all of these packages using <a href="https://www.continuum.io/">Anaconda</a>,
+which is also available for Windows, Mac, and Linux.  I highly recommend
+Anaconda, as the packages above may have other dependencies that Anaconda also
+takes care of installing.  Depending on how you install Anaconda, PyQt4
+may not install PyQt4 by default.  Regardless, enter the command</p>
+
+<p><code class="highlighter-rouge">conda install pyqt</code></p>
+
+<p>in a <code class="highlighter-rouge">Command Prompt</code> (Windows) or <code class="highlighter-rouge">Terminal.app</code> (Mac) window 
+and assuming <code class="highlighter-rouge">conda</code> is in your path.  If pyqt has already been installed,
+then <code class="highlighter-rouge">conda</code> tells you so; no harm done. Similarly, to install <code class="highlighter-rouge">future</code>, do</p>
+
+<p><code class="highlighter-rouge">conda install future</code></p>
+
+<p>With the prerequisites above satisfies, and <code class="highlighter-rouge">python</code> or <code class="highlighter-rouge">python.exe</code> in your
+path, in the source folder on any platform you should be able to type in a
+terminal</p>
+
+<p><code class="highlighter-rouge">./pyRouterJig.py</code></p>
+
+<p>or on Windows</p>
+
+<p><code class="highlighter-rouge">.\pyRouterJig.py</code></p>
+
+<p>and the application should start.</p>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+
+  </body>
+</html>

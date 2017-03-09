@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+      pyRouterJig &middot; A woodworking layout tool for creating box and dovetail joints
+  </title>
+
+  
+  <!-- canonical link -->
+  <link rel="canonical" href="http://lowrie.github.io/pyRouterJig//editor/">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/pyRouterJig/public/css/poole.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/syntax.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/hyde.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.gallery.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/pyrouterjig.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Scripts -->
+  <script src="/pyRouterJig/public/js/jquery-2.2.2.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.gallery.min.js"></script>
+  <script src="/pyRouterJig/public/js/pyrouterjig.js"></script>
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/pyRouterJig/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/pyRouterJig/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="layout-reverse theme-base-08">
+
+    <div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="/pyRouterJig/">
+          pyRouterJig
+        </a>
+      </h1>
+      <p align="center">Documentation</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/pyRouterJig/overview/">Overview</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/finger_spacing_options/">Finger Layout Options</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/editor/">Editor</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/double_joints/">Double Joints</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/alignment/">Alignment of Router Passes</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/menus/">Drop-down Menus</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/template/">Template Details</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/dovetails/">Dovetail Specifics</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/saving_preferences/">Saving Preferences</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/needed_improvements/">Needed Improvements</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/additional_resources/">Additional Resources</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/acknowledgments">Acknowledgments</a>
+    </nav>
+
+    <div class="sidebar-closing">
+      <p>
+        <a href="http://github.com/lowrie/" class="user-mention">Robert B. Lowrie</a><br>
+        &copy; 2015-2017. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/pyRouterJig/" title="Home">pyRouterJig</a>
+            <small>A woodworking layout tool for creating box and dovetail joints</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Editor</h1>
+  <p>The <b>Editor</b> tab allows you to edit each individual cut of the joint.
+The editor operates on the A-cuts of the Top Board; all of the other cuts (B,
+C, D, etc.) follow from the A-cuts.  The starting joint for editing is
+whatever was last specified under either the <b>Equal</b> or <b>Variable</b>
+spacing options.  Under the <b>Editor</b>, the board and bit dimensions, along
+with the Double and Double-Double parameters, cannot be changed; make sure
+these are set to their final values under either <b>Equal</b> or
+<b>Variable</b> before switching to the <b>Editor</b>.</p>
+
+<p><a href="#figure8">Figure 8</a> shows an example of entering the <b>Editor</b>, after
+setting up the joint as in
+<a data-featherlight="/pyRouterJig/images/variable_screen_shot.png">Fig. 7 of the previous section</a>.
+An active cut is highlighted
+in red and is the cut which is to be edited, using either the buttons under
+the <b>Editor</b> tab, or using keyboard shortcuts.  Again, active cuts are
+always on the A-cuts of the Top Board.  The blue outline on a cut indicates
+the cut cursor.  The cursor is used to select active cuts.  More than one cut
+may be active.  The green vertical lines indicate the extents that the active
+cuts can be moved or widened, limited by the bit width.</p>
+
+<figure class="zoomable">
+<a name="figure8">
+<img src="/pyRouterJig/images/editor_screen_shot.png" />
+</a>
+<figcaption>
+<b>Figure 8.</b>  Editor mode, following Variable spacing set up as in
+<a data-featherlight="/pyRouterJig/images/variable_screen_shot.png">Fig. 7 of the previous section</a>.
+The first three cuts on the Top Board are active.  Each active cut is labled
+by its index in red, with the cut cursor (blue outline, index 2) on the
+center cut.
+</figcaption>
+</figure>
+
+<p>The Editor functionality is grouped into two main categories, with buttons (or
+corresponding keyboard shortcuts) controlling the actions taken.<br />
+The buttons and shortcuts are as follows:</p>
+
+<ul>
+  <li><b>Active Cut Select</b>:  This category allows you to select which
+cuts are active.  Active cuts are those for which the <b>Active Cut
+Operators</b> will be applied, described below.
+ The buttons for this category are as follows:
+    <ul>
+      <li>The arrow buttons (keyboard:  left or right arrows) control the position
+of the cut cursor, shown with a blue outline.</li>
+      <li><b>Toggle:</b> (keyboard: <code class="highlighter-rouge">Return</code>) Toggle the cut at the cursor as active and deactive.
+When active, the cut is highlighted in red.</li>
+      <li><b>All:</b> (keyboard: <code class="highlighter-rouge">a</code>) All cuts are set as active.</li>
+      <li><b>None:</b> (keyboard: <code class="highlighter-rouge">n</code>) All cuts are set as inactive.</li>
+    </ul>
+  </li>
+  <li><b>Active Cut Operators</b>: This category applies editing operators to
+the active cuts, and its buttons are as follows:
+    <ul>
+      <li><b>Move:</b> (keyboard: Hold <code class="highlighter-rouge">Alt</code> key, along with left and right arrow keys) The arrows move the active cuts 1 increment to the left or right, if possible.</li>
+      <li><b>Widen:</b> (keyboard: Hold <code class="highlighter-rouge">Alt</code>+<code class="highlighter-rouge">Control</code> key, along with left and right arrow keys) Widens the active cuts on their left or right side by 1 increment, if possible.</li>
+      <li><b>Trim:</b> (keyboard: Hold <code class="highlighter-rouge">Control</code> key, along with left or right arrows) Trims the active cuts on their left or right side by 1 increment, if possible.</li>
+      <li>Moves the cut cursor to the right or left
+cut to the right or left to be the active cut.</li>
+      <li><b>Add:</b>  (keyboard: <code class="highlighter-rouge">+</code>) Adds one cut, if possible.  There needs to be
+space enough to add a cut, given the board width and bit constraints.  The
+cut is added in the first possible location found, searching from the
+left side of the board.</li>
+      <li><b>Delete:</b>  (keyboard: <code class="highlighter-rouge">-</code>) Deletes the active cut.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>Finally, the <b>Undo</b> button  (keyboard: <code class="highlighter-rouge">u</code>) reverses the last editing
+operation.  Undo may be applied repeatedly, until the joint is back to the
+starting point of invoking the <b>Editor</b>.</p>
+
+<p>As each operation is performed, the status is reported at the bottom of the
+screen in the <b>Status</b> bar.  The status will be red if the operation
+failed.  A failure isn’t serious; it usually means that the operation can’t be
+performed because it would result in a joint that cannot be cut with the
+current bit.</p>
+
+<p>Note that if you make changes in the <b>Editor</b>, and then go back to either
+<b>Equal</b> or <b>Variable</b> options, the changes will be lost.</p>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="/pyRouterJig/finger_spacing_options/">Prev: Finger Spacing Options</a>
+  </p>
+  <p class="alignright">
+    <a href="/pyRouterJig/double_joints/">Next: Double Joints</a>
+  </p>
+</div>
+<div style="clear: both;"></div>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+
+  </body>
+</html>

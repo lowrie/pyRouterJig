@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+      pyRouterJig &middot; A woodworking layout tool for creating box and dovetail joints
+  </title>
+
+  
+  <!-- canonical link -->
+  <link rel="canonical" href="http://lowrie.github.io/pyRouterJig//needed_improvements/">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/pyRouterJig/public/css/poole.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/syntax.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/hyde.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.gallery.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/pyrouterjig.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Scripts -->
+  <script src="/pyRouterJig/public/js/jquery-2.2.2.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.gallery.min.js"></script>
+  <script src="/pyRouterJig/public/js/pyrouterjig.js"></script>
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/pyRouterJig/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/pyRouterJig/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="layout-reverse theme-base-08">
+
+    <div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="/pyRouterJig/">
+          pyRouterJig
+        </a>
+      </h1>
+      <p align="center">Documentation</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/pyRouterJig/overview/">Overview</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/finger_spacing_options/">Finger Layout Options</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/editor/">Editor</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/double_joints/">Double Joints</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/alignment/">Alignment of Router Passes</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/menus/">Drop-down Menus</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/template/">Template Details</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/dovetails/">Dovetail Specifics</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/saving_preferences/">Saving Preferences</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/needed_improvements/">Needed Improvements</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/additional_resources/">Additional Resources</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/acknowledgments">Acknowledgments</a>
+    </nav>
+
+    <div class="sidebar-closing">
+      <p>
+        <a href="http://github.com/lowrie/" class="user-mention">Robert B. Lowrie</a><br>
+        &copy; 2015-2017. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/pyRouterJig/" title="Home">pyRouterJig</a>
+            <small>A woodworking layout tool for creating box and dovetail joints</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Needed Improvements</h1>
+  <p>I am looking for help to make the improvements outlined in this section.  I
+will certainly give credit to those who help make these or any other
+improvements.  If you're thinking of contributing, let me know, because I may
+have already started on some of these issues.</p>
+
+<ul>
+  <li><b>Windows and Linux Support.</b>  If you can help test and improve <em>pyRouterJig</em> on
+any platform, particularly Windows and Linux, please contact me.</li>
+  <li><b>Upgrade Python and Qt.</b>  Once anaconda supports PyQt5, I plan to
+upgrade to both Python 3.5 and PyQt5.</li>
+  <li><b>Known Bugs.</b>
+    <ul>
+      <li><em>pyRouterJig</em> will not work correctly using metric units and English-sized
+ dovetail bits, or any dovetail bit that is not sized in 1 mm increments.
+ I plan to fix this issue, but it might take a while.  <a href="https://github.com/lowrie/pyRouterJig/issues/2">See this discussion
+ thread on the github website for more details.</a></li>
+      <li>In Print Preview mode, the board fill patterns often look very
+strange.  <a href="https://bugreports.qt.io/browse/QTBUG-30260">This link at Qt</a> describes
+what appears to be the same bug.  Once the folks at Qt fix this issue, I’ll
+release a new version.  Note that the actual printout should look fine; it’s
+the Preview that looks strange.</li>
+      <li>On the Mac, an additional “Enter Full Screen” menu item is automatically
+added, either by the operating system or Qt.  This choice works the same as
+“Full Screen Mode”, but causes a crash if the Preferences window has been
+opened.  So, avoid using “Enter Full Screen” and use “Full Screen Mode”, instead.</li>
+    </ul>
+  </li>
+  <li><b>Features.</b> I'm working on or considering the following features:
+    <ul>
+      <li>In Editor mode, allow for certain changes in parameters, such as board width
+and bit width.  The reason changes are disabled now is that parameter changes
+may create errors that are difficult to recover from.</li>
+      <li>Export to Sketchup, or a file that it can import.  This is underway, via
+<code class="highlighter-rouge">Export 3DS</code>, but not all joints are supported yet.</li>
+      <li>Define an option for "fold-over templates" that are appropriate for
+laying out hand-cut joints.</li>
+      <li>More layout options.</li>
+    </ul>
+  </li>
+</ul>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="/pyRouterJig/saving_preferences/">Prev: Saving Preferences</a>
+  </p>
+  <p class="alignright">
+    <a href="/pyRouterJig/additional_resources/">Next: Additional Resources</a>
+  </p>
+</div>
+<div style="clear: both;"></div>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+
+  </body>
+</html>

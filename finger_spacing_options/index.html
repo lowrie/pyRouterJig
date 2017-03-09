@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+      pyRouterJig &middot; A woodworking layout tool for creating box and dovetail joints
+  </title>
+
+  
+  <!-- canonical link -->
+  <link rel="canonical" href="http://lowrie.github.io/pyRouterJig//finger_spacing_options/">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/pyRouterJig/public/css/poole.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/syntax.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/hyde.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.gallery.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/pyrouterjig.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Scripts -->
+  <script src="/pyRouterJig/public/js/jquery-2.2.2.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.gallery.min.js"></script>
+  <script src="/pyRouterJig/public/js/pyrouterjig.js"></script>
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/pyRouterJig/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/pyRouterJig/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="layout-reverse theme-base-08">
+
+    <div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="/pyRouterJig/">
+          pyRouterJig
+        </a>
+      </h1>
+      <p align="center">Documentation</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/pyRouterJig/overview/">Overview</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/finger_spacing_options/">Finger Layout Options</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/editor/">Editor</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/double_joints/">Double Joints</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/alignment/">Alignment of Router Passes</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/menus/">Drop-down Menus</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/template/">Template Details</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/dovetails/">Dovetail Specifics</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/saving_preferences/">Saving Preferences</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/needed_improvements/">Needed Improvements</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/additional_resources/">Additional Resources</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/acknowledgments">Acknowledgments</a>
+    </nav>
+
+    <div class="sidebar-closing">
+      <p>
+        <a href="http://github.com/lowrie/" class="user-mention">Robert B. Lowrie</a><br>
+        &copy; 2015-2017. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/pyRouterJig/" title="Home">pyRouterJig</a>
+            <small>A woodworking layout tool for creating box and dovetail joints</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Finger Layout Options</h1>
+  <p>Throughout the documentation of <em>pyRouterJig</em>, we refer to a "finger" not only
+as the traditional finger of a box joint, but also generically to refer to a
+pin or tail of a dovetail joint.  There are currently two automatic finger-layout
+algorithms, along with an editor to allow specification of arbitrary joints.
+The automatic layout options are <b>Equal</b> and <b>Variable</b>, located at
+tabs in the lower-right portion of the window.  Each option has its own
+controls, described below:</p>
+
+<ul>
+  <li>
+    <p><a name="equal_spacing"></a>
+<b>Equal:</b> In this case, the fingers are equally spaced.<br />
+<a data-featherlight="/pyRouterJig/images/opening_screen_shot.png">The
+opening screenshot</a> is an example.
+There are three inputs that affect this algorithm:</p>
+
+    <ol>
+      <li><b>Spacing:</b> This slider allows you to specify additional spacing between
+  the A-cuts.  <a href="#figure4">Figure 4</a> shows an example of increasing this parameter.
+  <img class="floater" src="/pyRouterJig/images/equal_spacing_options.png" alt="Finger pattern options" width="512" /></li>
+      <li><b>Width:</b> This slider allows you to specify additional width added
+  to the A-cuts.
+  <a href="#figure5">Figure 5</a> shows an example of increasing this parameter.</li>
+      <li><b>Centered:</b> This input is available only for straight bits (bit
+  angle = 0).  If this box is checked, a finger is always centered on
+  the board.  Otherwise, a full finger is started on the left edge, which
+  will result in a centered finger only if the finger width divides into the
+  board width an odd number of times.
+  <a href="#figure6">Figure 6</a> shows an example of a non-centered pattern.</li>
+    </ol>
+
+    <p>The sliders can be moved by using either dragging the mouse, or my clicking on the
+slider and using the left and right arrow keys for small changes and Page Up
+and Page Down for large changes.</p>
+  </li>
+</ul>
+
+<figure class="zoomable">
+<a name="figure4">
+<img src="/pyRouterJig/images/bspacing_screen_shot.png" />
+</a>
+<figcaption>
+<b>Figure 4.</b>  Effect of Spacing option.  Compared to 
+<a data-featherlight="/pyRouterJig/images/opening_screen_shot.png">the
+opening screenshot</a>, the <b>Spacing</b>
+slider been moved to a value of 1 17/32".
+</figcaption>
+</figure>
+
+<figure class="zoomable">
+<a name="figure5">
+<img src="/pyRouterJig/images/width_screen_shot.png" />
+</a>
+<figcaption>
+<b>Figure 5.</b>  Effect of Width option.  Compared to 
+<a data-featherlight="/pyRouterJig/images/opening_screen_shot.png">the
+opening screenshot</a>, the <b>Width</b>
+slider been moved to a value of 27/32".
+</figcaption>
+</figure>
+
+<figure class="zoomable">
+<a name="figure6">
+<img src="/pyRouterJig/images/centered_screen_shot.png" />
+</a>
+<figcaption>
+<b>Figure 6.</b>  Effect of Centered option.  Compared to 
+<a data-featherlight="/pyRouterJig/images/opening_screen_shot.png">the
+opening screenshot</a>, the <b>Board
+Width</b> has been changed to 7" and the <b>Centered</b> option unclicked.
+</figcaption>
+</figure>
+
+<ul>
+  <li>
+    <p><a name="variable_spacing"></a>
+<b>Variable:</b> In this case a large finger is centered on the board,
+and the fingers decrease in size proportional to the distance to the center.
+There is one input that affects this algorithm:</p>
+
+    <ol>
+      <li><b>Fingers:</b> Specifies the approximate number of
+  fingers.  At its minimum value, the width of the center finger is maximized. At
+  its maximum value, the width of the center finger is minimized, and the result is
+  the same as equally-spaced with zero "Spacing", zero "Width", and
+  the "Centered" option checked.</li>
+    </ol>
+
+    <p><a href="#figure7">Figure 7</a> shows an example of a Variable-spaced box joint.</p>
+  </li>
+</ul>
+
+<figure class="zoomable">
+<a name="figure7">
+<img src="/pyRouterJig/images/variable_screen_shot.png" />
+</a>
+<figcaption>
+<b>Figure 7.</b>  Variable spacing option.  Compared to 
+<a data-featherlight="/pyRouterJig/images/opening_screen_shot.png">the
+opening screenshot</a>, the
+<b>Variable</b> tab has been clicked and the <b>Fingers</b> input has a
+value of 5.
+</figcaption>
+</figure>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="/pyRouterJig/wood_patterns/">Prev: Wood Pattern Selection</a>
+  </p>
+  <p class="alignright">
+    <a href="/pyRouterJig/editor/">Next: Editor</a>
+  </p>
+</div>
+<div style="clear: both;"></div>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+
+  </body>
+</html>

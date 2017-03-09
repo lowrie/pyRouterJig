@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+      pyRouterJig &middot; A woodworking layout tool for creating box and dovetail joints
+  </title>
+
+  
+  <!-- canonical link -->
+  <link rel="canonical" href="http://lowrie.github.io/pyRouterJig//dovetails/">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/pyRouterJig/public/css/poole.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/syntax.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/hyde.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.gallery.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/pyrouterjig.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Scripts -->
+  <script src="/pyRouterJig/public/js/jquery-2.2.2.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.gallery.min.js"></script>
+  <script src="/pyRouterJig/public/js/pyrouterjig.js"></script>
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/pyRouterJig/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/pyRouterJig/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="layout-reverse theme-base-08">
+
+    <div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="/pyRouterJig/">
+          pyRouterJig
+        </a>
+      </h1>
+      <p align="center">Documentation</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/pyRouterJig/overview/">Overview</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/finger_spacing_options/">Finger Layout Options</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/editor/">Editor</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/double_joints/">Double Joints</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/alignment/">Alignment of Router Passes</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/menus/">Drop-down Menus</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/template/">Template Details</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/dovetails/">Dovetail Specifics</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/saving_preferences/">Saving Preferences</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/needed_improvements/">Needed Improvements</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/additional_resources/">Additional Resources</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/acknowledgments">Acknowledgments</a>
+    </nav>
+
+    <div class="sidebar-closing">
+      <p>
+        <a href="http://github.com/lowrie/" class="user-mention">Robert B. Lowrie</a><br>
+        &copy; 2015-2017. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/pyRouterJig/" title="Home">pyRouterJig</a>
+            <small>A woodworking layout tool for creating box and dovetail joints</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Dovetail Specifics</h1>
+  <h3>NOTE:</h3>
+<p>Using metric units, <em>pyRouterJig</em> currently has some
+severe restrictions for dovetails, such as if trying to use English-sized
+bits. This is a known bug; see <a href="/pyRouterJig/needed_improvements/">Known Bugs under Needed
+Improvements.</a></p>
+
+<p>Several issues have to kept in mind when laying out dovetails, particularly
+for the Incra LS Positioner.  Because the Incra limits the fence position to
+<code class="highlighter-rouge">1/32"</code> increments (<code class="highlighter-rouge">1 mm</code> for metric), a given bit and depth setting will
+typically create a small <em>gap</em> or <em>overlap</em>.  Any overlap should be avoided,
+as then the joint will be an interference fit.</p>
+
+<p>A good example is to set <b>Bit Width</b> to <code class="highlighter-rouge">3/8</code>, <b>Bit Depth</b> to <code class="highlighter-rouge">1/4</code>,
+and <b>Bit Angle</b> to <code class="highlighter-rouge">9</code>, as shown in Figure 13 below:</p>
+<figure class="zoomable">
+<a name="figure13">
+<img src="/pyRouterJig/images/fit_overlap_screen_shot.png" />
+<a data-featherlight="/pyRouterJig/images/fit_overlap_zoom.png">
+<img src="/pyRouterJig/images/fit_overlap_zoom.png" />
+</a>
+</a>
+<figcaption>
+<b>Figure 13.</b> Dovetail joint that has an overlap of 0.008".
+Bottom image shows joint detail.
+</figcaption>
+</figure>
+<p>In order to see the fit better, through the menus, we’ve also toggled off
+<b>View : Router Passes : Identifiers</b>
+and toggled on <b>View : Fit</b>.  For the zoomed images, we also changed the <code class="highlighter-rouge">Alpha Channel</code> in the
+<code class="highlighter-rouge">Board Background</code> color preference to a value of 100, which makes the boards
+semi-transparent, so that any overlap is
+easily viewed.  The red warning banner at the lower left of the window
+indicates that the joint’s maximum overlap of <code class="highlighter-rouge">0.008"</code> exceeds the value <b>Warning
+overlap</b>, which defaults to <code class="highlighter-rouge">0"</code> and 
+may be <a href="/pyRouterJig/saving_preferences/">set in the Preferences under the <b>Misc</b> tab</a>.</p>
+
+<p>By changing the <b>Bit Depth</b> to <code class="highlighter-rouge">3/16"</code> results in a gap of <code class="highlighter-rouge">0.002"</code>,
+which is shown in Fig. 14 below:</p>
+<figure class="zoomable">
+<a name="figure14">
+<img src="/pyRouterJig/images/fit_gap_screen_shot.png" />
+<a data-featherlight="/pyRouterJig/images/fit_gap_zoom.png">
+<img src="/pyRouterJig/images/fit_gap_zoom.png" />
+</a>
+</a>
+<figcaption>
+<b>Figure 14.</b> Dovetail joint that has an gap of 0.002".
+Compared to Fig. 13, the bit depth was changed to `3/16`.
+</figcaption>
+</figure>
+<p>This gap does not exceed the value <b>Warning gap</b>, which defaults to
+<code class="highlighter-rouge">0.005"</code>, and so the lower-left banner remains green text.</p>
+
+<p>Now, if we set the <b>Bit Depth</b> to <code class="highlighter-rouge">0.197"</code>, we get no overlap or gap, as
+shown in Fig. 15 below:</p>
+<figure class="zoomable">
+<a name="figure15">
+<img src="/pyRouterJig/images/fit_perfect_screen_shot.png" />
+<a data-featherlight="/pyRouterJig/images/fit_perfect_zoom.png">
+<img src="/pyRouterJig/images/fit_perfect_zoom.png" />
+</a>
+</a>
+<figcaption>
+<b>Figure 15.</b> Dovetail joint that has no overlap or gap.
+Compared to Fig. 13, the bit depth was changed to `0.197`.
+</figcaption>
+</figure>
+
+<h2 id="details-on-gap-and-overlap">Details on Gap and Overlap</h2>
+
+<h2 id="this-section-is-under-development">THIS SECTION IS UNDER DEVELOPMENT</h2>
+
+<p>For a given dovetail spacing or template,</p>
+
+<ul>
+  <li><b>if you have an interference fit (too much overlap), then <em>decrease</em> the bit depth;</b></li>
+  <li><b>if the fit is too loose (too much gap), then <em>increase</em> the bit depth.</b></li>
+</ul>
+
+<p>It’s that simple, at least for half-blind dovetails, where increasing or
+decreasing the depth a small amount is not an issue.  But that may not be
+feasible if you’re doing through dovetails and really want a particular stock
+thickness.  Even for half-blinds, it’s helpful to know good starting points
+for the depth.  That’s where the remainder of this
+section may help.</p>
+
+<p>The rest of this section gives details on how to determine the gap and
+overlap for a given bit.  Some math is required, but it’s not too bad, and you
+can always skip the math go to right to the tables below.  And in the end, don’t
+trust my math.  Always use scrap wood to test the fit.</p>
+
+<p>The minimum dovetail spacing used by <em>pyRouterJig</em> is given by</p>
+
+<ul>
+  <li><code class="highlighter-rouge">spacing = 2 I ROUND ((bit_width -  T bit_depth) / I)</code>.</li>
+</ul>
+
+<p>where</p>
+
+<ul>
+  <li><code class="highlighter-rouge">I</code> is the increment size for the Incra:  <code class="highlighter-rouge">I = 1/32"</code> for English, <code class="highlighter-rouge">I = 1
+mm</code> for metric.</li>
+  <li><code class="highlighter-rouge">T = tan(bit_angle)</code>, where <code class="highlighter-rouge">tan</code> is the trigonometric tangent function.</li>
+  <li><code class="highlighter-rouge">ROUND(x)</code> rounds any decimal value <code class="highlighter-rouge">x</code> to the nearest integer. For
+example, <code class="highlighter-rouge">ROUND(1.4) = 1</code> and <code class="highlighter-rouge">ROUND(1.6) = 2</code>.</li>
+</ul>
+
+<p>The formula above will also reproduce the dovetail examples given in the Incra Master Guide.
+The <code class="highlighter-rouge">ROUND</code> function is what keeps the dovetail spacing in increments of <code class="highlighter-rouge">I</code>,
+so that you can position any given router pass quickly and easily with the Incra LS Positioner.
+But it’s also what results in gap or overlap.</p>
+
+<p>The gap and overlap are given by the relation</p>
+
+<ul>
+  <li><code class="highlighter-rouge">G = bit_depth T - I ROUND(T bit_depth / I)</code></li>
+</ul>
+
+<p>where<code class="highlighter-rouge">G</code> is negative for a gap and positive for an overlap.  A small amount of
+gap or overlap may be acceptable.  But the maximum gap or overlap is <code class="highlighter-rouge">I/2</code>, or
+<code class="highlighter-rouge">1/64"</code> for English units.  I believe that’s too much, particularly for
+overlap, and the rest of this section discusses how that can be avoided.</p>
+
+<p>For an exact fit, we want <code class="highlighter-rouge">G = 0</code>.  The <code class="highlighter-rouge">bit_depth</code> values that give an
+exact fit are integer multiples of <code class="highlighter-rouge">BD0</code>, where</p>
+
+<ul>
+  <li><code class="highlighter-rouge">BD0 = I / T</code></li>
+</ul>
+
+<p>The table below gives <code class="highlighter-rouge">BD0</code> for typical bits and <code class="highlighter-rouge">I=1/32"</code>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Bit Angle (deg)</th>
+      <th style="text-align: center">BD0 (in)</th>
+      <th style="text-align: center">Nearest 1/32”</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">7</td>
+      <td style="text-align: center">0.2545</td>
+      <td style="text-align: center">1/4</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">7.5</td>
+      <td style="text-align: center">0.2374</td>
+      <td style="text-align: center">7/32</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">9</td>
+      <td style="text-align: center">0.1973</td>
+      <td style="text-align: center">3/16</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">10</td>
+      <td style="text-align: center">0.1772</td>
+      <td style="text-align: center">5/32</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">14</td>
+      <td style="text-align: center">0.1253</td>
+      <td style="text-align: center">1/8</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>As an example, for the 9 degree bit, the fit will be exact for depths of
+<code class="highlighter-rouge">0.197"</code>, twice that depth (<code class="highlighter-rouge">0.395"</code>), three times (<code class="highlighter-rouge">0.592"</code>), and so on.
+The corresponding <code class="highlighter-rouge">Nearest 1/32"</code> are <code class="highlighter-rouge">3/16"</code>, <code class="highlighter-rouge">3/8"</code>, and <code class="highlighter-rouge">9/16"</code>, and so
+on. By “Nearest”, I mean by decreasing the depth, so that a small amount of
+gap is created.</p>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="/pyRouterJig/template/">Prev: Template Details</a>
+  </p>
+  <p class="alignright">
+    <a href="/pyRouterJig/saving_preferences/">Next: Saving Preferences</a>
+  </p>
+</div>
+<div style="clear: both;"></div>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+
+  </body>
+</html>

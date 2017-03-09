@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+      pyRouterJig &middot; A woodworking layout tool for creating box and dovetail joints
+  </title>
+
+  
+  <!-- canonical link -->
+  <link rel="canonical" href="http://lowrie.github.io/pyRouterJig//overview/">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/pyRouterJig/public/css/poole.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/syntax.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/hyde.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.gallery.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/pyrouterjig.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Scripts -->
+  <script src="/pyRouterJig/public/js/jquery-2.2.2.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.gallery.min.js"></script>
+  <script src="/pyRouterJig/public/js/pyrouterjig.js"></script>
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/pyRouterJig/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/pyRouterJig/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="layout-reverse theme-base-08">
+
+    <div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="/pyRouterJig/">
+          pyRouterJig
+        </a>
+      </h1>
+      <p align="center">Documentation</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/pyRouterJig/overview/">Overview</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/finger_spacing_options/">Finger Layout Options</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/editor/">Editor</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/double_joints/">Double Joints</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/alignment/">Alignment of Router Passes</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/menus/">Drop-down Menus</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/template/">Template Details</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/dovetails/">Dovetail Specifics</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/saving_preferences/">Saving Preferences</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/needed_improvements/">Needed Improvements</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/additional_resources/">Additional Resources</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/acknowledgments">Acknowledgments</a>
+    </nav>
+
+    <div class="sidebar-closing">
+      <p>
+        <a href="http://github.com/lowrie/" class="user-mention">Robert B. Lowrie</a><br>
+        &copy; 2015-2017. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/pyRouterJig/" title="Home">pyRouterJig</a>
+            <small>A woodworking layout tool for creating box and dovetail joints</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Overview</h1>
+  <p>When you start <em>pyRouterJig</em>, it will prompt you for the units you would
+like to work in, as shown in the right window.
+<img class="floater" src="/pyRouterJig/images/select_units.png" alt="Select units window" width="512" />
+Your choice of unit system will be saved in a configuration file, which is
+described in the <a href="/pyRouterJig/saving_preferences/">section Saving Preferences</a>, and you
+will not be asked again.</p>
+
+<p>After selecting the units, a new window is created, and you should see something like the image
+below (this image is from a Windows platform; on other platforms,
+the image may differ):</p>
+
+<figure class="zoomable">
+<a name="figure1">
+<img src="/pyRouterJig/images/opening_screen_shot.png" />
+</a>
+<figcaption>
+<b>Figure 1.</b>  Opening screenshot, English units.  Using metric units, the
+opening screenshot is similar.
+</figcaption>
+</figure>
+
+<p>This documentation is focused on using English units, but any important
+differences will be discussed compared with metric units.
+The default joint is a box joint, with the fingers equally spaced, over a
+width of 7 1/2".  The upper portion of the window draws the current joint.</p>
+
+<p>Below the boards is the corresponding template that may be
+cut out and used in an INCRA LS Positioner. See 
+<a href="/pyRouterJig/template/">Template Details</a>
+for more details on the templates.  Below the template is a concise
+title that summarizes the properties of the joint.  The graphics containing the boards,
+template, and title may be printed by selecting <b>Print</b> in the
+<b>File</b> pull-down menu, or by pressing the key combination <code class="highlighter-rouge">Ctrl-P</code>
+(<code class="highlighter-rouge">Command-P</code> on Mac).</p>
+
+<p>The lower part of the window allows you to change interactively the parameters
+for the joint.  The joint is re-drawn after each change.  In the lower-left grid,
+<img class="floater" src="/pyRouterJig/images/lower_left.png" alt="Select units window" width="512" />
+you can see two rows of input parameters, which are available for any
+finger-pattern algorithm.  On the top row, we have</p>
+
+<ul>
+  <li><b>Board Width [inches|mm]:</b> The board width of the joint.</li>
+  <li><b>Bit Width [inches|mm]:</b>  The maximum cutting width of the router bit.</li>
+  <li><b>Bit Depth [inches|mm]:</b> The cutting depth of the router bit.</li>
+  <li><b>Bit Angle [degrees]:</b> The angle of the router bit.  Zero indicates
+a straight bit (box joint).</li>
+</ul>
+
+<p>These parameters are changed by entering text for the dimension in their
+respective text boxes, shown in the image above.  Moving the cursor outside
+the text box, or hitting the Enter key, will automatically update the value
+and redraw the joint with the new value.  The values may be specified as
+either a fraction or decimal.  For example, the following are equivalent:</p>
+
+<p><code class="highlighter-rouge">7 1/2</code> or <code class="highlighter-rouge">7.5</code> or <code class="highlighter-rouge">7 1 / 2</code> or <code class="highlighter-rouge">7 1 /2</code> or <code class="highlighter-rouge">7 1/ 2</code></p>
+
+<p>Note that the whitespace around the "<code class="highlighter-rouge">/</code>" is ignored. The board and bit
+widths are rounded to the nearest alignment point.  By default, alignment is
+every 1/32" (or 1 mm for metric).  See section <a href="/pyRouterJig/alignment/">Alignment of Router Passes</a> for more
+information about alignment.</p>
+
+<p>On the bottom row of the lower-left grid parameters are <b>Top Board</b>,
+<b>Bottom Board</b>, <b>Double Board</b>, and <b>Double-Double Board</b>,
+which allow you to select the pattern or wood images used to draw these
+boards, along with parameters for Double and Double-Double joints.
+See the sections <a href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+and <a href="/pyRouterJig/double_joints/">Double Joints</a> for more information.</p>
+
+<p>To create a dovetail joint, change <b>Bit Angle</b> to 7 degrees, and we obtain the
+dovetail joint shown in <a href="#figure2">Figure 2</a> below:</p>
+
+<figure class="zoomable">
+<a name="figure2">
+<img src="/pyRouterJig/images/dovetail_screen_shot.png" />
+</a>
+<figcaption>
+<b>Figure 2.</b>  Dovetail example.  Compared to 
+<a data-featherlight="/pyRouterJig/images/opening_screen_shot.png">the
+opening screenshot</a>, the <b>Bit Angle</b>
+has been changed to 7 degrees.
+</figcaption>
+</figure>
+
+<p>On the bottom right of the window various finger layout options are
+available.  See the section <a href="/pyRouterJig/finger_spacing_options/">Finger Layout Options</a> for information about <b>Equal</b> and
+<b>Variable</b>.  The <b>Editor</b> always you to customize the finger
+patterns even further and is described in the section <a href="/pyRouterJig/editor/">Editor</a>.  Below the finger layout options is the template watermark text box,
+which may be used to label the template.</p>
+
+<div id="textbox">
+  <p class="alignright">
+    <a href="/pyRouterJig/wood_patterns/">Next: Wood Pattern Selection</a>
+  </p>
+</div>
+<div style="clear: both;"></div>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+
+  </body>
+</html>

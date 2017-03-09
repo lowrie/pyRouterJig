@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+      pyRouterJig &middot; A woodworking layout tool for creating box and dovetail joints
+  </title>
+
+  
+  <!-- canonical link -->
+  <link rel="canonical" href="http://lowrie.github.io/pyRouterJig//wood_patterns/">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/pyRouterJig/public/css/poole.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/syntax.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/hyde.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.gallery.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/pyrouterjig.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Scripts -->
+  <script src="/pyRouterJig/public/js/jquery-2.2.2.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.gallery.min.js"></script>
+  <script src="/pyRouterJig/public/js/pyrouterjig.js"></script>
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/pyRouterJig/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/pyRouterJig/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="layout-reverse theme-base-08">
+
+    <div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="/pyRouterJig/">
+          pyRouterJig
+        </a>
+      </h1>
+      <p align="center">Documentation</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/pyRouterJig/overview/">Overview</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/finger_spacing_options/">Finger Layout Options</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/editor/">Editor</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/double_joints/">Double Joints</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/alignment/">Alignment of Router Passes</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/menus/">Drop-down Menus</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/template/">Template Details</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/dovetails/">Dovetail Specifics</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/saving_preferences/">Saving Preferences</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/needed_improvements/">Needed Improvements</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/additional_resources/">Additional Resources</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/acknowledgments">Acknowledgments</a>
+    </nav>
+
+    <div class="sidebar-closing">
+      <p>
+        <a href="http://github.com/lowrie/" class="user-mention">Robert B. Lowrie</a><br>
+        &copy; 2015-2017. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/pyRouterJig/" title="Home">pyRouterJig</a>
+            <small>A woodworking layout tool for creating box and dovetail joints</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Wood Pattern Selection</h1>
+  <p>On the bottom row of the lower-left grid parameters are <b>Top Board</b>,
+<b>Bottom Board</b>, <b>Double Board</b>, and <b>Double-Double Board</b>,
+which allow you to select the pattern or wood images used to draw these
+boards, along with parameters for Double and Double-Double joints.  The Double
+and Double-Double joints are explained in the section
+<a href="/pyRouterJig/double_joints/">Double Joints</a>.
+In this section, we cover how to specify
+patterns for any board and how to add image files to simulate
+the appearance of wood grain.</p>
+
+<p>The patterns for Boards may be selected under each respective board header
+(Top, Bottom, Double, and Double-Double).  By default, <em>pyRouterJig</em>
+uses simple patterns to draw the board, such as the default <code class="highlighter-rouge">Solid Fill</code>
+shown in the figures above.   You may also specify any image file (such as a
+Portable Network Graphics - PNG) to draw the board.  At startup, 
+<em>pyRouterJig</em> looks in the <code class="highlighter-rouge">wood_images</code> folder in your home directory
+and assumes any file in this folder is an image file.  It then makes these
+images available to draw any of the boards.  The name and location of the
+folder may be changed under the <b>Preferences</b> window; see the section
+<a href="/pyRouterJig/saving_preferences/">Saving Preferences</a>.</p>
+
+<p>A starting <code class="highlighter-rouge">wood_images</code> can be downloaded <a href="/pyRouterJig/wood_images.zip">from this link</a>.
+Unzip this file in your home directory and you should be
+ready to go.  As an example, the file <code class="highlighter-rouge">hard-maple.png</code> is in this <code class="highlighter-rouge">wood_images</code> folder.
+Using this image for the Top and Bottom Boards in 
+<a data-featherlight="/pyRouterJig/images/opening_screen_shot.png">the opening screenshot</a>
+displays <a href="#figure3">Figure 3</a>.
+Other wood image files can be obtained from <a href="http://www.wood-database.com/">the wood database
+website</a>.</p>
+
+<figure class="zoomable">
+<a name="figure3">
+<img src="/pyRouterJig/images/woods_screen_shot.png" />
+</a>
+<figcaption>
+<b>Figure 3.</b>  Same as <a data-featherlight="/pyRouterJig/images/opening_screen_shot.png">the
+opening screenshot</a>, but using a "hard-maple" image file for
+the Top and Bottom Boards.
+</figcaption>
+</figure>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="/pyRouterJig/overview/">Prev: Overview</a>
+  </p>
+  <p class="alignright">
+    <a href="/pyRouterJig/finger_spacing_options/">Next: Finger Layout Options</a>
+  </p>
+</div>
+<div style="clear: both;"></div>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+
+  </body>
+</html>

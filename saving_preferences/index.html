@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+      pyRouterJig &middot; A woodworking layout tool for creating box and dovetail joints
+  </title>
+
+  
+  <!-- canonical link -->
+  <link rel="canonical" href="http://lowrie.github.io/pyRouterJig//saving_preferences/">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/pyRouterJig/public/css/poole.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/syntax.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/hyde.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/featherlight.gallery.min.css">
+  <link rel="stylesheet" href="/pyRouterJig/public/css/pyrouterjig.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+
+  <!-- Scripts -->
+  <script src="/pyRouterJig/public/js/jquery-2.2.2.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.min.js"></script>
+  <script src="/pyRouterJig/public/js/featherlight.gallery.min.js"></script>
+  <script src="/pyRouterJig/public/js/pyrouterjig.js"></script>
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/pyRouterJig/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/pyRouterJig/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="layout-reverse theme-base-08">
+
+    <div class="sidebar">
+  <div class="container sidebar">
+    <div class="sidebar-about">
+      <h1 align="center">
+        <a href="/pyRouterJig/">
+          pyRouterJig
+        </a>
+      </h1>
+      <p align="center">Documentation</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/pyRouterJig/overview/">Overview</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/finger_spacing_options/">Finger Layout Options</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/editor/">Editor</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/double_joints/">Double Joints</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/alignment/">Alignment of Router Passes</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/menus/">Drop-down Menus</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/template/">Template Details</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/dovetails/">Dovetail Specifics</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/saving_preferences/">Saving Preferences</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/needed_improvements/">Needed Improvements</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/additional_resources/">Additional Resources</a>
+      <a class="sidebar-nav-item" href="/pyRouterJig/acknowledgments">Acknowledgments</a>
+    </nav>
+
+    <div class="sidebar-closing">
+      <p>
+        <a href="http://github.com/lowrie/" class="user-mention">Robert B. Lowrie</a><br>
+        &copy; 2015-2017. All rights reserved.
+      </p>
+    </div>
+  </div>
+</div>
+
+        <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/pyRouterJig/" title="Home">pyRouterJig</a>
+            <small>A woodworking layout tool for creating box and dovetail joints</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="page">
+  <h1 class="page-title">Saving Preferences</h1>
+  <p>Certain settings may be made and saved permanently under the
+<b>Preferences</b> window, so that they are the default setting when you run
+<em>pyRouterJig</em> again in the future.  The <b>Preferences</b> window may be
+opened by selecting the menu item <b>Tools : Preferences</b> (on Mac,
+<b>pyRouterJig : Preferences</b>), or <code class="highlighter-rouge">Ctrl-,</code>, and appears as below.</p>
+
+<p><img src="/pyRouterJig/images/prefs_window.png" alt="Preferences window" /></p>
+
+<p>The individual preferences are organized under tabs.  At the bottom of the
+<b>Preferences</b> window are the <b>Cancel</b> and <b>Save</b> buttons.  The
+<b>Cancel</b> button discards any changes that you have made under the
+<b>Preferences</b> window and returns to the main application window.  The
+<b>Save</b> button saves preference changes permanently and is active only if
+settings have been changed (it’s inactive in the image above).</p>
+
+<p>Each tab and its preferences are as follows:</p>
+
+<ul>
+  <li><b>Output:</b> This tab contains preferences that control output appearance
+for the main application window, for printing, and for saving images.
+    <ul>
+      <li><b>Show Caul Template:</b> If checked, the clamping caul template is
+displayed.  This option may be also set under the menu <b>View : Caul
+Template</b>; 
+<a href="/pyRouterJig/menus/index.html#view-caul-template">see its documentation</a>
+for more information.</li>
+      <li><b>Show Finger Widths:</b> If checked, each finger is labeled with its width.
+This option may be also set under the menu <b>View : Finger Widths</b>.</li>
+      <li><b>Show Fit:</b> If checked, the joint is shown assembled in the view.
+This option may be also set under the menu <b>View : Fit</b>.</li>
+      <li><b>Show Router Pass Identifiers:</b> If checked, each router pass is
+labeled with its router pass identifier.
+This option may be also set under the menu <b>View : Router Passes :
+Identifiers</b>;
+<a href="/pyRouterJig/menus/index.html#view-router-passes">see its documentation</a>
+for more information.</li>
+      <li><b>Show Router Pass Locations:</b> If checked, each router pass is labeled
+with its distance from the right edge.
+This option may be also set under the menu <b>View : Router Passes :
+Locations</b>;
+<a href="/pyRouterJig/menus/index.html#view-router-passes">see its documentation</a>
+for more information.</li>
+    </ul>
+  </li>
+  <li><b>Boards:</b> This tab contains preferences related to the Boards.  The
+only parameter here that needs explanation is the <b>Wood Images Folder</b>,
+which is the directory where wood image files are located.  See the section
+<a href="/pyRouterJig/wood_patterns/">Wood Pattern Selection</a>
+for more information.</li>
+  <li><b>Bit:</b> This tab contains preferences related to the Bits and are self explanatory.</li>
+  <li><b>Units:</b> This tab allows you to change the unit system.  Note that any
+changes under this tab, if saved, will require <em>pyRouterJig</em> to
+restart, and you will loose any unsaved work that you have done on the current
+joint.  A setting here is <b>Increments per [inch|mm]</b>, which
+is an advanced setting described in the section
+<a href="/pyRouterJig/alignment/">Alignment of Router Passes</a>.
+Do not change this value if you plan to use the templates with the Incra LS
+Positioner.</li>
+  <li><b>Colors:</b> The colors used may be set under this tab.
+    <ul>
+      <li><b>Print in Color</b>.  If checked, then the same colors are used when
+printing, except for the Canvas Background, which is always uncolored for
+printouts. If not checked, the colors are converted to a gray scale before
+printing.</li>
+    </ul>
+  </li>
+  <li><b>Misc:</b> Two parameters may be set under this tab:
+    <ul>
+      <li><b>Min Finger Width:</b>  This is the minimum allowable finger width.
+Currently, this value is enforced only for the <b>Equal</b> layout
+algorithm.</li>
+      <li><b>Caul Trim:</b>  This value is used to determine the width of each
+clamping caul finger.  It’s the distance from the edge of each
+board finger to the edge its corresponding caul finger.  In other words,
+the caul fingers are narrower than the board fingers by twice this value.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>Note that some settings may be changed outside the <b>Preferences</b> window.  For
+example, the setting <b>Output : Show Finger Widths</b> may also be
+set under the menu <b>View : Finger Widths</b>.  These settings are made
+permanent by opening the <b>Preferences</b> window and pressing the
+<b>Save</b> button.</p>
+
+<p>The preferences are saved in the configuration file <code class="highlighter-rouge">.pyrouterjig</code>, created
+in the user’s home directory when <em>pyRouterJig</em> is first executed.
+Specifically,</p>
+
+<ul>
+  <li>Windows: <code class="highlighter-rouge">C:\users\&lt;your name&gt;\.pyrouterjig</code></li>
+  <li>Mac: <code class="highlighter-rouge">/Users/&lt;login name&gt;/.pyrouterjig</code>.  Note that this is a “hidden” file
+on the Mac and so, for example, it won’t show up in the Finder without changing Finder’s
+settings.  Google <code class="highlighter-rouge">hidden files mac</code> if you don’t know how to access hidden files.</li>
+</ul>
+
+<p>This file contains the preferences, along with a few additional options, each
+described within the file itself.  Setting these options requires a basic
+knowledge of Python.  If you change the configuration file while 
+<em>pyRouterJig</em> is running, the options will not take effect until you quit
+and restart <em>pyRouterJig</em>.</p>
+
+<p>When upgrading to a newer version of <em>pyRouterJig</em>, it may be required
+to update your <code class="highlighter-rouge">.pyrouterjig</code> file.  <em>pyRouterJig</em> will attempt to
+migrate settings.  If unable to migrate settings, default settings are used.
+Regardless, your old <code class="highlighter-rouge">.pyrouterjig</code> is moved to <code class="highlighter-rouge">.pyrouterjigX.X.X</code>,
+where <code class="highlighter-rouge">X.X.X</code> is the code version that created the file.</p>
+
+<div id="textbox">
+  <p class="alignleft">
+    <a href="/pyRouterJig/dovetails/">Prev: Dovetail Specifics</a>
+  </p>
+  <p class="alignright">
+    <a href="/pyRouterJig/needed_improvements/">Next: Needed Improvements</a>
+  </p>
+</div>
+<div style="clear: both;"></div>
+
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+
+  </body>
+</html>

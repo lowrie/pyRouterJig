@@ -1,0 +1,4 @@
+# To re-install the gems, remove ../vendor and .bundle, then run:
+#bundle install --path ../vendor/bundle
+# To build the site and start the server, do:
+bundle exec jekyll serve --baseurl ''
