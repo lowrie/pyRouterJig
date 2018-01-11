@@ -28,11 +28,12 @@ import sys
 import unittest
 from qt_driver import Driver
 import utils
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtTest import QTest
+from PyQt5 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
+from PyQt5.QtTest import QTest
 
-app = QtGui.QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 
 class Case(object):
     def __init__(self, angle, width, depth, spacing, board_width=7):

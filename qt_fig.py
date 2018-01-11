@@ -30,7 +30,7 @@ import time
 import router
 import utils
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill_color=None):
     '''
@@ -82,14 +82,14 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill_color=No
     painter.setTransform(transform)
     return rect
 
-class Qt_Fig(QtGui.QWidget):
+class Qt_Fig(QtWidgets.QWidget):
     '''
     Interface to the qt_driver, using Qt to draw the boards and template.
     The attribute "canvas" is self, to mimic the old interface to matplotlib,
     which this class replaced.
     '''
     def __init__(self, template, boards, config):
-        QtGui.QWidget.__init__(self)
+        QtWidgets.QWidget.__init__(self)
         self.canvas = self
         self.config = config
         self.fig_width = -1
@@ -233,10 +233,10 @@ class Qt_Fig(QtGui.QWidget):
                                           self.config)
 
         # Print through the preview dialog
-        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
-        printer.setOrientation(QtGui.QPrinter.Landscape)
-        printer.setPageMargins(0, 0, 0, 0, QtGui.QPrinter.Inch)
-        pdialog = QtGui.QPrintPreviewDialog(printer)
+        printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
+        printer.setOrientation(QtPrintSupport.QPrinter.Landscape)
+        printer.setPageMargins(0, 0, 0, 0, QtPrintSupport.QPrinter.Inch)
+        pdialog = QtPrintSupport.QPrintPreviewDialog(printer)
         pdialog.setModal(True)
         pdialog.paintRequested.connect(self.preview_requested)
         return pdialog.exec_()
@@ -358,10 +358,12 @@ class Qt_Fig(QtGui.QWidget):
         painter.translate(x, y)
         self.transform = painter.transform()
 
+
         # draw the objects
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
+        self.draw_finger_sizes(painter)
         if self.config.show_finger_widths:
             self.draw_finger_sizes(painter)
 
@@ -474,9 +476,15 @@ class Qt_Fig(QtGui.QWidget):
 
         # draw the alignment lines on both templates
         x = board_T.xR() + self.geom.bit.width // 2
+
         pen = QtGui.QPen(QtCore.Qt.SolidLine)
         pen.setColor(self.colors['template_margin_foreground'])
-        painter.setPen(pen)
+        pen.setWidthF(0)
+
+        bg_pen=QtGui.QPen(QtCore.Qt.SolidLine)
+        bg_pen.setColor(QtGui.QColor('White'))
+        bg_pen.setWidthF(0)
+
         self.set_font_size(painter, 'template')
         label = 'ALIGN'
         flags = QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter
@@ -484,8 +492,12 @@ class Qt_Fig(QtGui.QWidget):
             if b is not None:
                 y1 = b.yB()
                 y2 = b.yT()
+                painter.setPen(pen)
                 painter.drawLine(x, y1, x, y2)
                 paint_text(painter, label, (x, (y1 + y2) // 2), flags, (0, 0), -90)
+                painter.setPen(bg_pen)
+                painter.drawLine(QtCore.QPointF(x-0.5, y1+0.5),QtCore.QPointF( x-0.5, y2-0.5) )
+                painter.drawLine(QtCore.QPointF(x+0.5, y1+0.5),QtCore.QPointF(x+0.5, y2-0.5) )
 
     def draw_template_rectangle(self, painter, r, b):
         '''
@@ -527,12 +539,17 @@ class Qt_Fig(QtGui.QWidget):
 
         pen_canvas = QtGui.QPen(QtCore.Qt.SolidLine)
         pen_canvas.setColor(self.colors['canvas_foreground'])
+        pen_canvas.setWidthF(0)
         penA = QtGui.QPen(QtCore.Qt.SolidLine)
         penA.setColor(self.colors['pass_color'])
+        penA.setWidthF(0)
         penB = QtGui.QPen(QtCore.Qt.DashLine)
         penB.setColor(self.colors['pass_alt_color'])
+        penB.setWidthF(0)
 
+        painter.setPen(pen_canvas)
         self.draw_template_rectangle(painter, rect_T, board_T)
+
         if boards[3].active:
             rect_TDD = self.geom.rect_TDD
             board_TDD = self.geom.board_TDD
@@ -670,6 +687,7 @@ class Qt_Fig(QtGui.QWidget):
             else:
                 pen = QtGui.QPen(QtCore.Qt.DashLine)
                 pen.setColor(self.colors['center_color'])
+                pen.setWidthF(0)
                 painter.setPen(pen)
                 painter.drawLine(xMid, rect_caul.yB(), xMid, rect_caul.yT())
             painter.setPen(self.colors['template_margin_foreground'])
@@ -679,6 +697,7 @@ class Qt_Fig(QtGui.QWidget):
         # Label the templates
         pen = QtGui.QPen(QtCore.Qt.DashLine)
         pen.setColor(self.colors['center_color'])
+        pen.setWidthF(0)
         self.set_font_size(painter, 'template_labels')
         if len(centerline) > 0:
             label_bottom += '\nCenter: ' + centerline[0]
@@ -735,7 +754,9 @@ class Qt_Fig(QtGui.QWidget):
                     color = self.colors['board_foreground']
                 brush = QtGui.QBrush(color, icon)
             (inverted, invertable) = self.transform.inverted()
-            brush.setMatrix(inverted.toAffine())
+            #setMatrix is not offered anymore
+            #brush.setMatrix(inverted.toAffine())
+            brush.setTransform(inverted)
             painter.setBrush(brush)
         painter.drawPolygon(poly)
         painter.restore()
@@ -755,6 +776,7 @@ class Qt_Fig(QtGui.QWidget):
             self.set_font_size(painter, 'boards')
             pen = QtGui.QPen(QtCore.Qt.SolidLine)
             pen.setColor(self.colors['canvas_foreground'])
+            pen.setWidthF(0)
             painter.setPen(pen)
 
             x1 = self.geom.boards[0].xL() - self.geom.bit.width // 2
@@ -822,17 +844,17 @@ class Qt_Fig(QtGui.QWidget):
         If the spacing supports it, highlight the active cuts and
         draw their limits
         '''
-        # draw the perimeter of the cursor cut
+
         f = self.geom.spacing.cursor_cut
         if f is None:
             return
-        poly = self.cut_polygon(self.geom.boards[0].bottom_cuts[f])
-        painter.save()
-        pen = QtGui.QPen(QtCore.Qt.blue)
-        pen.setWidth(1)
-        painter.setPen(pen)
-        painter.drawPolyline(poly)
-        painter.restore()
+
+        pen = QtGui.QPen()
+        pen.setWidthF(0)
+
+        # get the perimeter of the cursor
+        cursor_poly = self.cut_polygon(self.geom.boards[0].bottom_cuts[f])
+
 
         # initialize limits
         xminG = self.geom.boards[0].width
@@ -842,7 +864,7 @@ class Qt_Fig(QtGui.QWidget):
         painter.save()
         brush = QtGui.QBrush(QtGui.QColor(255, 0, 0, 75))
         painter.setBrush(brush)
-        pen = QtGui.QPen(QtCore.Qt.red)
+        pen.setColor(QtCore.Qt.red)
         painter.setPen(pen)
         fcolor = QtGui.QColor(self.colors['board_background'])
         fcolor.setAlphaF(1.0)
@@ -863,15 +885,25 @@ class Qt_Fig(QtGui.QWidget):
         painter.restore()
 
         # draw the limits
+        # using QPointF to avoid border marks overlap with cursor
         painter.save()
         xminG += self.geom.boards[0].xL()
         xmaxG += self.geom.boards[0].xL()
         yB = self.geom.boards[0].yB()
         yT = self.geom.boards[0].yT()
-        painter.setPen(QtCore.Qt.green)
-        painter.drawLine(xminG, yB, xminG, yT)
-        painter.drawLine(xmaxG, yB, xmaxG, yT)
+        pen.setColor(QtCore.Qt.green)
+        painter.setPen(pen)
+        painter.drawLine(QtCore.QPointF(xminG - 0.5, yB), QtCore.QPointF(xminG - 0.5, yT) )
+        painter.drawLine(QtCore.QPointF(xmaxG + 0.5, yB), QtCore.QPointF(xmaxG + 0.5, yT) )
         painter.restore()
+
+        # draw the perimeter of the cursor cut at the end to get it always visible
+        painter.save()
+        pen.setColor(QtCore.Qt.blue)
+        painter.setPen(pen)
+        painter.drawPolyline(cursor_poly)
+        painter.restore()
+
 
     def draw_title(self, painter):
         '''

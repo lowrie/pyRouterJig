@@ -15,8 +15,8 @@ a = Analysis(['pyRouterJig.py'],
              cipher=block_cipher)
 
 # Explicitly add libraries that pyinstaller misses
-a.binaries += [('libQtCore.4.dylib', '/anaconda/lib/libQtCore.4.dylib', 'BINARY') ]
-a.binaries += [('libQtGui.4.dylib', '/anaconda/lib/libQtGui.4.dylib', 'BINARY') ]
+a.binaries += [('libQtCore.5.dylib', '/anaconda/lib/libQtCore.5.dylib', 'BINARY') ]
+a.binaries += [('libQtGui.5.dylib', '/anaconda/lib/libQtGui.5.dylib', 'BINARY') ]
 a.binaries += [('libpng16.16.dylib', '/anaconda/lib/libpng16.16.dylib', 'BINARY') ]
 
 # Remove various unused files from distribution
