@@ -30,7 +30,7 @@ import time
 import router
 import utils
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 
 def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill_color=None):
     '''
