@@ -1255,9 +1255,8 @@ class Driver(QtWidgets.QMainWindow):
         if do_screenshot:
             p_screen=QtWidgets.QApplication.primaryScreen()
             scr_rect = p_screen.geometry();
-            image = QtGui.QScreen.grabWindow(p_screen, scr_rect.x(), scr_rect.y(), scr_rect.width(), scr_rect.height()).toImage()
-            #, scr_rect.x, scr_rect.y, scr_rect.width, scr_rect.height)
-            #.toImage()
+            image = QtGui.QScreen.grabWindow(p_screen, scr_rect.x(), scr_rect.y(),
+                                             scr_rect.width(), scr_rect.height()).toImage()
         else:
             image = self.fig.image(self.template, self.boards, self.bit, self.spacing,
                                    self.woods, self.description)
@@ -1265,10 +1264,11 @@ class Driver(QtWidgets.QMainWindow):
         s = serialize.serialize(self.bit, self.boards, self.spacing,
                                 self.config)
 
-        #we using UUEC encoding so need more attributes in the image file
-        #QT5 does not work propertly with PNG text use PIL as workaround
+        # we use UUEC encoding so need more attributes in the image file
+        # QT5 does not work propertly with PNG text; use PIL as workaround
 
-        #Save QT image into stream and get it back into PIL to avoid native pil conversion risks
+        # Save QT image into stream and get it back into PIL to avoid native
+        # pil conversion risks
         buffer = QtCore.QBuffer()
         buffer.open(QtCore.QIODevice.ReadWrite)
         image.save(buffer,"PNG")
@@ -1331,8 +1331,6 @@ class Driver(QtWidgets.QMainWindow):
             return
 
         # From the image file, parse the metadata.
-        #image = QtGui.QImage
-        #image.Load(filename)
         image = Image.open(filename)
         s=image.info['pyRouterJig'];
 
@@ -1342,7 +1340,7 @@ class Driver(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, 'Error', msg)
             return
 
-        #backword compatimility
+        # backwards compatibility
         (self.bit, self.boards, sp, sp_type) = serialize.unserialize(s, self.config, ('pyRouterJig_v' in image.info.keys()) )
 
         # Reset the dependent data
@@ -1360,7 +1358,7 @@ class Driver(QtWidgets.QMainWindow):
             elif str(self.boards[i].wood) not in self.woods.keys():
                 self.boards[i].set_wood('DiagCrossPattern')
 
-            #bacword compatibility fix
+            # backwards compatibility fix
             self.boards[i].wood = str(self.boards[i].wood)
             j = self.cb_wood[i].findText(self.boards[i].wood)
             self.cb_wood[i].setCurrentIndex(j)
