@@ -25,6 +25,7 @@ from __future__ import print_function
 from __future__ import division
 from future.utils import lrange
 
+from decimal import *
 import math
 import copy
 from operator import attrgetter
@@ -33,8 +34,9 @@ import utils
 
 def dump_cuts(cuts):
     '''Dumps the cuts to the screen...this is for debugging.'''
+    print('Min\tMax\tCenter')
     for c in cuts:
-        print(c.xmin, c.xmax)
+        print( '{0:2f}\t{1:3f}\t{2:4f}'.format(c.xmin, c.xmax, c.midPass))
 
 class Spacing_Exception(Exception):
     '''
@@ -84,6 +86,7 @@ class Base_Spacing(object):
     labels = []
 
     def __init__(self, bit, boards, config):
+        getcontext().prec = 6
         self.description = 'NONE'
         self.bit = bit
         self.boards = boards
@@ -125,8 +128,8 @@ class Equally_Spaced(Base_Spacing):
 
         dh2 = 2 * self.dhtot
         t = [Spacing_Param(0, self.boards[0].width // 4 + dh2, 0),\
-             Spacing_Param(self.bit.width + dh2, self.boards[0].width // 2 + dh2,\
-                           self.bit.width + dh2),\
+             Spacing_Param(math.floor(self.bit.width) + dh2, self.boards[0].width // 2 + dh2, \
+                           math.floor(self.bit.width) + dh2),\
              Spacing_Param(None, None, True)]
         self.params = {}
         for i in lrange(len(t)):
@@ -137,49 +140,73 @@ class Equally_Spaced(Base_Spacing):
         Sets the cuts to make the joint
         '''
         spacing = self.params['Spacing'].v - 2 * self.dhtot
-        width = self.params['Width'].v
+        width = Decimal( math.floor(self.params['Width'].v) ) + Decimal(self.bit.width_f - math.floor(self.bit.width_f) )
         centered = self.params['Centered'].v
 
         board_width = self.boards[0].width
         units = self.bit.units
         label = units.increments_to_string(spacing, True)
+
         self.labels = self.keys[:]
         self.labels[0] += ': ' + label
         self.labels[1] += ': ' + units.increments_to_string(width, True)
         self.description = 'Equally spaced (' + self.labels[0] + \
                            ', ' + self.labels[1] + ')'
+
         self.cuts = [] # return value
-        neck_width = width + spacing - 2 * utils.my_round(self.bit.offset)
+#        neck_width = width + spacing - 2 * utils.my_round(self.bit.offset)
+#        neck_width = width + spacing - utils.my_round(self.bit.offset)
+#        neck_width = utils.my_round(width + spacing - self.bit.offset)
+        neck_width = self.bit.midline + width + spacing - self.bit.width_f
+        width = width
+        offset = Decimal(round(self.bit.offset, 3))
+
         if neck_width < 1:
             raise Spacing_Exception('Specified bit paramters give a zero'
                                     ' or negative cut width (%d increments) at'
                                     ' the surface!  Please change the'
                                     ' bit parameters width, depth, or angle.' % neck_width)
         # put a cut at the center of the board
-        xMid = board_width // 2
+        xMid = Decimal( board_width // 2 )
+
+        # we working thru the midline now
         if centered or \
            self.bit.angle > 0: # always symm. for dovetail
-            left = max(0, xMid - width // 2)
+            left = Decimal(  max(0, xMid - width / 2))
         else:
-            left = max(0, (xMid // width) * width)
-        right = min(board_width, left + width)
-        self.cuts.append(router.Cut(left, right))
-        # do left side of board
-        i = left - neck_width
+            left = Decimal(max(0, (xMid // neck_width) * neck_width) )
+
+        right = Decimal( min(board_width, left + width) )
+        self.cuts.append( router.Cut( left, right, xMid ) )
+
         min_interior = utils.my_round(self.dhtot + self.bit.offset)
         min_finger_width = max(1, units.abstract_to_increments(self.config.min_finger_width))
-        while i > 0:
-            li = max(i - width, 0)
-            if i - li > min_finger_width and i > min_interior:
-                self.cuts.append(router.Cut(li, i))
-            i = li - neck_width
+
+        # do left side of board
+        i = xMid - neck_width * 2
+
+        while left > 0:
+            left = max(i - width / 2, 0)
+            # prevent cut of on corner
+            if left - offset < 1:
+                left = 0
+            right = i + width / 2
+            if right - left > min_finger_width and i > min_interior:
+                self.cuts.append(router.Cut(left, right, i))
+            i -= neck_width * 2
+
         # do right side of board
-        i = right + neck_width
-        while i < board_width:
-            ri = min(i + width, board_width)
-            if ri - i > min_finger_width and board_width - i > min_interior:
-                self.cuts.append(router.Cut(i, ri))
-            i = ri + neck_width
+        i = xMid + neck_width * 2
+        while left < board_width:
+            left = i - width / 2
+            right = min(i + width / 2, board_width)
+            # prevent cut of on corner
+            if right + offset > board_width - 1:
+                right = board_width
+            if right - left > min_finger_width and board_width - i > min_interior:
+                self.cuts.append(router.Cut(left, right, i))
+            i += neck_width * 2
+
         # If we have only one cut the entire width of the board, then
         # the board width is too small for the bit
         if self.cuts[0].xmin == 0 and self.cuts[0].xmax == board_width:

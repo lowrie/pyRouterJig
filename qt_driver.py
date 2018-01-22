@@ -24,6 +24,7 @@ Contains the main driver, using pySide or pyQt.
 from __future__ import print_function
 from future.utils import lrange
 from builtins import str
+from decimal import *
 from PIL import Image
 from PIL import PngImagePlugin
 try:
@@ -31,7 +32,7 @@ try:
 except ImportError:
     from io import  BytesIO
 
-import os, sys, traceback, webbrowser, copy, shutil
+import os, sys, traceback, webbrowser, copy, shutil, math
 
 import qt_fig
 import qt_config
@@ -214,6 +215,7 @@ class Driver(QtWidgets.QMainWindow):
         self.except_handled = True
         if self.config.debug:
             tmp = traceback.format_exception(etype, value, trace)
+            print(join(tmp))
         else:
             tmp = traceback.format_exception_only(etype, value)
         exception = '\n'.join(tmp)
@@ -1980,6 +1982,7 @@ def run():
     '''
     Sets up and runs the application
     '''
+    getcontext().prec = 4
 #    QtGui.QApplication.setStyle('plastique')
 #    QtGui.QApplication.setStyle('windows')
 #    QtGui.QApplication.setStyle('windowsxp')
