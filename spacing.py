@@ -167,7 +167,7 @@ class Equally_Spaced(Base_Spacing):
                                     ' bit parameters width, depth, or angle.' % neck_width)
         # put a cut at the center of the board
         xMid = Decimal( board_width // 2 )
-        xMid += width / 2 - width // 2
+        xMid += Decimal(math.floor(width) / 2 - math.floor(width) // 2)  #even round
 
         # we working thru the midline now
         if centered or \

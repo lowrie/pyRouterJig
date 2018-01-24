@@ -813,10 +813,10 @@ class Joint_Geometry(object):
             xtop = coords[j[1]][2]
             ytop = coords[j[1]][3]
             n = len(xtop)
-            yshift = self.boards[j[1]].yB() - self.boards[j[0]].yT() +\
-                     self.bit.depth
+            yshift = Decimal(self.boards[j[1]].yB()) - Decimal(self.boards[j[0]].yT()) +\
+                     self.bit.depth_0
             for i in range(n):
-                ybot[i] += yshift
+                ybot[i] += round(yshift,4)
             for i in range(n - 1):
                 d = gap_overlap((xbot[i], xbot[i+1]),
                                 (ybot[i], ybot[i+1]),
