@@ -565,10 +565,10 @@ class Cut(object):
             p0 = xR - halfwidth # right size cut
             p1 = xL + halfwidth # left size cut
 
-            if self.xmax < board.width:
+            if self.xmax <= board.width and ( p0 - halfwidth >= self.xmin or self.xmin == 0 ):
                 self.passes.append( int(p0) )
 
-            if (p0 - p1) > 0 or self.xmax >= board.width:
+            if p0 != p1 and ( p1 +halfwidth <= self.xmax or self.xmax == board.width ):
                 self.passes.append( int(p1) )
 
             xR -= bitwidth

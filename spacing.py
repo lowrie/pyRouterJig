@@ -139,7 +139,7 @@ class Equally_Spaced(Base_Spacing):
         '''
         Sets the cuts to make the joint
         '''
-        spacing = self.params['Spacing'].v - 2 * self.dhtot
+        spacing = self.params['Spacing'].v  - 2 *  self.dhtot
         width = Decimal( math.floor(self.params['Width'].v) ) + Decimal(self.bit.width_f - math.floor(self.bit.width_f) )
         centered = self.params['Centered'].v
 
@@ -157,8 +157,7 @@ class Equally_Spaced(Base_Spacing):
 #        neck_width = width + spacing - 2 * utils.my_round(self.bit.offset)
 #        neck_width = width + spacing - utils.my_round(self.bit.offset)
 #        neck_width = utils.my_round(width + spacing - self.bit.offset)
-        neck_width = self.bit.midline + width + spacing - self.bit.width_f
-        width = width
+        neck_width = (self.bit.midline + width - self.bit.width_f) * 2  + spacing
         offset = Decimal(round(self.bit.offset, 3))
 
         if neck_width < 1:
@@ -168,13 +167,14 @@ class Equally_Spaced(Base_Spacing):
                                     ' bit parameters width, depth, or angle.' % neck_width)
         # put a cut at the center of the board
         xMid = Decimal( board_width // 2 )
+        xMid += width / 2 - width // 2
 
         # we working thru the midline now
         if centered or \
            self.bit.angle > 0: # always symm. for dovetail
             left = Decimal(  max(0, xMid - width / 2))
         else:
-            left = Decimal(max(0, (xMid // neck_width) * neck_width) )
+            left = Decimal(max(0, (xMid // ( neck_width/2 )) * (neck_width/2) ) )
 
         right = Decimal( min(board_width, left + width) )
         self.cuts.append( router.Cut( left, right, xMid ) )
@@ -183,29 +183,29 @@ class Equally_Spaced(Base_Spacing):
         min_finger_width = max(1, units.abstract_to_increments(self.config.min_finger_width))
 
         # do left side of board
-        i = xMid - neck_width * 2
+        i = xMid - neck_width
 
         while left > 0:
             left = max(i - width / 2, 0)
             # prevent cut of on corner
-            if left - offset < 1:
+            if left - offset < offset:
                 left = 0
             right = i + width / 2
-            if right - left > min_finger_width and i > min_interior:
+            if (right - offset) > min_finger_width and (right - left) > min_interior:
                 self.cuts.append(router.Cut(left, right, i))
-            i -= neck_width * 2
+            i -= neck_width
 
         # do right side of board
-        i = xMid + neck_width * 2
+        i = xMid + neck_width
         while left < board_width:
             left = i - width / 2
             right = min(i + width / 2, board_width)
             # prevent cut of on corner
-            if right + offset > board_width - 1:
+            if right + offset > board_width:
                 right = board_width
-            if right - left > min_finger_width and board_width - i > min_interior:
+            if (board_width - (left + offset) ) > min_finger_width and (right - left) > min_interior:
                 self.cuts.append(router.Cut(left, right, i))
-            i += neck_width * 2
+            i += neck_width
 
         # If we have only one cut the entire width of the board, then
         # the board width is too small for the bit
