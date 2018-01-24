@@ -165,16 +165,20 @@ class Equally_Spaced(Base_Spacing):
                                     ' or negative cut width (%d increments) at'
                                     ' the surface!  Please change the'
                                     ' bit parameters width, depth, or angle.' % neck_width)
-        # put a cut at the center of the board
-        xMid = Decimal( board_width // 2 )
-        xMid += Decimal(math.floor(width) / 2 - math.floor(width) // 2)  #even round
+
 
         # we working thru the midline now
         if centered or \
            self.bit.angle > 0: # always symm. for dovetail
+            # put a cut at the center of the board
+            xMid = Decimal(board_width // 2)
+            xMid += Decimal(math.floor(width) / 2 - math.floor(width) // 2)  # even round
             left = Decimal(  max(0, xMid - width / 2))
         else:
-            left = Decimal(max(0, (xMid // ( neck_width/2 )) * (neck_width/2) ) )
+            xMid = board_width - width / 2
+
+        left = Decimal(max(0, xMid - width / 2))
+        #left = Decimal(board_width )
 
         right = Decimal( min(board_width, left + width) )
         self.cuts.append( router.Cut( left, right, xMid ) )
