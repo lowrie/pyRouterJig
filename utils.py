@@ -38,7 +38,7 @@ def math_round(no):
     '''
     Return mathimatical round to integer
     '''
-    return int(no//1 + ((no%1)/0.5)//1)
+    return int(no//1 + ((no%1)/Decimal('0.5'))//1)
 
 def isMac():
     return (platform.system() == 'Darwin')

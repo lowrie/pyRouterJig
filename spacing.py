@@ -240,13 +240,16 @@ class Variable_Spaced(Base_Spacing):
         Base_Spacing.__init__(self, bit, boards, config)
         # eff_width is the effective width, an average of the bit width
         # and the neck width
-        self.eff_width = utils.my_round(self.bit.width - self.bit.offset) + 2 * self.dhtot
-        self.eff_width += self.bit.dovetail_correction()
+        #self.eff_width = utils.my_round(self.bit.width - self.bit.offset) + 2 * self.dhtot
+        #self.eff_width += self.bit.dovetail_correction()
+        self.eff_width = self.bit.width_f
         self.wb = self.boards[0].width // self.eff_width
         self.alpha = (self.wb + 1) % 2
+
         # min and max number of fingers
-        self.mMin = max(3 - self.alpha, utils.my_round(math.ceil(math.sqrt(self.wb))))
-        self.mMax = utils.my_round((self.wb - 1.0 + self.alpha) // 2)
+        self.mMin = int(max(3 - self.alpha, utils.my_round(math.ceil(math.sqrt(self.wb)))))
+        self.mMax = int(utils.my_round((self.wb - 1 + self.alpha) // 2))
+
         if self.mMax < self.mMin:
             raise Spacing_Exception('Unable to compute a variable-spaced'\
                                     ' joint for the board and bit parameters'\
@@ -262,21 +265,22 @@ class Variable_Spaced(Base_Spacing):
         Sets the cuts to make the joint
         '''
         board_width = self.boards[0].width
-        m = self.params['Fingers'].v
+        m = int(self.params['Fingers'].v)
         self.labels = [self.keys[0] + ':']
         self.description = 'Variable Spaced (' + self.keys[0] + ': {})'.format(m)
         # c is the ideal center-cut width
-        c = self.eff_width * ((m - 1.0) * self.wb - \
-                              m * (m + 1.0) + self.alpha * m) /\
-            (m * m - 2.0 * m - 1.0 + self.alpha)
+        c = utils.math_round( self.eff_width * ((m - 1) * self.wb - \
+                              m * (m + 1) + self.alpha * m) /\
+            (m * m - 2 * m - 1 + self.alpha) )
         # d is the ideal decrease in finger width for each finger away from center finger
-        d = (c - self.eff_width) / (m - 1.0)
+        d = utils.math_round( (c - self.eff_width) / (m - 1) )
         # compute fingers on one side of the center and the center and store them
         # in increments.  Keep a running total of sizes.
-        increments = [0] * (m + 1)
+        increments = [0] * int(m + 1)
         ivals = 0
         for i in lrange(1, m + 1):
-            increments[i] = max(self.bit.width, int(c - d * i))
+            #increments[i] = max(self.bit.width, int(c - d * i))
+            increments[i] = Decimal( max(self.bit.midline, int(c - d * i)) )
             ivals += 2 * increments[i]
         # Set the center increment.  This takes up the slop in the rounding and increment
         # resolution.
@@ -289,31 +293,55 @@ class Variable_Spaced(Base_Spacing):
         if self.config.debug:
             print('v-s increments', increments)
         # Adjustments for dovetails
-        deltaP = self.bit.width + 2 * self.dhtot - self.eff_width
-        deltaM = utils.my_round(self.eff_width - self.bit.neck - 2 * self.dhtot) - \
-                 self.bit.dovetail_correction()
+        #deltaP = self.bit.width + 2 * self.dhtot - self.eff_width
+        #deltaM = utils.my_round(self.eff_width - self.bit.neck - 2 * self.dhtot) - \
+        #        self.bit.dovetail_correction()
         # put a cut at the center of the board
-        xMid = board_width // 2
-        width = increments[0] + deltaP
-        left = max(0, xMid -  width // 2)
+        xMid = board_width / Decimal('2.')
+        width = self.bit.width_f + increments[0] - self.bit.midline
+        even_width = Decimal(math.floor(width) / 2 - math.floor(width) // 2)  # even round
+
+        left = max(0, xMid + even_width -  width / 2)
         right = min(board_width, left + width)
-        self.cuts = [router.Cut(left, right)]
-        # do the remaining cuts
+        self.cuts = [router.Cut(left, right, xMid)]
+        offset = increments[0] / 2
+
         do_cut = False
         for i in lrange(1, m + 1):
-            if do_cut:
-                width = increments[i] + deltaP
-                farLeft = max(0, left - width)
-                self.cuts.append(router.Cut(farLeft, left))
-                farRight = min(board_width, right + width)
-                self.cuts.append(router.Cut(right, farRight))
-            else:
-                width = increments[i] - deltaM
-                farLeft = max(0, left - width)
-                farRight = min(board_width, right + width)
-            left = farLeft
-            right = farRight
+            offset += increments[i] / 2;
+            if do_cut :
+                # cut width
+                width = self.bit.width_f + increments[i] - self.bit.midline
+                even_width = Decimal( width / 2 + offset - math.floor(width / 2 + offset) )  # even round
+
+                left = max(0, (xMid - offset + even_width) - width / 2 )
+                right = left +  width
+                self.cuts.append(router.Cut(left, right, xMid - offset + even_width))
+
+                left = (xMid + offset + even_width) - width / 2
+                right = min(board_width, left + width)
+                self.cuts.append(router.Cut(left, right, xMid + offset + even_width))
+
+            offset += increments[i] / 2;
             do_cut = (not do_cut)
+
+
+        # do the remaining cuts
+#        do_cut = False
+#        for i in lrange(1, m + 1):
+#            if do_cut:
+#               width = increments[i] + deltaP
+#               farLeft = max(0, left - width)
+#               self.cuts.append(router.Cut(farLeft, left))
+#               farRight = min(board_width, right + width)
+#               self.cuts.append(router.Cut(right, farRight))
+#           else:
+#               width = increments[i] - deltaM
+#               farLeft = max(0, left - width)
+#               farRight = min(board_width, right + width)
+#           left = farLeft
+#           right = farRight
+#           do_cut = (not do_cut)
         # sort the cuts in increasing x
         self.cuts = sorted(self.cuts, key=attrgetter('xmin'))
         if self.config.debug:
