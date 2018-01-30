@@ -23,6 +23,7 @@ Contains the Qt functionality for drawing the template and boards.
 '''
 from __future__ import print_function
 from __future__ import division
+from decimal import Decimal
 from future.utils import lrange
 
 import time
@@ -893,8 +894,9 @@ class Qt_Fig(QtWidgets.QWidget):
         yT = self.geom.boards[0].yT()
         pen.setColor(QtCore.Qt.green)
         painter.setPen(pen)
-        painter.drawLine(QtCore.QPointF(xminG - 0.5, yB), QtCore.QPointF(xminG - 0.5, yT) )
-        painter.drawLine(QtCore.QPointF(xmaxG + 0.5, yB), QtCore.QPointF(xmaxG + 0.5, yT) )
+        half = Decimal(0.5)
+        painter.drawLine(QtCore.QPointF(xminG - half, yB), QtCore.QPointF(xminG - half, yT) )
+        painter.drawLine(QtCore.QPointF(xmaxG + half, yB), QtCore.QPointF(xmaxG + half, yT) )
         painter.restore()
 
         # draw the perimeter of the cursor cut at the end to get it always visible

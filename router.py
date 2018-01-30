@@ -179,18 +179,14 @@ class Router_Bit(object):
         self.midline = Decimal(repr(self.width))
         self.depth_0 = Decimal(repr(self.depth))
         self.width_f = Decimal(repr(self.width))
-        self.neck = self.width_f
-        self.gap =  Decimal('0')
 
         if self.angle > 0:
-            self.offset = self.depth * math.tan(self.angle * math.pi / 180)
-            self.midline = self.width_f - Decimal(repr(self.offset))
+            tan = Decimal(math.tan(self.angle * math.pi / 180))
+            self.offset = Decimal(self.depth) * tan
+            self.midline = self.width_f - self.offset
             self.midline = self.midline.to_integral_value( rounding=ROUND_HALF_DOWN)
-            self.gap = self.midline - self.width_f - Decimal(repr(self.offset))
-            tan= Decimal(math.tan(self.angle * math.pi / 180))
             self.depth_0 = (self.width_f - self.midline) / tan
             tan *= 2
-            self.neck =  self.width_f - self.depth_0 * tan  # now the neck contains value of perfect fit
 
         #self.width - self.offset
 
@@ -340,7 +336,7 @@ class Board(My_Rectangle):
         for c in cuts:
             if c.xmin > 0:
                 # on the surface, start of cut
-                x.append(c.xmin + x[0] + Decimal(repr(bit.offset)))
+                x.append(c.xmin + x[0] + bit.offset)
                 y.append(Decimal(y_nocut))
             # at the cut depth, start of cut
             x.append(c.xmin + self.xL())
@@ -350,7 +346,7 @@ class Board(My_Rectangle):
             y.append(Decimal(y_cut))
             if c.xmax < self.width:
                 # at the surface, end of cut
-                x.append(c.xmax + self.xL() - Decimal(repr(bit.offset)))
+                x.append(c.xmax + self.xL() - bit.offset)
                 y.append(Decimal(y_nocut))
         # add the last point on the top and bottom, at the right edge,
         # accounting for whether the last cut includes this edge or not.
@@ -608,8 +604,8 @@ class Cut(object):
         for p in self.passes:
             if (self.xmin > 0 and p - halfwidth < self.xmin) or \
                (self.xmax < board.width and p + halfwidth  > self.xmax ):
-                raise Router_Exception('cut xmin = %d, xmax = %d, pass = %d: '\
-                                       'Bit width (%d) too large for this cut!'\
+                raise Router_Exception('cut xmin = %f, xmax = %f, pass = %f: '\
+                                       'Bit width (%f) too large for this cut!'\
                                        % (self.xmin, self.xmax, p, bit.width))
 
 def adjoining_cuts(cuts, bit, board):
@@ -623,7 +619,7 @@ def adjoining_cuts(cuts, bit, board):
     Returns an array of Cut objects
     '''
     nc = len(cuts)
-    offset = (bit.width_f-bit.neck) / 2
+    offset = bit.width_f-bit.midline
     adjCuts = []
     # if the left-most input cut does not include the left edge, add an
     # adjoining cut that includes the left edge
