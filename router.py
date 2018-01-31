@@ -190,14 +190,14 @@ class Router_Bit(object):
 
         #self.width - self.offset
 
-    def dovetail_correction(self):
+    #def dovetail_correction(self):
         '''
         Correction for rounding the offset
         '''
-        if utils.my_round(self.neck) + 2 * utils.my_round(self.offset) < self.width:
-            return 1
-        else:
-            return 0
+     #   if utils.my_round(self.neck) + 2 * utils.my_round(self.offset) < self.width:
+     #       return 1
+     #   else:
+     #       return 0
 
 class My_Rectangle(object):
     '''
@@ -625,32 +625,32 @@ def adjoining_cuts(cuts, bit, board):
     # adjoining cut that includes the left edge
     if cuts[0].xmin > 0:
         left = 0
-        right = cuts[0].xmin + offset
+        right = cuts[0].xmin + offset - board.dheight
         if right - left >= board.dheight:
-            adjCuts.append( Cut( left, round(right, 3) ) )
+            adjCuts.append( Cut( left, round(right, 4) ) )
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
     for i in lrange(1, nc):
         halfcut = max( (cuts[i].xmax - cuts[i].xmin) / 2, bit.width_f / 2 )
         midPass = (cuts[i].xmin + cuts[i-1].xmax) / 2
-        left = cuts[i-1].xmax - offset
-        right = cuts[i].xmin + offset
+        left = cuts[i-1].xmax - offset + board.dheight
+        right = cuts[i].xmin + offset - board.dheight
         #left = utils.my_round(cuts[i-1].xmax - bit.offset + board.dheight)
         #right = max(left + bit.width, cuts[i].xmin + bit.offset - board.dheight)
-        adjCuts.append( Cut( round(left,3), round(right, 3), midPass) )
+        adjCuts.append( Cut( round(left,4), round(right, 4), midPass) )
     # if the right-most input cut does not include the right edge, add an
     # adjoining cut that includes this edge
     if cuts[-1].xmax < board.width:
         #midPass = cuts[-1].midPass -  adjCuts[-1].midPass
         #halfcut = cuts[-1].midPass - cuts[-2].xmin
         #midPass += cuts[-1].midPass
-        left = cuts[-1].xmax - offset
+        left = cuts[-1].xmax - offset + board.dheight
 
         # utils.my_round(cuts[-1].xmax - Decimal(bit.offset)) + board.dheight
         right = Decimal(board.width)
 
         if right - left >= board.dheight:
-            adjCuts.append(Cut( round(left, 3), right))
+            adjCuts.append(Cut( round(left, 4), right))
 
     print('adjoining_cuts cuts:')
     dump_cuts(adjCuts)

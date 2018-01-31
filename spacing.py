@@ -128,8 +128,8 @@ class Equally_Spaced(Base_Spacing):
 
         dh2 = 2 * self.dhtot
         t = [Spacing_Param(0, self.boards[0].width // 4 + dh2, 0),\
-             Spacing_Param(math.floor(self.bit.width) + dh2, self.boards[0].width // 2 + dh2, \
-                           math.floor(self.bit.width) + dh2),\
+             Spacing_Param(self.bit.midline + dh2, self.boards[0].width // 2 + dh2, \
+                           self.bit.midline + dh2),\
              Spacing_Param(None, None, True)]
         self.params = {}
         for i in lrange(len(t)):
@@ -140,7 +140,8 @@ class Equally_Spaced(Base_Spacing):
         Sets the cuts to make the joint
         '''
         spacing = self.params['Spacing'].v  - 2 *  self.dhtot
-        width = Decimal( math.floor(self.params['Width'].v) ) + Decimal(self.bit.width_f - math.floor(self.bit.width_f) )
+        shift = Decimal(self.bit.midline % 2) / 2  # offset to keep cut senter mm count
+        width = self.bit.midline + Decimal( math.floor(self.params['Width'].v)  - math.floor(self.bit.width_f) + 2 * self.dhtot )
         centered = self.params['Centered'].v
 
         board_width = self.boards[0].width
@@ -157,23 +158,21 @@ class Equally_Spaced(Base_Spacing):
 #        neck_width = width + spacing - 2 * utils.my_round(self.bit.offset)
 #        neck_width = width + spacing - utils.my_round(self.bit.offset)
 #        neck_width = utils.my_round(width + spacing - self.bit.offset)
-        neck_width = (self.bit.midline + width - self.bit.width_f) * 2  + spacing
-        offset = Decimal(round(self.bit.offset, 3))
+        neck_width =  width  + spacing
+        overhang = (self.bit.width_f - self.bit.midline) / 2
 
-        if neck_width < 1:
-            raise Spacing_Exception('Specified bit paramters give a zero'
-                                    ' or negative cut width (%d increments) at'
-                                    ' the surface!  Please change the'
-                                    ' bit parameters width, depth, or angle.' % neck_width)
+#        if neck_width < 1:
+#            raise Spacing_Exception('Specified bit paramters give a zero'
+#                                    ' or negative cut width (%d increments) at'
+#                                    ' the surface!  Please change the'
+#                                    ' bit parameters width, depth, or angle.' % neck_width)
 
 
         # we working thru the midline now
         if centered or \
            self.bit.angle > 0: # always symm. for dovetail
             # put a cut at the center of the board
-            xMid = Decimal(board_width // 2)
-            xMid += Decimal(math.floor(width) / 2 - math.floor(width) // 2)  # even round
-            left = Decimal(  max(0, xMid - width / 2))
+            xMid = Decimal(board_width // 2) - shift + (width % 2) / 2
         else:
             xMid = board_width - width / 2
 
@@ -181,34 +180,29 @@ class Equally_Spaced(Base_Spacing):
         #left = Decimal(board_width )
 
         right = Decimal( min(board_width, left + width) )
-        self.cuts.append( router.Cut( left, right, xMid ) )
+        self.cuts.append( router.Cut( left - overhang, right + overhang ) )
 
         min_interior = utils.my_round(self.dhtot + self.bit.offset)
         min_finger_width = max(1, units.abstract_to_increments(self.config.min_finger_width))
 
         # do left side of board
-        i = xMid - neck_width
+        i = left
 
         while left > 0:
-            left = max(i - width / 2, 0)
-            # prevent cut of on corner
-            if left - offset < offset:
-                left = 0
-            right = i + width / 2
-            if (right - offset) > min_finger_width and (right - left) > min_interior:
-                self.cuts.append(router.Cut(left, right, i))
             i -= neck_width
+            left = max(0, i - width)
+            if (i - left) > min_finger_width and (i - left) > min_interior:
+                self.cuts.append(router.Cut(max(0,left - overhang), i + overhang) )
+            i = left
 
         # do right side of board
-        i = xMid + neck_width
-        while left < board_width:
-            left = i - width / 2
-            right = min(i + width / 2, board_width)
+        i = right
+        while right < board_width:
+            i += neck_width
+            right = min(board_width, i + width)
             # prevent cut of on corner
-            if right + offset > board_width:
-                right = board_width
-            if (board_width - (left + offset) ) > min_finger_width and (right - left) > min_interior:
-                self.cuts.append(router.Cut(left, right, i))
+            if (board_width - i) > min_finger_width and (right - left) > min_interior:
+                self.cuts.append(router.Cut(i - overhang, min(board_width, right + overhang) ) )
             i += neck_width
 
         # If we have only one cut the entire width of the board, then
@@ -242,7 +236,8 @@ class Variable_Spaced(Base_Spacing):
 
         # min and max number of fingers
         self.mMin = 2
-        self.mMax = int(self.boards[0].width  // self.bit.midline) // 2
+        overhang = (self.bit.width_f - self.bit.midline) / 2
+        self.mMax = int(self.boards[0].width  // (self.bit.midline + 2 * self.dhtot + overhang )) // 2
 
         if self.mMax < self.mMin:
             raise Spacing_Exception('Unable to compute a variable-spaced'\
@@ -268,7 +263,7 @@ class Variable_Spaced(Base_Spacing):
         a1 = 0 # center cut
         an = 0 # last cut
 
-        while (an < (self.bit.midline / 2) or (an - d) < self.bit.midline) and d <= 0:
+        while (an < (self.bit.midline / 2) + self.dhtot or (an - d) < (self.bit.midline + self.dhtot * 2) ) and d <= 0:
             d += 1
             a1 = utils.math_round( ( (2 * S) - (n - 1) * n * d ) / Decimal(2 * n - 1) )
             an = a1 + Decimal(n -1) * d
