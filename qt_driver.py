@@ -215,7 +215,7 @@ class Driver(QtWidgets.QMainWindow):
         self.except_handled = True
         if self.config.debug:
             tmp = traceback.format_exception(etype, value, trace)
-            print(join(tmp))
+            print('\n'.join(tmp))
         else:
             tmp = traceback.format_exception_only(etype, value)
         exception = '\n'.join(tmp)

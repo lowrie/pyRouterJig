@@ -865,7 +865,7 @@ class Config_Window(QtWidgets.QDialog):
         val = qt_utils.set_router_value(self.le_min_finger_width, v, 'value',
                                         'set_value_from_string')
         if val is not None:
-            self.new_config['min_finger_width'] = s
+            self.new_config['min_finger_width'] = val
             self.update_state('min_finger_width')
 
     @QtCore.pyqtSlot()
