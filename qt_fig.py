@@ -827,9 +827,9 @@ class Qt_Fig(QtWidgets.QWidget):
         xLB = xLT
         xRB = xRT
         if c.xmin > 0:
-            xLB += self.geom.bit.offset
+            xLB += self.geom.bit.overhang
         if c.xmax < self.geom.boards[0].width:
-            xRB -= self.geom.bit.offset
+            xRB -= self.geom.bit.overhang
         yB = boards[0].yB()
         yT = yB + self.geom.bit.depth
         poly = QtGui.QPolygonF()

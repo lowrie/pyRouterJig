@@ -368,10 +368,11 @@ class Edit_Spaced(Base_Spacing):
         xmin = 0
         xmax = self.boards[0].width
         midline = utils.my_round(self.bit.midline)
+        overhang = self.bit.overhang
         if f > 0:
-            xmin = self.cuts[f - 1].xmax + neck_width
+            xmin = self.cuts[f - 1].xmax + midline - overhang * 2
         if f < len(self.cuts) - 1:
-            xmax = self.cuts[f + 1].xmin - neck_width
+            xmax = self.cuts[f + 1].xmin - midline + overhang * 2
         return (xmin, xmax)
 
     def check_limits(self, f):
@@ -395,20 +396,21 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
+        min_finger_width = self.config.min_finger_width + self.dhtot
         delete_cut = False
+
         for f in self.active_cuts:
             c = self.cuts[f]
             c.xmin = max(0, c.xmin - 1)
-            if c.xmax == 1:
+            if (c.xmax - self.bit.overhang) <= min_finger_width:
                 # note its possible for only one cut to be deleted
                 delete_cut = True
             elif c.xmax == self.boards[0].width:
                 # if on the right end, create a new finger if it gets too wide
-                wNew = self.bit.midline + 2 * self.dhtot
-                #wNew = self.bit.width + 2 * self.dhtot
+                wNew = self.bit.midline + self.dhtot + self.bit.overhang * 2
                 w = c.xmax - c.xmin
-                if w > wNew:
-                    c.xmax -= 1
+                if (w - wNew) >= min_finger_width:
+                    c.xmax = c.xmin + (self.dhtot + self.bit.width_f)
             else:
                 c.xmax -= 1
         msg = ''
@@ -440,19 +442,20 @@ class Edit_Spaced(Base_Spacing):
         op = []
         noop = []
         delete_cut = False
+        min_finger_width = self.config.min_finger_width + self.dhtot
+
         for f in self.active_cuts:
             c = self.cuts[f]
             c.xmax = min(self.boards[0].width, c.xmax + 1)
-            if c.xmin == self.boards[0].width - 1:
+            if (c.xmin + self.bit.overhang + min_finger_width) >= self.boards[0].width:
                 # note its possible for only one cut to be deleted
                 delete_cut = True
             elif c.xmin == 0:
                 # if on the left end, create a new finger if it gets too wide
-                #wNew = self.bit.width + 2 * self.dhtot
-                wNew = self.bit.midline + 2 * self.dhtot
+                wNew = self.bit.midline + self.dhtot + self.bit.overhang * 2
                 w = c.xmax - c.xmin
-                if w > wNew:
-                    c.xmin = 1
+                if (w - wNew) >= min_finger_width:
+                    c.xmin = c.xmax - (self.dhtot + self.bit.width_f)
             else:
                 c.xmin += 1
         msg = ''
