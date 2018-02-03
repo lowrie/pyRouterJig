@@ -105,6 +105,7 @@ class Router_Bit(object):
         self.midline = Decimal('0')
         self.depth_0 = Decimal('0')
         self.width_f = Decimal(repr(width))
+        self.overhang = (self.width_f - self.midline) / 2
         self.gap= Decimal('0')
 
         self.reinit()
@@ -172,29 +173,19 @@ class Router_Bit(object):
         Reinitializes internal attributes that are dependent on width
         and angle.
         '''
-        self.halfwidth = self.width / 2
-        self.offset = 0 # ensure exactly 0 for angle == 0
         self.midline = Decimal(repr(self.width))
         self.depth_0 = Decimal(repr(self.depth))
         self.width_f = Decimal(repr(self.width))
 
         if self.angle > 0:
             tan = Decimal(math.tan(self.angle * math.pi / 180))
-            self.offset = Decimal(self.depth) * tan
-            self.midline = self.width_f - self.offset
+            offset = Decimal(self.depth) * tan
+            self.midline = self.width_f - offset
             self.midline = self.midline.to_integral_value( rounding=ROUND_HALF_DOWN)
             self.depth_0 = (self.width_f - self.midline) / tan
 
-        #self.width - self.offset
+        self.overhang = (self.width_f - self.midline) / 2
 
-    #def dovetail_correction(self):
-        '''
-        Correction for rounding the offset
-        '''
-     #   if utils.my_round(self.neck) + 2 * utils.my_round(self.offset) < self.width:
-     #       return 1
-     #   else:
-     #       return 0
 
 class My_Rectangle(object):
     '''
@@ -333,7 +324,7 @@ class Board(My_Rectangle):
         for c in cuts:
             if c.xmin > 0:
                 # on the surface, start of cut
-                x.append(c.xmin + x[0] + bit.offset)
+                x.append(c.xmin + x[0] + bit.overhang)
                 y.append(Decimal(y_nocut))
             # at the cut depth, start of cut
             x.append(c.xmin + self.xL())
@@ -343,7 +334,7 @@ class Board(My_Rectangle):
             y.append(Decimal(y_cut))
             if c.xmax < self.width:
                 # at the surface, end of cut
-                x.append(c.xmax + self.xL() - bit.offset)
+                x.append(c.xmax + self.xL() - bit.overhang)
                 y.append(Decimal(y_nocut))
         # add the last point on the top and bottom, at the right edge,
         # accounting for whether the last cut includes this edge or not.
