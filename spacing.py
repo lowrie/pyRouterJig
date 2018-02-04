@@ -396,21 +396,23 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
-        min_finger_width = self.config.min_finger_width + self.dhtot
+        min_finger_width = self.config.min_finger_width
         delete_cut = False
 
         for f in self.active_cuts:
             c = self.cuts[f]
-            c.xmin = max(0, c.xmin - 1)
+            c.xmin -= 1
+            if c.xmin <= min_finger_width:
+                c.xmin = 0
             if (c.xmax - self.bit.overhang) <= min_finger_width:
                 # note its possible for only one cut to be deleted
                 delete_cut = True
             elif c.xmax == self.boards[0].width:
                 # if on the right end, create a new finger if it gets too wide
-                wNew = self.bit.midline + self.dhtot + self.bit.overhang
+                wNew = self.bit.midline + (self.dhtot + self.bit.overhang) * 2
                 w = c.xmax - c.xmin
                 if (w - wNew) >= min_finger_width:
-                    c.xmax = c.xmin + (self.dhtot + self.bit.width_f)
+                    c.xmax = c.xmin + (self.dhtot * 2 + self.bit.width_f)
             else:
                 c.xmax -= 1
         msg = ''
@@ -442,20 +444,22 @@ class Edit_Spaced(Base_Spacing):
         op = []
         noop = []
         delete_cut = False
-        min_finger_width = self.config.min_finger_width + self.dhtot
+        min_finger_width = self.config.min_finger_width
 
         for f in self.active_cuts:
             c = self.cuts[f]
-            c.xmax = min(self.boards[0].width, c.xmax + 1)
+            c.xmax += 1
+            if self.boards[0].width - c.xmax < min_finger_width:
+                c.xmax = self.boards[0].width
             if (c.xmin + self.bit.overhang + min_finger_width) >= self.boards[0].width:
                 # note its possible for only one cut to be deleted
                 delete_cut = True
             elif c.xmin == 0:
                 # if on the left end, create a new finger if it gets too wide
-                wNew = self.bit.midline + self.dhtot + self.bit.overhang
+                wNew = self.bit.midline + (self.dhtot + self.bit.overhang) * 2
                 w = c.xmax - c.xmin
                 if (w - wNew) >= min_finger_width:
-                    c.xmin = c.xmax - (self.dhtot + self.bit.width_f)
+                    c.xmin = c.xmax - (self.dhtot * 2 + self.bit.width_f)
             else:
                 c.xmin += 1
         msg = ''
@@ -483,10 +487,11 @@ class Edit_Spaced(Base_Spacing):
         '''
         Increases the active cuts width on the left side by 1 increment
         '''
+        min_finger_width = self.config.min_finger_width
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
-        min_finger_width = self.config.min_finger_width + self.dhtot
+        min_finger_width = self.config.min_finger_width
 
         for f in self.active_cuts:
             c = self.cuts[f]
@@ -515,14 +520,18 @@ class Edit_Spaced(Base_Spacing):
         '''
         Increases the active cuts width on the right side by 1 increment
         '''
+        min_finger_width = self.config.min_finger_width
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
+
         for f in self.active_cuts:
             c = self.cuts[f]
             (xmin, xmax) = self.get_limits(f)
             if c.xmax < xmax:
                 c.xmax += 1
+                if self.boards[0].width - c.xmax < min_finger_width:
+                    c.xmax = self.boards[0].width
                 self.cuts[f] = c
                 op.append(f)
             else:
@@ -546,15 +555,15 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
-        min_finger_width = self.config.min_finger_width + self.dhtot
+        min_finger_width = self.config.min_finger_width
 
         for f in self.active_cuts:
             c = self.cuts[f]
             wmin = self.bit.width_f + 2 * self.dhtot
-            if (c.xmax - c.xmin - self.bit.overhang) <= min_finger_width:
-                noop.append(f)
-            elif c.xmin == 0:
-                c.xmin = max(0, c.xmax - self.bit.width_f)
+            if c.xmin == 0:
+                c.xmin = max(0, c.xmax - self.bit.width_f - 2 * self.dhtot)
+                if c.xmin < min_finger_width:
+                    c.xmin = 0
             else:
                 c.xmin += 1
 
@@ -583,18 +592,17 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
-        min_finger_width = self.config.min_finger_width + self.dhtot
+        min_finger_width = self.config.min_finger_width
 
         for f in self.active_cuts:
             c = self.cuts[f]
             wmin = self.bit.width_f + 2 * self.dhtot
-            if (c.xmax - c.xmin - self.bit.overhang) <= min_finger_width :
-                noop.append(f)
-            elif c.xmax == self.boards[0].width:
-                c.xmax = min(self.boards[0].width, c.xmin + self.bit.width_f)
+            if c.xmax == self.boards[0].width:
+                c.xmax = min(self.boards[0].width, c.xmin + self.bit.width_f + 2 * self.dhtot)
+                if self.boards[0].width - c.xmax < min_finger_width:
+                    c.xmax = self.boards[0].width
             else:
                 c.xmax -= 1
-
             if c.xmax < self.boards[0].width and c.xmin > 0 and (c.xmax - c.xmin) < wmin:
                 noop.append(f)
             else :
@@ -699,19 +707,20 @@ class Edit_Spaced(Base_Spacing):
         Adds a cut to the first location possible, searching from the left.
         The active cut is set the the new cut.
         '''
-        overhang = (self.bit.width_f - self.bit.midline) / 2
+        overhang = self.bit.overhang
         midline = self.bit.midline
         index = None
         cuts_save = copy.deepcopy(self.cuts)
-
-        if self.cuts[0].xmin > self.bit.midline:
+        min_finger_width = math.floor(self.config.min_finger_width) + 1
+        wadd = min_finger_width + self.dhtot
+        if self.cuts[0].xmin > self.bit.midline - overhang + wadd:
             if self.config.debug:
                 print('add at left')
             index = 0
             xmin = 0
-            xmax = self.cuts[0].xmin - midline + overhang
+            xmax = xmin + wadd + overhang
 
-        wadd = 2 * self.bit.midline
+        wadd = 2 * (self.bit.midline + self.dhtot)
         wdelta = overhang * 2
 
         for i in lrange(1, len(self.cuts)):
@@ -720,17 +729,19 @@ class Edit_Spaced(Base_Spacing):
                     print('add in cut')
                 index = i
                 xmin = self.cuts[i - 1].xmax - overhang + midline
-                xmax = xmin + self.bit.midline + overhang
+                xmax = xmin + self.bit.midline + overhang + 2 * self.dhtot
                 xmin -= overhang
                 break
 
-            elif (self.cuts[i].xmax - self.cuts[i].xmin - wdelta) >= wadd:
+            elif (self.cuts[i].xmax - self.cuts[i].xmin - wdelta) >= wadd + self.bit.midline:
                 if self.config.debug:
                     print('add in cut')
                 index = i + 1
-                xmin = self.cuts[i].xmax - self.bit.midline - overhang
-                xmax = self.cuts[i].xmax
-                self.cuts[i].xmax = self.cuts[i].xmin + self.bit.midline + overhang
+                xmax = self.cuts[i].xmin + self.bit.midline + (overhang + self.dhtot) * 2
+                xmin = xmax + self.bit.midline - 2 * overhang
+                t = self.cuts[i].xmax
+                self.cuts[i].xmax = xmax
+                xmax = t
                 break
 
         if index is None and \
