@@ -251,8 +251,7 @@ class Variable_Spaced(Base_Spacing):
         '''
         Sets the cuts to make the joint
         '''
-
-        min_finger_width = Decimal(self.config.min_finger_width + self.dhtot)
+        min_finger_width = Decimal( self.bit.units.abstract_to_increments(self.config.min_finger_width) + self.dhtot)
         S = math.floor(self.boards[0].width / 2) # half board width
         shift = Decimal( (self.bit.midline ) % 2) / 2 # offset to keep cut senter mm count
 
@@ -396,7 +395,7 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
-        min_finger_width = self.config.min_finger_width
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
         delete_cut = False
 
         for f in self.active_cuts:
@@ -444,7 +443,7 @@ class Edit_Spaced(Base_Spacing):
         op = []
         noop = []
         delete_cut = False
-        min_finger_width = self.config.min_finger_width
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
 
         for f in self.active_cuts:
             c = self.cuts[f]
@@ -487,11 +486,10 @@ class Edit_Spaced(Base_Spacing):
         '''
         Increases the active cuts width on the left side by 1 increment
         '''
-        min_finger_width = self.config.min_finger_width
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
-        min_finger_width = self.config.min_finger_width
 
         for f in self.active_cuts:
             c = self.cuts[f]
@@ -520,7 +518,7 @@ class Edit_Spaced(Base_Spacing):
         '''
         Increases the active cuts width on the right side by 1 increment
         '''
-        min_finger_width = self.config.min_finger_width
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
@@ -555,7 +553,7 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
-        min_finger_width = self.config.min_finger_width
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
 
         for f in self.active_cuts:
             c = self.cuts[f]
@@ -592,7 +590,7 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
-        min_finger_width = self.config.min_finger_width
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
 
         for f in self.active_cuts:
             c = self.cuts[f]
@@ -711,7 +709,7 @@ class Edit_Spaced(Base_Spacing):
         midline = self.bit.midline
         index = None
         cuts_save = copy.deepcopy(self.cuts)
-        min_finger_width = math.floor(self.config.min_finger_width) + 1
+        min_finger_width = math.floor(self.bit.units.abstract_to_increments(self.config.min_finger_width)) + 1
         wadd = min_finger_width + self.dhtot
         if self.cuts[0].xmin > self.bit.midline - overhang + wadd:
             if self.config.debug:
@@ -724,7 +722,7 @@ class Edit_Spaced(Base_Spacing):
         wdelta = overhang * 2
 
         for i in lrange(1, len(self.cuts)):
-            if self.cuts[i].xmin - self.cuts[i - 1].xmax + wdelta >= wadd:
+            if self.cuts[i].xmin - self.cuts[i - 1].xmax + wdelta >= wadd + self.bit.midline:
                 if self.config.debug:
                     print('add in cut')
                 index = i
