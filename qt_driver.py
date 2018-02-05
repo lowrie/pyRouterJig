@@ -1256,10 +1256,8 @@ class Driver(QtWidgets.QMainWindow):
 
         if do_screenshot:
             p_screen=QtWidgets.QApplication.primaryScreen()
-            scr_rect = p_screen.geometry();
-            image = QtGui.QScreen.grabWindow(p_screen, scr_rect.x(), scr_rect.y(), scr_rect.width(), scr_rect.height()).toImage()
-            #, scr_rect.x, scr_rect.y, scr_rect.width, scr_rect.height)
-            #.toImage()
+            image = p_screen.grabWindow(self.winId())
+
         else:
             image = self.fig.image(self.template, self.boards, self.bit, self.spacing,
                                    self.woods, self.description)
