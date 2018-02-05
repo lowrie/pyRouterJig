@@ -139,9 +139,16 @@ class Equally_Spaced(Base_Spacing):
         '''
         Sets the cuts to make the joint
         '''
+
+        #on local variables init we have to care about imperial values and convert them to increments before use
         spacing = self.params['Spacing'].v
-        shift = Decimal(self.bit.midline % 2) / 2  # offset to keep cut center mm count
         width = Decimal( math.floor(self.params['Width'].v) )
+
+        if not self.bit.units.metric and width < 1.:
+            spacing = self.bit.units.inches_to_increments(self.params['Spacing'].v)
+            width = Decimal( math.floor(self.bit.units.inches_to_increments(self.params['Width'].v ) ))
+
+        shift = Decimal(self.bit.midline % 2) / 2  # offset to keep cut center mm count
         centered = self.params['Centered'].v
         neck_width = width + spacing
         overhang = self.bit.overhang

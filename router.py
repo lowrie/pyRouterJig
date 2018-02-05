@@ -120,8 +120,10 @@ class Router_Bit(object):
         msg = 'Unable to set Bit Width to: {}<p>'\
               'Set to a positive value, such as: {}'.format(s, val)
         try:
-        #    width = self.units.string_to_increments(s)
-            width = self.units.string_to_float(s)
+            if self.units.metric:
+                width = self.units.string_to_float(s)
+            else:
+                width = self.units.string_to_increments(s)
         except:
             raise Router_Exception(msg)
         if width <= 0:

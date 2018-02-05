@@ -67,7 +67,7 @@ class Driver_Test(unittest.TestCase):
         self.d.show()
         self.d.raise_()
         self.debug = self.d.config.debug
-        QTest.qWaitForWindowShown(self.d)
+        QTest.qWaitForWindowExposed(self.d)
         if not utils.isMac():
             self.d.working_dir = 'Z:\Windows\pyRouterJig\images'
     def test_options(self):
@@ -78,7 +78,7 @@ class Driver_Test(unittest.TestCase):
         self.assertEqual(str(self.d.le_bit_depth.text()), '3/4')
         self.assertEqual(str(self.d.le_bit_angle.text()), '0')
     def screenshot(self, do_screenshot=True):
-        QTest.qWaitForWindowShown(self.d)
+        QTest.qWaitForWindowExposed(self.d)
         QTest.qWait(100)
         self.d._on_save(do_screenshot)
     def test_screenshots(self):
