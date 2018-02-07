@@ -34,7 +34,7 @@ import utils
 
 def dump_cuts(cuts):
     '''Dumps the cuts to the screen...this is for debugging.'''
-    print('Min\tMax\tCenter')
+    print('Min\tMax')
     for c in cuts:
         print( '{0:2f}\t{1:3f}'.format(c.xmin, c.xmax) )
 
@@ -240,7 +240,7 @@ class Variable_Spaced(Base_Spacing):
 
 
         # min and max number of fingers
-        self.mMin = 2
+        self.mMin = 3
         overhang = self.bit.overhang
         self.mMax = int((self.boards[0].width  // (self.bit.midline +  self.dhtot ) ) // 2 + 1)
 
@@ -259,24 +259,25 @@ class Variable_Spaced(Base_Spacing):
         Sets the cuts to make the joint
         '''
         min_finger_width = Decimal( self.bit.units.abstract_to_increments(self.config.min_finger_width) + self.dhtot)
+        min_interior = self.bit.midline + self.dhtot * 2
         S = math.floor(self.boards[0].width / 2) # half board width
         shift = Decimal( (self.bit.midline ) % 2) / 2 # offset to keep cut senter mm count
 
         n = int(self.params['Fingers'].v)  # number of cuts
-        d = -9 # d is the ideal decrease in finger width for each finger away from center finger
+        d = -16 # d is the ideal decrease in finger width for each finger away from center finger
         overhang = self.bit.overhang # offset from midline to the end of cut
         a1 = 0 # center cut
         an = 0 # last cut
 
-        while (an < (self.bit.midline + self.dhtot * 2) ) and d <= 0:
+        while (an < min_interior or (an + d) <= min_finger_width) and d <= 0:
             d += 1
             a1 = utils.math_round( ( (2 * S) - (n - 1) * n * d ) / Decimal(2 * n - 1) )
             an = a1 + Decimal(n - 2) * d
 
         if d > 0 :
             d = 0
-            a1 = self.bit.midline + self.dhtot * 2
-            an = self.bit.midline + self.dhtot * 2
+            a1 = min_interior
+            an = min_interior
             delta = 0
         else:
             SP = (a1 + d + an) * (n - 1) + a1
@@ -288,6 +289,8 @@ class Variable_Spaced(Base_Spacing):
         increments = [Decimal(0)] * int(n)
         for i in lrange(0, n):
             increments[i] = a1 + d * i
+            if increments[i] <  min_interior:
+                increments[i] = min_interior
 
         if delta >= 2:
             increments[-1] += delta // 2
