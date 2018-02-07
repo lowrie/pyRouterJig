@@ -60,7 +60,7 @@ class My_Fraction(object):
         else:
             self.sign = 1
         self.whole = abs(whole)
-        self.numerator = abs(numerator)
+        self.numerator = int(abs(numerator))
         self.denominator = denominator
         self.english_separator = english_separator
     def reduce(self):
@@ -70,10 +70,12 @@ class My_Fraction(object):
         '''
         if self.denominator is None or self.numerator == 0:
             return
+        self.numerator = int(self.numerator)
+        self.denominator = int(self.denominator)
         dwhole = self.numerator // self.denominator
         self.whole += dwhole
         self.numerator -= dwhole * self.denominator
-        gcd = fractions.gcd(self.numerator, self.denominator)
+        gcd = math.gcd(self.numerator, self.denominator)
         self.numerator /= gcd
         self.denominator /= gcd
     def to_string(self):
