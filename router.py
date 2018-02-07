@@ -26,7 +26,11 @@ from __future__ import print_function
 from future.utils import lrange
 
 import math
+from decimal import *
 import utils
+
+#some
+from  spacing import dump_cuts
 
 class Router_Exception(Exception):
     '''
@@ -82,6 +86,14 @@ class Router_Bit(object):
 
     neck: width of bit at board surface.
 
+    midline: disstance between cuts in incremental units
+
+    depth_0: optimal depth with perfect fit
+
+    width_f: perfect width with no rounding
+
+    gap: the calculated disstance to perfect fit (exact join)
+
     halfwidth: half of width
     '''
     def __init__(self, units, width, depth, angle=0):
@@ -89,6 +101,13 @@ class Router_Bit(object):
         self.width = width
         self.depth = depth
         self.angle = angle
+
+        self.midline = Decimal('0')
+        self.depth_0 = Decimal('0')
+        self.width_f = Decimal(repr(width))
+        self.overhang = (self.width_f - self.midline) / 2
+        self.gap= Decimal('0')
+
         self.reinit()
     def set_width_from_string(self, s):
         '''
@@ -101,19 +120,21 @@ class Router_Bit(object):
         msg = 'Unable to set Bit Width to: {}<p>'\
               'Set to a positive value, such as: {}'.format(s, val)
         try:
-            width = self.units.string_to_increments(s)
+            if self.units.metric:
+                width = self.units.string_to_float(s)
+            else:
+                width = self.units.string_to_increments(s)
         except:
             raise Router_Exception(msg)
         if width <= 0:
             raise Router_Exception(msg)
-        halfwidth = width // 2
-        if 2 * halfwidth != width:
-            msg += '<p>Bit Width must be an even number of increments.<p>'\
-                   'The increment size is: {}<p>'\
-                   ''.format(self.units.increments_to_string(1, True))
-            raise Router_Exception(msg)
+        #halfwidth = width // 2
+        #if 2 * halfwidth != width:
+        #    msg += '<p>Bit Width must be an even number of increments.<p>'\
+        #           'The increment size is: {}<p>'\
+        #           ''.format(self.units.increments_to_string(1, True))
+        #    raise Router_Exception(msg)
         self.width = width
-        self.halfwidth = halfwidth
         self.reinit()
     def set_depth_from_string(self, s):
         '''
@@ -133,6 +154,7 @@ class Router_Bit(object):
             raise Router_Exception(msg)
         self.depth = depth
         self.reinit()
+
     def set_angle_from_string(self, s):
         '''
         Sets the angle from the string s, where s represents a floating point number or fractional number.
@@ -147,24 +169,28 @@ class Router_Bit(object):
             raise Router_Exception(msg)
         self.angle = angle
         self.reinit()
+
     def reinit(self):
         '''
         Reinitializes internal attributes that are dependent on width
         and angle.
         '''
-        self.halfwidth = self.width // 2
-        self.offset = 0 # ensure exactly 0 for angle == 0
+        self.midline = Decimal(repr(self.width))
+        self.depth_0 = Decimal(repr(self.depth))
+        self.width_f = Decimal(repr(self.width))
+        self.gap = 0  #no gap for staight bit
+
         if self.angle > 0:
-            self.offset = self.depth * math.tan(self.angle * math.pi / 180)
-        self.neck = self.width - 2 * self.offset
-    def dovetail_correction(self):
-        '''
-        Correction for rounding the offset
-        '''
-        if utils.my_round(self.neck) + 2 * utils.my_round(self.offset) < self.width:
-            return 1
-        else:
-            return 0
+            tan = Decimal(math.tan(self.angle * math.pi / 180))
+            offset = Decimal(self.depth) * tan
+            self.midline = self.width_f - offset  # actual midline
+            midline = self.midline.to_integral_value( rounding=ROUND_HALF_DOWN)  #midline we can get
+            self.gap =  self.midline - midline
+            self.midline = midline
+            self.depth_0 = (self.width_f - self.midline) / tan    #perfect/recomended depth to get perfect fit.
+
+        self.overhang = (self.width_f - self.midline) / 2
+
 
 class My_Rectangle(object):
     '''
@@ -297,29 +323,29 @@ class Board(My_Rectangle):
         x = []
         y = []
         if cuts[0].xmin > 0:
-            x = [self.xL()]
-            y = [y_nocut]
+            x = [Decimal(self.xL())]
+            y = [Decimal(y_nocut)]
         # loop through the cuts and add them to the perimeter
         for c in cuts:
             if c.xmin > 0:
                 # on the surface, start of cut
-                x.append(c.xmin + x[0] + bit.offset)
-                y.append(y_nocut)
+                x.append(c.xmin + x[0] + bit.overhang)
+                y.append(Decimal(y_nocut))
             # at the cut depth, start of cut
             x.append(c.xmin + self.xL())
-            y.append(y_cut)
+            y.append(Decimal(y_cut))
             # at the cut depth, end of cut
             x.append(c.xmax + self.xL())
-            y.append(y_cut)
+            y.append(Decimal(y_cut))
             if c.xmax < self.width:
                 # at the surface, end of cut
-                x.append(c.xmax + self.xL() - bit.offset)
-                y.append(y_nocut)
+                x.append(c.xmax + self.xL() - bit.overhang)
+                y.append(Decimal(y_nocut))
         # add the last point on the top and bottom, at the right edge,
         # accounting for whether the last cut includes this edge or not.
         if cuts[-1].xmax < self.width:
             x.append(self.xL() + self.width)
-            y.append(y_nocut)
+            y.append(Decimal(y_nocut))
         return (x, y)
     def do_all_cuts(self, bit):
         '''
@@ -473,6 +499,7 @@ class Board(My_Rectangle):
 class Cut(object):
     '''
     Cut description.
+    The cut values in Decimals to simplify rounding
 
     Attributes:
 
@@ -483,9 +510,12 @@ class Cut(object):
              on the cut
     '''
     def __init__(self, xmin, xmax):
-        self.xmin = xmin
-        self.xmax = xmax
+        self.xmin = Decimal(xmin)
+        self.xmax = Decimal(xmax)
         self.passes = []
+        #Presission value is about 1/64 inch (the exact 1/64 = 0.0156 so we fine for bouth mesument systems)
+        self.precision = Decimal('0.01')
+
     def validate(self, bit, board):
         '''
         Checks whether the attributes of the cut are valid.
@@ -500,50 +530,47 @@ class Cut(object):
             raise Router_Exception('cut xmin = %d, xmax = %d:'
                                    ' Must have xmax < board width (%d)!'\
                                    % (self.xmin, self.xmax, board.width))
-        if self.xmax - self.xmin < bit.width and self.xmin > 0 and self.xmax < board.width:
-            raise Router_Exception('cut xmin = %d, xmax = %d: '\
-                                   'Bit width (%d) too large for this cut!'\
-                                   % (self.xmin, self.xmax, bit.width))
+        if ( bit.width_f - (self.xmax - self.xmin) ) > self.precision and self.xmin > 0 and self.xmax < board.width:
+            raise Router_Exception('cut xmin = %f, xmax = %f ): '\
+                                   'Bit width (%f) delta too large for this cut!'\
+                                   % (self.xmin, self.xmax, bit.width_f))
     def make_router_passes(self, bit, board):
         '''Computes passes for the given bit.'''
-        # The logic below assumes bit.width is even
-        if bit.width % 2 != 0:
-            Router_Exception('Router-bit width must be even!')
+        # The logic below assumes bit.width is even for stright bits only
+
         self.validate(bit, board)
         # set current extents of the uncut region
         xL = self.xmin
         xR = self.xmax
+        bitwidth = Decimal(repr(bit.width))
+        halfwidth = bitwidth / 2
         # alternate between the left and right sides of the overall cut to make the passes
         remainder = xR - xL
         self.passes = []
+
         while remainder > 0:
-            # start with a pass on the right side of cut
-            p = xR - bit.halfwidth
-            if p - bit.halfwidth >= self.xmin or self.xmin == 0:
-                self.passes.append(p)
-                xR -= bit.width
-            # if anything to cut remains, do a pass on the far left side
+            p0 = utils.math_round(xR - halfwidth) # right size cut
+            p1 = utils.math_round(xL + halfwidth) # left size cut
+
+            if self.xmax <= board.width and ( self.xmin - (p0 - halfwidth) < self.precision or self.xmin == 0 ):
+                self.passes.append( int(p0) )
+
+            if p0 != p1 and ( (p1 +halfwidth) - self.xmax < self.precision or self.xmax == board.width ):
+                self.passes.append( int(p1) )
+
+            xR -= bitwidth
+            xL += bitwidth
+
             remainder = xR - xL
-            if remainder > 0:
-                p = xL + bit.halfwidth
-                if p + bit.halfwidth <= self.xmax or self.xmax == board.width:
-                    self.passes.append(p)
-                    xL += bit.width
-                    remainder = xR - xL
-                    # at this stage, we've done the same number of left and right passes, so if
-                    # there's only one more pass needed, center it.
-                    if remainder > 0 and remainder <= bit.width:
-                        p = (xL + xR) // 2
-                        self.passes.append(p)
-                        remainder = 0
+
         # Sort the passes
         self.passes = sorted(self.passes)
         # Error checking:
         for p in self.passes:
-            if (self.xmin > 0 and p - bit.halfwidth < self.xmin) or \
-               (self.xmax < board.width and p + bit.halfwidth > self.xmax):
-                raise Router_Exception('cut xmin = %d, xmax = %d, pass = %d: '\
-                                       'Bit width (%d) too large for this cut!'\
+            if (self.xmin > 0 and (self.xmin - (p - halfwidth)) > self.precision) or \
+               (self.xmax < board.width and ((p + halfwidth) - self.xmax ) > self.precision ):
+                raise Router_Exception('cut xmin = %f, xmax = %f, pass = %f: '\
+                                       'Bit width (%f) too large for this cut!'\
                                        % (self.xmin, self.xmax, p, bit.width))
 
 def adjoining_cuts(cuts, bit, board):
@@ -557,27 +584,36 @@ def adjoining_cuts(cuts, bit, board):
     Returns an array of Cut objects
     '''
     nc = len(cuts)
+    offset = bit.width_f-bit.midline
     adjCuts = []
+
     # if the left-most input cut does not include the left edge, add an
     # adjoining cut that includes the left edge
     if cuts[0].xmin > 0:
         left = 0
-        right = utils.my_round(cuts[0].xmin + bit.offset) - board.dheight
+        right = cuts[0].xmin + offset - board.dheight
         if right - left >= board.dheight:
-            adjCuts.append(Cut(left, right))
+            adjCuts.append( Cut( left, round(right, 4) ) )
+
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
     for i in lrange(1, nc):
-        left = utils.my_round(cuts[i-1].xmax - bit.offset + board.dheight)
-        right = max(left + bit.width, utils.my_round(cuts[i].xmin + bit.offset) - board.dheight)
-        adjCuts.append(Cut(left, right))
+        left = cuts[i-1].xmax - offset + board.dheight
+        right = cuts[i].xmin + offset - board.dheight
+        adjCuts.append( Cut( left, right ) )
+
     # if the right-most input cut does not include the right edge, add an
     # adjoining cut that includes this edge
     if cuts[-1].xmax < board.width:
-        left = utils.my_round(cuts[-1].xmax - bit.offset) + board.dheight
-        right = board.width
+        left = cuts[-1].xmax - offset + board.dheight
+
+        right = Decimal(board.width)
+
         if right - left >= board.dheight:
-            adjCuts.append(Cut(left, right))
+            adjCuts.append(Cut( left, right))
+
+    print('adjoining_cuts cuts:')
+    dump_cuts(adjCuts)
     return adjCuts
 
 def caul_cuts(cuts, bit, board, trim):
@@ -624,6 +660,7 @@ def cut_boards(boards, bit, spacing):
     # make the top cuts on the bottom board
     top = adjoining_cuts(last, bit, boards[1])
     boards[1].set_top_cuts(top, bit)
+    #boards[1].set_top_cuts(last, bit)
 
 class Joint_Geometry(object):
     '''
@@ -732,10 +769,10 @@ class Joint_Geometry(object):
             xtop = coords[j[1]][2]
             ytop = coords[j[1]][3]
             n = len(xtop)
-            yshift = self.boards[j[1]].yB() - self.boards[j[0]].yT() +\
-                     self.bit.depth
+            yshift = Decimal(self.boards[j[1]].yB()) - Decimal(self.boards[j[0]].yT()) +\
+                     self.bit.depth_0
             for i in range(n):
-                ybot[i] += yshift
+                ybot[i] += round(yshift,4)
             for i in range(n - 1):
                 d = gap_overlap((xbot[i], xbot[i+1]),
                                 (ybot[i], ybot[i+1]),
@@ -754,12 +791,12 @@ def gap_overlap(xbot, ybot, xtop, ytop):
     # find unit normal from bottom line
     dxbot = xbot[1] - xbot[0]
     dybot = ybot[1] - ybot[0]
-    norm = 1.0 / math.sqrt(dxbot * dxbot + dybot * dybot)
+    norm = Decimal('1') / Decimal( math.sqrt(dxbot * dxbot + dybot * dybot) )
     nx = -dybot * norm
     ny = dxbot * norm
     # vector connecting midpoints
-    dx = 0.5 * (xtop[1] + xtop[0] - xbot[1] - xbot[0])
-    dy = 0.5 * (ytop[1] + ytop[0] - ybot[1] - ybot[0])
+    dx = Decimal('0.5') * (xtop[1] + xtop[0] - xbot[1] - xbot[0])
+    dy = Decimal('0.5') * (ytop[1] + ytop[0] - ybot[1] - ybot[0])
     # the dot product is our result
     return dx * nx + dy * ny
 
