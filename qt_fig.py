@@ -1019,8 +1019,9 @@ class Qt_Fig(QtWidgets.QWidget):
             return
 
         if self.config.debug:
-            print('qt_fig.wheelEvent', event.delta())
-        self.scaling *= 1 + 0.05 * event.delta() / 120
+            print('qt_fig.wheelEvent', event.angleDelta())
+        ppp = event.angleDelta() / 120
+        self.scaling *= 1 + 0.05 * ppp.y()
         self.update()
 
     def mousePressEvent(self, event):
@@ -1068,7 +1069,7 @@ class Qt_Fig(QtWidgets.QWidget):
             event.ignore()
             return
 
-        pos = self.base_transform.map(event.posF())
+        pos = self.base_transform.map(event.localPos())
         if self.config.debug:
             print('mouse moved here: {} {}'.format(pos.x(), pos.y()))
         diffx = (pos.x() - self.mouse_pos.x())
