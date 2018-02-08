@@ -24,7 +24,7 @@ This module contains the Qt interface to setting config file parameters.
 from __future__ import print_function
 
 import os, sys
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import config_file
 import qt_utils
@@ -38,7 +38,7 @@ def form_line(label, widget=None, tooltip=None):
 
     and returns the QLayout
     '''
-    grid = QtGui.QGridLayout()
+    grid = QtWidgets.QGridLayout()
     line = qt_utils.create_hline()
     line.setMinimumWidth(20)
     if tooltip is not None:
@@ -59,12 +59,12 @@ def is_positive(v):
 def is_nonnegative(v):
     return v >= 0
 
-class Color_Button(QtGui.QPushButton):
+class Color_Button(QtWidgets.QPushButton):
     '''
     A QPushButton that is simply a rectangle of a single color.
     '''
     def __init__(self, color, parent):
-        QtGui.QPushButton.__init__(self, parent)
+        QtWidgets.QPushButton.__init__(self, parent)
         size = QtCore.QSize(80, 20)
         self.setFixedSize(size)
         self.set_color(color)
@@ -83,15 +83,15 @@ def add_color_to_dialog(color):
     '''
     Adds color to the QColorDialog custom colors.
     '''
-    count = QtGui.QColorDialog.customCount()
-    cprev = QtGui.QColorDialog.customColor(0)
+    count = QtWidgets.QColorDialog.customCount()
+    cprev = QtWidgets.QColorDialog.customColor(0)
     # shift all the current colors by one index
     for i in range(1, count):
-        c = QtGui.QColorDialog.customColor(i)
-        QtGui.QColorDialog.setCustomColor(i, cprev)
+        c = QtWidgets.QColorDialog.customColor(i)
+        QtWidgets.QColorDialog.setCustomColor(i, cprev)
         cprev = c
     # add the new color to the first index
-    QtGui.QColorDialog.setCustomColor(0, color.rgba())
+    QtWidgets.QColorDialog.setCustomColor(0, color.rgba())
 
 class Misc_Value(object):
     '''
@@ -115,12 +115,12 @@ class Misc_Value(object):
             raise router.Router_Exception(msg)
         self.value = value
 
-class Config_Window(QtGui.QDialog):
+class Config_Window(QtWidgets.QDialog):
     '''
     Qt interface to config file parameters
     '''
     def __init__(self, config, units, parent=None):
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.config = config
         self.new_config = self.config.__dict__.copy()
         self.line_edit_width = 80
@@ -135,12 +135,12 @@ class Config_Window(QtGui.QDialog):
         self.board = router.Board(self.bit, width=board_width)
 
         # Form the tabs and their contents
-        title_label = QtGui.QLabel('<font color=blue size=4><b>pyRouterJig Preferences</b></font>')
+        title_label = QtWidgets.QLabel('<font color=blue size=4><b>pyRouterJig Preferences</b></font>')
         title_label.setAlignment(QtCore.Qt.AlignHCenter)
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(title_label)
         
-        tabs = QtGui.QTabWidget()
+        tabs = QtWidgets.QTabWidget()
 
         tabs.addTab(self.create_output(), 'Output')
         tabs.addTab(self.create_boards(), 'Boards')
@@ -158,25 +158,25 @@ class Config_Window(QtGui.QDialog):
 
     def create_units(self):
         '''Creates the layout for units preferences'''
-        w =  QtGui.QWidget()
-        vbox = QtGui.QVBoxLayout()
+        w =  QtWidgets.QWidget()
+        vbox = QtWidgets.QVBoxLayout()
 
-        mesg = QtGui.QLabel('<font color=red><b>WARNING:</b></font>'
+        mesg = QtWidgets.QLabel('<font color=red><b>WARNING:</b></font>'
                             ' Changing any Units settings will require <i>pyRouterJig</i>'
                             ' to restart and your present joint will be lost.')
         mesg.setWordWrap(True)
         vbox.addWidget(mesg)
 
-        self.cb_units_label = QtGui.QLabel('Unit System:')
-        self.cb_units = QtGui.QComboBox(self)
+        self.cb_units_label = QtWidgets.QLabel('Unit System:')
+        self.cb_units = QtWidgets.QComboBox(self)
         self.cb_units.addItem('Metric')
         self.cb_units.addItem('English')
         self.cb_units.activated.connect(self._on_units)
         grid = form_line(self.cb_units_label, self.cb_units)
         vbox.addLayout(grid)
 
-        self.le_num_incr_label = QtGui.QLabel(self.units_label(self.config.metric))
-        self.le_num_incr = QtGui.QLineEdit(w)
+        self.le_num_incr_label = QtWidgets.QLabel(self.units_label(self.config.metric))
+        self.le_num_incr = QtWidgets.QLineEdit(w)
         self.le_num_incr.setFixedWidth(self.line_edit_width)
         self.le_num_incr.editingFinished.connect(self._on_num_incr)
         tt = 'The number of increments per unit length.'
@@ -192,7 +192,8 @@ class Config_Window(QtGui.QDialog):
         Sets the entries for the wood combox box, and resets the default wood.
         '''
         (woods, patterns) = qt_utils.create_wood_dict(self.new_config['wood_images'])
-        woodnames = woods.keys()
+        #python 3
+        woodnames = list( woods.keys() )
         woodnames.extend(patterns.keys())
         self.cb_wood.clear()
         self.cb_wood.addItems(woodnames)
@@ -205,20 +206,20 @@ class Config_Window(QtGui.QDialog):
 
     def create_boards(self):
         '''Creates the layout for boards preferences'''
-        w =  QtGui.QWidget()
-        vbox = QtGui.QVBoxLayout()
+        w =  QtWidgets.QWidget()
+        vbox = QtWidgets.QVBoxLayout()
 
         us = self.units.units_string(withParens=True)
-        self.le_board_width_label = QtGui.QLabel('Initial Board Width{}:'.format(us))
-        self.le_board_width = QtGui.QLineEdit(w)
+        self.le_board_width_label = QtWidgets.QLabel('Initial Board Width{}:'.format(us))
+        self.le_board_width = QtWidgets.QLineEdit(w)
         self.le_board_width.setFixedWidth(self.line_edit_width)
         self.le_board_width.editingFinished.connect(self._on_board_width)
         tt = 'The initial board width when pyRouterJig starts.'
         grid = form_line(self.le_board_width_label, self.le_board_width, tt)
         vbox.addLayout(grid)
 
-        self.le_db_thick_label = QtGui.QLabel('Initial Double Board Thickness{}:'.format(us))
-        self.le_db_thick = QtGui.QLineEdit(w)
+        self.le_db_thick_label = QtWidgets.QLabel('Initial Double Board Thickness{}:'.format(us))
+        self.le_db_thick = QtWidgets.QLineEdit(w)
         self.le_db_thick.setFixedWidth(self.line_edit_width)
         self.le_db_thick.editingFinished.connect(self._on_db_thick)
         tt = 'The initial double-board thickness when pyRouterJig starts.'
@@ -226,22 +227,23 @@ class Config_Window(QtGui.QDialog):
         vbox.addLayout(grid)
 
         (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images)
-        woodnames = woods.keys()
+        #python 3
+        woodnames = list(woods.keys())
         woodnames.extend(patterns.keys())
-        self.cb_wood_label = QtGui.QLabel('Default Wood Fill:')
-        self.cb_wood = QtGui.QComboBox(self)
+        self.cb_wood_label = QtWidgets.QLabel('Default Wood Fill:')
+        self.cb_wood = QtWidgets.QComboBox(self)
         self.set_wood_combobox()
         self.cb_wood.activated.connect(self._on_wood)
         tt = 'The default wood fill for each board.'
         grid = form_line(self.cb_wood_label, self.cb_wood, tt)
         vbox.addLayout(grid)
 
-        self.le_wood_images_label = QtGui.QLabel('Wood Images Folder:')
-        self.le_wood_images = QtGui.QLineEdit(w)
+        self.le_wood_images_label = QtWidgets.QLabel('Wood Images Folder:')
+        self.le_wood_images = QtWidgets.QLineEdit(w)
         self.le_wood_images.editingFinished.connect(self._on_wood_images)
         tt = 'Location of wood images.'
         self.le_wood_images.setToolTip(tt)
-        grid = QtGui.QGridLayout()
+        grid = QtWidgets.QGridLayout()
         grid.addWidget(qt_utils.create_vline(), 0, 0, 4, 1)
         grid.addWidget(qt_utils.create_vline(), 0, 3, 4, 1)
         grid.addWidget(qt_utils.create_hline(), 0, 0, 1, 4)
@@ -257,28 +259,28 @@ class Config_Window(QtGui.QDialog):
 
     def create_bit(self):
         '''Creates the layout for bit preferences'''
-        w =  QtGui.QWidget()
-        vbox = QtGui.QVBoxLayout()
+        w =  QtWidgets.QWidget()
+        vbox = QtWidgets.QVBoxLayout()
 
         us = self.units.units_string(withParens=True)
-        self.le_bit_width_label = QtGui.QLabel('Initial Bit Width{}:'.format(us))
-        self.le_bit_width = QtGui.QLineEdit(w)
+        self.le_bit_width_label = QtWidgets.QLabel('Initial Bit Width{}:'.format(us))
+        self.le_bit_width = QtWidgets.QLineEdit(w)
         self.le_bit_width.setFixedWidth(self.line_edit_width)
         self.le_bit_width.editingFinished.connect(self._on_bit_width)
         tt = 'The initial bit width when pyRouterJig starts.'
         grid = form_line(self.le_bit_width_label, self.le_bit_width, tt)
         vbox.addLayout(grid)
 
-        self.le_bit_depth_label = QtGui.QLabel('Initial Bit Depth{}:'.format(us))
-        self.le_bit_depth = QtGui.QLineEdit(w)
+        self.le_bit_depth_label = QtWidgets.QLabel('Initial Bit Depth{}:'.format(us))
+        self.le_bit_depth = QtWidgets.QLineEdit(w)
         self.le_bit_depth.setFixedWidth(self.line_edit_width)
         self.le_bit_depth.editingFinished.connect(self._on_bit_depth)
         tt = 'The initial bit depth when pyRouterJig starts.'
         grid = form_line(self.le_bit_depth_label, self.le_bit_depth, tt)
         vbox.addLayout(grid)
 
-        self.le_bit_angle_label = QtGui.QLabel('Initial Bit Angle (deg.):')
-        self.le_bit_angle = QtGui.QLineEdit(w)
+        self.le_bit_angle_label = QtWidgets.QLabel('Initial Bit Angle (deg.):')
+        self.le_bit_angle = QtWidgets.QLineEdit(w)
         self.le_bit_angle.setFixedWidth(self.line_edit_width)
         self.le_bit_angle.editingFinished.connect(self._on_bit_angle)
         tt = 'The initial bit angle when pyRouterJig starts.'
@@ -291,21 +293,21 @@ class Config_Window(QtGui.QDialog):
 
     def create_colors(self):
         '''Creates the layout for color preferences'''
-        w =  QtGui.QWidget()
-        vbox = QtGui.QVBoxLayout()
+        w =  QtWidgets.QWidget()
+        vbox = QtWidgets.QVBoxLayout()
 
-        self.cb_print_color = QtGui.QCheckBox('Print in Color', w)
+        self.cb_print_color = QtWidgets.QCheckBox('Print in Color', w)
         self.cb_print_color.stateChanged.connect(self._on_print_color)
         self.cb_print_color.setToolTip('If true, print in color.  Otherwise, converts to black and white.')
         vbox.addWidget(self.cb_print_color)
 
-        grid = QtGui.QGridLayout()
+        grid = QtWidgets.QGridLayout()
         flag_label = QtCore.Qt.AlignRight
         flag_color = QtCore.Qt.AlignLeft
 
         row = 0
         col = 0
-        self.btn_canvas_background_label = QtGui.QLabel('Canvas Background')
+        self.btn_canvas_background_label = QtWidgets.QLabel('Canvas Background')
         self.btn_canvas_background = Color_Button(self.new_config['canvas_background'], w)
         self.btn_canvas_background.clicked.connect(lambda: self._on_set_color('canvas_background', self.btn_canvas_background))
         tt = 'Sets the background color of the canvas.'
@@ -314,7 +316,7 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_canvas_background, row, col+1, flag_color)
 
         row += 1
-        self.btn_canvas_foreground_label = QtGui.QLabel('Canvas Foreground')
+        self.btn_canvas_foreground_label = QtWidgets.QLabel('Canvas Foreground')
         self.btn_canvas_foreground = Color_Button(self.new_config['canvas_foreground'], w)
         self.btn_canvas_foreground.clicked.connect(lambda: self._on_set_color('canvas_foreground', self.btn_canvas_foreground))
         tt = 'Sets the foreground color of the canvas.'
@@ -323,7 +325,7 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_canvas_foreground, row, col+1, flag_color)
 
         row += 1
-        self.btn_board_background_label = QtGui.QLabel('Board Background')
+        self.btn_board_background_label = QtWidgets.QLabel('Board Background')
         self.btn_board_background = Color_Button(self.new_config['board_background'], w)
         self.btn_board_background.clicked.connect(lambda: self._on_set_color('board_background', self.btn_board_background))
         tt = 'Sets the top board background color.'
@@ -332,7 +334,7 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_board_background, row, col+1, flag_color)
 
         row += 1
-        self.btn_board_foreground_label = QtGui.QLabel('Board Foreground')
+        self.btn_board_foreground_label = QtWidgets.QLabel('Board Foreground')
         self.btn_board_foreground = Color_Button(self.new_config['board_foreground'], w)
         self.btn_board_foreground.clicked.connect(lambda: self._on_set_color('board_foreground', self.btn_board_foreground))
         tt = 'Sets the top board foreground color.'
@@ -343,7 +345,7 @@ class Config_Window(QtGui.QDialog):
         max_row = row
         row = 0
         col += 2
-        self.btn_pass_color_label = QtGui.QLabel('Pass')
+        self.btn_pass_color_label = QtWidgets.QLabel('Pass')
         self.btn_pass_color = Color_Button(self.new_config['pass_color'], w)
         self.btn_pass_color.clicked.connect(lambda: self._on_set_color('pass_color', self.btn_pass_color))
         tt = 'Sets the template foreground color for each pass.'
@@ -352,7 +354,7 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_pass_color, row, col+1, flag_color)
 
         row += 1
-        self.btn_pass_alt_color_label = QtGui.QLabel('Pass-Alt')
+        self.btn_pass_alt_color_label = QtWidgets.QLabel('Pass-Alt')
         self.btn_pass_alt_color = Color_Button(self.new_config['pass_alt_color'], w)
         self.btn_pass_alt_color.clicked.connect(lambda: self._on_set_color('pass_alt_color', self.btn_pass_alt_color))
         tt = 'Sets the template foreground alternate color for each pass.'
@@ -361,7 +363,7 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_pass_alt_color, row, col+1, flag_color)
 
         row += 1
-        self.btn_center_color_label = QtGui.QLabel('Center Pass')
+        self.btn_center_color_label = QtWidgets.QLabel('Center Pass')
         self.btn_center_color = Color_Button(self.new_config['center_color'], w)
         self.btn_center_color.clicked.connect(lambda: self._on_set_color('center_color', self.btn_center_color))
         tt = 'Sets the template foreground color for the center pass.'
@@ -370,7 +372,7 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_center_color, row, col+1, flag_color)
 
         row += 1
-        self.btn_watermark_color_label = QtGui.QLabel('Watermark')
+        self.btn_watermark_color_label = QtWidgets.QLabel('Watermark')
         self.btn_watermark_color = Color_Button(self.new_config['watermark_color'], w)
         self.btn_watermark_color.clicked.connect(lambda: self._on_set_color('watermark_color', self.btn_watermark_color))
         tt = 'Sets the watermark color.'
@@ -379,11 +381,11 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_watermark_color, row, col+1, flag_color)
 
         vbox.addLayout(grid)
-        grid = QtGui.QGridLayout()
+        grid = QtWidgets.QGridLayout()
 
         row = 0
         col = 0
-        self.btn_template_margin_background_label = QtGui.QLabel('Template Margin Background')
+        self.btn_template_margin_background_label = QtWidgets.QLabel('Template Margin Background')
         self.btn_template_margin_background = Color_Button(self.new_config['template_margin_background'], w)
         self.btn_template_margin_background.clicked.connect(lambda: self._on_set_color('template_margin_background', self.btn_template_margin_background))
         tt = 'Sets the template margin background color.'
@@ -392,7 +394,7 @@ class Config_Window(QtGui.QDialog):
         grid.addWidget(self.btn_template_margin_background, row, col+1, flag_color)
 
         row += 1
-        self.btn_template_margin_foreground_label = QtGui.QLabel('Template Margin Foreground')
+        self.btn_template_margin_foreground_label = QtWidgets.QLabel('Template Margin Foreground')
         self.btn_template_margin_foreground = Color_Button(self.new_config['template_margin_foreground'], w)
         self.btn_template_margin_foreground.clicked.connect(lambda: self._on_set_color('template_margin_foreground', self.btn_template_margin_foreground))
         tt = 'Sets the template margin foreground color.'
@@ -408,52 +410,52 @@ class Config_Window(QtGui.QDialog):
 
     def create_output(self):
         '''Creates the layout for output preferences'''
-        w =  QtGui.QWidget()
-        vbox = QtGui.QVBoxLayout()
+        w =  QtWidgets.QWidget()
+        vbox = QtWidgets.QVBoxLayout()
 
-        self.cb_show_caul = QtGui.QCheckBox('Show Caul Template', w)
+        self.cb_show_caul = QtWidgets.QCheckBox('Show Caul Template', w)
         self.cb_show_caul.stateChanged.connect(self._on_show_caul)
         self.cb_show_caul.setToolTip('Display the template for clamping cauls')
         vbox.addWidget(self.cb_show_caul)
 
-        self.cb_show_finger_widths = QtGui.QCheckBox('Show Finger Widths', w)
+        self.cb_show_finger_widths = QtWidgets.QCheckBox('Show Finger Widths', w)
         self.cb_show_finger_widths.stateChanged.connect(self._on_show_finger_widths)
         self.cb_show_finger_widths.setToolTip('Display the width of each finger')
         vbox.addWidget(self.cb_show_finger_widths)
 
-        self.cb_show_fit = QtGui.QCheckBox('Show Fit', w)
+        self.cb_show_fit = QtWidgets.QCheckBox('Show Fit', w)
         self.cb_show_fit.stateChanged.connect(self._on_show_fit)
         self.cb_show_fit.setToolTip('Display fit of joint')
         vbox.addWidget(self.cb_show_fit)
 
-        self.cb_rpid = QtGui.QCheckBox('Show Router Pass Identifiers', w)
+        self.cb_rpid = QtWidgets.QCheckBox('Show Router Pass Identifiers', w)
         self.cb_rpid.stateChanged.connect(self._on_rpid)
         self.cb_rpid.setToolTip('On each router pass, label its identifier')
         vbox.addWidget(self.cb_rpid)
 
-        self.cb_rploc = QtGui.QCheckBox('Show Router Pass Locations', w)
+        self.cb_rploc = QtWidgets.QCheckBox('Show Router Pass Locations', w)
         self.cb_rploc.stateChanged.connect(self._on_rploc)
         self.cb_rploc.setToolTip('On each router pass, label its distance from the right edge')
         vbox.addWidget(self.cb_rploc)
 
-        self.le_printsf_label = QtGui.QLabel('Print Scale Factor:')
-        self.le_printsf = QtGui.QLineEdit(w)
+        self.le_printsf_label = QtWidgets.QLabel('Print Scale Factor:')
+        self.le_printsf = QtWidgets.QLineEdit(w)
         self.le_printsf.setFixedWidth(self.line_edit_width)
         self.le_printsf.editingFinished.connect(self._on_printsf)
         tt = 'Scale output by this factor when printing.'
         grid = form_line(self.le_printsf_label, self.le_printsf, tt)
         vbox.addLayout(grid)
 
-        self.le_min_image_label = QtGui.QLabel('Min Image Width (pixels):')
-        self.le_min_image = QtGui.QLineEdit(w)
+        self.le_min_image_label = QtWidgets.QLabel('Min Image Width (pixels):')
+        self.le_min_image = QtWidgets.QLineEdit(w)
         self.le_min_image.setFixedWidth(self.line_edit_width)
         self.le_min_image.editingFinished.connect(self._on_min_image)
         tt = 'On save image, minimum width of image.'
         grid = form_line(self.le_min_image_label, self.le_min_image, tt)
         vbox.addLayout(grid)
 
-        self.le_max_image_label = QtGui.QLabel('Max Image Width (pixels):')
-        self.le_max_image = QtGui.QLineEdit(w)
+        self.le_max_image_label = QtWidgets.QLabel('Max Image Width (pixels):')
+        self.le_max_image = QtWidgets.QLineEdit(w)
         self.le_max_image.setFixedWidth(self.line_edit_width)
         self.le_max_image.editingFinished.connect(self._on_max_image)
         tt = 'On save image, maximum width of image.'
@@ -465,36 +467,36 @@ class Config_Window(QtGui.QDialog):
 
     def create_misc(self):
         '''Creates the layout for misc preferences'''
-        w =  QtGui.QWidget()
-        vbox = QtGui.QVBoxLayout()
+        w =  QtWidgets.QWidget()
+        vbox = QtWidgets.QVBoxLayout()
         us = self.units.units_string(withParens=True)
 
-        self.le_min_finger_width_label = QtGui.QLabel('Min Finger Width{}:'.format(us))
-        self.le_min_finger_width = QtGui.QLineEdit(w)
+        self.le_min_finger_width_label = QtWidgets.QLabel('Min Finger Width{}:'.format(us))
+        self.le_min_finger_width = QtWidgets.QLineEdit(w)
         self.le_min_finger_width.setFixedWidth(self.line_edit_width)
         self.le_min_finger_width.editingFinished.connect(self._on_min_finger_width)
         tt = 'The minimum allowable finger width.  Currently, only enforced for Equal Spacing.'
         grid = form_line(self.le_min_finger_width_label, self.le_min_finger_width, tt)
         vbox.addLayout(grid)
 
-        self.le_caul_trim_label = QtGui.QLabel('Caul Trim{}:'.format(us))
-        self.le_caul_trim = QtGui.QLineEdit(w)
+        self.le_caul_trim_label = QtWidgets.QLabel('Caul Trim{}:'.format(us))
+        self.le_caul_trim = QtWidgets.QLineEdit(w)
         self.le_caul_trim.setFixedWidth(self.line_edit_width)
         self.le_caul_trim.editingFinished.connect(self._on_caul_trim)
         tt = 'The distance from the edge of each finger to the edge of the corresponding caul finger.'
         grid = form_line(self.le_caul_trim_label, self.le_caul_trim, tt)
         vbox.addLayout(grid)
 
-        self.le_warn_gap_label = QtGui.QLabel('Warning gap{}:'.format(us))
-        self.le_warn_gap = QtGui.QLineEdit(w)
+        self.le_warn_gap_label = QtWidgets.QLabel('Warning gap{}:'.format(us))
+        self.le_warn_gap = QtWidgets.QLineEdit(w)
         self.le_warn_gap.setFixedWidth(self.line_edit_width)
         self.le_warn_gap.editingFinished.connect(self._on_warn_gap)
         tt = 'If the gap in the joint exceeds this value, warn the user.'
         grid = form_line(self.le_warn_gap_label, self.le_warn_gap, tt)
         vbox.addLayout(grid)
 
-        self.le_warn_overlap_label = QtGui.QLabel('Warning overlap{}:'.format(us))
-        self.le_warn_overlap = QtGui.QLineEdit(w)
+        self.le_warn_overlap_label = QtWidgets.QLabel('Warning overlap{}:'.format(us))
+        self.le_warn_overlap = QtWidgets.QLineEdit(w)
         self.le_warn_overlap.setFixedWidth(self.line_edit_width)
         self.le_warn_overlap.editingFinished.connect(self._on_warn_overlap)
         tt = 'If the overlap in the joint exceeds this value, warn the user.'
@@ -508,16 +510,16 @@ class Config_Window(QtGui.QDialog):
 
     def create_buttons(self):
         '''Creates the layout for the buttons'''
-        hbox_btns = QtGui.QHBoxLayout()
+        hbox_btns = QtWidgets.QHBoxLayout()
         
-        btn_cancel = QtGui.QPushButton('Cancel', self)
+        btn_cancel = QtWidgets.QPushButton('Cancel', self)
         btn_cancel.clicked.connect(self._on_cancel)
         btn_cancel.setAutoDefault(False)
         btn_cancel.setFocusPolicy(QtCore.Qt.ClickFocus)
         btn_cancel.setToolTip('Discard any preference changes and continue.')
         hbox_btns.addWidget(btn_cancel)
         
-        self.btn_save = QtGui.QPushButton('Save', self)
+        self.btn_save = QtWidgets.QPushButton('Save', self)
         self.btn_save.clicked.connect(self._on_save)
         self.btn_save.setAutoDefault(False)
         self.btn_save.setFocusPolicy(QtCore.Qt.ClickFocus)
@@ -602,9 +604,9 @@ class Config_Window(QtGui.QDialog):
         do_restart = False
         if self.change_state == 2:
             # Units were changes, so ask for a restart
-            box = QtGui.QMessageBox(self)
+            box = QtWidgets.QMessageBox(self)
             box.setTextFormat(QtCore.Qt.RichText)
-            box.setIcon(QtGui.QMessageBox.NoIcon)
+            box.setIcon(QtWidgets.QMessageBox.NoIcon)
             box.setText('<font size=5 color=red>Warning!</font>')
             question = '<font size=5>You have changed a Units setting, which'\
                        ' requires <i>pyRouterJig</i> to restart to take effect.'\
@@ -613,8 +615,8 @@ class Config_Window(QtGui.QDialog):
                        ' Press <b>Cancel</b> to discard the changes to preferences that'\
                        ' you have made.</font>'
             box.setInformativeText(question)
-            buttonRestart = box.addButton('Restart', QtGui.QMessageBox.AcceptRole)
-            buttonCancel = box.addButton('Cancel', QtGui.QMessageBox.AcceptRole)
+            buttonRestart = box.addButton('Restart', QtWidgets.QMessageBox.AcceptRole)
+            buttonCancel = box.addButton('Cancel', QtWidgets.QMessageBox.AcceptRole)
             box.setDefaultButton(buttonCancel)
             box.raise_()
             box.exec_()
@@ -804,7 +806,7 @@ class Config_Window(QtGui.QDialog):
             else:
                 msg = 'Unable to set Print Scale Factor to: {}<p>'\
                       'Set to a positive number.'.format(s)
-                QtGui.QMessageBox.warning(self, 'Error', msg)
+                QtWidgets.QMessageBox.warning(self, 'Error', msg)
                 self.le_printsf.setText(str(self.new_config['print_scale_factor']))
 
     @QtCore.pyqtSlot()
@@ -827,7 +829,7 @@ class Config_Window(QtGui.QDialog):
             else:
                 msg = 'Unable to set Min Image Width to: {}<p>'\
                       'Set to a positive integer.'.format(s)
-                QtGui.QMessageBox.warning(self, 'Error', msg)
+                QtWidgets.QMessageBox.warning(self, 'Error', msg)
                 self.le_min_image.setText(str(self.new_config['min_image_width']))
 
     @QtCore.pyqtSlot()
@@ -851,7 +853,7 @@ class Config_Window(QtGui.QDialog):
             else:
                 msg = 'Unable to set Max Image Width to: {}<p>'\
                       'Set to a positive integer >= Min Image Width ({})'.format(s, min_value)
-                QtGui.QMessageBox.warning(self, 'Error', msg)
+                QtWidgets.QMessageBox.warning(self, 'Error', msg)
                 self.le_max_image.setText(str(self.new_config['max_image_width']))
 
     @QtCore.pyqtSlot()
@@ -909,8 +911,8 @@ class Config_Window(QtGui.QDialog):
         if self.config.debug:
             print('qt_config:set_color {}'.format(name))
         init_color = QtGui.QColor(*self.new_config[name])
-        flags = QtGui.QColorDialog.ShowAlphaChannel | QtGui.QColorDialog.DontUseNativeDialog
-        color = QtGui.QColorDialog.getColor(init_color, self, 'Select {}'.format(name), flags)
+        flags = QtWidgets.QColorDialog.ShowAlphaChannel | QtWidgets.QColorDialog.DontUseNativeDialog
+        color = QtWidgets.QColorDialog.getColor(init_color, self, 'Select {}'.format(name), flags)
         if color.isValid():
             self.new_config[name] = color.getRgb()
             self.update_state(name)

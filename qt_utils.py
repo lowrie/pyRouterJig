@@ -29,7 +29,7 @@ import os, glob
 import utils
 import router
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 def set_router_value(line_edit, obj, attr, setter, is_float=False, bit=None):
     # With editingFinished, we also need to check whether the
@@ -61,13 +61,13 @@ def set_router_value(line_edit, obj, attr, setter, is_float=False, bit=None):
     except router.Router_Exception as e:
         # Notify the user of the error, and set the line editor back to its
         # original value
-        QtGui.QMessageBox.warning(line_edit.parentWidget(), 'Error', e.msg)
+        QtWidgets.QMessageBox.warning(line_edit.parentWidget(), 'Error', e.msg)
         old_value = getattr(obj, attr)
         text = units.increments_to_string(old_value)
         line_edit.setText(text)
         return None
 
-class PreviewComboBox(QtGui.QComboBox):
+class PreviewComboBox(QtWidgets.QComboBox):
     '''
     This comboxbox emits "activated" when hidePopup is called.  This allows
     for a combobox with a preview mode, so that as each selection is
@@ -77,20 +77,20 @@ class PreviewComboBox(QtGui.QComboBox):
 
     '''
     def __init__(self, parent):
-        QtGui.QComboBox.__init__(self, parent)
+        QtWidgets.QComboBox.__init__(self, parent)
 
     def hidePopup(self):
-        QtGui.QComboBox.hidePopup(self)
+        QtWidgets.QComboBox.hidePopup(self)
         #print('hidePopup')
         self.activated.emit(self.currentIndex())
 
-class ShadowTextLineEdit(QtGui.QLineEdit):
+class ShadowTextLineEdit(QtWidgets.QLineEdit):
     '''
     This line edit sets a grayed shadow text, until focus is received and text
     is entered.  Shadow text is the text displayed when the line edit is empty.
     '''
     def __init__(self, parent, shadow_text):
-        QtGui.QLineEdit.__init__(self, parent)
+        QtWidgets.QLineEdit.__init__(self, parent)
         self.shadow_text = shadow_text
         self.initialize_shadow()
 
@@ -100,14 +100,14 @@ class ShadowTextLineEdit(QtGui.QLineEdit):
         self.has_real_text = False
 
     def focusInEvent(self, event):
-        QtGui.QLineEdit.focusInEvent(self, event)
+        QtWidgets.QLineEdit.focusInEvent(self, event)
         # If no real text, clear the shadow text and darken the text
         if not self.has_real_text:
             self.clear()
             self.setStyleSheet('color: black;')
 
     def focusOutEvent(self, event):
-        QtGui.QLineEdit.focusOutEvent(self, event)
+        QtWidgets.QLineEdit.focusOutEvent(self, event)
         # If there's no text, set it back to the shadow
         if len(str(self.text())) == 0:
             self.initialize_shadow()
@@ -116,22 +116,22 @@ class ShadowTextLineEdit(QtGui.QLineEdit):
 
 def set_line_style(line):
     '''Sets the style for create_vline() and create_hline()'''
-    line.setFrameShadow(QtGui.QFrame.Raised)
+    line.setFrameShadow(QtWidgets.QFrame.Raised)
     line.setLineWidth(1)
     line.setMidLineWidth(1)
-    line.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+    line.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
 
 def create_vline():
     '''Creates a vertical line'''
-    vline = QtGui.QFrame()
-    vline.setFrameStyle(QtGui.QFrame.VLine)
+    vline = QtWidgets.QFrame()
+    vline.setFrameStyle(QtWidgets.QFrame.VLine)
     set_line_style(vline)
     return vline
 
 def create_hline():
     '''Creates a horizontal line'''
-    hline = QtGui.QFrame()
-    hline.setFrameStyle(QtGui.QFrame.HLine)
+    hline = QtWidgets.QFrame()
+    hline.setFrameStyle(QtWidgets.QFrame.HLine)
     set_line_style(hline)
     return hline
 

@@ -25,6 +25,7 @@ from __future__ import print_function
 from __future__ import division
 from future.utils import lrange
 
+from decimal import *
 import math
 import copy
 from operator import attrgetter
@@ -32,9 +33,12 @@ import router
 import utils
 
 def dump_cuts(cuts):
-    '''Dumps the cuts to the screen...this is for debugging.'''
+    '''Dumps the cuts to the screen...this is for debugging
+	in column form.
+	'''
+    print('Min\tMax')
     for c in cuts:
-        print(c.xmin, c.xmax)
+        print( '{1:3f}\t{1:3f}'.format(c.xmin, c.xmax) )
 
 class Spacing_Exception(Exception):
     '''
@@ -84,6 +88,7 @@ class Base_Spacing(object):
     labels = []
 
     def __init__(self, bit, boards, config):
+        getcontext().prec = 6   # overkilled prec (actually 4 is enough)
         self.description = 'NONE'
         self.bit = bit
         self.boards = boards
@@ -125,8 +130,8 @@ class Equally_Spaced(Base_Spacing):
 
         dh2 = 2 * self.dhtot
         t = [Spacing_Param(0, self.boards[0].width // 4 + dh2, 0),\
-             Spacing_Param(self.bit.width + dh2, self.boards[0].width // 2 + dh2,\
-                           self.bit.width + dh2),\
+             Spacing_Param(self.bit.midline + dh2, self.boards[0].width // 2 + dh2, \
+                           self.bit.midline + dh2),\
              Spacing_Param(None, None, True)]
         self.params = {}
         for i in lrange(len(t)):
@@ -136,50 +141,80 @@ class Equally_Spaced(Base_Spacing):
         '''
         Sets the cuts to make the joint
         '''
-        spacing = self.params['Spacing'].v - 2 * self.dhtot
-        width = self.params['Width'].v
+
+        # on local variables init 
+		# we have to care about imperial values and convert them to increments before use
+        spacing = self.params['Spacing'].v
+        width = Decimal( math.floor(self.params['Width'].v) )
+
+        if not self.bit.units.metric and width < 1.:
+            spacing = self.bit.units.inches_to_increments(self.params['Spacing'].v)
+            width = Decimal( math.floor(self.bit.units.inches_to_increments(self.params['Width'].v ) ))
+
+        shift = Decimal(self.bit.midline % 2) / 2  # offset to keep cut center mm count
         centered = self.params['Centered'].v
+        neck_width = width + spacing
+        overhang = self.bit.overhang
 
         board_width = self.boards[0].width
         units = self.bit.units
         label = units.increments_to_string(spacing, True)
+
+        min_interior = utils.my_round(self.dhtot + self.bit.overhang)
+		# min_finger_width means most thin wood at the corner
+        min_finger_width = max(1, units.abstract_to_increments(self.config.min_finger_width))
+
+        if centered or \
+           self.bit.angle > 0: # always symm. for dovetail
+            # put a cut at the center of the board with half of inctrmrnt prec.
+            xMid = Decimal(board_width // 2) - shift + (width % 2) / 2
+            left = Decimal(max(0, xMid - width / 2))
+        else:
+            xMid = board_width # - width / 2
+            # keep corner finger and groove equality on the board edges
+            left = ( board_width % (width + neck_width) ) // 2
+            if (left - overhang ) < min_finger_width:
+                left = 0
+
+        # Note the Width slider measures "midline" but indicates the actual cut space
+		# show actual maximum cut with for dovetails
         self.labels = self.keys[:]
         self.labels[0] += ': ' + label
-        self.labels[1] += ': ' + units.increments_to_string(width, True)
+        self.labels[1] += ': ' + units.increments_to_string(width + overhang * 2, True)
         self.description = 'Equally spaced (' + self.labels[0] + \
                            ', ' + self.labels[1] + ')'
         self.cuts = [] # return value
-        neck_width = width + spacing - 2 * utils.my_round(self.bit.offset)
-        if neck_width < 1:
-            raise Spacing_Exception('Specified bit paramters give a zero'
-                                    ' or negative cut width (%d increments) at'
-                                    ' the surface!  Please change the'
-                                    ' bit parameters width, depth, or angle.' % neck_width)
-        # put a cut at the center of the board
-        xMid = board_width // 2
-        if centered or \
-           self.bit.angle > 0: # always symm. for dovetail
-            left = max(0, xMid - width // 2)
-        else:
-            left = max(0, (xMid // width) * width)
-        right = min(board_width, left + width)
-        self.cuts.append(router.Cut(left, right))
+
+        right = Decimal( min(board_width, left + width) )
+        self.cuts.append( router.Cut( left - overhang, right + overhang ) )
+
         # do left side of board
-        i = left - neck_width
-        min_interior = utils.my_round(self.dhtot + self.bit.offset)
-        min_finger_width = max(1, units.abstract_to_increments(self.config.min_finger_width))
-        while i > 0:
-            li = max(i - width, 0)
-            if i - li > min_finger_width and i > min_interior:
-                self.cuts.append(router.Cut(li, i))
-            i = li - neck_width
+        i = left
+
+        while left > 0:
+            i -= neck_width
+            left = i - width
+
+            # prevent thin first cut
+            if left < min_finger_width:
+                left = 0
+            if (i - overhang ) > min_finger_width and (i - left  - overhang * 2) > min_interior:
+                self.cuts.append(router.Cut(max(0,left - overhang), i + overhang) )
+            i = left
+
         # do right side of board
-        i = right + neck_width
-        while i < board_width:
-            ri = min(i + width, board_width)
-            if ri - i > min_finger_width and board_width - i > min_interior:
-                self.cuts.append(router.Cut(i, ri))
-            i = ri + neck_width
+        i = right
+        while right < board_width:
+            i += neck_width
+            right = i + width
+            # prevent thin last cut
+			# devetail may cut off corner finger
+            if (board_width - right ) < min_finger_width:
+                right = board_width
+            if (board_width - i + overhang) > min_finger_width and (right - i - overhang * 2) > min_interior:
+                self.cuts.append(router.Cut(i - overhang, min(board_width, right + overhang) ) )
+            i = right
+
         # If we have only one cut the entire width of the board, then
         # the board width is too small for the bit
         if self.cuts[0].xmin == 0 and self.cuts[0].xmax == board_width:
@@ -198,7 +233,7 @@ class Variable_Spaced(Base_Spacing):
     '''
     Computes variable-spaced cuts, where the center cut (always centered on
     board) is the widest, with each cut decreasing linearly as you move to the edge.
-
+	arithmetical progression wirks just fine for such task
     Parameters that control the spacing are:
 
     Fingers: Roughly the number of full fingers on either the A or B board.
@@ -207,15 +242,13 @@ class Variable_Spaced(Base_Spacing):
 
     def __init__(self, bit, boards, config):
         Base_Spacing.__init__(self, bit, boards, config)
-        # eff_width is the effective width, an average of the bit width
-        # and the neck width
-        self.eff_width = utils.my_round(self.bit.width - self.bit.offset) + 2 * self.dhtot
-        self.eff_width += self.bit.dovetail_correction()
-        self.wb = self.boards[0].width // self.eff_width
-        self.alpha = (self.wb + 1) % 2
+
+
         # min and max number of fingers
-        self.mMin = max(3 - self.alpha, utils.my_round(math.ceil(math.sqrt(self.wb))))
-        self.mMax = utils.my_round((self.wb - 1.0 + self.alpha) // 2)
+        self.mMin = 3  #we actually can set 2 fingers but tests does not pass this value
+        overhang = self.bit.overhang
+        self.mMax = int((self.boards[0].width  // (self.bit.midline +  self.dhtot ) ) // 2 + 1)
+
         if self.mMax < self.mMin:
             raise Spacing_Exception('Unable to compute a variable-spaced'\
                                     ' joint for the board and bit parameters'\
@@ -229,59 +262,97 @@ class Variable_Spaced(Base_Spacing):
     def set_cuts(self):
         '''
         Sets the cuts to make the joint
+		S - progresion summary (half length of the board)
+		n - number of fingers (actually number of parts per half of the board)
+		d -  the difference between terms of the arithmetic progression
+		a1 - first cut width (it must be symmetric at center of the board)
+		an - the last cut or finger
+		because a1 is at the board center we got:
+		S = (n * 2*a1+(n-1) * d / 2 - a1/2 
+		from this equation we solve a1
+		a1 = ( (2 * S) - (n - 1) * n * d ) / (2 * n - 1) 
+		the next task is to find the best possible d (I love big numbers)
         '''
-        board_width = self.boards[0].width
-        m = self.params['Fingers'].v
-        self.labels = [self.keys[0] + ':']
-        self.description = 'Variable Spaced (' + self.keys[0] + ': {})'.format(m)
-        # c is the ideal center-cut width
-        c = self.eff_width * ((m - 1.0) * self.wb - \
-                              m * (m + 1.0) + self.alpha * m) /\
-            (m * m - 2.0 * m - 1.0 + self.alpha)
-        # d is the ideal decrease in finger width for each finger away from center finger
-        d = (c - self.eff_width) / (m - 1.0)
+        min_finger_width = Decimal( self.bit.units.abstract_to_increments(self.config.min_finger_width) + self.dhtot)
+        min_interior = self.bit.midline + self.dhtot * 2
+        S = math.floor(self.boards[0].width / 2) # half board width
+        shift = Decimal( (self.bit.midline ) % 2) / 2 # offset to keep cut senter
+
+        n = int(self.params['Fingers'].v)  # number of cuts
+        d = -16 # d is the ideal decrease in finger width for each finger away from center finger
+        overhang = self.bit.overhang # offset from midline to the end of cut
+        a1 = 0 # center cut
+        an = 0 # last cut
+
+		# Iterate to get perfect d value
+		# it is also possible to reverse d sometime to get cutc wider to the board corner
+		# the corner cut can't be too thin
+		# the minimum of pre-last cut should be not less than bit midline and extra bords width
+        while (an < min_interior or (an + d) <= min_finger_width) and d <= 0:
+            d += 1
+            a1 = utils.math_round( ( (2 * S) - (n - 1) * n * d ) / Decimal(2 * n - 1) )
+            an = a1 + Decimal(n - 2) * d
+
+        if d > 0 :
+            d = 0
+            a1 = min_interior
+            an = min_interior
+            delta = 0
+        else:
+            SP = (a1 + d + an) * (n - 1) + a1
+            delta = self.boards[0].width - SP
+
+
         # compute fingers on one side of the center and the center and store them
         # in increments.  Keep a running total of sizes.
-        increments = [0] * (m + 1)
-        ivals = 0
-        for i in lrange(1, m + 1):
-            increments[i] = max(self.bit.width, int(c - d * i))
-            ivals += 2 * increments[i]
-        # Set the center increment.  This takes up the slop in the rounding and increment
-        # resolution.
-        increments[0] = board_width - ivals
-        if increments[0] < increments[1]:
-            # The center increment is narrower than the adjacent increment,
-            # so reset it to the adjacent increment and get rid of a finger.
-            increments[0] = increments[1]
-            m -= 1
+        increments = [Decimal(0)] * int(n)
+        for i in lrange(0, n):
+            increments[i] = a1 + d * i
+            if increments[i] <  min_interior:
+                increments[i] = min_interior
+
+		# wide last cut 
+        if delta >= 2:
+            increments[-1] += delta // 2
+            delta -= (delta // 2) * 2
+
+		# wide center cut in case the delta is a 1 increment
+        if delta == 1:
+            increments[0] += delta
+            delta = 0
+
+        if increments[-1] > increments[-2] :
+            increments[-1] = increments[-2]
+
         if self.config.debug:
             print('v-s increments', increments)
-        # Adjustments for dovetails
-        deltaP = self.bit.width + 2 * self.dhtot - self.eff_width
-        deltaM = utils.my_round(self.eff_width - self.bit.neck - 2 * self.dhtot) - \
-                 self.bit.dovetail_correction()
+
         # put a cut at the center of the board
-        xMid = board_width // 2
-        width = increments[0] + deltaP
-        left = max(0, xMid -  width // 2)
-        right = min(board_width, left + width)
-        self.cuts = [router.Cut(left, right)]
-        # do the remaining cuts
+        xMid = S + shift - Decimal(increments[0] % 2) / 2
+        neck = Decimal(increments[0]) / 2
+        left =  xMid - neck
+        right = xMid + neck
+        self.labels = [self.keys[0] + ':']
+        self.description = 'Variable Spaced (' + self.keys[0] + ': {})\nML:{}  SYM:{}  SP[0]:{} PD: {}'.format(n, self.bit.midline, xMid, increments[0], self.bit.depth_0)
+
+        self.cuts = [router.Cut(left - overhang, right + overhang)]
+
         do_cut = False
-        for i in lrange(1, m + 1):
-            if do_cut:
-                width = increments[i] + deltaP
-                farLeft = max(0, left - width)
-                self.cuts.append(router.Cut(farLeft, left))
-                farRight = min(board_width, right + width)
-                self.cuts.append(router.Cut(right, farRight))
-            else:
-                width = increments[i] - deltaM
-                farLeft = max(0, left - width)
-                farRight = min(board_width, right + width)
-            left = farLeft
-            right = farRight
+        for i in lrange(1, n):
+            if do_cut :
+                # cut width
+                l_left = left - increments[i] - overhang
+                r_right = right + increments[i] + overhang
+               #prevent thin cuts
+                if l_left < min_finger_width:
+                    l_left = 0
+                if (self.boards[0].width - r_right) < min_finger_width:
+                    r_right = self.boards[0].width
+                self.cuts.append(router.Cut(max(0, l_left) , left + overhang))
+                self.cuts.append(router.Cut(right - overhang, r_right))
+
+            left -= increments[i]
+            right +=increments[i]
             do_cut = (not do_cut)
         # sort the cuts in increasing x
         self.cuts = sorted(self.cuts, key=attrgetter('xmin'))
@@ -323,11 +394,12 @@ class Edit_Spaced(Base_Spacing):
         '''
         xmin = 0
         xmax = self.boards[0].width
-        neck_width = utils.my_round(self.bit.neck)
+        midline = utils.my_round(self.bit.midline)
+        overhang = self.bit.overhang
         if f > 0:
-            xmin = self.cuts[f - 1].xmax + neck_width
+            xmin = self.cuts[f - 1].xmax + midline - overhang * 2
         if f < len(self.cuts) - 1:
-            xmax = self.cuts[f + 1].xmin - neck_width
+            xmax = self.cuts[f + 1].xmin - midline + overhang * 2
         return (xmin, xmax)
 
     def check_limits(self, f):
@@ -347,23 +419,27 @@ class Edit_Spaced(Base_Spacing):
     def cut_move_left(self):
         '''
         Moves the active cuts 1 increment to the left
+		with min finger with respect
         '''
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
         delete_cut = False
         for f in self.active_cuts:
             c = self.cuts[f]
-            c.xmin = max(0, c.xmin - 1)
-            if c.xmax == 1:
+            c.xmin -= 1
+            if c.xmin <= min_finger_width:
+                c.xmin = 0
+            if (c.xmax - self.bit.overhang) <= min_finger_width:
                 # note its possible for only one cut to be deleted
                 delete_cut = True
             elif c.xmax == self.boards[0].width:
                 # if on the right end, create a new finger if it gets too wide
-                wNew = self.bit.width + 2 * self.dhtot
+                wNew = self.bit.midline + (self.dhtot + self.bit.overhang) * 2
                 w = c.xmax - c.xmin
-                if w > wNew:
-                    c.xmax -= 1
+                if (w - wNew) >= min_finger_width:
+                    c.xmax = c.xmin + (self.dhtot * 2 + self.bit.width_f)
             else:
                 c.xmax -= 1
         msg = ''
@@ -390,23 +466,28 @@ class Edit_Spaced(Base_Spacing):
     def cut_move_right(self):
         '''
         Moves the active cuts 1 increment to the right
+		with min finger with respect
         '''
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
         delete_cut = False
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
+
         for f in self.active_cuts:
             c = self.cuts[f]
-            c.xmax = min(self.boards[0].width, c.xmax + 1)
-            if c.xmin == self.boards[0].width - 1:
+            c.xmax += 1
+            if self.boards[0].width - c.xmax < min_finger_width:
+                c.xmax = self.boards[0].width
+            if (c.xmin + self.bit.overhang + min_finger_width) >= self.boards[0].width:
                 # note its possible for only one cut to be deleted
                 delete_cut = True
             elif c.xmin == 0:
                 # if on the left end, create a new finger if it gets too wide
-                wNew = self.bit.width + 2 * self.dhtot
+                wNew = self.bit.midline + (self.dhtot + self.bit.overhang) * 2
                 w = c.xmax - c.xmin
-                if w > wNew:
-                    c.xmin = 1
+                if (w - wNew) >= min_finger_width:
+                    c.xmin = c.xmax - (self.dhtot * 2 + self.bit.width_f)
             else:
                 c.xmin += 1
         msg = ''
@@ -434,6 +515,7 @@ class Edit_Spaced(Base_Spacing):
         '''
         Increases the active cuts width on the left side by 1 increment
         '''
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
@@ -442,6 +524,8 @@ class Edit_Spaced(Base_Spacing):
             (xmin, xmax) = self.get_limits(f)
             if c.xmin > xmin:
                 c.xmin -= 1
+                if c.xmin < min_finger_width:
+                    c.xmin = 0
                 self.cuts[f] = c
                 op.append(f)
             else:
@@ -462,6 +546,7 @@ class Edit_Spaced(Base_Spacing):
         '''
         Increases the active cuts width on the right side by 1 increment
         '''
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
@@ -470,6 +555,8 @@ class Edit_Spaced(Base_Spacing):
             (xmin, xmax) = self.get_limits(f)
             if c.xmax < xmax:
                 c.xmax += 1
+                if self.boards[0].width - c.xmax < min_finger_width:
+                    c.xmax = self.boards[0].width
                 self.cuts[f] = c
                 op.append(f)
             else:
@@ -493,15 +580,21 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
+
         for f in self.active_cuts:
             c = self.cuts[f]
-            wmin = self.bit.width + 2 * self.dhtot
-            if c.xmax == self.boards[0].width:
-                wmin = 1
-            if c.xmax - c.xmin <= wmin:
-                noop.append(f)
+            wmin = self.bit.width_f + 2 * self.dhtot
+            if c.xmin == 0:
+                c.xmin = max(0, c.xmax - self.bit.width_f - 2 * self.dhtot)
+                if c.xmin < min_finger_width:
+                    c.xmin = 0
             else:
                 c.xmin += 1
+
+            if c.xmax < self.boards[0].width and c.xmin > 0 and (c.xmax - c.xmin) < wmin:
+                    noop.append(f)
+            else:
                 self.cuts[f] = c
                 op.append(f)
         if len(noop) > 0:
@@ -523,15 +616,20 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         op = []
         noop = []
+        min_finger_width = self.bit.units.abstract_to_increments(self.config.min_finger_width)
+
         for f in self.active_cuts:
             c = self.cuts[f]
-            wmin = self.bit.width + 2 * self.dhtot
-            if c.xmin == 0:
-                wmin = 1
-            if c.xmax - c.xmin <= wmin:
-                noop.append(f)
+            wmin = self.bit.width_f + 2 * self.dhtot
+            if c.xmax == self.boards[0].width:
+                c.xmax = min(self.boards[0].width, c.xmin + self.bit.width_f + 2 * self.dhtot)
+                if self.boards[0].width - c.xmax < min_finger_width:
+                    c.xmax = self.boards[0].width
             else:
                 c.xmax -= 1
+            if c.xmax < self.boards[0].width and c.xmin > 0 and (c.xmax - c.xmin) < wmin:
+                noop.append(f)
+            else :
                 self.cuts[f] = c
                 op.append(f)
         if len(noop) > 0:
@@ -632,40 +730,49 @@ class Edit_Spaced(Base_Spacing):
         Adds a cut to the first location possible, searching from the left.
         The active cut is set the the new cut.
         '''
-        neck_width = utils.my_round(self.bit.neck)
+        overhang = self.bit.overhang
+        midline = self.bit.midline
         index = None
         cuts_save = copy.deepcopy(self.cuts)
-        if self.cuts[0].xmin > self.bit.neck:
+        min_finger_width = math.floor(self.bit.units.abstract_to_increments(self.config.min_finger_width)) + 1
+        wadd = min_finger_width + self.dhtot
+        if self.cuts[0].xmin > self.bit.midline - overhang + wadd:
             if self.config.debug:
                 print('add at left')
             index = 0
             xmin = 0
-            xmax = self.cuts[0].xmin - neck_width
-        wadd = 2 * self.bit.width + neck_width
-        wdelta = self.bit.width - neck_width
+            xmax = xmin + wadd + overhang
+
+        wadd = 2 * (self.bit.midline + self.dhtot)
+        wdelta = overhang * 2
+
         for i in lrange(1, len(self.cuts)):
-            if self.cuts[i].xmin - self.cuts[i - 1].xmax + wdelta >= wadd:
+            if self.cuts[i].xmin - self.cuts[i - 1].xmax + wdelta >= wadd + self.bit.midline:
                 if self.config.debug:
                     print('add in cut')
                 index = i
-                xmin = self.cuts[i - 1].xmax + neck_width
-                xmax = xmin + self.bit.width
+                xmin = self.cuts[i - 1].xmax - overhang + midline
+                xmax = xmin + self.bit.midline + overhang + 2 * self.dhtot
+                xmin -= overhang
                 break
-            elif self.cuts[i].xmax - self.cuts[i].xmin >= wadd:
+
+            elif (self.cuts[i].xmax - self.cuts[i].xmin - wdelta) >= wadd + self.bit.midline:
                 if self.config.debug:
                     print('add in cut')
                 index = i + 1
-                xmin = self.cuts[i].xmax - self.bit.width
-                xmax = self.cuts[i].xmax
-                self.cuts[i].xmax = self.cuts[i].xmin + self.bit.width
+                xmax = self.cuts[i].xmin + self.bit.midline + (overhang + self.dhtot) * 2
+                xmin = xmax + self.bit.midline - 2 * overhang
+                t = self.cuts[i].xmax
+                self.cuts[i].xmax = xmax
+                xmax = t
                 break
         if index is None and \
-           self.cuts[-1].xmax < self.boards[0].width - self.bit.neck:
+           self.cuts[-1].xmax < self.boards[0].width - overhang:
             if self.config.debug:
                 print('add at right')
             index = len(self.cuts)
             xmax = self.boards[0].width
-            xmin = self.cuts[-1].xmax + neck_width
+            xmin = self.cuts[-1].xmax - overhang
         if index is None:
             return ('Unable to add cut', True)
         self.undo_cuts.append(cuts_save)

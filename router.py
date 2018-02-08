@@ -92,7 +92,7 @@ class Router_Bit(object):
 
     width_f: perfect width with no rounding
 
-    gap: the calculated disstance to perfect fit (exact join)
+    gap: the calculated disstance to perfect fit value
 
     halfwidth: half of width
     '''
@@ -178,18 +178,22 @@ class Router_Bit(object):
         self.midline = Decimal(repr(self.width))
         self.depth_0 = Decimal(repr(self.depth))
         self.width_f = Decimal(repr(self.width))
-        self.gap = 0  #no gap for staight bit
+        self.gap = 0
 
         if self.angle > 0:
             tan = Decimal(math.tan(self.angle * math.pi / 180))
             offset = Decimal(self.depth) * tan
-            self.midline = self.width_f - offset  # actual midline
-            midline = self.midline.to_integral_value( rounding=ROUND_HALF_DOWN)  #midline we can get
-            self.gap =  self.midline - midline
+            self.midline = self.width_f - offset
+            midline = self.midline.to_integral_value( rounding=ROUND_HALF_DOWN)
+            self.gap = self.midline - midline
             self.midline = midline
-            self.depth_0 = (self.width_f - self.midline) / tan    #perfect/recomended depth to get perfect fit.
+            self.depth_0 = (self.width_f - self.midline) / tan
 
         self.overhang = (self.width_f - self.midline) / 2
+
+        #if self.config.debug:
+        print('gap:%f depth:%f' % (self.gap, self.depth_0))
+        print('gap_local:%f depth_local:%f' % (self.units.increments_to_length(self.gap * 2), self.units.increments_to_length(self.depth_0)))
 
 
 class My_Rectangle(object):
@@ -740,65 +744,22 @@ class Joint_Geometry(object):
         '''
         Sets the maximum gap and overlap over all joints.
         '''
-        # Determine the board indices for each joint:
-        #     [board index top_cut, board index bottom_cut]
-        if self.boards[2].active:
-            joints = [[1, 2]]
-            if self.boards[3].active:
-                joints.append([2, 3])
-                joints.append([3, 0])
-            else:
-                joints.append([2, 0])
-        else:
-            joints = [[1, 0]]
-
-        # Load up the coordinates for the boards
-        coords = []
-        for i in range(4):
-            if self.boards[i].active:
-                coords.append(self.boards[i].do_all_cuts(self.bit))
-
-        # Determine the max gap and overlap
+        # The gap is same around allof joints:
         self.max_gap = 0
         self.max_overlap = 0
-        for j in joints:
-            # Here, bottom and top are with respect to the joint, not the
-            # boards, so they're flipped. Roughly, should have ybot < ytop.
-            xbot = coords[j[0]][0]
-            ybot = coords[j[0]][1]
-            xtop = coords[j[1]][2]
-            ytop = coords[j[1]][3]
-            n = len(xtop)
-            yshift = Decimal(self.boards[j[1]].yB()) - Decimal(self.boards[j[0]].yT()) +\
-                     self.bit.depth_0
-            for i in range(n):
-                ybot[i] += round(yshift,4)
-            for i in range(n - 1):
-                d = gap_overlap((xbot[i], xbot[i+1]),
-                                (ybot[i], ybot[i+1]),
-                                (xtop[i], xtop[i+1]),
-                                (ytop[i], ytop[i+1]))
-                if d > 0:
-                    self.max_gap = max(self.max_gap, d)
-                else:
-                    self.max_overlap = max(self.max_overlap, -d)
 
-def gap_overlap(xbot, ybot, xtop, ytop):
-    '''
-    Returns the distance between the midpoint of (xbot, ybot) to the 
-    line (xtop, ytop).  If positive, then a gap; otherwise, an overlap.
-    '''
-    # find unit normal from bottom line
-    dxbot = xbot[1] - xbot[0]
-    dybot = ybot[1] - ybot[0]
-    norm = Decimal('1') / Decimal( math.sqrt(dxbot * dxbot + dybot * dybot) )
-    nx = -dybot * norm
-    ny = dxbot * norm
-    # vector connecting midpoints
-    dx = Decimal('0.5') * (xtop[1] + xtop[0] - xbot[1] - xbot[0])
-    dy = Decimal('0.5') * (ytop[1] + ytop[0] - ybot[1] - ybot[0])
-    # the dot product is our result
-    return dx * nx + dy * ny
+        if self.bit.gap > 0:
+            self.max_gap = self.bit.gap
+        else:
+            self.max_overlap = -self.bit.gap
+
+#Depricated. The gap already known from bit
+# def gap_overlap(xbot, ybot, xtop, ytop):
+#    '''
+#    Returns the distance between the midpoint of (xbot, ybot) to the
+#    line (xtop, ytop).  If positive, then a gap; otherwise, an overlap.
+#    '''
+
 
 def create_title(boards, bit, spacing):
     '''
@@ -816,7 +777,7 @@ def create_title(boards, bit, spacing):
             title += units.increments_to_string(boards[2].dheight, True)
     title += '    Bit: '
     if bit.angle > 0:
-        title += '%.1f deg. dovetail' % bit.angle
+        title += '%.1f\xB0 dovetail' % bit.angle
     else:
         title += 'straight'
     title += ', width: '

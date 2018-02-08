@@ -28,11 +28,12 @@ import sys
 import unittest
 from qt_driver import Driver
 import utils
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtTest import QTest
+from PyQt5 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
+from PyQt5.QtTest import QTest
 
-app = QtGui.QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 
 class Case(object):
     def __init__(self, angle, width, depth, spacing, board_width=7):
@@ -66,7 +67,7 @@ class Driver_Test(unittest.TestCase):
         self.d.show()
         self.d.raise_()
         self.debug = self.d.config.debug
-        QTest.qWaitForWindowShown(self.d)
+        QTest.qWaitForWindowExposed(self.d)
         if not utils.isMac():
             self.d.working_dir = 'Z:\Windows\pyRouterJig\images'
     def test_options(self):
@@ -77,7 +78,7 @@ class Driver_Test(unittest.TestCase):
         self.assertEqual(str(self.d.le_bit_depth.text()), '3/4')
         self.assertEqual(str(self.d.le_bit_angle.text()), '0')
     def screenshot(self, do_screenshot=True):
-        QTest.qWaitForWindowShown(self.d)
+        QTest.qWaitForWindowExposed(self.d)
         QTest.qWait(100)
         self.d._on_save(do_screenshot)
     def test_screenshots(self):
