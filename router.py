@@ -29,6 +29,9 @@ import math
 from decimal import *
 import utils
 
+#some
+from  spacing import dump_cuts
+
 class Router_Exception(Exception):
     '''
     Exception handler for all routerJig
@@ -151,6 +154,7 @@ class Router_Bit(object):
             raise Router_Exception(msg)
         self.depth = depth
         self.reinit()
+
     def set_angle_from_string(self, s):
         '''
         Sets the angle from the string s, where s represents a floating point number or fractional number.
@@ -165,6 +169,7 @@ class Router_Bit(object):
             raise Router_Exception(msg)
         self.angle = angle
         self.reinit()
+
     def reinit(self):
         '''
         Reinitializes internal attributes that are dependent on width
@@ -173,15 +178,22 @@ class Router_Bit(object):
         self.midline = Decimal(repr(self.width))
         self.depth_0 = Decimal(repr(self.depth))
         self.width_f = Decimal(repr(self.width))
+        self.gap = 0
 
         if self.angle > 0:
             tan = Decimal(math.tan(self.angle * math.pi / 180))
             offset = Decimal(self.depth) * tan
             self.midline = self.width_f - offset
-            self.midline = self.midline.to_integral_value( rounding=ROUND_HALF_DOWN)
+            midline = self.midline.to_integral_value( rounding=ROUND_HALF_DOWN)
+            self.gap = self.midline - midline
+            self.midline = midline
             self.depth_0 = (self.width_f - self.midline) / tan
 
         self.overhang = (self.width_f - self.midline) / 2
+
+        #if self.config.debug:
+        print('gap:%f depth:%f' % (self.gap, self.depth_0))
+        print('gap_local:%f depth_local:%f' % (self.units.increments_to_length(self.gap * 2), self.units.increments_to_length(self.depth_0)))
 
 
 class My_Rectangle(object):
@@ -511,8 +523,6 @@ class Cut(object):
     def validate(self, bit, board):
         '''
         Checks whether the attributes of the cut are valid.
-		Because we works with floating point it is yet a rounding error
-		Comparisions made with respect to precision
         '''
         if self.xmin >= self.xmax:
             raise Router_Exception('cut xmin = %d, xmax = %d: '\
@@ -530,7 +540,7 @@ class Cut(object):
                                    % (self.xmin, self.xmax, bit.width_f))
     def make_router_passes(self, bit, board):
         '''Computes passes for the given bit.'''
-        # The updated logic below assumes bit.width is even for stright bits only
+        # The logic below assumes bit.width is even for stright bits only
 
         self.validate(bit, board)
         # set current extents of the uncut region
@@ -541,6 +551,7 @@ class Cut(object):
         # alternate between the left and right sides of the overall cut to make the passes
         remainder = xR - xL
         self.passes = []
+
         while remainder > 0:
             p0 = utils.math_round(xR - halfwidth) # right size cut
             p1 = utils.math_round(xL + halfwidth) # left size cut
@@ -579,6 +590,7 @@ def adjoining_cuts(cuts, bit, board):
     nc = len(cuts)
     offset = bit.width_f-bit.midline
     adjCuts = []
+
     # if the left-most input cut does not include the left edge, add an
     # adjoining cut that includes the left edge
     if cuts[0].xmin > 0:
@@ -598,12 +610,14 @@ def adjoining_cuts(cuts, bit, board):
     # adjoining cut that includes this edge
     if cuts[-1].xmax < board.width:
         left = cuts[-1].xmax - offset + board.dheight
+
         right = Decimal(board.width)
+
         if right - left >= board.dheight:
             adjCuts.append(Cut( left, right))
-	# for runtime debug only
-    #print('adjoining_cuts cuts:')
-    #dump_cuts(adjCuts)
+
+    print('adjoining_cuts cuts:')
+    dump_cuts(adjCuts)
     return adjCuts
 
 def caul_cuts(cuts, bit, board, trim):
@@ -650,6 +664,7 @@ def cut_boards(boards, bit, spacing):
     # make the top cuts on the bottom board
     top = adjoining_cuts(last, bit, boards[1])
     boards[1].set_top_cuts(top, bit)
+    #boards[1].set_top_cuts(last, bit)
 
 class Joint_Geometry(object):
     '''
@@ -728,21 +743,23 @@ class Joint_Geometry(object):
     def compute_fit(self):
         '''
         Sets the maximum gap and overlap over all joints.
-		The gap is already computed in the bit object
         '''
+        # The gap is same around allof joints:
         self.max_gap = 0
         self.max_overlap = 0
+
         if self.bit.gap > 0:
             self.max_gap = self.bit.gap
         else:
             self.max_overlap = -self.bit.gap
-			
-#No need such calculation anymore
-#def gap_overlap(xbot, ybot, xtop, ytop):
+
+#Depricated. The gap already known from bit
+# def gap_overlap(xbot, ybot, xtop, ytop):
 #    '''
-#    Returns the distance between the midpoint of (xbot, ybot) to the 
+#    Returns the distance between the midpoint of (xbot, ybot) to the
 #    line (xtop, ytop).  If positive, then a gap; otherwise, an overlap.
 #    '''
+
 
 def create_title(boards, bit, spacing):
     '''
@@ -760,7 +777,7 @@ def create_title(boards, bit, spacing):
             title += units.increments_to_string(boards[2].dheight, True)
     title += '    Bit: '
     if bit.angle > 0:
-        title += '%.1f deg. dovetail' % bit.angle
+        title += '%.1f\xB0 dovetail' % bit.angle
     else:
         title += 'straight'
     title += ', width: '
