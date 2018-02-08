@@ -122,20 +122,25 @@ class Router_Bit(object):
         try:
             if self.units.metric:
                 width = self.units.string_to_float(s)
+                if width <= 1:
+                    width *= self.units.mm_per_inch
             else:
                 width = self.units.string_to_increments(s)
         except:
             raise Router_Exception(msg)
         if width <= 0:
             raise Router_Exception(msg)
-        #halfwidth = width // 2
-        #if 2 * halfwidth != width:
-        #    msg += '<p>Bit Width must be an even number of increments.<p>'\
-        #           'The increment size is: {}<p>'\
-        #           ''.format(self.units.increments_to_string(1, True))
-        #    raise Router_Exception(msg)
+
+        halfwidth = width // 2
+        if (2 * halfwidth != width or math.floor(width) != width ) and self.angle == 0:
+            msg += '<p>Stright Bit Width must be an even number of increments.<p>'\
+                   'The increment size is: {}<p>'\
+                   ''.format(self.units.increments_to_string(1, True))
+            raise Router_Exception(msg)
+
         self.width = width
         self.reinit()
+
     def set_depth_from_string(self, s):
         '''
         Sets the depth from the string s, following requirements from units.string_to_increments().
@@ -163,6 +168,11 @@ class Router_Bit(object):
               'Set to zero or a positive value, such as 7.5 or "7 1/2"'.format(s)
         try:
             angle = self.units.string_to_float(s)
+            if angle == 0 and math.floor(self.width_f) != self.width_f:
+                msg = 'Unable to set Bit Angle to: 0<p>' \
+                      'Change Bit Width to odd value first <p>'\
+                      'than drop angle to 0 to get stright bit'
+                raise()
         except:
             raise Router_Exception(msg)
         if angle < 0:
@@ -178,22 +188,22 @@ class Router_Bit(object):
         self.midline = Decimal(repr(self.width))
         self.depth_0 = Decimal(repr(self.depth))
         self.width_f = Decimal(repr(self.width))
-        self.gap = 0
+        self.gap = Decimal('0')
 
         if self.angle > 0:
             tan = Decimal(math.tan(self.angle * math.pi / 180))
             offset = Decimal(self.depth) * tan
             self.midline = self.width_f - offset
             midline = self.midline.to_integral_value( rounding=ROUND_HALF_DOWN)
-            self.gap = self.midline - midline
+            self.gap = Decimal(self.midline) - midline
             self.midline = midline
             self.depth_0 = (self.width_f - self.midline) / tan
 
         self.overhang = (self.width_f - self.midline) / 2
 
         #if self.config.debug:
-        print('gap:%f depth:%f' % (self.gap, self.depth_0))
-        print('gap_local:%f depth_local:%f' % (self.units.increments_to_length(self.gap * 2), self.units.increments_to_length(self.depth_0)))
+        #print('gap:%f depth:%f' % (self.gap, self.depth_0))
+        #print('gap_local:%f depth_local:%f' % (self.units.increments_to_length(self.gap * 2), self.units.increments_to_length(self.depth_0)))
 
 
 class My_Rectangle(object):
@@ -326,6 +336,9 @@ class Board(My_Rectangle):
         '''Creates the perimeter coordinates for the given cuts'''
         x = []
         y = []
+        halfgap = bit.gap / 2
+        overhang = 2 * bit.overhang
+
         if cuts[0].xmin > 0:
             x = [Decimal(self.xL())]
             y = [Decimal(y_nocut)]
@@ -333,17 +346,17 @@ class Board(My_Rectangle):
         for c in cuts:
             if c.xmin > 0:
                 # on the surface, start of cut
-                x.append(c.xmin + x[0] + bit.overhang)
+                x.append(c.xmin + x[0] + overhang - halfgap)
                 y.append(Decimal(y_nocut))
             # at the cut depth, start of cut
-            x.append(c.xmin + self.xL())
+            x.append(c.xmin + self.xL() - halfgap)
             y.append(Decimal(y_cut))
             # at the cut depth, end of cut
-            x.append(c.xmax + self.xL())
+            x.append(c.xmax + self.xL()  + halfgap)
             y.append(Decimal(y_cut))
             if c.xmax < self.width:
                 # at the surface, end of cut
-                x.append(c.xmax + self.xL() - bit.overhang)
+                x.append(c.xmax + self.xL() - overhang + halfgap)
                 y.append(Decimal(y_nocut))
         # add the last point on the top and bottom, at the right edge,
         # accounting for whether the last cut includes this edge or not.

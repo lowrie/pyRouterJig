@@ -70,7 +70,7 @@ class My_Fraction(object):
         '''
         if self.denominator is None or self.numerator == 0:
             return
-		# directly convert to integer because of direct access posibility
+        # directly convert to integer because of direct access posibility
         self.numerator = int(self.numerator)
         self.denominator = int(self.denominator)
         dwhole = self.numerator // self.denominator
