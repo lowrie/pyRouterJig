@@ -23,7 +23,7 @@ This module contains base utilities for pyRouterJig
 '''
 from __future__ import division
 from __future__ import print_function
-
+from decimal import *
 import math, fractions, os, glob, platform
 
 VERSION = '0.9.3'
@@ -33,6 +33,12 @@ def my_round(f):
     Rounds to the nearest integer
     '''
     return int(round(f))
+
+def math_round(no):
+    '''
+    Return mathimatical round to integer
+    '''
+    return int(no//1 + ((no%1)/Decimal('0.5'))//1)
 
 def isMac():
     return (platform.system() == 'Darwin')
@@ -54,7 +60,7 @@ class My_Fraction(object):
         else:
             self.sign = 1
         self.whole = abs(whole)
-        self.numerator = abs(numerator)
+        self.numerator = int(abs(numerator))
         self.denominator = denominator
         self.english_separator = english_separator
     def reduce(self):
@@ -64,10 +70,13 @@ class My_Fraction(object):
         '''
         if self.denominator is None or self.numerator == 0:
             return
+		# directly convert to integer because of direct access posibility
+        self.numerator = int(self.numerator)
+        self.denominator = int(self.denominator)
         dwhole = self.numerator // self.denominator
         self.whole += dwhole
-        self.numerator -= dwhole * self.denominator
-        gcd = fractions.gcd(self.numerator, self.denominator)
+        self.numerator -= dwhole * self.denominator 
+        gcd = math.gcd(self.numerator, self.denominator)  #Python3 requres math.gcd
         self.numerator /= gcd
         self.denominator /= gcd
     def to_string(self):
@@ -175,9 +184,10 @@ class Units(object):
         '''
         A string representation of the value increments, converted to
         its respective units.
+		metric conversion requires fixed point rounding
         '''
         if self.metric:
-            r = '%g' % (increments / float(self.num_increments))
+            r = '%g' % ( Decimal(increments) / Decimal(self.num_increments) )
         else:
             allow_denoms = [1, 2, 4, 8, 16, 32, 64]
             if isinstance(increments, float):

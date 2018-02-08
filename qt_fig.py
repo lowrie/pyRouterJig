@@ -23,6 +23,7 @@ Contains the Qt functionality for drawing the template and boards.
 '''
 from __future__ import print_function
 from __future__ import division
+from decimal import Decimal
 from future.utils import lrange
 
 import time
@@ -363,7 +364,7 @@ class Qt_Fig(QtWidgets.QWidget):
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
-        self.draw_finger_sizes(painter)
+        #self.draw_finger_sizes(painter)
         if self.config.show_finger_widths:
             self.draw_finger_sizes(painter)
 
@@ -826,9 +827,9 @@ class Qt_Fig(QtWidgets.QWidget):
         xLB = xLT
         xRB = xRT
         if c.xmin > 0:
-            xLB += self.geom.bit.offset
+            xLB += self.geom.bit.overhang
         if c.xmax < self.geom.boards[0].width:
-            xRB -= self.geom.bit.offset
+            xRB -= self.geom.bit.overhang
         yB = boards[0].yB()
         yT = yB + self.geom.bit.depth
         poly = QtGui.QPolygonF()
@@ -893,8 +894,9 @@ class Qt_Fig(QtWidgets.QWidget):
         yT = self.geom.boards[0].yT()
         pen.setColor(QtCore.Qt.green)
         painter.setPen(pen)
-        painter.drawLine(QtCore.QPointF(xminG - 0.5, yB), QtCore.QPointF(xminG - 0.5, yT) )
-        painter.drawLine(QtCore.QPointF(xmaxG + 0.5, yB), QtCore.QPointF(xmaxG + 0.5, yT) )
+        half = Decimal(0.5)
+        painter.drawLine(QtCore.QPointF(xminG - half, yB), QtCore.QPointF(xminG - half, yT) )
+        painter.drawLine(QtCore.QPointF(xmaxG + half, yB), QtCore.QPointF(xmaxG + half, yT) )
         painter.restore()
 
         # draw the perimeter of the cursor cut at the end to get it always visible
@@ -919,6 +921,7 @@ class Qt_Fig(QtWidgets.QWidget):
     def draw_finger_sizes(self, painter):
         '''
         Annotates the finger sizes on each board
+        with 3 digit precision
         '''
         units = self.geom.bit.units
         self.set_font_size(painter, 'template')
@@ -941,7 +944,7 @@ class Qt_Fig(QtWidgets.QWidget):
         for c in bcuts:
             x = self.geom.boards[1].xL() + (c.xmin + c.xmax) // 2
             y = self.geom.boards[1].yT()
-            label = units.increments_to_string(c.xmax - c.xmin)
+            label = units.increments_to_string( round(c.xmax - c.xmin, 3) )
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill_color=fcolor)
         # ... do the A cuts
@@ -950,7 +953,7 @@ class Qt_Fig(QtWidgets.QWidget):
         for c in acuts:
             x = self.geom.boards[0].xL() + (c.xmin + c.xmax) // 2
             y = self.geom.boards[0].yB()
-            label = units.increments_to_string(c.xmax - c.xmin)
+            label = units.increments_to_string( round(c.xmax - c.xmin, 3) )
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill_color=fcolor)
 
@@ -1016,8 +1019,9 @@ class Qt_Fig(QtWidgets.QWidget):
             return
 
         if self.config.debug:
-            print('qt_fig.wheelEvent', event.delta())
-        self.scaling *= 1 + 0.05 * event.delta() / 120
+            print('qt_fig.wheelEvent', event.angleDelta())
+        ppp = event.angleDelta() / 120
+        self.scaling *= 1 + 0.05 * ppp.y()
         self.update()
 
     def mousePressEvent(self, event):
@@ -1065,7 +1069,7 @@ class Qt_Fig(QtWidgets.QWidget):
             event.ignore()
             return
 
-        pos = self.base_transform.map(event.posF())
+        pos = self.base_transform.map(event.localPos())
         if self.config.debug:
             print('mouse moved here: {} {}'.format(pos.x(), pos.y()))
         diffx = (pos.x() - self.mouse_pos.x())
