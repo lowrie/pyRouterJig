@@ -38,7 +38,7 @@ def dump_cuts(cuts):
     '''
     print('Min\tMax')
     for c in cuts:
-        print( '{1:3f}\t{1:3f}'.format(c.xmin, c.xmax) )
+        print( '{:f}\t{:f}'.format(c.xmin, c.xmax) )
 
 class Spacing_Exception(Exception):
     '''
