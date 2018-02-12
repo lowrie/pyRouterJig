@@ -219,11 +219,6 @@ class Router_Bit(object):
 
         self.overhang = (self.width_f - self.midline) / 2
 
-        #if self.config.debug:
-        #print('gap:%f depth:%f' % (self.gap, self.depth_0))
-        #print('gap_local:%f depth_local:%f' % (self.units.increments_to_length(self.gap * 2), self.units.increments_to_length(self.depth_0)))
-
-
 class My_Rectangle(object):
     '''
     Stores a rectangle geometry
@@ -581,7 +576,7 @@ class Cut(object):
 
         self.validate(bit, board)
 
-        cutpass = int(bit.width_f * (100 - bit.bit_gentle) / 100)
+        cutpass = int((bit.width_f * bit.bit_gentle) / 100)
         halfwidth = bit.width_f / 2
 
         # alternate between the left and right sides of the overall cut to make the passes
@@ -601,19 +596,18 @@ class Cut(object):
             self.passes.append(int(p0))
 
         while remainder > 0:
+            remainder = p0 - p1
 
             if p0 != p1 and ( (p1 + halfwidth) - self.xmax < self.precision or self.xmax == board.width ):
                 p1 = int(p1)
                 self.passes.append( int(p1) )
 
-            if remainder <= ( cutpass * 3 ) // 2:
-                p1 += remainder // 2
+            if remainder <= (bit.width_f * 2) // 3:
+                p1 = p0 - remainder // 2
             else:
                 p1 += cutpass
 
-            remainder = p0 - p1
-
-            if remainder <= (cutpass * 3 / 2) :
+            if remainder < (bit.width_f * 4) // 5 :
                 remainder = 0
 
         # Sort the passes
