@@ -96,11 +96,12 @@ class Router_Bit(object):
 
     halfwidth: half of width
     '''
-    def __init__(self, units, width, depth, angle=0):
+    def __init__(self, units, width, depth, angle=0, bit_gentle = 33.):
         self.units = units
         self.width = width
         self.depth = depth
         self.angle = angle
+        self.bit_gentle = Decimal(bit_gentle)
 
         self.midline = Decimal('0')
         self.depth_0 = Decimal('0')
@@ -109,6 +110,23 @@ class Router_Bit(object):
         self.gap= Decimal('0')
 
         self.reinit()
+
+    def set_gentle_from_string(self, s):
+        '''
+        Sets the width from the string s, following requirements from units.string_to_increments().
+        '''
+        msg = 'Unable to set gentle to: {}<p>'\
+              'Set to a positive value from 1 to 100%, such as: {}'.format(s, 33.3)
+        try:
+            bit_gentle = self.units.string_to_float(s)
+            if bit_gentle < 1 or bit_gentle > 100:
+                raise()
+        except:
+            raise Router_Exception(msg)
+
+        self.bit_gentle = Decimal(s)
+        self.reinit()
+
     def set_width_from_string(self, s):
         '''
         Sets the width from the string s, following requirements from units.string_to_increments().
@@ -552,33 +570,51 @@ class Cut(object):
                                    'Bit width (%f) delta too large for this cut!'\
                                    % (self.xmin, self.xmax, bit.width_f))
     def make_router_passes(self, bit, board):
-        '''Computes passes for the given bit.'''
-        # The logic below assumes bit.width is even for stright bits only
+        '''Computes passes for the given bit.
+        The logic below assumes bit.width is even for stright bits only
+        Here we made board cuts to avoid chips according to the following rules
+        1 - avoid full cuts as mach as possible
+        2 - expanding cuts shell take about quarter of bit width from left side
+        3 - multi-passed corner right cuts
+        4 - corner right cut as is (it is most risky cut but we can't optimize it on Incra)
+        '''
 
         self.validate(bit, board)
-        # set current extents of the uncut region
-        xL = self.xmin
-        xR = self.xmax
-        bitwidth = Decimal(repr(bit.width))
-        halfwidth = bitwidth / 2
+
+        cutpass = int(bit.width_f * (100 - bit.bit_gentle) / 100)
+        halfwidth = bit.width_f / 2
+
         # alternate between the left and right sides of the overall cut to make the passes
-        remainder = xR - xL
+        remainder = self.xmax - self.xmin
+        p0 = self.xmax
+
+        if self.xmax == board.width and remainder > halfwidth:
+            p0 = self.xmax + halfwidth - cutpass
+        else :
+            p0 = utils.math_round(self.xmax - halfwidth)  # right size cut
+
+        p1 = utils.math_round(self.xmin + halfwidth )  # left size cut
+
         self.passes = []
 
+        if self.xmax <= board.width and (self.xmin - (p0 - halfwidth) < self.precision or self.xmin == 0):
+            self.passes.append(int(p0))
+
         while remainder > 0:
-            p0 = utils.math_round(xR - halfwidth) # right size cut
-            p1 = utils.math_round(xL + halfwidth) # left size cut
 
-            if self.xmax <= board.width and ( self.xmin - (p0 - halfwidth) < self.precision or self.xmin == 0 ):
-                self.passes.append( int(p0) )
-
-            if p0 != p1 and ( (p1 +halfwidth) - self.xmax < self.precision or self.xmax == board.width ):
+            if p0 != p1 and ( (p1 + halfwidth) - self.xmax < self.precision or self.xmax == board.width ):
+                p1 = int(p1)
                 self.passes.append( int(p1) )
 
-            xR -= bitwidth
-            xL += bitwidth
+            if remainder <= ( cutpass * 3 ) // 2:
+                p1 += remainder // 2
+            else:
+                p1 += cutpass
 
-            remainder = xR - xL
+            remainder = p0 - p1
+
+            if remainder <= (cutpass * 3 / 2) :
+                remainder = 0
 
         # Sort the passes
         self.passes = sorted(self.passes)
@@ -588,7 +624,7 @@ class Cut(object):
                (self.xmax < board.width and ((p + halfwidth) - self.xmax ) > self.precision ):
                 raise Router_Exception('cut xmin = %f, xmax = %f, pass = %f: '\
                                        'Bit width (%f) too large for this cut!'\
-                                       % (self.xmin, self.xmax, p, bit.width))
+                                       % (self.xmin, self.xmax, p, bit.width_f))
 
 def adjoining_cuts(cuts, bit, board):
     '''
@@ -610,14 +646,14 @@ def adjoining_cuts(cuts, bit, board):
         left = 0
         right = cuts[0].xmin + offset - board.dheight
         if right - left >= board.dheight:
-            adjCuts.append( Cut( left, round(right, 4) ) )
+            adjCuts.append(Cut(left, round(right, 4)))
 
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
     for i in lrange(1, nc):
         left = cuts[i-1].xmax - offset + board.dheight
         right = cuts[i].xmin + offset - board.dheight
-        adjCuts.append( Cut( left, right ) )
+        adjCuts.append(Cut(max(0, left), min(board.width, right)))
 
     # if the right-most input cut does not include the right edge, add an
     # adjoining cut that includes this edge
@@ -627,7 +663,7 @@ def adjoining_cuts(cuts, bit, board):
         right = Decimal(board.width)
 
         if right - left >= board.dheight:
-            adjCuts.append(Cut( left, right))
+            adjCuts.append(Cut( max(0, left), min(board.width, right)))
 
     print('adjoining_cuts cuts:')
     dump_cuts(adjCuts)

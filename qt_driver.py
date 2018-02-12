@@ -71,7 +71,8 @@ class Driver(QtWidgets.QMainWindow):
         bit_width = self.units.abstract_to_increments(self.config.bit_width)
         bit_depth = self.units.abstract_to_increments(self.config.bit_depth)
         bit_angle = self.units.abstract_to_float(self.config.bit_angle)
-        self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle)
+        bit_gentle = self.config.bit_gentle
+        self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle, bit_gentle)
         self.boards = []
         board_width = self.units.abstract_to_increments(self.config.board_width)
         for i in lrange(4):
@@ -1501,6 +1502,8 @@ class Driver(QtWidgets.QMainWindow):
                                 warning=True)
         else:
             self.status_message('Preference changes saved in configuration file.')
+            self.bit.bit_gentle = self.config_window.bit.bit_gentle
+
         # Update widgets that may have changed
         actions = [self.finger_size_action,
                    self.caul_action,

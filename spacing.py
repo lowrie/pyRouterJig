@@ -34,8 +34,8 @@ import utils
 
 def dump_cuts(cuts):
     '''Dumps the cuts to the screen...this is for debugging
-	in column form.
-	'''
+    in column form.
+    '''
     print('Min\tMax')
     for c in cuts:
         print( '{1:3f}\t{1:3f}'.format(c.xmin, c.xmax) )
@@ -143,7 +143,7 @@ class Equally_Spaced(Base_Spacing):
         '''
 
         # on local variables init 
-		# we have to care about imperial values and convert them to increments before use
+        # we have to care about imperial values and convert them to increments before use
         spacing = self.params['Spacing'].v
         width = Decimal( math.floor(self.params['Width'].v) )
 
@@ -161,7 +161,7 @@ class Equally_Spaced(Base_Spacing):
         label = units.increments_to_string(spacing, True)
 
         min_interior = utils.my_round(self.dhtot + self.bit.overhang)
-		# min_finger_width means most thin wood at the corner
+        # min_finger_width means most thin wood at the corner
         min_finger_width = max(1, units.abstract_to_increments(self.config.min_finger_width))
 
         if centered or \
@@ -177,7 +177,7 @@ class Equally_Spaced(Base_Spacing):
                 left = 0
 
         # Note the Width slider measures "midline" but indicates the actual cut space
-		# show actual maximum cut with for dovetails
+        # show actual maximum cut with for dovetails
         self.labels = self.keys[:]
         self.labels[0] += ': ' + label
         self.labels[1] += ': ' + units.increments_to_string(width + overhang * 2, True)
@@ -208,7 +208,7 @@ class Equally_Spaced(Base_Spacing):
             i += neck_width
             right = i + width
             # prevent thin last cut
-			# devetail may cut off corner finger
+            # devetail may cut off corner finger
             if (board_width - right ) < min_finger_width:
                 right = board_width
             if (board_width - i + overhang) > min_finger_width and (right - i - overhang * 2) > min_interior:
@@ -233,7 +233,7 @@ class Variable_Spaced(Base_Spacing):
     '''
     Computes variable-spaced cuts, where the center cut (always centered on
     board) is the widest, with each cut decreasing linearly as you move to the edge.
-	arithmetical progression wirks just fine for such task
+    arithmetical progression wirks just fine for such task
     Parameters that control the spacing are:
 
     Fingers: Roughly the number of full fingers on either the A or B board.
@@ -242,7 +242,6 @@ class Variable_Spaced(Base_Spacing):
 
     def __init__(self, bit, boards, config):
         Base_Spacing.__init__(self, bit, boards, config)
-
 
         # min and max number of fingers
         self.mMin = 3  #we actually can set 2 fingers but tests does not pass this value
@@ -262,21 +261,21 @@ class Variable_Spaced(Base_Spacing):
     def set_cuts(self):
         '''
         Sets the cuts to make the joint
-		S - progresion summary (half length of the board)
-		n - number of fingers (actually number of parts per half of the board)
-		d -  the difference between terms of the arithmetic progression
-		a1 - first cut width (it must be symmetric at center of the board)
-		an - the last cut or finger
-		because a1 is at the board center we got:
-		S = (n * 2*a1+(n-1) * d / 2 - a1/2 
-		from this equation we solve a1
-		a1 = ( (2 * S) - (n - 1) * n * d ) / (2 * n - 1) 
-		the next task is to find the best possible d (I love big numbers)
+        S - progression summary (half length of the board)
+        n - number of fingers (actually number of parts per half of the board)
+        d -  the difference between terms of the arithmetic progression
+        a1 - first cut width (it must be symmetric at center of the board)
+        an - the last cut or finger
+        because a1 is at the board center we got:
+        S = (n * 2*a1+(n-1) * d / 2 - a1/2
+        from this equation we solve a1
+        a1 = ( (2 * S) - (n - 1) * n * d ) / (2 * n - 1)
+        the next task is to find the best possible d (I love big numbers)
         '''
         min_finger_width = Decimal( self.bit.units.abstract_to_increments(self.config.min_finger_width) + self.dhtot)
         min_interior = self.bit.midline + self.dhtot * 2
         S = math.floor(self.boards[0].width / 2) # half board width
-        shift = Decimal( (self.bit.midline ) % 2) / 2 # offset to keep cut senter
+        shift = Decimal((self.bit.midline) % 2) / 2 # offset to keep cut senter
 
         n = int(self.params['Fingers'].v)  # number of cuts
         d = -16 # d is the ideal decrease in finger width for each finger away from center finger
@@ -284,10 +283,10 @@ class Variable_Spaced(Base_Spacing):
         a1 = 0 # center cut
         an = 0 # last cut
 
-		# Iterate to get perfect d value
-		# it is also possible to reverse d sometime to get cutc wider to the board corner
-		# the corner cut can't be too thin
-		# the minimum of pre-last cut should be not less than bit midline and extra bords width
+        # Iterate to get perfect d value
+        # it is also possible to reverse d sometime to get cutc wider to the board corner
+        # the corner cut can't be too thin
+        # the minimum of pre-last cut should be not less than bit midline and extra bords width
         while (an < min_interior or (an + d) <= min_finger_width) and d <= 0:
             d += 1
             a1 = utils.math_round( ( (2 * S) - (n - 1) * n * d ) / Decimal(2 * n - 1) )
@@ -302,7 +301,6 @@ class Variable_Spaced(Base_Spacing):
             SP = (a1 + d + an) * (n - 1) + a1
             delta = self.boards[0].width - SP
 
-
         # compute fingers on one side of the center and the center and store them
         # in increments.  Keep a running total of sizes.
         increments = [Decimal(0)] * int(n)
@@ -311,12 +309,12 @@ class Variable_Spaced(Base_Spacing):
             if increments[i] <  min_interior:
                 increments[i] = min_interior
 
-		# wide last cut 
+        # wide last cut
         if delta >= 2:
             increments[-1] += delta // 2
             delta -= (delta // 2) * 2
 
-		# wide center cut in case the delta is a 1 increment
+        # wide center cut in case the delta is a 1 increment
         if delta == 1:
             increments[0] += delta
             delta = 0

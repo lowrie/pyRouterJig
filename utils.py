@@ -26,7 +26,7 @@ from __future__ import print_function
 from decimal import *
 import math, fractions, os, glob, platform
 
-VERSION = '0.9.3'
+VERSION = '0.9.4'
 
 def my_round(f):
     '''

@@ -118,6 +118,9 @@ warn_gap = {warn_gap}
 # If the overlap in the joint exceeds this value, warn the user [inches|mm]
 warn_overlap = {warn_overlap}
 
+# Cutting part of the bit %
+bit_gentle = {bit_gentle}
+
 # On save image, minimum width of image in pixels. Used if the figure width is
 # less than this size.  Does not apply to screenshots, which are done at the
 # resolution of the window.
@@ -214,6 +217,7 @@ common_vals = {'version':'NONE',
                'show_router_pass_locations':False,
                'show_caul':False,
                'show_fit':False,
+               'bit_gentle':33.0,
                'bit_angle':0,
                'min_image_width':1440,
                'max_image_width':'min_image_width',
@@ -281,6 +285,7 @@ migrate = ['english_separator',  # common_vals
            'print_scale_factor',
            'default_wood',
            'debug',
+           'bit_gentle',
            'left_margin',
            'right_margin',
            'separation',
@@ -338,7 +343,7 @@ class Configuration(object):
         # config file must be updated if it was created with an earlier number.
         # Update this value when new parameters are added to the config file,
         # or any parameter's type changes,
-        self.create_version_number = 93
+        self.create_version_number = 94
         # config file cannot be migrated from versions earlier than this.
         # This value is currently set at the version that all dimensions and bit_angle
         # were consistent types and dimensions.

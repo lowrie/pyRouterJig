@@ -25,7 +25,7 @@ from __future__ import print_function
 
 import os, sys
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from decimal import Decimal
 import config_file
 import qt_utils
 import router
@@ -58,6 +58,9 @@ def is_positive(v):
 
 def is_nonnegative(v):
     return v >= 0
+
+def is_persentage(v):
+    return v > 1 and v < 100
 
 class Color_Button(QtWidgets.QPushButton):
     '''
@@ -130,7 +133,8 @@ class Config_Window(QtWidgets.QDialog):
         bit_width = self.units.abstract_to_increments(self.config.bit_width)
         bit_depth = self.units.abstract_to_increments(self.config.bit_depth, False)
         bit_angle = self.units.abstract_to_float(self.config.bit_angle)
-        self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle)
+        bit_gentle = self.config.bit_gentle
+        self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle,bit_gentle )
         board_width = self.units.abstract_to_increments(self.config.board_width)
         self.board = router.Board(self.bit, width=board_width)
 
@@ -503,6 +507,14 @@ class Config_Window(QtWidgets.QDialog):
         grid = form_line(self.le_warn_overlap_label, self.le_warn_overlap, tt)
         vbox.addLayout(grid)
 
+        self.le_bit_gentle_label = QtWidgets.QLabel('Cut gentle (%):')
+        self.le_bit_gentle = QtWidgets.QLineEdit(w)
+        self.le_bit_gentle.setFixedWidth(self.line_edit_width)
+        self.le_bit_gentle.editingFinished.connect(self._on_bit_gentle_cut)
+        tt = 'Cutting part of bit'
+        grid = form_line(self.le_bit_gentle_label, self.le_bit_gentle, tt)
+        vbox.addLayout(grid)
+
         vbox.addStretch(1)
 
         w.setLayout(vbox)
@@ -559,6 +571,7 @@ class Config_Window(QtWidgets.QDialog):
         self.le_caul_trim.setText(str(self.config.caul_trim))
         self.le_warn_gap.setText(str(self.config.warn_gap))
         self.le_warn_overlap.setText(str(self.config.warn_overlap))
+        self.le_bit_gentle.setText(str(self.config.bit_gentle))
         self.set_wood_combobox()
 
     def update_state(self, key, state=1):
@@ -905,6 +918,18 @@ class Config_Window(QtWidgets.QDialog):
         if val is not None:
             self.new_config['warn_overlap'] = val
             self.update_state('warn_overlap')
+
+    @QtCore.pyqtSlot()
+    def _on_bit_gentle_cut(self):
+        if self.config.debug:
+            print('qt_config:_on_gentle_cut')
+        val = qt_utils.set_router_value(self.le_bit_gentle, self.bit, 'bit_gentle',
+                                        'set_gentle_from_string', True)
+
+        if val is not None:
+            self.new_config['bit_gentle'] = val
+            self.update_state('bit_gentle')
+
 
     @QtCore.pyqtSlot(str, Color_Button)
     def _on_set_color(self, name, btn):
