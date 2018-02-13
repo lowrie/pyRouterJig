@@ -402,3 +402,168 @@ class Configuration(object):
         fd = open(self.filename, 'w')
         fd.write(content)
         fd.close()
+
+# default values for english units
+english_vals = {'metric':False,
+                'num_increments':32,
+                'board_width':'7 1/2',
+                'bit_width':'1/2',
+                'bit_depth':0.75,
+                'double_board_thickness':'1/8',
+                'min_finger_width':'1/16',
+                'caul_trim':'1/32',
+                'warn_gap':0.005,
+                'warn_overlap':0.000,
+                'top_margin':'1/4',
+                'bottom_margin':'1/2',
+                'left_margin':'1/4',
+                'right_margin':'1/4',
+                'separation':'1/4'}
+
+# default values for metric units
+metric_vals = {'metric':True,
+               'num_increments':1,
+               'board_width':200,
+               'bit_width':12,
+               'bit_depth':12,
+               'double_board_thickness':4,
+               'min_finger_width':2,
+               'caul_trim':1,
+               'warn_gap':0.05,
+               'warn_overlap':0.000,
+               'top_margin':6,
+               'bottom_margin':12,
+               'left_margin':6,
+               'right_margin':6,
+               'separation':6}
+
+
+# values that are migrated to new versions of the config file.  Don't include metric, because it's
+# always migrated.
+migrate = ['english_separator',  # common_vals
+           'show_finger_widths',
+           'show_router_passes',
+           'show_caul',
+           'show_fit',
+           'bit_angle',
+           'min_image_width',
+           'max_image_width',
+           'print_scale_factor',
+           'default_wood',
+           'debug',
+           'left_margin',
+           'right_margin',
+           'separation',
+           'background_color',
+           'board_fill_colors',
+           'num_increments', # metric_vals or english_vals
+           'board_width',
+           'bit_width',
+           'bit_depth',
+           'double_board_thickness',
+           'min_finger_width',
+           'caul_trim',
+           'warn_gap',
+           'warn_overlap',
+           'top_margin',
+           'bottom_margin']
+
+# Values that have either metric or English dimensions
+dim_vals = ['separation',
+            'board_width',
+            'bit_angle',
+            'bit_width',
+            'bit_depth',
+            'double_board_thickness',
+            'min_finger_width',
+            'caul_trim',
+            'warn_gap',
+            'warn_overlap',
+            'top_margin',
+            'bottom_margin',
+            'left_margin',
+            'right_margin']
+
+def version_number(version):
+    '''Splits the string version into its integer version number.  X.Y.Z -> XYZ'''
+    vs = version.split('.')
+    return int(vs[0]) * 100 + int(vs[1]) * 10 + int(vs[2])
+
+def set_default_dimensions(d):
+    '''Sets the default dimensional quantites in the config dictionary d'''
+    if d['metric']:
+        common_vals.update(metric_vals)
+    else:
+        common_vals.update(english_vals)
+    d['num_increments'] = common_vals['num_increments']
+    for v in dim_vals:
+        d[v] = common_vals[v]
+
+class Configuration(object):
+    '''
+    Defines interface to reading and creating the configuration file
+    '''
+    def __init__(self):
+        self.filename = os.path.join(os.path.expanduser('~'), '.pyrouterjig')
+        # config file must be updated if it was created with an earlier number.
+        # Update this value when new parameters are added to the config file,
+        # or any parameter's type changes,
+        self.create_version_number = 93
+        # config file cannot be migrated from versions earlier than this.
+        # This value is currently set at the version that all dimensions and bit_angle
+        # were consistent types and dimensions.
+        self.migrate_version_number = 83
+        self.config = None
+    def read_config(self):
+        '''
+        Reads the configuration file.  Return values:
+           0: Config file was read successfully
+           1: Config file does not exist
+           2: Config file was read successfully, but it is outdated
+        '''
+        if not os.path.exists(self.filename):
+            return 1
+        else:
+            self.config = imp.load_source('', self.filename)
+            vnum = version_number(self.config.version)
+            msg_level = 0
+            if vnum < self.create_version_number:
+                return 2
+            else:
+                return 0
+    def create_config(self, metric):
+        '''
+        Creates the configuration file.  Return values:
+          0: All values default
+          1: Values were migrated from old config file
+        '''
+        common_vals['wood_images'] = os.path.join(os.path.expanduser('~'), 'wood_images')
+        common_vals['version'] = str(utils.VERSION)
+        if metric:
+            common_vals.update(metric_vals)
+        else:
+            common_vals.update(english_vals)
+        r = 0
+        if self.config is not None:
+            # Then config file was outdated
+            vnum = version_number(self.config.version)
+            if vnum >= self.migrate_version_number:
+                # Then we can migrate the old settings
+                r = 1
+                for m in migrate:
+                    if m in self.config.__dict__.keys():
+                        common_vals[m] = self.config.__dict__[m]
+        self.write_config(common_vals)
+        return r
+    def write_config(self, vals):
+        '''
+        Writes the configuration file using the dictionary vals.
+        '''
+        w = vals.copy()
+        for i in dim_vals:
+            if isinstance(w[i], str):
+                w[i] = "'{}'".format(w[i])
+        content = _CONFIG_INIT.format(**w)
+        fd = open(self.filename, 'w')
+        fd.write(content)
+        fd.close()

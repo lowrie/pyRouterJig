@@ -425,3 +425,4 @@ def print_table(filename, boards, title):
         if printing:
             fd.write(line + '\n')
     fd.close()
+
