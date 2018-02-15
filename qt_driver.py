@@ -1332,7 +1332,7 @@ class Driver(QtWidgets.QMainWindow):
 
         # From the image file, parse the metadata.
         image = Image.open(filename)
-        s=image.info['pyRouterJig'];
+        s=image.info['pyRouterJig']
 
         if len(s) == 0:
             msg = 'File %s does not contain pyRouterJig data.  The PNG file'\

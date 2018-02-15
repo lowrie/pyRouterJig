@@ -82,7 +82,7 @@ def unserialize(s, config, newFormat=False):
     '''
     Unserializes the string s, and returns the tuple (bit, boards, spacing)
     '''
-    inp = '';
+    inp = ''
     # new format uue encoding support
     if newFormat:
         s = binascii.a2b_qp(s)
