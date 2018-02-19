@@ -64,6 +64,8 @@ class Driver_Test(unittest.TestCase):
     '''
     def setUp(self):
         self.d = Driver()
+        # the application must be switched to metric scales
+        self.assertFalse(self.d.config.metric != True)        
         self.d.show()
         self.d.raise_()
         self.debug = self.d.config.debug
