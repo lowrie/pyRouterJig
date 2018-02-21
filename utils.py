@@ -24,9 +24,11 @@ This module contains base utilities for pyRouterJig
 from __future__ import division
 from __future__ import print_function
 from decimal import *
-import math, fractions, os, glob, platform
+import math, os, glob, platform
+
 
 VERSION = '0.9.4'
+
 
 def my_round(f):
     '''
@@ -34,14 +36,17 @@ def my_round(f):
     '''
     return int(round(f))
 
+
 def math_round(no):
     '''
     Return mathimatical round to integer
     '''
-    return int(no//1 + ((no%1)/Decimal('0.5'))//1)
+    return int(no // 1 + ((no % 1) / Decimal('0.5')) // 1)
+
 
 def isMac():
     return (platform.system() == 'Darwin')
+
 
 class My_Fraction(object):
     '''
@@ -63,6 +68,7 @@ class My_Fraction(object):
         self.numerator = int(abs(numerator))
         self.denominator = denominator
         self.english_separator = english_separator
+
     def reduce(self):
         '''
         Reduces the fraction to the minimum values for the numerator and
@@ -76,9 +82,10 @@ class My_Fraction(object):
         dwhole = self.numerator // self.denominator
         self.whole += dwhole
         self.numerator -= dwhole * self.denominator 
-        gcd = math.gcd(self.numerator, self.denominator)  #Python3 requres math.gcd
+        gcd = math.gcd(self.numerator, self.denominator)  # Python3 requres math.gcd
         self.numerator /= gcd
         self.denominator /= gcd
+
     def to_string(self):
         '''
         Converts the fraction to a string representation.
@@ -96,6 +103,7 @@ class My_Fraction(object):
         elif self.whole == 0:
             s = '0'
         return s
+
     def set_from_string(self, s):
         '''
         Initialize from a string assumed either of the form:
@@ -116,7 +124,7 @@ class My_Fraction(object):
                 s = s.replace(self.english_separator, ' ', 1)
             # Look for a divisor
             sp = s.split('/')
-            if len(sp) == 2: # found a divisor
+            if len(sp) == 2:  # found a divisor
                 whole_num = sp[0].split(None)
                 if len(whole_num) == 1:
                     self.numerator = int(whole_num[0])
@@ -130,7 +138,7 @@ class My_Fraction(object):
                     self.denominator = int(denom[0])
                 else:
                     raise ValueError(msg % s)
-            elif len(sp) == 1: # no divisor, so must be a whole number
+            elif len(sp) == 1:  # no divisor, so must be a whole number
                 self.whole = int(sp[0])
             else:
                 raise ValueError(msg % s)
@@ -145,6 +153,7 @@ class My_Fraction(object):
                 self.denominator = int(math.pow(10, len(rest)))
                 self.reduce()
 
+
 class Units(object):
     '''
     Converts to and from increments and the units being used.
@@ -157,9 +166,11 @@ class Units(object):
     increments_per_inch: Number of increments per inch.
     '''
     mm_per_inch = 25.4
-    def __init__(self, english_separator, metric=False, num_increments=None):
+
+    def __init__(self, english_separator, metric=False, num_increments=None, transl=None):
         self.english_separator = english_separator
         self.metric = metric
+        self.transl = transl
         if num_increments is None:
             if metric:
                 self.num_increments = 1
@@ -169,25 +180,29 @@ class Units(object):
             self.num_increments = num_increments
         if metric:
             self.increments_per_inch = self.mm_per_inch * self.num_increments
-        else: # english units
+        else:  # english units
             self.increments_per_inch = self.num_increments
+
     def increments_to_inches(self, increments):
         '''Converts increments to inches.'''
         return float(increments) / self.increments_per_inch
+
     def increments_to_length(self, increments):
         '''Converts increments to the current unit length.'''
         return float(increments) / self.num_increments
+
     def inches_to_increments(self, inches):
         '''Converts the input inches to increments'''
         return my_round(self.increments_per_inch * inches)
+
     def increments_to_string(self, increments, with_units=False):
         '''
         A string representation of the value increments, converted to
         its respective units.
-		metric conversion requires fixed point rounding
+        metric conversion requires fixed point rounding
         '''
         if self.metric:
-            r = '%g' % ( Decimal(increments) / Decimal(self.num_increments) )
+            r = '%g' % (Decimal(increments) / Decimal(self.num_increments))
         else:
             allow_denoms = [1, 2, 4, 8, 16, 32, 64]
             if isinstance(increments, float):
@@ -206,6 +221,7 @@ class Units(object):
         if with_units:
             r += self.units_string()
         return r
+
     def units_string(self, verbose=False, withParens=False):
         '''Returns a string that represents the units'''
         form = ' {}'
@@ -213,17 +229,18 @@ class Units(object):
             form = ' ({})'
         if self.metric:
             if verbose:
-                return form.format('millimeters')
+                return form.format(self.transl.tr('millimeters'))
             else:
-                return form.format('mm')
+                return form.format(self.transl.tr('mm'))
         else:
             if verbose:
-                return form.format('inches')
+                return form.format(self.transl.tr('inches'))
             else:
                 if withParens:
-                    return form.format('in.')
+                    return form.format(self.transl.tr('in.'))
                 else:
                     return '"'
+
     def length_to_increments(self, v, as_integer=True):
         '''
         Converts v to increments, where v is [inches|mm]
@@ -233,6 +250,7 @@ class Units(object):
             return my_round(i)
         else:
             return i
+
     def string_to_float(self, s):
         '''
         Converts a string representation to a floating-point value, where
@@ -244,6 +262,7 @@ class Units(object):
         if f.numerator > 0:
             r += float(f.numerator) / f.denominator
         return r
+
     def abstract_to_float(self, a):
         '''
         Converts a value to a float.  If a is a string, then
@@ -253,6 +272,7 @@ class Units(object):
             return self.string_to_float(a)
         else:
             return float(a)
+
     def string_to_increments(self, s, as_integer=True):
         '''
         Converts a string representation to the number of increments.
@@ -260,6 +280,7 @@ class Units(object):
         attribute.
         '''
         return self.length_to_increments(self.string_to_float(s), as_integer)
+
     def abstract_to_increments(self, a, as_integer=True):
         '''
         Converts a value to increments.  If a is a string, then
@@ -270,6 +291,7 @@ class Units(object):
             return self.string_to_increments(a, as_integer)
         else:
             return self.length_to_increments(float(a), as_integer)
+
 
 class Margins(object):
     '''
@@ -311,6 +333,7 @@ class Margins(object):
         else:
             self.top = top
 
+
 def get_file_index(path, prefix, suffix):
     '''
     Finds the next index available for files that match the signature
@@ -336,6 +359,7 @@ def get_file_index(path, prefix, suffix):
     index += 1
     return index
 
+
 def set_slider_tick_interval(slider):
     '''
     Sets the QSlider tick interval to a reasonable value
@@ -349,11 +373,13 @@ def set_slider_tick_interval(slider):
     else:
         slider.setTickInterval(1)
 
+
 def print_table(filename, boards, title):
     '''
     Prints a table of router pass locations, referenced to the right size of the board.
     '''
     # Load up the cuts and labels to be printed
+    transl = boards[0].units.transl
     all_cuts = [boards[0].bottom_cuts]
     label_cuts = ['A']
     labels = ['B', 'C', 'D', 'E', 'F']
@@ -377,9 +403,11 @@ def print_table(filename, boards, title):
     form = ' %4s %9s '
     # Print the header
     line = ''
+    pass_lbl = transl.tr('Pass')
+    location_lbl = transl.tr('Location')
     for k in label_cuts:
-        s = 'Pass'
-        line += form % (s, 'Location')
+        s = pass_lbl
+        line += form % (s, location_lbl)
     lenh = len(line)
     divider = '-' * lenh + '\n'
     line = divider + line + '\n' + divider
@@ -392,7 +420,7 @@ def print_table(filename, boards, title):
     units = boards[0].units
     pass_index = [0] * ncol
     cut_index = [0] * ncol
-    for icol in lrange(ncol):
+    for icol in range(ncol):
         cut_index[icol] = len(all_cuts[icol]) - 1
     total_passes = [0] * ncol
     # Print until all of the edges are out of passes.  We go through the cuts,
@@ -402,7 +430,7 @@ def print_table(filename, boards, title):
         line = ''
         printing = False
         # Loop through the edges
-        for icol in lrange(ncol):
+        for icol in range(ncol):
             label = '**'
             dim = '**'
             # check if there are any more passes for this edge
@@ -425,4 +453,3 @@ def print_table(filename, boards, title):
         if printing:
             fd.write(line + '\n')
     fd.close()
-

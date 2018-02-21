@@ -23,9 +23,7 @@ This module contains utilities for creating and reading the
 user configuration file.
 '''
 
-from importlib.util import spec_from_loader, module_from_spec
-from importlib.machinery import SourceFileLoader
-import os
+import os, imp
 import utils
 
 _CONFIG_INIT = r'''
@@ -58,6 +56,9 @@ version = '{version}'
 
 # If True, use metric units.  If False, use English units.
 metric = {metric}
+
+# Application Language
+language = 'en_US'
 
 # The number of increments per unit length.
 # All dimensions and router passes are restricted to
@@ -147,7 +148,7 @@ wood_images = r'{wood_images}'
 # This is either a wood name (the file prefix of an image file in wood_images),
 # or the following Qt fill patterns:
 # DiagCrossPattern, BDiagPattern, FDiagPattern, Dense1Pattern, Dense5Pattern
-default_wood = '{default_wood}'
+default_wood = r'{default_wood}'
 
 # Colors are specified as a mix of three values between 0 and 255, as
 #     (red, green, blue)
@@ -212,71 +213,73 @@ debug = {debug}
 
 # common default values.  The canvas, board, and template colors from
 # http://paletton.com/#uid=50F0u0kllllaFw0g0qFqFg0-obq
-common_vals = {'version':'NONE',
-               'english_separator':' ',
-               'show_finger_widths':False,
-               'show_router_pass_identifiers':True,
-               'show_router_pass_locations':False,
-               'show_caul':False,
-               'show_fit':False,
-               'bit_gentle':33.0,
-               'bit_angle':0,
-               'min_image_width':1440,
-               'max_image_width':'min_image_width',
-               'print_scale_factor':1.0,
-               'wood_images':'NONE',
-               'default_wood':'Solid Fill',
-               'debug':False,
-               'print_color':True,
-               'canvas_background':(255, 237, 184, 255),
-               'canvas_foreground':( 91,  68,  0, 255),
-               'watermark_color':(0, 0, 0, 75),
-               'template_margin_background':(212, 203, 106, 255),
-               'template_margin_foreground':( 91,  83,   0, 255),
-               'board_background':(212, 167, 106, 255),
-               'board_foreground':( 91,  52,   0, 255),
-               'pass_color':(0, 0, 0, 255),
-               'pass_alt_color':(255, 0, 0, 255),
-               'center_color':(0, 200, 0, 255)}
+common_vals = {'version': 'NONE',
+               'english_separator': ' ',
+               'language': 'en_US',
+               'show_finger_widths': False,
+               'show_router_pass_identifiers': True,
+               'show_router_pass_locations': False,
+               'show_caul': False,
+               'show_fit': False,
+               'bit_gentle': 33.0,
+               'bit_angle': 0,
+               'min_image_width': 1440,
+               'max_image_width': 'min_image_width',
+               'print_scale_factor': 1.0,
+               'wood_images': 'NONE',
+               'default_wood': '1',
+               'debug': False,
+               'print_color': True,
+               'canvas_background': (255, 237, 184, 255),
+               'canvas_foreground': (91,  68,  0, 255),
+               'watermark_color': (0, 0, 0, 75),
+               'template_margin_background': (212, 203, 106, 255),
+               'template_margin_foreground': (91,  83,   0, 255),
+               'board_background': (212, 167, 106, 255),
+               'board_foreground': (91,  52,   0, 255),
+               'pass_color': (0, 0, 0, 255),
+               'pass_alt_color': (255, 0, 0, 255),
+               'center_color': (0, 200, 0, 255)}
 
 # default values for english units
-english_vals = {'metric':False,
-                'num_increments':32,
-                'board_width':'7 1/2',
-                'bit_width':'1/2',
-                'bit_depth':0.75,
-                'double_board_thickness':'1/8',
-                'min_finger_width':'1/16',
-                'caul_trim':'1/32',
-                'warn_gap':0.005,
-                'warn_overlap':0.000,
-                'top_margin':'1/4',
-                'bottom_margin':'1/2',
-                'left_margin':'1/4',
-                'right_margin':'1/4',
-                'separation':'1/4'}
+english_vals = {'metric': False,
+                'num_increments': 32,
+                'board_width': '7 1/2',
+                'bit_width': '1/2',
+                'bit_depth': 0.75,
+                'double_board_thickness': '1/8',
+                'min_finger_width': '1/16',
+                'caul_trim': '1/32',
+                'warn_gap': 0.005,
+                'warn_overlap': 0.000,
+                'top_margin': '1/4',
+                'bottom_margin': '1/2',
+                'left_margin': '1/4',
+                'right_margin': '1/4',
+                'separation': '1/4'}
 
 # default values for metric units
-metric_vals = {'metric':True,
-               'num_increments':1,
-               'board_width':200,
-               'bit_width':12,
-               'bit_depth':12,
-               'double_board_thickness':4,
-               'min_finger_width':2,
-               'caul_trim':1,
-               'warn_gap':0.05,
-               'warn_overlap':0.000,
-               'top_margin':6,
+metric_vals = {'metric': True,
+               'num_increments': 1,
+               'board_width': 200,
+               'bit_width': 12,
+               'bit_depth': 12,
+               'double_board_thickness': 4,
+               'min_finger_width': 2,
+               'caul_trim': 1,
+               'warn_gap': 0.05,
+               'warn_overlap': 0.000,
+               'top_margin': 6,
                'bottom_margin':12,
-               'left_margin':6,
-               'right_margin':6,
-               'separation':6}
+               'left_margin': 6,
+               'right_margin': 6,
+               'separation': 6}
 
 
 # values that are migrated to new versions of the config file.  Don't include metric, because it's
 # always migrated.
 migrate = ['english_separator',  # common_vals
+           'language',
            'show_finger_widths',
            'show_router_passes',
            'show_caul',
@@ -293,7 +296,7 @@ migrate = ['english_separator',  # common_vals
            'separation',
            'background_color',
            'board_fill_colors',
-           'num_increments', # metric_vals or english_vals
+           'num_increments',  # metric_vals or english_vals
            'board_width',
            'bit_width',
            'bit_depth',
@@ -321,10 +324,12 @@ dim_vals = ['separation',
             'left_margin',
             'right_margin']
 
+
 def version_number(version):
     '''Splits the string version into its integer version number.  X.Y.Z -> XYZ'''
     vs = version.split('.')
     return int(vs[0]) * 100 + int(vs[1]) * 10 + int(vs[2])
+
 
 def set_default_dimensions(d):
     '''Sets the default dimensional quantites in the config dictionary d'''
@@ -335,6 +340,7 @@ def set_default_dimensions(d):
     d['num_increments'] = common_vals['num_increments']
     for v in dim_vals:
         d[v] = common_vals[v]
+
 
 class Configuration(object):
     '''
@@ -351,6 +357,7 @@ class Configuration(object):
         # were consistent types and dimensions.
         self.migrate_version_number = 83
         self.config = None
+
     def read_config(self):
         '''
         Reads the configuration file.  Return values:
@@ -361,16 +368,14 @@ class Configuration(object):
         if not os.path.exists(self.filename):
             return 1
         else:
-            module_dir, module_file = os.path.split(self.filename)
-            module_name, module_ext = os.path.splitext(module_file)
-
-            # Here we call loader directly inorder to avoid extension analyses (tricky!)
-            spec = spec_from_loader(module_name, SourceFileLoader(module_name, self.filename))
-            self.config = module_from_spec(spec)
-            spec.loader.exec_module(self.config)
+            self.config = imp.load_source('', self.filename)
+            try:
+                t = int(self.config.default_wood)
+                self.config.default_wood = t
+            except ValueError:
+                pass
 
             vnum = version_number(self.config.version)
-            msg_level = 0
             if vnum < self.create_version_number:
                 return 2
             else:
@@ -400,6 +405,7 @@ class Configuration(object):
                         common_vals[m] = self.config.__dict__[m]
         self.write_config(common_vals)
         return r
+
     def write_config(self, vals):
         '''
         Writes the configuration file using the dictionary vals.

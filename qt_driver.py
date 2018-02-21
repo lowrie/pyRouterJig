@@ -27,10 +27,7 @@ from builtins import str
 from decimal import *
 from PIL import Image
 from PIL import PngImagePlugin
-try:
-    from StringIO import  BytesIO
-except ImportError:
-    from io import  BytesIO
+from io import BytesIO
 
 import os, sys, traceback, webbrowser, copy, shutil, math
 
@@ -47,22 +44,27 @@ import threeDS
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Driver(QtWidgets.QMainWindow):
     '''
     Qt driver for pyRouterJig
     '''
-    def __init__(self, parent=None):
+    def __init__(self, parent=None , app= None):
+
         QtWidgets.QMainWindow.__init__(self, parent)
         sys.excepthook = self.exception_hook
         self.except_handled = False
 
+        # translator initialized in load config but we need the object created first
+        self.transl = QtCore.QTranslator()
+
         # Read the config file.  We wait until the end of this init to print
         # the status message, because we need the statusbar to be created first.
-        (self.config, msg) = self.load_config()
+        (self.config, msg) = self.load_config(app)
 
         # Form the units
         self.units = utils.Units(self.config.english_separator, self.config.metric,
-                                 self.config.num_increments)
+                                 self.config.num_increments, self.transl)
         self.doc = doc.Doc(self.units)
 
         # Create an initial joint.  Even though another joint may be opened
@@ -89,8 +91,8 @@ class Driver(QtWidgets.QMainWindow):
         self.var_spacing.set_cuts()
         self.edit_spacing = spacing.Edit_Spaced(self.bit, self.boards, self.config)
         self.edit_spacing.set_cuts(self.equal_spacing.cuts)
-        self.spacing = self.equal_spacing # the default
-        self.spacing_index = None # to be set in layout_widgets()
+        self.spacing = self.equal_spacing  # the default
+        self.spacing_index = None  # to be set in layout_widgets()
         self.description = None
 
         # Create the main frame and menus
@@ -127,7 +129,7 @@ class Driver(QtWidgets.QMainWindow):
         # ... show the status message from reading the configuration file
         self.status_message(msg)
 
-    def load_config(self):
+    def load_config(self, app = None):
         '''
         Sets the config attribute, by either
            1) Reading an existing config file
@@ -136,6 +138,15 @@ class Driver(QtWidgets.QMainWindow):
         '''
         c = config_file.Configuration()
         r = c.read_config()
+
+        locale = QtCore.QLocale();
+        if r != 1 and getattr(c.config, "language", None) != None:
+            locale = QtCore.QLocale(c.config.language)
+
+        res = self.transl.load("pyRouterJig_%s.qm" % locale.name(), ".\\ts")
+        if res and app != None:
+            app.installTranslator(self.transl)
+
         if r > 0:
             tools = 'Tools'
             if utils.isMac():
@@ -146,23 +157,23 @@ class Driver(QtWidgets.QMainWindow):
                 box = QtWidgets.QMessageBox(self)
                 box.setTextFormat(QtCore.Qt.RichText)
                 box.setIcon(QtWidgets.QMessageBox.NoIcon)
-                box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>')
-                question = '<font size=5>Please select a unit system below.'\
+                box.setText(self.transl.tr('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>'))
+                question = self.transl.tr('<font size=5>Please select a unit system below.'\
                            ' The configuration file<p><tt>{}</tt><p>'\
                            ' will be created to store this setting,'\
                            ' along with additional default settings.  These options'\
                            ' may be changed later by selecting <b>Preferences</b> under'\
-                           ' the <b>{}</b> menu.</font>'.format(c.filename, tools)
+                           ' the <b>{}</b> menu.</font>').format(c.filename, tools)
                 box.setInformativeText(question)
-                buttonMetric = box.addButton('Metric (millimeters)', QtWidgets.QMessageBox.AcceptRole)
-                buttonEnglish = box.addButton('English (inches)', QtWidgets.QMessageBox.AcceptRole)
+                buttonMetric = box.addButton(self.transl.tr('Metric (millimeters)'), QtWidgets.QMessageBox.AcceptRole)
+                buttonEnglish = box.addButton(self.transl.tr('English (inches)'), QtWidgets.QMessageBox.AcceptRole)
                 box.setDefaultButton(buttonEnglish)
                 box.raise_()
                 box.exec_()
                 clicked = box.clickedButton()
                 metric = (clicked == buttonMetric)
                 c.create_config(metric)
-            else: # r == 2
+            else:  # r == 2
                 # The config file exists, but it's out of date, so
                 # update it.  Tell the user and use the old metric setting.
                 backup = c.filename + c.config.version
@@ -172,20 +183,20 @@ class Driver(QtWidgets.QMainWindow):
                 box = QtWidgets.QMessageBox(self)
                 box.setTextFormat(QtCore.Qt.RichText)
                 box.setIcon(QtWidgets.QMessageBox.Warning)
-                box.setText('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !')
-                warning = '<font size=5>A new configuration file<p><tt>{}</tt><p>'\
+                box.setText(self.transl.tr('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !'))
+                warning = self.transl.tr('<font size=5>A new configuration file<p><tt>{}</tt><p>'\
                           'has been created. The old version was saved'\
-                          ' to<p><tt>{}</tt><p> '.format(c.filename, backup)
+                          ' to<p><tt>{}</tt><p> ').format(c.filename, backup)
                 if rc == 0:
-                    warning += 'The previous setting of'\
+                    warning += self.transl.tr('The previous setting of'\
                                '<p><i>metric = {}</i><p>has been migrated.'\
                                ' But any other changes that you may have made'\
                                ' to the old file will need to be migrated to the'\
                                ' new file, or by selecting <b>Preferences</b>'\
-                               ' under the <b>{}</b> menu.'.format(metric, tools)
+                               ' under the <b>{}</b> menu.').format(metric, tools)
                 else:
-                    warning += 'The old configuration values were migrated'\
-                               ' and any new values were set to their default.'
+                    warning += self.transl.tr('The old configuration values were migrated'\
+                                                     ' and any new values were set to their default.')
                 box.setInformativeText(warning)
                 box.raise_()
                 box.exec_()
@@ -194,7 +205,7 @@ class Driver(QtWidgets.QMainWindow):
             c.read_config()
         else:
             # The config file exists and is current
-            msg = 'Read configuration file %s' % c.filename
+            msg = self.transl.tr('Read configuration file %s') % c.filename
 
         return (c.config, msg)
 
@@ -230,71 +241,71 @@ class Driver(QtWidgets.QMainWindow):
         self.menubar = self.menuBar()
 
         # always attach the menubar to the application window, even on the Mac
-        #self.menubar.setNativeMenuBar(False)
+        # self.menubar.setNativeMenuBar(False)
 
         # Add the file menu
 
-        file_menu = self.menubar.addMenu('File')
+        file_menu = self.menubar.addMenu(self.transl.tr('File'))
 
-        open_action = QtWidgets.QAction('&Open File...', self)
+        open_action = QtWidgets.QAction(self.transl.tr('&Open File...'), self)
         open_action.setShortcut('Ctrl+O')
-        open_action.setStatusTip('Opens a previously saved image of joint')
+        open_action.setStatusTip(self.transl.tr('Opens a previously saved image of joint'))
         open_action.triggered.connect(self._on_open)
         file_menu.addAction(open_action)
 
-        save_action = QtWidgets.QAction('&Save File...', self)
+        save_action = QtWidgets.QAction(self.transl.tr('&Save File...'), self)
         save_action.setShortcut('Ctrl+S')
-        save_action.setStatusTip('Saves an image of the joint to a file')
+        save_action.setStatusTip(self.transl.tr('Saves an image of the joint to a file'))
         save_action.triggered.connect(self._on_save)
         file_menu.addAction(save_action)
 
         file_menu.addSeparator()
 
-        print_action = QtWidgets.QAction('&Print...', self)
+        print_action = QtWidgets.QAction(self.transl.tr('&Print...'), self)
         print_action.setShortcut('Ctrl+P')
-        print_action.setStatusTip('Print the figure')
+        print_action.setStatusTip(self.transl.tr('Print the figure'))
         print_action.triggered.connect(self._on_print)
         file_menu.addAction(print_action)
 
         file_menu.addSeparator()
 
-        exit_action = QtWidgets.QAction('&Quit pyRouterJig', self)
+        exit_action = QtWidgets.QAction(self.transl.tr('&Quit pyRouterJig'), self)
         exit_action.setShortcut('Ctrl+Q')
-        exit_action.setStatusTip('Quit pyRouterJig')
+        exit_action.setStatusTip(self.transl.tr('Quit pyRouterJig'))
         exit_action.triggered.connect(self._on_exit)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
 
         # comment out for now...
-        #table_action = QtWidgets.QAction('Print Table...', self)
-        #table_action.setStatusTip('Print a table of router pass locations')
-        #table_action.triggered.connect(self._on_print_table)
-        #file_menu.addAction(table_action)
+        # table_action = QtWidgets.QAction('Print Table...', self)
+        # table_action.setStatusTip('Print a table of router pass locations')
+        # table_action.triggered.connect(self._on_print_table)
+        # file_menu.addAction(table_action)
 
         # Add view menu
 
-        view_menu = self.menubar.addMenu('View')
+        view_menu = self.menubar.addMenu(self.transl.tr('View'))
 
-        self.caul_action = QtWidgets.QAction('Caul Template', self, checkable=True)
-        self.caul_action.setStatusTip('Toggle caul template')
+        self.caul_action = QtWidgets.QAction(self.transl.tr('Caul Template'), self, checkable=True)
+        self.caul_action.setStatusTip(self.transl.tr('Toggle caul template'))
         self.caul_action.triggered.connect(self._on_caul)
         view_menu.addAction(self.caul_action)
         self.caul_action.setChecked(self.config.show_caul)
 
-        self.finger_size_action = QtWidgets.QAction('Finger Widths', self, checkable=True)
-        self.finger_size_action.setStatusTip('Toggle viewing finger sizes')
+        self.finger_size_action = QtWidgets.QAction(self.transl.tr('Finger Widths'), self, checkable=True)
+        self.finger_size_action.setStatusTip(self.transl.tr('Toggle viewing finger sizes'))
         self.finger_size_action.triggered.connect(self._on_finger_sizes)
         view_menu.addAction(self.finger_size_action)
         self.finger_size_action.setChecked(self.config.show_finger_widths)
 
-        self.fit_action = QtWidgets.QAction('Fit', self, checkable=True)
-        self.fit_action.setStatusTip('Toggle showing fit of joint')
+        self.fit_action = QtWidgets.QAction(self.transl.tr('Fit'), self, checkable=True)
+        self.fit_action.setStatusTip(self.transl.tr('Toggle showing fit of joint'))
         self.fit_action.triggered.connect(self._on_fit)
         view_menu.addAction(self.fit_action)
         self.fit_action.setChecked(self.config.show_fit)
 
-        self.zoom_action = QtWidgets.QAction('Zoom Mode', self, checkable=True)
-        self.zoom_action.setStatusTip('Toggle zoom mode')
+        self.zoom_action = QtWidgets.QAction(self.transl.tr('Zoom Mode'), self, checkable=True)
+        self.zoom_action.setStatusTip(self.transl.tr('Toggle zoom mode'))
         self.zoom_action.triggered.connect(self._on_zoom)
         view_menu.addAction(self.zoom_action)
         self.fig.enable_zoom_mode(False)
@@ -302,15 +313,15 @@ class Driver(QtWidgets.QMainWindow):
 
         view_menu.addSeparator()
 
-        pass_menu = view_menu.addMenu('Router Passes')
-        self.pass_id_action = QtWidgets.QAction('Identifiers', self, checkable=True)
-        self.pass_id_action.setStatusTip('Toggle viewing router pass identifiers')
+        pass_menu = view_menu.addMenu(self.transl.tr('Router Passes'))
+        self.pass_id_action = QtWidgets.QAction(self.transl.tr('Identifiers'), self, checkable=True)
+        self.pass_id_action.setStatusTip(self.transl.tr('Toggle viewing router pass identifiers'))
         self.pass_id_action.triggered.connect(self._on_pass_id)
         pass_menu.addAction(self.pass_id_action)
         self.pass_id_action.setChecked(self.config.show_router_pass_identifiers)
 
-        self.pass_location_action = QtWidgets.QAction('Locations', self, checkable=True)
-        self.pass_location_action.setStatusTip('Toggle viewing router pass locations')
+        self.pass_location_action = QtWidgets.QAction(self.transl.tr('Locations'), self, checkable=True)
+        self.pass_location_action.setStatusTip(self.transl.tr('Toggle viewing router pass locations'))
         self.pass_location_action.triggered.connect(self._on_pass_location)
         pass_menu.addAction(self.pass_location_action)
         self.pass_location_action.setChecked(self.config.show_router_pass_locations)
@@ -318,54 +329,54 @@ class Driver(QtWidgets.QMainWindow):
         # The Mac automatically adds full screen to the View menu, but do so for other platforms
         #if not utils.isMac():
         view_menu.addSeparator()
-        fullscreen_action = QtWidgets.QAction('Full Screen Mode', self, checkable=True)
+        fullscreen_action = QtWidgets.QAction(self.transl.tr('Full Screen Mode'), self, checkable=True)
         fullscreen_action.setShortcut('Ctrl+F')
-        fullscreen_action.setStatusTip('Toggle full-screen mode')
+        fullscreen_action.setStatusTip(self.transl.tr('Toggle full-screen mode'))
         fullscreen_action.triggered.connect(self._on_fullscreen)
         view_menu.addAction(fullscreen_action)
 
         # Add Tools menu
 
-        tools_menu = self.menubar.addMenu('Tools')
+        tools_menu = self.menubar.addMenu(self.transl.tr('Tools'))
 
-        screenshot_action = QtWidgets.QAction('Screenshot...', self)
+        screenshot_action = QtWidgets.QAction(self.transl.tr('Screenshot...'), self)
         screenshot_action.setShortcut('Ctrl+W')
-        screenshot_action.setStatusTip('Saves an image of the pyRouterJig window to a file')
+        screenshot_action.setStatusTip(self.transl.tr('Saves an image of the pyRouterJig window to a file'))
         screenshot_action.triggered.connect(self._on_screenshot)
         tools_menu.addAction(screenshot_action)
 
         # We need to make this action persistent, so that we can
         # enable and disable it (until all of its functionality is
         # written)
-        self.threeDS_action = QtWidgets.QAction('&Export 3DS...', self)
+        self.threeDS_action = QtWidgets.QAction(self.transl.tr('&Export 3DS...'), self)
         self.threeDS_action.setShortcut('Ctrl+E')
-        self.threeDS_action.setStatusTip('Export the joint to a 3DS file')
+        self.threeDS_action.setStatusTip(self.transl.tr('Export the joint to a 3DS file'))
         self.threeDS_action.triggered.connect(self._on_3ds)
         tools_menu.addAction(self.threeDS_action)
         self.threeDS_enabler()
 
         tools_menu.addSeparator()
 
-        pref_action = QtWidgets.QAction('Preferences...', self)
+        pref_action = QtWidgets.QAction(self.transl.tr('Preferences...'), self)
         pref_action.setShortcut('Ctrl+,')
-        pref_action.setStatusTip('Open preferences')
+        pref_action.setStatusTip(self.transl.tr('Open preferences'))
         pref_action.triggered.connect(self._on_preferences)
         tools_menu.addAction(pref_action)
 
         # Add the help menu
 
-        help_menu = self.menubar.addMenu('Help')
+        help_menu = self.menubar.addMenu(self.transl.tr('Help'))
 
-        about_action = QtWidgets.QAction('&About pyRouterJig', self)
+        about_action = QtWidgets.QAction(self.transl.tr('&About pyRouterJig'), self)
         about_action.setShortcut('Ctrl+A')
-        about_action.setStatusTip('About this program')
+        about_action.setStatusTip(self.transl.tr('About this program'))
         about_action.triggered.connect(self._on_about)
         help_menu.addAction(about_action)
 
         view_menu.addSeparator()
 
-        doclink_action = QtWidgets.QAction('&Documentation...', self)
-        doclink_action.setStatusTip('Opens documentation page in web browser')
+        doclink_action = QtWidgets.QAction(self.transl.tr('&Documentation...'), self)
+        doclink_action.setStatusTip(self.transl.tr('Opens documentation page in web browser'))
         doclink_action.triggered.connect(self._on_doclink)
         help_menu.addAction(doclink_action)
 
@@ -379,8 +390,8 @@ class Driver(QtWidgets.QMainWindow):
             # If adding NONE, make that the default
             defwood = 'NONE'
         else:
-            defwood = 'DiagCrossPattern'
-            if self.config.default_wood in self.woods.keys():
+            defwood = QtCore.Qt.DiagCrossPattern
+            if self.config.default_wood in self.woods.values():
                 defwood = self.config.default_wood
         self.populate_wood_combo_box(cb, woods, patterns, defwood, has_none)
         # Don't let the user change the text for each selection
@@ -394,16 +405,18 @@ class Driver(QtWidgets.QMainWindow):
             cb.addItem('NONE')
         # Add the woods in the wood_images directory
         skeys = sorted(woods.keys())
+
+        #combo boxes now store values as well as keys
         for k in skeys:
-            cb.addItem(k)
+            cb.addItem(k,woods.get(k))
         # Next add patterns
         if len(skeys) > 0:
             cb.insertSeparator(len(skeys))
         skeys = sorted(patterns.keys())
         for k in skeys:
-            cb.addItem(k)
+            cb.addItem(k,patterns.get(k))
         # Set the index to the default wood
-        i = cb.findText(defwood)
+        i = max(0,cb.findData(defwood))
         cb.setCurrentIndex(i)
         cb.blockSignals(False)
 
@@ -424,7 +437,7 @@ class Driver(QtWidgets.QMainWindow):
         self.fig.canvas.setFocus()
 
         # Board width line edit
-        self.le_board_width_label = QtWidgets.QLabel('Board Width{}'.format(us))
+        self.le_board_width_label = QtWidgets.QLabel(self.transl.tr('Board Width{}').format(us))
         self.le_board_width = QtWidgets.QLineEdit(self.main_frame)
         self.le_board_width.setFixedWidth(lineEditWidth)
         self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
@@ -432,21 +445,21 @@ class Driver(QtWidgets.QMainWindow):
         self.le_board_width.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
 
         # Bit width line edit
-        self.le_bit_width_label = QtWidgets.QLabel('Bit Width{}'.format(us))
+        self.le_bit_width_label = QtWidgets.QLabel(self.transl.tr('Bit Width{}').format(us))
         self.le_bit_width = QtWidgets.QLineEdit(self.main_frame)
         self.le_bit_width.setFixedWidth(lineEditWidth)
         self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
         self.le_bit_width.editingFinished.connect(self._on_bit_width)
 
         # Bit depth line edit
-        self.le_bit_depth_label = QtWidgets.QLabel('Bit Depth{}'.format(us))
+        self.le_bit_depth_label = QtWidgets.QLabel(self.transl.tr('Bit Depth{}').format(us))
         self.le_bit_depth = QtWidgets.QLineEdit(self.main_frame)
         self.le_bit_depth.setFixedWidth(lineEditWidth)
         self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.le_bit_depth.editingFinished.connect(self._on_bit_depth)
 
         # Bit angle line edit
-        self.le_bit_angle_label = QtWidgets.QLabel('Bit Angle (deg.)')
+        self.le_bit_angle_label = QtWidgets.QLabel(self.transl.tr('Bit Angle (deg.)'))
         self.le_bit_angle = QtWidgets.QLineEdit(self.main_frame)
         self.le_bit_angle.setFixedWidth(lineEditWidth)
         self.le_bit_angle.setText('%g' % self.bit.angle)
@@ -456,7 +469,7 @@ class Driver(QtWidgets.QMainWindow):
         self.le_boardm_label = []
         self.le_boardm = []
         for i in lrange(2):
-            self.le_boardm_label.append(QtWidgets.QLabel('Thickness{}'.format(us)))
+            self.le_boardm_label.append(QtWidgets.QLabel(self.transl.tr('Thickness{}').format(us)))
             self.le_boardm.append(QtWidgets.QLineEdit(self.main_frame))
             self.le_boardm[i].setFixedWidth(lineEditWidth)
             s = self.units.increments_to_string(self.boards[i+2].dheight)
@@ -465,7 +478,7 @@ class Driver(QtWidgets.QMainWindow):
         self.le_boardm[1].editingFinished.connect(self._on_boardm1)
 
         # Wood combo boxes
-        (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images)
+        (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images, self.transl)
         # ... combine the wood images and patterns
         self.woods = copy.deepcopy(woods)
         self.woods.update(patterns)
@@ -476,10 +489,10 @@ class Driver(QtWidgets.QMainWindow):
         self.cb_wood.append(self.create_wood_combo_box(woods, patterns, True))
         self.cb_wood.append(self.create_wood_combo_box(woods, patterns, True))
         self.cb_wood_label = []
-        self.cb_wood_label.append(QtWidgets.QLabel('Top Board'))
-        self.cb_wood_label.append(QtWidgets.QLabel('Bottom Board'))
-        self.cb_wood_label.append(QtWidgets.QLabel('Double Board'))
-        self.cb_wood_label.append(QtWidgets.QLabel('Double-Double Board'))
+        self.cb_wood_label.append(QtWidgets.QLabel(self.transl.tr('Top Board')))
+        self.cb_wood_label.append(QtWidgets.QLabel(self.transl.tr('Bottom Board')))
+        self.cb_wood_label.append(QtWidgets.QLabel(self.transl.tr('Double Board')))
+        self.cb_wood_label.append(QtWidgets.QLabel(self.transl.tr('Double-Double Board')))
 
         # Disable double* boards, for now
         self.le_boardm[0].setEnabled(False)
@@ -542,70 +555,70 @@ class Driver(QtWidgets.QMainWindow):
 
         # Edit spacing widgets
 
-        edit_btn_undo = QtWidgets.QPushButton('Undo', self.main_frame)
+        edit_btn_undo = QtWidgets.QPushButton(self.transl.tr('Undo'), self.main_frame)
         edit_btn_undo.clicked.connect(self._on_edit_undo)
-        edit_btn_undo.setToolTip('Undo the last change')
-        edit_btn_add = QtWidgets.QPushButton('Add', self.main_frame)
+        edit_btn_undo.setToolTip(self.transl.tr('Undo the last change'))
+        edit_btn_add = QtWidgets.QPushButton(self.transl.tr('Add'), self.main_frame)
         edit_btn_add.clicked.connect(self._on_edit_add)
-        edit_btn_add.setToolTip('Add a cut (if there is space to add cuts)')
-        edit_btn_del = QtWidgets.QPushButton('Delete', self.main_frame)
+        edit_btn_add.setToolTip(self.transl.tr('Add a cut (if there is space to add cuts)'))
+        edit_btn_del = QtWidgets.QPushButton(self.transl.tr('Delete'), self.main_frame)
         edit_btn_del.clicked.connect(self._on_edit_del)
-        edit_btn_del.setToolTip('Delete the active cuts')
+        edit_btn_del.setToolTip(self.transl.tr('Delete the active cuts'))
 
-        edit_move_label = QtWidgets.QLabel('Move')
-        edit_move_label.setToolTip('Moves the active cuts')
+        edit_move_label = QtWidgets.QLabel(self.transl.tr('Move'))
+        edit_move_label.setToolTip(self.transl.tr('Moves the active cuts'))
         edit_btn_moveL = QtWidgets.QToolButton(self.main_frame)
         edit_btn_moveL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_moveL.clicked.connect(self._on_edit_moveL)
-        edit_btn_moveL.setToolTip('Move active cuts to left 1 increment')
+        edit_btn_moveL.setToolTip(self.transl.tr('Move active cuts to left 1 increment'))
         edit_btn_moveR = QtWidgets.QToolButton(self.main_frame)
         edit_btn_moveR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_moveR.clicked.connect(self._on_edit_moveR)
-        edit_btn_moveR.setToolTip('Move active cuts to right 1 increment')
+        edit_btn_moveR.setToolTip(self.transl.tr('Move active cuts to right 1 increment'))
 
-        edit_widen_label = QtWidgets.QLabel('Widen')
-        edit_widen_label.setToolTip('Widens the active cuts')
+        edit_widen_label = QtWidgets.QLabel(self.transl.tr('Widen'))
+        edit_widen_label.setToolTip(self.transl.tr('Widens the active cuts'))
         edit_btn_widenL = QtWidgets.QToolButton(self.main_frame)
         edit_btn_widenL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_widenL.clicked.connect(self._on_edit_widenL)
-        edit_btn_widenL.setToolTip('Widen active cuts 1 increment on left side')
+        edit_btn_widenL.setToolTip(self.transl.tr('Widen active cuts 1 increment on left side'))
         edit_btn_widenR = QtWidgets.QToolButton(self.main_frame)
         edit_btn_widenR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_widenR.clicked.connect(self._on_edit_widenR)
-        edit_btn_widenR.setToolTip('Widen active cuts 1 increment on right side')
+        edit_btn_widenR.setToolTip(self.transl.tr('Widen active cuts 1 increment on right side'))
 
-        edit_trim_label = QtWidgets.QLabel('Trim')
-        edit_trim_label.setToolTip('Trims the active cuts')
+        edit_trim_label = QtWidgets.QLabel(self.transl.tr('Trim'))
+        edit_trim_label.setToolTip(self.transl.tr('Trims the active cuts'))
         edit_btn_trimL = QtWidgets.QToolButton(self.main_frame)
         edit_btn_trimL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_trimL.clicked.connect(self._on_edit_trimL)
-        edit_btn_trimL.setToolTip('Trim active cuts 1 increment on left side')
+        edit_btn_trimL.setToolTip(self.transl.tr('Trim active cuts 1 increment on left side'))
         edit_btn_trimR = QtWidgets.QToolButton(self.main_frame)
         edit_btn_trimR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_trimR.clicked.connect(self._on_edit_trimR)
-        edit_btn_trimR.setToolTip('Trim active cuts 1 increment on right side')
+        edit_btn_trimR.setToolTip(self.transl.tr('Trim active cuts 1 increment on right side'))
 
-        edit_btn_toggle = QtWidgets.QPushButton('Toggle', self.main_frame)
+        edit_btn_toggle = QtWidgets.QPushButton(self.transl.tr('Toggle'), self.main_frame)
         edit_btn_toggle.clicked.connect(self._on_edit_toggle)
-        edit_btn_toggle.setToolTip('Toggles the cut at cursor between active and deactive')
+        edit_btn_toggle.setToolTip(self.transl.tr('Toggles the cut at cursor between active and deactive'))
         edit_btn_cursorL = QtWidgets.QToolButton(self.main_frame)
         edit_btn_cursorL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_cursorL.clicked.connect(self._on_edit_cursorL)
-        edit_btn_cursorL.setToolTip('Move cut cursor to left')
+        edit_btn_cursorL.setToolTip(self.transl.tr('Move cut cursor to left'))
         edit_btn_cursorR = QtWidgets.QToolButton(self.main_frame)
         edit_btn_cursorR.setArrowType(QtCore.Qt.RightArrow)
         edit_btn_cursorR.clicked.connect(self._on_edit_cursorR)
-        edit_btn_cursorR.setToolTip('Move cut cursor to right')
-        edit_btn_activate_all = QtWidgets.QPushButton('All', self.main_frame)
+        edit_btn_cursorR.setToolTip(self.transl.tr('Move cut cursor to right'))
+        edit_btn_activate_all = QtWidgets.QPushButton(self.transl.tr('All'), self.main_frame)
         edit_btn_activate_all.clicked.connect(self._on_edit_activate_all)
-        edit_btn_activate_all.setToolTip('Set all cuts to be active')
-        edit_btn_deactivate_all = QtWidgets.QPushButton('None', self.main_frame)
+        edit_btn_activate_all.setToolTip(self.transl.tr('Set all cuts to be active'))
+        edit_btn_deactivate_all = QtWidgets.QPushButton(self.transl.tr('None'), self.main_frame)
         edit_btn_deactivate_all.clicked.connect(self._on_edit_deactivate_all)
-        edit_btn_deactivate_all.setToolTip('Set no cuts to be active')
+        edit_btn_deactivate_all.setToolTip(self.transl.tr('Set no cuts to be active'))
 
         # Add the description line edit
         self.le_description = qt_utils.ShadowTextLineEdit(self.main_frame,
-                                                          'Enter description here for template watermark')
+                                        self.transl.tr('Enter description here for template watermark'))
         self.le_description.editingFinished.connect(self._on_description)
         self.le_description.setAlignment(QtCore.Qt.AlignHCenter)
 
@@ -704,8 +717,8 @@ class Driver(QtWidgets.QMainWindow):
         grid_edit.addWidget(qt_utils.create_hline(), 0, 0, 2, 16, QtCore.Qt.AlignTop)
         grid_edit.addWidget(qt_utils.create_hline(), 2, 0, 2, 16, QtCore.Qt.AlignTop)
         grid_edit.addWidget(qt_utils.create_vline(), 0, 0, 6, 1)
-        label_active_cut_select = QtWidgets.QLabel('Active Cut Select')
-        label_active_cut_select.setToolTip('Tools that select the active cuts')
+        label_active_cut_select = QtWidgets.QLabel(self.transl.tr('Active Cut Select'))
+        label_active_cut_select.setToolTip(self.transl.tr('Tools that select the active cuts'))
         grid_edit.addWidget(label_active_cut_select, 1, 1, 1, 3, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_toggle, 3, 1, 1, 2, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_cursorL, 4, 1, QtCore.Qt.AlignRight)
@@ -713,8 +726,8 @@ class Driver(QtWidgets.QMainWindow):
         grid_edit.addWidget(edit_btn_activate_all, 3, 3)
         grid_edit.addWidget(edit_btn_deactivate_all, 4, 3)
         grid_edit.addWidget(qt_utils.create_vline(), 0, 4, 6, 1)
-        label_active_cut_ops = QtWidgets.QLabel('Active Cut Operators')
-        label_active_cut_ops.setToolTip('Edit operations applied to active cuts')
+        label_active_cut_ops = QtWidgets.QLabel(self.transl.tr('Active Cut Operators'))
+        label_active_cut_ops.setToolTip(self.transl.tr('Edit operations applied to active cuts'))
         grid_edit.addWidget(label_active_cut_ops, 1, 5, 1, 10, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_move_label, 3, 5, 1, 2, QtCore.Qt.AlignHCenter)
         grid_edit.addWidget(edit_btn_moveL, 4, 5, QtCore.Qt.AlignRight)
@@ -742,15 +755,15 @@ class Driver(QtWidgets.QMainWindow):
         self.tabs_spacing = QtWidgets.QTabWidget()
         tab_es = QtWidgets.QWidget()
         tab_es.setLayout(hbox_es)
-        self.tabs_spacing.addTab(tab_es, 'Equal')
+        self.tabs_spacing.addTab(tab_es, self.transl.tr('Equal'))
         tab_vs = QtWidgets.QWidget()
         tab_vs.setLayout(hbox_vs)
-        self.tabs_spacing.addTab(tab_vs, 'Variable')
+        self.tabs_spacing.addTab(tab_vs, self.transl.tr('Variable'))
         tab_edit = QtWidgets.QWidget()
         tab_edit.setLayout(hbox_edit)
-        self.tabs_spacing.addTab(tab_edit, 'Editor')
+        self.tabs_spacing.addTab(tab_edit, self.transl.tr('Editor'))
         self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
-        tip = 'These tabs specify the layout algorithm for the cuts.'
+        tip = self.transl.tr('These tabs specify the layout algorithm for the cuts.')
         self.tabs_spacing.setToolTip(tip)
 
         # The tab indices should be set in the order they're defined, but this ensures it
@@ -808,14 +821,14 @@ class Driver(QtWidgets.QMainWindow):
 
         disable = ''
         if self.spacing_index == self.edit_spacing_id:
-            disable = '  <b>Cannot change if in Editor mode.</b>'
+            disable = self.transl.tr('  <b>Cannot change if in Editor mode.</b>')
 
         disable_double = disable
         if not self.boards[2].active:
-            disable_double = '  <b>Cannot change unless "Double Board" is not NONE.</b>'
+            disable_double = self.transl.tr('  <b>Cannot change unless "Double Board" is not NONE.</b>')
         disable_dd = disable
         if not self.boards[3].active:
-            disable_dd = '  <b>Cannot change unless "Double-Double Board" is not NONE.</b>'
+            disable_dd = self.transl.tr('  <b>Cannot change unless "Double-Double Board" is not NONE.</b>')
 
         self.le_board_width_label.setToolTip(self.doc.board_width() + disable)
         self.le_board_width.setToolTip(self.doc.board_width() + disable)
@@ -853,10 +866,10 @@ class Driver(QtWidgets.QMainWindow):
         Creates a status message bar that is placed at the bottom of the
         main frame.
         '''
-        tt_message = 'Status of the last operation.'
-        tt_fit = 'Maximum overlap and gap for the current joint.'\
+        tt_message = self.transl.tr('Status of the last operation.')
+        tt_fit = self.transl.tr('Maximum overlap and gap for the current joint.'\
                  ' Too much overlap will cause an interference fit,'\
-                 ' while too much gap will result in a loose-fitting joint.'
+                 ' while too much gap will result in a loose-fitting joint.')
 
         # Create the fonts and labels for each field
         font = QtGui.QFont('Times', 14)
@@ -865,13 +878,13 @@ class Driver(QtWidgets.QMainWindow):
         fontL.setBold(True)
         fmL = QtGui.QFontMetrics(fontL)
 
-        fit_text = 'Fit:'
+        fit_text = self.transl.tr('Fit:')
         fit = QtWidgets.QLabel(fit_text)
         fit.setFont(fontL)
         fit.setFixedWidth(fmL.width(fit_text))
         fit.setToolTip(tt_fit)
 
-        status_text = 'Status:'
+        status_text = self.transl.tr('Status:')
         status = QtWidgets.QLabel(status_text)
         status.setFont(fontL)
         status.setFixedWidth(fmL.width(status_text))
@@ -879,13 +892,13 @@ class Driver(QtWidgets.QMainWindow):
 
         # Create the label widgets that will change their text
         style = QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised
-        self.status_message_label = QtWidgets.QLabel('MESSAGE')
+        self.status_message_label = QtWidgets.QLabel(self.transl.tr('MESSAGE'))
         self.status_message_label.setFont(font)
         self.status_message_label.setFrameStyle(style)
         self.status_message_label.setToolTip(tt_message)
 
-        self.status_fit_label = QtWidgets.QLabel('FIT')
-        w = fm.width('Max gap = 0.0000 mm  Max overlap = 0.0000 mm')
+        self.status_fit_label = QtWidgets.QLabel(self.transl.tr('FIT'))
+        w = fm.width(self.transl.tr('Max gap = 0.0000 mm  Max overlap = 0.0000 mm'))
         self.status_fit_label.setFixedWidth(w)
         self.status_fit_label.setFont(font)
         self.status_fit_label.setFrameStyle(style)
@@ -899,7 +912,7 @@ class Driver(QtWidgets.QMainWindow):
         self.statusbar.addPermanentWidget(status, 1)
         self.statusbar.addPermanentWidget(self.status_message_label, 2)
 
-        self.status_message('Ready')
+        self.status_message(self.transl.tr('Ready'))
 
     def status_message(self, msg, warning=False, flash_len_ms=None):
         '''
@@ -920,7 +933,7 @@ class Driver(QtWidgets.QMainWindow):
         '''
         if self.fig.geom is None:
             return
-        msg = 'Max gap = %.3f%s  Max overlap = %.3f%s'
+        msg = self.transl.tr('Max gap = %.3f%s  Max overlap = %.3f%s')
         gap = self.fig.geom.max_gap
         overlap = self.fig.geom.max_overlap
         warn_gap = self.units.abstract_to_increments(self.config.warn_gap, False)
@@ -959,7 +972,7 @@ class Driver(QtWidgets.QMainWindow):
         elif self.spacing_index == self.edit_spacing_id:
             self.edit_spacing = spacing.Edit_Spaced(self.bit, self.boards, self.config)
         else:
-            raise ValueError('Bad value for spacing_index %d' % self.spacing_index)
+            raise ValueError(self.transl.tr('Bad value for spacing_index %d') % self.spacing_index)
 
         self.set_spacing_widgets()
 
@@ -968,9 +981,9 @@ class Driver(QtWidgets.QMainWindow):
         Sets the spacing widget parameters
         '''
         # enable/disable changing parameters, depending upon spacing algorithm
-        les = [self.le_board_width, self.le_board_width_label,\
-               self.le_bit_width, self.le_bit_width_label,\
-               self.le_bit_depth, self.le_bit_depth_label,\
+        les = [self.le_board_width, self.le_board_width_label,
+               self.le_bit_width, self.le_bit_width_label,
+               self.le_bit_depth, self.le_bit_depth_label,
                self.le_bit_angle, self.le_bit_angle_label]
         les.extend(self.cb_wood)
         les.extend(self.cb_wood_label)
@@ -1050,7 +1063,7 @@ class Driver(QtWidgets.QMainWindow):
             self.edit_spacing.set_cuts(self.spacing.cuts)
             self.spacing = self.edit_spacing
         else:
-            raise ValueError('Bad value for spacing_index %d' % self.spacing_index)
+            raise ValueError(self.transl.tr('Bad value for spacing_index %d') % self.spacing_index)
 
         self.update_tooltips()
 
@@ -1060,20 +1073,20 @@ class Driver(QtWidgets.QMainWindow):
         if self.config.debug:
             print('_on_tabs_spacing')
         if self.spacing_index == self.edit_spacing_id and index != self.edit_spacing_id and \
-                    self.spacing.changes_made():
-            msg = 'You are exiting the Editor, which will discard'\
+            self.spacing.changes_made():
+            msg = self.transl.tr('You are exiting the Editor, which will discard'\
                   ' any changes made in the Editor.'\
-                  '\n\nAre you sure you want to do this?'
-            reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
-                                               QtWidgets.QMessageBox.Yes,
-                                               QtWidgets.QMessageBox.No)
+                  '\n\nAre you sure you want to do this?')
+            reply = QtWidgets.QMessageBox.question(self, self.transl.tr('Message'), msg,
+                    QtWidgets.QMessageBox.Yes,
+                    QtWidgets.QMessageBox.No)
 
             if reply == QtWidgets.QMessageBox.No:
                 self.tabs_spacing.setCurrentIndex(self.spacing_index)
                 return
         self.reinit_spacing()
         self.draw()
-        self.status_message('Changed to spacing algorithm %s'\
+        self.status_message(self.transl.tr('Changed to spacing algorithm %s')\
                             % str(self.tabs_spacing.tabText(index)))
         self.file_saved = False
 
@@ -1087,7 +1100,7 @@ class Driver(QtWidgets.QMainWindow):
         if val is not None:
             self.reinit_spacing()
             self.draw()
-            self.status_message('Changed bit width to ' + val)
+            self.status_message(self.transl.tr('Changed bit width to ') + val)
             self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -1102,7 +1115,7 @@ class Driver(QtWidgets.QMainWindow):
                 b.set_height(self.bit)
             self.reinit_spacing()
             self.draw()
-            self.status_message('Changed bit depth to ' + val)
+            self.status_message(self.transl.tr('Changed bit depth to ') + val)
             self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -1115,7 +1128,7 @@ class Driver(QtWidgets.QMainWindow):
         if val is not None:
             self.reinit_spacing()
             self.draw()
-            self.status_message('Changed bit angle to ' + val)
+            self.status_message(self.transl.tr('Changed bit angle to ') + val)
             self.file_saved = False
             self.threeDS_enabler()
 
@@ -1131,7 +1144,7 @@ class Driver(QtWidgets.QMainWindow):
                 b.width = self.boards[0].width
             self.reinit_spacing()
             self.draw()
-            self.status_message('Changed board width to ' + val)
+            self.status_message(self.transl.tr('Changed board width to ') + val)
             self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -1142,7 +1155,7 @@ class Driver(QtWidgets.QMainWindow):
         if self.le_description.isModified():
             self.description = str(self.le_description.text())
             self.draw()
-            self.status_message('Changed description to "{}"'.format(self.description))
+            self.status_message(self.transl.tr('Changed description to "{}"').format(self.description))
             self.file_saved = False
 
     @QtCore.pyqtSlot(int)
@@ -1154,7 +1167,7 @@ class Driver(QtWidgets.QMainWindow):
         self.equal_spacing.set_cuts()
         self.es_slider0_label.setText(self.equal_spacing.labels[0])
         self.draw()
-        self.status_message('Changed slider %s' % str(self.es_slider0_label.text()))
+        self.status_message(self.transl.tr('Changed slider %s') % str(self.es_slider0_label.text()))
         self.file_saved = False
 
     @QtCore.pyqtSlot(int)
@@ -1166,7 +1179,7 @@ class Driver(QtWidgets.QMainWindow):
         self.equal_spacing.set_cuts()
         self.es_slider1_label.setText(self.equal_spacing.labels[1])
         self.draw()
-        self.status_message('Changed slider %s' % str(self.es_slider1_label.text()))
+        self.status_message(self.transl.tr('Changed slider %s') % str(self.es_slider1_label.text()))
         self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -1178,9 +1191,9 @@ class Driver(QtWidgets.QMainWindow):
         self.equal_spacing.set_cuts()
         self.draw()
         if self.equal_spacing.params['Centered'].v:
-            self.status_message('Checked Centered.')
+            self.status_message(self.transl.tr('Checked Centered.'))
         else:
-            self.status_message('Unchecked Centered.')
+            self.status_message(self.transl.tr('Unchecked Centered.'))
         self.file_saved = False
 
     @QtCore.pyqtSlot(int)
@@ -1192,7 +1205,7 @@ class Driver(QtWidgets.QMainWindow):
         self.var_spacing.set_cuts()
         self.cb_vsfingers_label.setText(self.var_spacing.labels[0])
         self.draw()
-        self.status_message('Changed slider %s' % str(self.cb_vsfingers_label.text()))
+        self.status_message(self.transl.tr('Changed slider %s') % str(self.cb_vsfingers_label.text()))
         self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -1230,10 +1243,10 @@ class Driver(QtWidgets.QMainWindow):
         else:
             # This is the simple approach to set the filename, but doesn't allow
             # us to update the working_dir, if the user changes it.
-            #filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', \
+            # filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', \
             #                     defname, 'Portable Network Graphics (*.png)')
             # ... so here is now we do it:
-            dialog = QtWidgets.QFileDialog(self, 'Save file', defname, \
+            dialog = QtWidgets.QFileDialog(self, self.transl.tr('Save file'), defname,
                                            'Portable Network Graphics (*.png)')
 
             dialog.setDefaultSuffix(suffix)
@@ -1249,13 +1262,13 @@ class Driver(QtWidgets.QMainWindow):
                 self.working_dir = d
                 filename = str(filenames[0]).strip()
             if filename is None:
-                self.status_message('File not saved', warning=True)
+                self.status_message(self.transl.tr('File not saved'), warning=True)
                 return
 
         # Save the file with metadata
 
         if do_screenshot:
-            p_screen=QtWidgets.QApplication.primaryScreen()
+            p_screen = QtWidgets.QApplication.primaryScreen()
             image = p_screen.grabWindow(self.winId())
         else:
             image = self.fig.image(self.template, self.boards, self.bit, self.spacing,
@@ -1271,30 +1284,30 @@ class Driver(QtWidgets.QMainWindow):
         # pil conversion risks
         buffer = QtCore.QBuffer()
         buffer.open(QtCore.QIODevice.ReadWrite)
-        image.save(buffer,"PNG")
-        pio=BytesIO()
+        image.save(buffer, "PNG")
+        pio = BytesIO()
         pio.write(buffer.data())
         pio.seek(0)
         buffer.close()
         pilimg = Image.open(pio)
 
         info = PngImagePlugin.PngInfo()
-        info.add_text('pyRouterJig',s)
-        info.add_text('pyRouterJig_v',utils.VERSION)
+        info.add_text('pyRouterJig', s)
+        info.add_text('pyRouterJig_v', utils.VERSION)
 
         r = True
         try:
-            pilimg.save(filename,'png',pnginfo=info)
+            pilimg.save(filename, 'png', pnginfo=info)
         except OSError:
             r = False
 
         if r:
-            self.status_message('Saved to file %s' % filename)
+            self.status_message(self.transl.tr('Saved to file %s') % filename)
             if self.screenshot_index is not None:
                 self.screenshot_index += 1
             self.file_saved = True
         else:
-            self.status_message('Unable to save to file %s' % filename,
+            self.status_message(self.transl.tr('Unable to save to file %s') % filename,
                                 warning=True)
 
     @QtCore.pyqtSlot()
@@ -1309,41 +1322,50 @@ class Driver(QtWidgets.QMainWindow):
 
         # Make sure changes are not lost
         if not self.file_saved:
-            msg = 'Current joint not saved.'\
+            msg = self.transl.tr('Current joint not saved.'\
                   ' Opening a new file will overwrite the current joint.'\
-                  '\n\nAre you sure you want to do this?'
-            reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
-                                               QtWidgets.QMessageBox.Yes,
-                                               QtWidgets.QMessageBox.No)
+                  '\n\nAre you sure you want to do this?')
+            reply = QtWidgets.QMessageBox.question(self, self.transl.tr('Message'), msg,
+                    QtWidgets.QMessageBox.Yes,
+                    QtWidgets.QMessageBox.No)
 
             if reply == QtWidgets.QMessageBox.No:
                 return
 
         # Get the file name
-        filename, _filter = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', \
-                                                         self.working_dir, \
-                                                         'Portable Network Graphics (*.png)')
-
-
-        #filename = str(filename).strip()
+        filename, _filter = QtWidgets.QFileDialog.getOpenFileName(self, self.transl.tr('Open file'),
+                            self.working_dir,
+                            'Portable Network Graphics (*.png)')
+        # filename = str(filename).strip()
         if len(filename) == 0:
-            self.status_message('File open aborted', warning=True)
+            self.status_message(self.transl.tr('File open aborted'), warning=True)
             return
 
         # From the image file, parse the metadata.
         image = Image.open(filename)
-        s=image.info['pyRouterJig']
+        s = image.info['pyRouterJig']
 
         if len(s) == 0:
-            msg = 'File %s does not contain pyRouterJig data.  The PNG file'\
-                  ' must have been saved using pyRouterJig.' % filename
-            QtWidgets.QMessageBox.warning(self, 'Error', msg)
+            msg = self.transl.tr('File %s does not contain pyRouterJig data.  The PNG file'\
+                  ' must have been saved using pyRouterJig.') % filename
+            QtWidgets.QMessageBox.warning(self, self.transl.tr('Error'), msg)
             return
 
         # backwards compatibility
-        (self.bit, self.boards, sp, sp_type) = serialize.unserialize(s, self.config, ('pyRouterJig_v' in image.info.keys()) )
+        (bit, boards, sp, sp_type) = \
+            serialize.unserialize(s, self.config, ('pyRouterJig_v' in image.info.keys()), self.transl)
+
+        if self.bit.units.metric != bit.units.metric:
+            scales_name = ('English', 'Metric')[bool(bit.units.metric)]
+            msg = self.transl.tr('Unable to use the file {}. \nJoin designed for another scale system.\n'
+                                 'Switch pyRouterJig into {} system first').\
+                                format(filename, scales_name)
+            QtWidgets.QMessageBox.warning(self, self.transl.tr('Error'), msg)
+            return
 
         # Reset the dependent data
+        self.bit = bit
+        self.boards = boards
         self.units = self.bit.units
         self.doc = doc.Doc(self.units)
         self.template = router.Incra_Template(self.units, self.boards)
@@ -1425,8 +1447,8 @@ class Driver(QtWidgets.QMainWindow):
 
         # Get the file name
         defname = os.path.join(self.working_dir, fname)
-        dialog = QtWidgets.QFileDialog(self, 'Export joint', defname, \
-                                   'Autodesk 3DS file (*.3ds)')
+        dialog = QtWidgets.QFileDialog(self, self.transl.tr('Export joint'), defname,
+                'Autodesk 3DS file (*.3ds)')
         dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
         filename = None
@@ -1439,11 +1461,11 @@ class Driver(QtWidgets.QMainWindow):
             self.working_dir = d
             filename = str(filenames[0]).strip()
         if filename is None:
-            self.status_message('Joint not exported', warning=True)
+            self.status_message(self.transl.tr('Joint not exported'), warning=True)
             return
 
         threeDS.joint_to_3ds(filename, self.boards, self.bit, self.spacing)
-        self.status_message('Exported to file %s' % filename)
+        self.status_message(self.transl.tr('Exported to file %s') % filename)
 
     @QtCore.pyqtSlot()
     def _on_print(self):
@@ -1454,9 +1476,9 @@ class Driver(QtWidgets.QMainWindow):
         r = self.fig.print(self.template, self.boards, self.bit, self.spacing,
                            self.woods, self.description)
         if r:
-            self.status_message('Figure printed')
+            self.status_message(self.transl.tr('Figure printed'))
         else:
-            self.status_message('Figure not printed', warning=True)
+            self.status_message(self.transl.tr('Figure not printed'), warning=True)
 
     @QtCore.pyqtSlot()
     def _on_print_table(self):
@@ -1474,7 +1496,7 @@ class Driver(QtWidgets.QMainWindow):
         title = router.create_title(self.boards, self.bit, self.spacing)
         utils.print_table(filename, self.boards, title)
         self.table_index += 1
-        self.status_message('Saved router pass location table to %s' % filename)
+        self.status_message(self.transl.tr('Saved router pass location table to %s') % filename)
 
     @QtCore.pyqtSlot()
     def _on_about(self):
@@ -1483,8 +1505,8 @@ class Driver(QtWidgets.QMainWindow):
             print('_on_about')
 
         box = QtWidgets.QMessageBox(self)
-        s = '<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>'
-        s += '<h3>Version: %s</h3>' % utils.VERSION
+        s = self.transl.tr('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>')
+        s += self.transl.tr('<h3>Version: %s</h3>') % utils.VERSION
         box.setText(s + self.doc.short_desc() + self.doc.license())
         box.setTextFormat(QtCore.Qt.RichText)
         box.show()
@@ -1498,10 +1520,10 @@ class Driver(QtWidgets.QMainWindow):
         self.config_window.initialize()
         r = self.config_window.exec_()
         if r == 0:
-            self.status_message('No changes made to configuration file.',
+            self.status_message(self.transl.tr('No changes made to configuration file.'),
                                 warning=True)
         else:
-            self.status_message('Preference changes saved in configuration file.')
+            self.status_message(self.transl.tr('Preference changes saved in configuration file.'))
             self.bit.bit_gentle = self.config_window.bit.bit_gentle
 
         # Update widgets that may have changed
@@ -1518,18 +1540,20 @@ class Driver(QtWidgets.QMainWindow):
         self.pass_location_action.setChecked(self.config.show_router_pass_locations)
         for a in actions:
             a.blockSignals(False)
-        (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images)
+
+        (woods, patterns) = qt_utils.create_wood_dict(self.config.wood_images, self.transl)
         self.woods = copy.deepcopy(woods)
         self.woods.update(patterns)
         for i in range(len(self.boards)):
             cb = self.cb_wood[i]
             has_none = (cb.findText('NONE') >= 0)
-            current_wood = str(cb.currentText())
-            if current_wood != 'NONE' and current_wood not in self.woods.keys():
+            selected_wood = cb.currentText()
+            current_wood = cb.currentData()
+            if selected_wood != 'NONE':
                 current_wood = self.config.default_wood
             self.populate_wood_combo_box(cb, woods, patterns, current_wood, has_none)
-            if current_wood != 'NONE':
-                self.boards[i].set_wood(current_wood)
+            if selected_wood != 'NONE':
+                self.boards[i].set_wood(cb.currentText())
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1538,13 +1562,13 @@ class Driver(QtWidgets.QMainWindow):
         if self.config.debug:
             print('_on_exit')
         if self.file_saved:
-            #QtGui.qApp.quit()
+            # QtGui.qApp.quit()
             QtWidgets.qApp.quit()
         else:
-            msg = 'Figure was changed but not saved.  Are you sure you want to quit?'
+            msg = self.transl.tr('Figure was changed but not saved.  Are you sure you want to quit?')
             reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
-                                               QtWidgets.QMessageBox.Yes,
-                                               QtWidgets.QMessageBox.No)
+                    QtWidgets.QMessageBox.Yes,
+                    QtWidgets.QMessageBox.No)
 
             if reply == QtWidgets.QMessageBox.Yes:
                 QtWidgets.qApp.quit()
@@ -1562,7 +1586,8 @@ class Driver(QtWidgets.QMainWindow):
         if self.config.debug:
             print('_on_wood', iwood, index)
         if index is None:
-            index = self.cb_wood[iwood].currentIndex()
+            index = max(0, self.cb_wood[iwood].currentIndex())
+            self.cb_wood[iwood].setCurrentIndex(index)
         s = str(self.cb_wood[iwood].itemText(index))
         label = str(self.cb_wood_label[iwood].text())
         if s != 'NONE':
@@ -1570,7 +1595,7 @@ class Driver(QtWidgets.QMainWindow):
         if reinit:
             self.reinit_spacing()
         self.draw()
-        msg = 'Changed %s to %s' % (label, s)
+        msg = self.transl.tr('Changed %s to %s') % (label, s)
         self.status_message(msg)
 
     @QtCore.pyqtSlot(int)
@@ -1647,7 +1672,7 @@ class Driver(QtWidgets.QMainWindow):
             self.reinit_spacing()
             self.draw()
             labels = ['Double', 'Double-Double']
-            self.status_message('Changed {} Board thickness to {}'.format(labels[i], val))
+            self.status_message(self.transl.tr('Changed {} Board thickness to {}').format(labels[i], val))
             self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -1800,10 +1825,10 @@ class Driver(QtWidgets.QMainWindow):
             print('_on_fullscreen')
         if self.windowState() & QtCore.Qt.WindowFullScreen:
             self.showNormal()
-            self.status_message('Exited full-screen mode.')
+            self.status_message(self.transl.tr('Exited full-screen mode.'))
         else:
             self.showFullScreen()
-            self.status_message('Entered full-screen mode.')
+            self.status_message(self.transl.tr('Entered full-screen mode.'))
 
     @QtCore.pyqtSlot()
     def _on_caul(self):
@@ -1812,9 +1837,9 @@ class Driver(QtWidgets.QMainWindow):
         if self.config_window is not None:
             self.config_window.update_state('show_caul')
         if self.config.show_caul:
-            self.status_message('Turned on caul template.')
+            self.status_message(self.transl.tr('Turned on caul template.'))
         else:
-            self.status_message('Turned off caul template.')
+            self.status_message(self.transl.tr('Turned off caul template.'))
         self.file_saved = False
         self.draw()
 
@@ -1827,9 +1852,9 @@ class Driver(QtWidgets.QMainWindow):
         if self.config_window is not None:
             self.config_window.update_state('show_finger_widths')
         if self.config.show_finger_widths:
-            self.status_message('Turned on finger widths.')
+            self.status_message(self.transl.tr('Turned on finger widths.'))
         else:
-            self.status_message('Turned off finger widths.')
+            self.status_message(self.transl.tr('Turned off finger widths.'))
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1839,9 +1864,9 @@ class Driver(QtWidgets.QMainWindow):
         if self.config_window is not None:
             self.config_window.update_state('show_fit')
         if self.config.show_fit:
-            self.status_message('Turned on fit view.')
+            self.status_message(self.transl.tr('Turned on fit view.'))
         else:
-            self.status_message('Turned off fit view.')
+            self.status_message(self.transl.tr('Turned off fit view.'))
         self.file_saved = False
         self.draw()
 
@@ -1850,9 +1875,9 @@ class Driver(QtWidgets.QMainWindow):
         '''Handles toggling zoom mode'''
         self.fig.enable_zoom_mode(self.zoom_action.isChecked())
         if self.fig.zoom_mode:
-            self.status_message('Turned on zoom mode.')
+            self.status_message(self.transl.tr('Turned on zoom mode.'))
         else:
-            self.status_message('Turned off zoom mode.')
+            self.status_message(self.transl.tr('Turned off zoom mode.'))
 
     @QtCore.pyqtSlot()
     def _on_pass_id(self):
@@ -1863,9 +1888,9 @@ class Driver(QtWidgets.QMainWindow):
         if self.config_window is not None:
             self.config_window.update_state('show_router_pass_identifiers')
         if self.config.show_router_pass_identifiers:
-            self.status_message('Turned on router pass identifiers.')
+            self.status_message(self.transl.tr('Turned on router pass identifiers.'))
         else:
-            self.status_message('Turned off router pass identifiers.')
+            self.status_message(self.transl.tr('Turned off router pass identifiers.'))
         self.draw()
 
     @QtCore.pyqtSlot()
@@ -1877,9 +1902,9 @@ class Driver(QtWidgets.QMainWindow):
         if self.config_window is not None:
             self.config_window.update_state('show_router_pass_locations')
         if self.config.show_router_pass_locations:
-            self.status_message('Turned on router pass locations.')
+            self.status_message(self.transl.tr('Turned on router pass locations.'))
         else:
-            self.status_message('Turned off router pass locations.')
+            self.status_message(self.transl.tr('Turned off router pass locations.'))
         self.draw()
 
     def closeEvent(self, event):
@@ -1947,7 +1972,7 @@ class Driver(QtWidgets.QMainWindow):
                 msg = self.spacing.cut_increment_cursor(1)
             self.draw()
         else:
-            msg = 'You pressed an unrecognized key: '
+            msg = self.transl.tr('You pressed an unrecognized key: ')
             warning = True
             s = event.text()
             if len(s) > 0:
@@ -1974,7 +1999,8 @@ class Driver(QtWidgets.QMainWindow):
         else:
             event.ignore()
             if self.config.debug:
-                print('you released %x' % event.key())
+                print(self.transl.tr('you released %x') % event.key())
+
 
 def run():
     '''
@@ -1989,11 +2015,13 @@ def run():
 #    QtGui.QApplication.setStyle('cde')
 
     app = QtWidgets.QApplication(sys.argv)
-    driver = Driver()
+
+    driver = Driver(app = app)
     driver.show()
     driver.center()
     driver.raise_()
     app.exec_()
+
 
 if __name__ == '__main__':
     run()
