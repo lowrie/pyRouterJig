@@ -3,6 +3,31 @@
 <TS version="2.1" language="ru_RU">
 <context>
     <name>QTranslator</name>
+
+    <message>
+        <location filename="../qt_driver.py" line="1495"/>
+        <source>Fingers:</source>
+        <translation>Пропуск</translation>
+    </message>
+
+    <message>
+        <location filename="../qt_driver.py" line="1495"/>
+        <source>Spacing</source>
+        <translation>Пропуск</translation>
+    </message>
+
+    <message>
+        <location filename="../qt_driver.py" line="1495"/>
+        <source>Width</source>
+        <translation>Ширина</translation>
+    </message>
+ 
+    <message>
+        <location filename="../qt_driver.py" line="1495"/>
+        <source>Centered</source>
+        <translation>Центр.</translation>
+    </message>
+
     <message>
         <location filename="../qt_driver.py" line="1495"/>
         <source>DiagCrossPattern</source>
@@ -914,17 +939,17 @@ Center: </source>
     <message>
         <location filename="../router.py" line="188"/>
         <source>Unable to set Bit Angle to: {}&lt;p&gt;Set to zero or a positive value, such as 7.5 or &quot;7 1/2&quot;</source>
-        <translation>Недопустимый угол фрезы {}&lt;p&gt;Укажите неотрицательной значение в градусах, например {}</translation>
+        <translation>Недопустимый угол фрезы {}&lt;p&gt;Укажите неотрицательноe значение в градусах, обычно 7 или 12</translation>
     </message>
     <message>
         <location filename="../router.py" line="193"/>
         <source>Unable to set Bit Angle to: 0&lt;p&gt;Change Bit Width to odd value first &lt;p&gt;than drop angle to 0 to get stright bit</source>
-        <translation>Прямая вреза должна иметь четный диаметр. Вначале укажите допустимый диаметр&lt;p&gt;, затем сбросте величину угла в 0</translation>
+        <translation>Прямая фреза должна иметь четный диаметр. Вначале укажите допустимый диаметр&lt;p&gt;, затем сбросте величину угла в 0</translation>
     </message>
     <message>
         <location filename="../router.py" line="312"/>
-        <source>Unable to set Board Width to: {}&lt;p&gt;Set to a postive value, such as: {}</source>
-        <translation>{} - это недопустимая ширина доски&lt;p&gt;Укажите положительную величину, например {}</translation>
+        <source>Unable to set Board Width to: {}&lt;p&gt;Set to a postive value less then 4 feet (1 meter) , such as: {}</source>
+        <translation>{} - это недопустимая ширина доски&lt;p&gt;Укажите значение не превышающее 1м (4х футов), например {}</translation>
     </message>
     <message>
         <location filename="../router.py" line="347"/>
