@@ -92,7 +92,6 @@ class Base_Spacing(object):
     labels = []
 
     def __init__(self, bit, boards, config):
-        getcontext().prec = 6   # overkilled prec (actually 4 is enough)
         self.description = 'NONE'
         self.bit = bit
         self.boards = boards

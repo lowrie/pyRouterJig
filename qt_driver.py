@@ -227,6 +227,7 @@ class Driver(QtWidgets.QMainWindow):
         self.except_handled = True
         if self.config.debug:
             tmp = traceback.format_exception(etype, value, trace)
+            traceback.print_tb(trace)
         else:
             tmp = traceback.format_exception_only(etype, value)
         exception = '\n'.join(tmp)
@@ -2006,7 +2007,7 @@ def run():
     '''
     Sets up and runs the application
     '''
-    getcontext().prec = 4
+    getcontext().prec = 4 + 4  # working in f8.4
 #    QtGui.QApplication.setStyle('plastique')
 #    QtGui.QApplication.setStyle('windows')
 #    QtGui.QApplication.setStyle('windowsxp')
