@@ -306,16 +306,19 @@ class Board(My_Rectangle):
         Sets the width from the string s, following requirements from units.string_to_increments().
         '''
         if self.units.metric:
-            val = '52'
+            val = '42' # recomend to use the answer for all questions
+            max = 1000 # set limit to with 1 meter
         else:
             val = '7 1/2'
+            max = 32 * 48 # set 4 feet limitation to with
+
         msg = self.transl.tr('Unable to set Board Width to: {}<p>'\
-              'Set to a postive value, such as: {}').format(s, val)
+              'Set to a postive value less then 4 feet (1 meter) , such as: {}').format(s, val)
         try:
             width = self.units.string_to_increments(s)
         except:
             raise Router_Exception(msg)
-        if width <= 0:
+        if width <= 0 or width > max:
             raise Router_Exception(msg)
         self.width = width
 
@@ -687,8 +690,8 @@ def adjoining_cuts(cuts, bit, board):
         if right - left >= board.dheight:
             adjCuts.append(Cut(max(0, left), min(board.width, right)))
 
-    print('adjoining_cuts cuts:')
-    dump_cuts(adjCuts)
+    # print('adjoining_cuts cuts:')
+    # dump_cuts(adjCuts)
     return adjCuts
 
 

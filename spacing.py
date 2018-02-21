@@ -184,8 +184,11 @@ class Equally_Spaced(Base_Spacing):
         # Note the Width slider measures "midline" but indicates the actual cut space
         # show actual maximum cut with for dovetails
         self.labels = self.keys[:]
-        self.labels[0] = self.transl.tr(self.labels[0]) +': ' + label
-        self.labels[1] = self.transl.tr(self.labels[1]) +': ' + units.increments_to_string(width + overhang * 2, True)
+        l0 = self.transl.tr(self.labels[0])
+        l1 = self.transl.tr(self.labels[1])
+        self.labels[2] = self.transl.tr(self.labels[2])
+        self.labels[0] = l0 +': ' + label
+        self.labels[1] = l1 +': ' + units.increments_to_string(width + overhang * 2, True)
         self.description = self.transl.tr('Equally spaced ')+' (' + self.labels[0] + \
                            ', ' + self.labels[1] + ')'
         self.cuts = []  # return value
