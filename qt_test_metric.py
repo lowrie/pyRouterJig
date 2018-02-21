@@ -28,12 +28,12 @@ import sys
 import unittest
 from qt_driver import Driver
 import utils
-from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5.QtTest import QTest
 
 app = QtWidgets.QApplication(sys.argv)
+
 
 class Case(object):
     def __init__(self, angle, width, depth, spacing, board_width=200):
@@ -46,17 +46,18 @@ class Case(object):
 # These cases are the dovetails in the Incra Master Guide.  The spacing argument is what the
 # Guide recommends.
 cases = [
-        Case(10, '5/16',  5.32 ,  14),
-        Case( 7, '5/8' , 15.27 ,  28),
-        Case(14, '1/2' ,  6.82 ,  22),
-        Case(14, '1/2' , 10.83 ,  20),
-        Case( 7, '3/4' , 16.7  ,  34),
-        Case(10, '5/16',  6    ,  14),
-        Case( 7, '5/8' , 15    ,  28),
-        Case(14, '1/2' ,  7    ,  22),
-        Case(14, '1/2' , 11    ,  20)]
+        Case(10, '5/16', 5.32,  14),
+        Case( 7, '5/8', 15.27,  28),
+        Case(14, '1/2',  6.82,  22),
+        Case(14, '1/2', 10.83,  20),
+        Case( 7, '3/4', 16.7,  34),
+        Case(10, '5/16', 6,    14),
+        Case( 7, '5/8', 15,    28),
+        Case(14, '1/2',  7,    22),
+        Case(14, '1/2', 11,    20)]
 
 do_all_screenshots = False
+
 
 class Driver_Test(unittest.TestCase):
     '''
@@ -65,24 +66,29 @@ class Driver_Test(unittest.TestCase):
     def setUp(self):
         self.d = Driver()
         # the application must be switched to metric scales
-        self.assertFalse(self.d.config.metric != True)        
+        self.assertFalse(self.d.config.metric != True)
         self.d.show()
         self.d.raise_()
         self.debug = self.d.config.debug
         QTest.qWaitForWindowExposed(self.d)
         if not utils.isMac():
             self.d.working_dir = 'Z:\Windows\pyRouterJig\images'
+
     def test_options(self):
         self.assertFalse(self.debug)
+
+
     def test_defaults(self):
         self.assertEqual(str(self.d.le_board_width.text()), '200')
         self.assertEqual(str(self.d.le_bit_width.text()), '12')
         self.assertEqual(str(self.d.le_bit_depth.text()), '12')
         self.assertEqual(str(self.d.le_bit_angle.text()), '0')
+
     def screenshot(self, do_screenshot=True):
         QTest.qWaitForWindowExposed(self.d)
         QTest.qWait(100)
         self.d._on_save(do_screenshot)
+
     def test_screenshots(self):
         # default
         print('************ default')
@@ -201,6 +207,7 @@ class Driver_Test(unittest.TestCase):
         # save option
         print('************ save')
         self.screenshot(False)
+
     def test_dovetails_fit(self):
         self.d._on_fullscreen()
         for w in [0, 1]:
@@ -241,6 +248,7 @@ class Driver_Test(unittest.TestCase):
         self.d._on_bit_depth()
         self.assertEqual(str(self.d.le_bit_depth.text()), '5')
         self.screenshot()
+
     def test_incra_dovetail_cases(self):
         # Run the Incra guide test cases
         self.d.pass_id_action.setChecked(False)
@@ -262,13 +270,12 @@ class Driver_Test(unittest.TestCase):
             self.d._on_bit_width()
             QTest.keyClicks(self.d.le_board_width, '{}'.format(c.board_width))
             self.d._on_board_width()
-            cuts = self.d.boards[0].bottom_cuts
-            bcuts = self.d.boards[1].top_cuts
             spacing = self.d.bit.midline * 2
             print('incra', c.angle, spacing, c.spacing, spacing - c.spacing)
             self.assertTrue(abs(spacing - c.spacing) < 1.0e-5)
             if do_all_screenshots:
                 self.screenshot()
+
     def test_variable_spaced(self):
         self.d.pass_id_action.setChecked(False)
         self.d._on_pass_id()
@@ -296,11 +303,11 @@ class Driver_Test(unittest.TestCase):
                 self.d.cb_vsfingers.setCurrentIndex(i)
                 self.d._on_cb_vsfingers(i)
                 cuts = self.d.boards[0].bottom_cuts
-                bcuts = self.d.boards[1].top_cuts
                 spacing = (cuts[2].passes[0] - cuts[1].passes[0])
                 print(spacing)
                 if do_all_screenshots:
                     self.screenshot()
+
 
 if __name__ == '__main__':
     unittest.main()

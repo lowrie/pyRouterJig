@@ -32,13 +32,15 @@ from operator import attrgetter
 import router
 import utils
 
+
 def dump_cuts(cuts):
     '''Dumps the cuts to the screen...this is for debugging
     in column form.
     '''
     print('Min\tMax')
     for c in cuts:
-        print( '{:f}\t{:f}'.format(c.xmin, c.xmax) )
+        print('{:f}\t{:f}'.format(c.xmin, c.xmax))
+
 
 class Spacing_Exception(Exception):
     '''
@@ -50,6 +52,7 @@ class Spacing_Exception(Exception):
 
     def __str__(self):
         return self.msg
+
 
 class Spacing_Param(object):
     '''
@@ -65,6 +68,7 @@ class Spacing_Param(object):
         self.vMin = vMin
         self.vMax = vMax
         self.v = v
+
 
 class Base_Spacing(object):
     '''
@@ -97,6 +101,7 @@ class Base_Spacing(object):
         self.active_cuts = []
         self.cuts = []
         self.labels = []
+        self.transl = bit.units.transl
 
         # compute the increase in effective bit width from the double* boards
         self.dhtot = 0
@@ -107,6 +112,7 @@ class Base_Spacing(object):
 
     def write(self, fd):
         '''Writes the class to a file'''
+
 
 class Equally_Spaced(Base_Spacing):
     '''
@@ -129,9 +135,9 @@ class Equally_Spaced(Base_Spacing):
         Base_Spacing.__init__(self, bit, boards, config)
 
         dh2 = 2 * self.dhtot
-        t = [Spacing_Param(0, self.boards[0].width // 4 + dh2, 0),\
-             Spacing_Param(self.bit.midline + dh2, self.boards[0].width // 2 + dh2, \
-                           self.bit.midline + dh2),\
+        t = [Spacing_Param(0, self.boards[0].width // 4 + dh2, 0),
+             Spacing_Param(self.bit.midline + dh2, self.boards[0].width // 2 + dh2,
+                           self.bit.midline + dh2),
              Spacing_Param(None, None, True)]
         self.params = {}
         for i in lrange(len(t)):
@@ -145,11 +151,11 @@ class Equally_Spaced(Base_Spacing):
         # on local variables init 
         # we have to care about imperial values and convert them to increments before use
         spacing = self.params['Spacing'].v
-        width = Decimal( math.floor(self.params['Width'].v) )
+        width = Decimal(math.floor(self.params['Width'].v))
 
         if not self.bit.units.metric and width < 1.:
             spacing = self.bit.units.inches_to_increments(self.params['Spacing'].v)
-            width = Decimal( math.floor(self.bit.units.inches_to_increments(self.params['Width'].v ) ))
+            width = Decimal(math.floor(self.bit.units.inches_to_increments(self.params['Width'].v)))
 
         shift = Decimal(self.bit.midline % 2) / 2  # offset to keep cut center mm count
         centered = self.params['Centered'].v
@@ -165,28 +171,27 @@ class Equally_Spaced(Base_Spacing):
         min_finger_width = max(1, units.abstract_to_increments(self.config.min_finger_width))
 
         if centered or \
-           self.bit.angle > 0: # always symm. for dovetail
+           self.bit.angle > 0:  # always symm. for dovetail
             # put a cut at the center of the board with half of inctrmrnt prec.
             xMid = Decimal(board_width // 2) - shift + (width % 2) / 2
             left = Decimal(max(0, xMid - width / 2))
         else:
-            xMid = board_width # - width / 2
             # keep corner finger and groove equality on the board edges
-            left = ( board_width % (width + neck_width) ) // 2
-            if (left - overhang ) < min_finger_width:
+            left = (board_width % (width + neck_width)) // 2
+            if (left - overhang) < min_finger_width:
                 left = 0
 
         # Note the Width slider measures "midline" but indicates the actual cut space
         # show actual maximum cut with for dovetails
         self.labels = self.keys[:]
-        self.labels[0] += ': ' + label
-        self.labels[1] += ': ' + units.increments_to_string(width + overhang * 2, True)
-        self.description = 'Equally spaced (' + self.labels[0] + \
+        self.labels[0] = self.transl.tr(self.labels[0]) +': ' + label
+        self.labels[1] = self.transl.tr(self.labels[1]) +': ' + units.increments_to_string(width + overhang * 2, True)
+        self.description = self.transl.tr('Equally spaced ')+' (' + self.labels[0] + \
                            ', ' + self.labels[1] + ')'
-        self.cuts = [] # return value
+        self.cuts = []  # return value
 
-        right = Decimal( min(board_width, left + width) )
-        self.cuts.append( router.Cut( left - overhang, right + overhang ) )
+        right = Decimal(min(board_width, left + width))
+        self.cuts.append(router.Cut(left - overhang, right + overhang))
 
         # do left side of board
         i = left
@@ -198,8 +203,8 @@ class Equally_Spaced(Base_Spacing):
             # prevent thin first cut
             if left < min_finger_width:
                 left = 0
-            if (i - overhang ) > min_finger_width and (i - left  - overhang * 2) > min_interior:
-                self.cuts.append(router.Cut(max(0,left - overhang), i + overhang) )
+            if (i - overhang) > min_finger_width and (i - left - overhang * 2) > min_interior:
+                self.cuts.append(router.Cut(max(0, left - overhang), i + overhang))
             i = left
 
         # do right side of board
@@ -209,25 +214,26 @@ class Equally_Spaced(Base_Spacing):
             right = i + width
             # prevent thin last cut
             # devetail may cut off corner finger
-            if (board_width - right ) < min_finger_width:
+            if (board_width - right) < min_finger_width:
                 right = board_width
             if (board_width - i + overhang) > min_finger_width and (right - i - overhang * 2) > min_interior:
-                self.cuts.append(router.Cut(i - overhang, min(board_width, right + overhang) ) )
+                self.cuts.append(router.Cut(i - overhang, min(board_width, right + overhang)))
             i = right
 
         # If we have only one cut the entire width of the board, then
         # the board width is too small for the bit
         if self.cuts[0].xmin == 0 and self.cuts[0].xmax == board_width:
-            raise Spacing_Exception('Unable to compute a equally-spaced'\
-                                    ' joint for the board and bit parameters'\
-                                    ' specified.  This is likely because'\
-                                    ' the board width is too small for the'\
-                                    ' bit width specified.')
+            raise Spacing_Exception(self.transl.tr('Unable to compute a equally-spaced'
+                                    ' joint for the board and bit parameters'
+                                    ' specified.  This is likely because'
+                                    ' the board width is too small for the'
+                                    ' bit width specified.'))
         # sort the cuts in increasing x
         self.cuts = sorted(self.cuts, key=attrgetter('xmin'))
         if self.config.debug:
             print('e-s cuts:')
             dump_cuts(self.cuts)
+
 
 class Variable_Spaced(Base_Spacing):
     '''
@@ -244,19 +250,20 @@ class Variable_Spaced(Base_Spacing):
         Base_Spacing.__init__(self, bit, boards, config)
 
         # min and max number of fingers
-        self.mMin = 3  #we actually can set 2 fingers but tests does not pass this value
-        overhang = self.bit.overhang
-        self.mMax = int((self.boards[0].width  // (self.bit.midline +  self.dhtot ) ) // 2 + 1)
+        # we actually can set 2 fingers but tests does not pass this value
+        self.mMin = 3
+        self.mMax = int((self.boards[0].width // (self.bit.midline + self.dhtot)) // 2 + 1)
+        units = self.bit.units
 
         if self.mMax < self.mMin:
-            raise Spacing_Exception('Unable to compute a variable-spaced'\
-                                    ' joint for the board and bit parameters'\
-                                    ' specified.  This is likely because'\
-                                    ' the board width is too small for the'\
-                                    ' bit width specified.')
+            raise Spacing_Exception(units.transl.tr('Unable to compute a variable-spaced'
+                                    ' joint for the board and bit parameters'
+                                    ' specified.  This is likely because'
+                                    ' the board width is too small for the'
+                                    ' bit width specified.'))
         self.mDefault = (self.mMin + self.mMax) // 2
 
-        self.params = {'Fingers':Spacing_Param(self.mMin, self.mMax, self.mDefault)}
+        self.params = {'Fingers': Spacing_Param(self.mMin, self.mMax, self.mDefault)}
 
     def set_cuts(self):
         '''
@@ -272,15 +279,16 @@ class Variable_Spaced(Base_Spacing):
         a1 = ( (2 * S) - (n - 1) * n * d ) / (2 * n - 1)
         the next task is to find the best possible d (I love big numbers)
         '''
-        min_finger_width = Decimal( self.bit.units.abstract_to_increments(self.config.min_finger_width) + self.dhtot)
+        units = self.bit.units
+        min_finger_width = Decimal(self.bit.units.abstract_to_increments(self.config.min_finger_width) + self.dhtot)
         min_interior = self.bit.midline + self.dhtot * 2
-        S = math.floor(self.boards[0].width / 2) # half board width
-        shift = Decimal((self.bit.midline) % 2) / 2 # offset to keep cut senter
+        S = math.floor(self.boards[0].width / 2)   # half board width
+        shift = Decimal((self.bit.midline) % 2) / 2   # offset to keep cut senter
 
         n = int(self.params['Fingers'].v)  # number of cuts
-        d = -16 # d is the ideal decrease in finger width for each finger away from center finger
-        overhang = self.bit.overhang # offset from midline to the end of cut
-        a1 = 0 # center cut
+        d = -16  # d is the ideal decrease in finger width for each finger away from center finger
+        overhang = self.bit.overhang  # offset from midline to the end of cut
+        a1 = 0  # center cut
         an = 0 # last cut
 
         # Iterate to get perfect d value
@@ -289,13 +297,12 @@ class Variable_Spaced(Base_Spacing):
         # the minimum of pre-last cut should be not less than bit midline and extra bords width
         while (an < min_interior or (an + d) <= min_finger_width) and d <= 0:
             d += 1
-            a1 = utils.math_round( ( (2 * S) - (n - 1) * n * d ) / Decimal(2 * n - 1) )
+            a1 = utils.math_round(((2 * S) - (n - 1) * n * d) / Decimal(2 * n - 1))
             an = a1 + Decimal(n - 2) * d
 
-        if d > 0 :
+        if d > 0:
             d = 0
             a1 = min_interior
-            an = min_interior
             delta = 0
         else:
             SP = (a1 + d + an) * (n - 1) + a1
@@ -306,7 +313,7 @@ class Variable_Spaced(Base_Spacing):
         increments = [Decimal(0)] * int(n)
         for i in lrange(0, n):
             increments[i] = a1 + d * i
-            if increments[i] <  min_interior:
+            if increments[i] < min_interior:
                 increments[i] = min_interior
 
         # wide last cut
@@ -317,9 +324,8 @@ class Variable_Spaced(Base_Spacing):
         # wide center cut in case the delta is a 1 increment
         if delta == 1:
             increments[0] += delta
-            delta = 0
 
-        if increments[-1] > increments[-2] :
+        if increments[-1] > increments[-2]:
             increments[-1] = increments[-2]
 
         if self.config.debug:
@@ -328,35 +334,37 @@ class Variable_Spaced(Base_Spacing):
         # put a cut at the center of the board
         xMid = S + shift - Decimal(increments[0] % 2) / 2
         neck = Decimal(increments[0]) / 2
-        left =  xMid - neck
+        left = xMid - neck
         right = xMid + neck
         self.labels = [self.keys[0] + ':']
-        self.description = 'Variable Spaced (' + self.keys[0] + ': {})\nML:{}  SYM:{}  SP[0]:{} PD: {}'.format(n, self.bit.midline, xMid, increments[0], self.bit.depth_0)
+        self.description = units.transl.tr('Variable Spaced ( {}: {})\nML:{}  SYM:{}  SP[0]:{} PD: {}')\
+                               .format(units.transl.tr(self.keys[0]), n, self.bit.midline, xMid, increments[0], self.bit.depth_0)
 
         self.cuts = [router.Cut(left - overhang, right + overhang)]
 
         do_cut = False
         for i in lrange(1, n):
-            if do_cut :
+            if do_cut:
                 # cut width
                 l_left = left - increments[i] - overhang
                 r_right = right + increments[i] + overhang
-               #prevent thin cuts
+                # prevent thin cuts
                 if l_left < min_finger_width:
                     l_left = 0
                 if (self.boards[0].width - r_right) < min_finger_width:
                     r_right = self.boards[0].width
-                self.cuts.append(router.Cut(max(0, l_left) , left + overhang))
+                self.cuts.append(router.Cut(max(0, l_left), left + overhang))
                 self.cuts.append(router.Cut(right - overhang, r_right))
 
             left -= increments[i]
-            right +=increments[i]
+            right += increments[i]
             do_cut = (not do_cut)
         # sort the cuts in increasing x
         self.cuts = sorted(self.cuts, key=attrgetter('xmin'))
         if self.config.debug:
             print('v-s cuts:')
             dump_cuts(self.cuts)
+
 
 class Edit_Spaced(Base_Spacing):
     '''
@@ -366,7 +374,7 @@ class Edit_Spaced(Base_Spacing):
 
     def __init__(self, bit, boards, config):
         Base_Spacing.__init__(self, bit, boards, config)
-        self.undo_cuts = [] # list of cuts to undo
+        self.undo_cuts = []  # list of cuts to undo
         self.params = []
 
     def set_cuts(self, cuts):
@@ -375,7 +383,7 @@ class Edit_Spaced(Base_Spacing):
         '''
         self.cuts = cuts
         self.labels = []
-        self.description = 'Edit spacing'
+        self.description = self.transl.tr('Edit spacing')
         self.cursor_cut = 0
         self.active_cuts = [self.cursor_cut]
         self.undo_cuts = []
@@ -417,7 +425,7 @@ class Edit_Spaced(Base_Spacing):
     def cut_move_left(self):
         '''
         Moves the active cuts 1 increment to the left
-		with min finger with respect
+        with min finger with respect
         '''
         cuts_save = copy.deepcopy(self.cuts)
         op = []
@@ -444,7 +452,7 @@ class Edit_Spaced(Base_Spacing):
         incr = 0
         if delete_cut:
             self.cut_delete(0)
-            msg = 'Deleted cut 0 '
+            msg = self.transl.tr('Deleted cut 0 ')
             incr = 1
         for f in self.active_cuts:
             if self.check_limits(f):
@@ -453,18 +461,18 @@ class Edit_Spaced(Base_Spacing):
                 noop.append(f + incr)
         if len(noop) > 0:
             self.cuts = cuts_save
-            return ('No cuts moved: unable to move indices ' + str(noop),
+            return (self.transl.tr('No cuts moved: unable to move indices %s') % str(noop),
                     True)
         if len(op) > 0 or delete_cut:
             self.undo_cuts.append(cuts_save)
         if len(op) > 0:
-            msg += 'Moved cut indices ' + str(op) + ' to left 1 increment'
+            msg += self.transl.tr('Moved cut indices %s to left 1 increment') % str(op)
         return (msg, False)
 
     def cut_move_right(self):
         '''
         Moves the active cuts 1 increment to the right
-		with min finger with respect
+        with min finger with respect
         '''
         cuts_save = copy.deepcopy(self.cuts)
         op = []
@@ -489,11 +497,10 @@ class Edit_Spaced(Base_Spacing):
             else:
                 c.xmin += 1
         msg = ''
-        incr = 0
         if delete_cut:
             f = len(self.cuts) - 1
             self.cut_delete(f)
-            msg = 'Deleted cut %d ' % f
+            msg = self.transl.tr('Deleted cut %d ') % f
         for f in self.active_cuts:
             if self.check_limits(f):
                 op.append(f)
@@ -501,12 +508,12 @@ class Edit_Spaced(Base_Spacing):
                 noop.append(f)
         if len(noop) > 0:
             self.cuts = cuts_save
-            return ('No cuts moved: unable to move indices ' + str(noop),
+            return (self.transl.tr('No cuts moved: unable to move indices %s') % str(noop),
                     True)
         if len(op) > 0 or delete_cut:
             self.undo_cuts.append(cuts_save)
         if len(op) > 0:
-            msg += 'Moved cut indices ' + str(op) + ' to right 1 increment'
+            msg += self.transl.tr('Moved cut indices %s to right 1 increment') % str(op)
         return (msg, False)
 
     def cut_widen_left(self):
@@ -530,14 +537,14 @@ class Edit_Spaced(Base_Spacing):
                 noop.append(f)
         if len(noop) > 0:
             self.cuts = cuts_save
-            return ('No cuts widened: unable to widen indices ' + str(noop),
+            return (self.transl.tr('No cuts widened: unable to widen indices %s') % str(noop),
                     True)
         if len(op) > 0:
             self.undo_cuts.append(cuts_save)
-            msg = ('Widened cut indices ' + str(op) + ' on left 1 increment',
+            msg = (self.transl.tr('Widened cut indices %s on left 1 increment') % str(op),
                    False)
         else:
-            msg = ('Widened no cuts', True)
+            msg = (self.transl.tr('Widened no cuts'), True)
         return msg
 
     def cut_widen_right(self):
@@ -561,14 +568,14 @@ class Edit_Spaced(Base_Spacing):
                 noop.append(f)
         if len(noop) > 0:
             self.cuts = cuts_save
-            return ('No cuts widened: unable to widen indices ' + str(noop),
+            return (self.transl.tr('No cuts widened: unable to widen indices %s') % str(noop),
                     True)
         if len(op) > 0:
             self.undo_cuts.append(cuts_save)
-            msg = ('Widened cut indices ' + str(op) + ' on right 1 increment',
+            msg = (self.transl.tr('Widened cut indices %s on right 1 increment') % str(op),
                    False)
         else:
-            msg = ('Widened no cuts', True)
+            msg = (self.transl.tr('Widened no cuts'), True)
         return msg
 
     def cut_trim_left(self):
@@ -597,14 +604,14 @@ class Edit_Spaced(Base_Spacing):
                 op.append(f)
         if len(noop) > 0:
             self.cuts = cuts_save
-            return ('No cuts trimmed: unable to trim indices ' + str(noop),
+            return (self.transl.tr('No cuts trimmed: unable to trim indices %s') % str(noop),
                     True)
         if len(op) > 0:
             self.undo_cuts.append(cuts_save)
-            msg = ('Trimmed cut indices ' + str(op) + ' on left 1 increment',
+            msg = (self.transl.tr('Trimmed cut indices %s on left 1 increment') % str(op),
                    False)
         else:
-            msg = ('Trimmed no cuts', True)
+            msg = (self.transl.tr('Trimmed no cuts'), True)
         return msg
 
     def cut_trim_right(self):
@@ -632,14 +639,14 @@ class Edit_Spaced(Base_Spacing):
                 op.append(f)
         if len(noop) > 0:
             self.cuts = cuts_save
-            return ('No cuts trimmed: unable to trim indices ' + str(noop),
+            return (self.transl.tr('No cuts trimmed: unable to trim indices %s') % str(noop),
                     True)
         if len(op) > 0:
             self.undo_cuts.append(cuts_save)
-            msg = ('Trimmed cut indices ' + str(op) + ' on right 1 increment',
+            msg = (self.transl.tr('Trimmed cut indices %s on right 1 increment') % str(op),
                    False)
         else:
-            msg = ('Trimmed no cuts', True)
+            msg = (self.transl.tr('Trimmed no cuts'), True)
         return msg
 
     def cut_increment_cursor(self, inc):
@@ -647,7 +654,7 @@ class Edit_Spaced(Base_Spacing):
         Increments the cursor cut, cyclicly.  Increment can be positive or negative.
         '''
         self.cursor_cut = (self.cursor_cut + inc) % len(self.cuts)
-        return 'Moved cut cursor to cut index %d' % self.cursor_cut
+        return self.transl.tr('Moved cut cursor to cut index %d') % self.cursor_cut
 
     def cut_toggle(self):
         '''
@@ -655,10 +662,10 @@ class Edit_Spaced(Base_Spacing):
         '''
         if self.cursor_cut in self.active_cuts:
             self.active_cuts.remove(self.cursor_cut)
-            msg = 'Deactivated cut index %d' % self.cursor_cut
+            msg = self.transl.tr('Deactivated cut index %d') % self.cursor_cut
         else:
             self.active_cuts.append(self.cursor_cut)
-            msg = 'Activated cut index %d' % self.cursor_cut
+            msg = self.transl.tr('Activated cut index %d') % self.cursor_cut
         return msg
 
     def cut_all_active(self):
@@ -666,21 +673,21 @@ class Edit_Spaced(Base_Spacing):
         Sets all cuts as active.
         '''
         self.active_cuts = lrange(len(self.cuts))
-        return 'All cuts activated'
+        return self.transl.tr('All cuts activated')
 
     def cut_all_not_active(self):
         '''
         Deactivate all cuts.
         '''
         self.active_cuts = []
-        return 'All cuts deactivated'
+        return self.transl.tr('All cuts deactivated')
 
     def cut_delete(self, f):
         '''
         Deletes cut of index f.  Returns True if able to delete the cut,
         False otherwise.
         '''
-        if len(self.cuts) < 2: # don't delete the last cut
+        if len(self.cuts) < 2:  # don't delete the last cut
             return False
         # delete from the cuts list
         c = self.cuts[0:f]
@@ -734,6 +741,8 @@ class Edit_Spaced(Base_Spacing):
         cuts_save = copy.deepcopy(self.cuts)
         min_finger_width = math.floor(self.bit.units.abstract_to_increments(self.config.min_finger_width)) + 1
         wadd = min_finger_width + self.dhtot
+        xmin = 0
+        xmax = 0
         if self.cuts[0].xmin > self.bit.midline - overhang + wadd:
             if self.config.debug:
                 print('add at left')
@@ -772,7 +781,7 @@ class Edit_Spaced(Base_Spacing):
             xmax = self.boards[0].width
             xmin = self.cuts[-1].xmax - overhang
         if index is None:
-            return ('Unable to add cut', True)
+            return (self.transl.tr('Unable to add cut'), True)
         self.undo_cuts.append(cuts_save)
         c = self.cuts[0:index]
         c.append(router.Cut(xmin, xmax))
@@ -780,4 +789,4 @@ class Edit_Spaced(Base_Spacing):
         self.cuts = c
         self.cursor_cut = index
         self.active_cuts = [index]
-        return ('Added cut', False)
+        return (self.transl.tr('Added cut'), False)
