@@ -7,13 +7,13 @@
     <message>
         <location filename="../qt_driver.py" line="1495"/>
         <source>Fingers:</source>
-        <translation>Пропуск</translation>
+        <translation>Число пальцев</translation>
     </message>
 
     <message>
         <location filename="../qt_driver.py" line="1495"/>
         <source>Spacing</source>
-        <translation>Пропуск</translation>
+        <translation>Интервал</translation>
     </message>
 
     <message>
