@@ -850,8 +850,20 @@ def create_title(boards, bit, spacing):
         title += units.transl.tr('%.1f\xB0 dovetail') % bit.angle
     else:
         title += units.transl.tr('straight')
-    title += units.transl.tr(', width: ')
+    title += units.transl.tr(', \xD8 ')
     title += units.increments_to_string(bit.width, True)
     title += units.transl.tr(', depth: ')
     title += units.increments_to_string(bit.depth, True)
+
+    if units.metric:
+        quant = Decimal('0.05') # metric measurment limit
+        gap = bit.gap.quantize(units.quant)
+    else:
+        quant = Decimal(1/64).quantize(units.quant) # english scale measurmentlimit 1/64 more than enough
+        gap = Decimal(units.increments_to_inches(bit.gap)).quantize(units.quant)
+
+    if bit.angle > 0 and\
+            ( abs(gap) > quant or gap > spacing.config.warn_gap or gap < (-1 * spacing.config.warn_overlap) ):
+        title += units.transl.tr('\x7c%s') % gap
+        title += units.transl.tr(' (%s)') % units.increments_to_string(bit.depth_0, True)
     return title
