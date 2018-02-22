@@ -129,6 +129,17 @@ class Equally_Spaced(Base_Spacing):
     true for dovetail bits.  Default is true.
     '''
     keys = ['Spacing', 'Width', 'Centered']
+    msg = 'Unable to compute a equally-spaced'\
+          ' joint for the board and bit parameters'\
+          ' specified.  This is likely because'\
+          ' the board width is too small for the'\
+          ' bit width specified.'
+
+    def is_board_width_ok(bit, boards, config):
+        dhtot = boards[2].dheight * boards[2].active + boards[3].dheight * boards[3].active
+        mMax = bit.width + dhtot +   int((boards[0].width // (bit.midline + dhtot)) // 2 + 1) \
+               + max(1, bit.units.abstract_to_increments(config.min_finger_width)) * 2
+        return mMax <= boards[0].width
 
     def __init__(self, bit, boards, config):
         Base_Spacing.__init__(self, bit, boards, config)
@@ -225,11 +236,7 @@ class Equally_Spaced(Base_Spacing):
         # If we have only one cut the entire width of the board, then
         # the board width is too small for the bit
         if self.cuts[0].xmin == 0 and self.cuts[0].xmax == board_width:
-            raise Spacing_Exception(self.transl.tr('Unable to compute a equally-spaced'
-                                    ' joint for the board and bit parameters'
-                                    ' specified.  This is likely because'
-                                    ' the board width is too small for the'
-                                    ' bit width specified.'))
+            raise Spacing_Exception(self.transl.tr(Equally_Spaced.msg))
         # sort the cuts in increasing x
         self.cuts = sorted(self.cuts, key=attrgetter('xmin'))
         if self.config.debug:

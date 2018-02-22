@@ -1150,12 +1150,21 @@ class Driver(QtWidgets.QMainWindow):
                                         'set_width_from_string')
         if val is not None:
             # Check if board with is applicable for a tab
+            err = False
+            msg = ''
             if self.spacing_index == self.var_spacing_id and \
                     spacing.Variable_Spaced.is_board_width_ok(self.bit, self.boards) == False:
+                err = True
+                msg = self.transl.tr(spacing.Variable_Spaced.msg)
+            if self.spacing_index == self.equal_spacing_id and \
+                    spacing.Equally_Spaced.is_board_width_ok(self.bit, self.boards, self.config) == False:
+                err = True
+                msg = self.transl.tr(spacing.Equally_Spaced.msg)
+            if err:
                 self.boards[0].width = self.boards[1].width
                 self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
                 self.status_message(self.transl.tr('Board width is not changed'))
-                raise spacing.Spacing_Exception(self.transl.tr(spacing.Variable_Spaced.msg))
+                raise spacing.Spacing_Exception(msg)
 
             for b in self.boards[1:]:
                 b.width = self.boards[0].width
