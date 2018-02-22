@@ -1232,7 +1232,8 @@ class Driver(QtWidgets.QMainWindow):
         self.var_spacing.set_cuts()
         self.cb_vsfingers_label.setText(self.var_spacing.labels[0])
         self.draw()
-        self.status_message(self.transl.tr('Changed slider %s') % str(self.cb_vsfingers_label.text()))
+        self.status_message(self.transl.tr('%s ') % str(self.cb_vsfingers_label.text()) + \
+                            self.cb_vsfingers.itemText(index))
         self.file_saved = False
 
     @QtCore.pyqtSlot()
