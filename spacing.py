@@ -247,6 +247,19 @@ class Variable_Spaced(Base_Spacing):
     Fingers: Roughly the number of full fingers on either the A or B board.
     '''
     keys = ['Fingers']
+    msg = \
+        'Unable to compute a variable-spaced'\
+        ' joint for the board and bit parameters'\
+        ' specified.  This is likely because'\
+        ' the board width is too small for the'\
+        ' bit width specified.'
+
+    @staticmethod
+    def is_board_width_ok(bit, boards):
+        mMin = 3
+        dhtot = boards[2].dheight * boards[2].active + boards[3].dheight * boards[3].active
+        mMax = int((boards[0].width // (bit.midline + dhtot)) // 2 + 1)
+        return mMax > mMin
 
     def __init__(self, bit, boards, config):
         Base_Spacing.__init__(self, bit, boards, config)
@@ -258,13 +271,10 @@ class Variable_Spaced(Base_Spacing):
         units = self.bit.units
 
         if self.mMax < self.mMin:
-            raise Spacing_Exception(units.transl.tr('Unable to compute a variable-spaced'
-                                    ' joint for the board and bit parameters'
-                                    ' specified.  This is likely because'
-                                    ' the board width is too small for the'
-                                    ' bit width specified.'))
-        self.mDefault = (self.mMin + self.mMax) // 2
+            # we try to survive here.., Normally it's better to call is_board_width_ok prior create the object
+            raise Spacing_Exception(units.transl.tr(Variable_Spaced.msg))
 
+        self.mDefault = (self.mMin + self.mMax) // 2
         self.params = {'Fingers': Spacing_Param(self.mMin, self.mMax, self.mDefault)}
 
     def set_cuts(self):
@@ -288,7 +298,8 @@ class Variable_Spaced(Base_Spacing):
         shift = Decimal((self.bit.midline) % 2) / 2   # offset to keep cut senter
 
         n = int(self.params['Fingers'].v)  # number of cuts
-        d = -16  # d is the ideal decrease in finger width for each finger away from center finger
+        d = -16
+        d = - S // 4 - self.bit.midline  # d is the ideal decrease in finger width for each finger away from center finger
         overhang = self.bit.overhang  # offset from midline to the end of cut
         a1 = 0  # center cut
         an = 0 # last cut
@@ -338,7 +349,7 @@ class Variable_Spaced(Base_Spacing):
         neck = Decimal(increments[0]) / 2
         left = xMid - neck
         right = xMid + neck
-        self.labels = [self.keys[0] + ':']
+        self.labels = [units.transl.tr(self.keys[0] + ':')]
         self.description = units.transl.tr('Variable Spaced ( {}: {})\nML:{}  SYM:{}  SP[0]:{} PD: {}')\
                                .format(units.transl.tr(self.keys[0]), n, self.bit.midline, xMid, increments[0], self.bit.depth_0)
 

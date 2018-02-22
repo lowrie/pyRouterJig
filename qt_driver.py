@@ -963,18 +963,20 @@ class Driver(QtWidgets.QMainWindow):
         Re-initializes the joint spacing objects.  This must be called
         when the router bit or board change dimensions.
         '''
-        self.spacing_index = self.tabs_spacing.currentIndex()
+        spacing_index = self.tabs_spacing.currentIndex()
 
         # Re-create the spacings objects
-        if self.spacing_index == self.equal_spacing_id:
+        if spacing_index == self.equal_spacing_id:
             self.equal_spacing = spacing.Equally_Spaced(self.bit, self.boards, self.config)
-        elif self.spacing_index == self.var_spacing_id:
+        elif spacing_index == self.var_spacing_id:
             self.var_spacing = spacing.Variable_Spaced(self.bit, self.boards, self.config)
-        elif self.spacing_index == self.edit_spacing_id:
+        elif spacing_index == self.edit_spacing_id:
             self.edit_spacing = spacing.Edit_Spaced(self.bit, self.boards, self.config)
         else:
             raise ValueError(self.transl.tr('Bad value for spacing_index %d') % self.spacing_index)
 
+        # Switch spacing index if now calculation issues
+        self.spacing_index = self.tabs_spacing.currentIndex()
         self.set_spacing_widgets()
 
     def set_spacing_widgets(self):
@@ -1081,11 +1083,17 @@ class Driver(QtWidgets.QMainWindow):
             reply = QtWidgets.QMessageBox.question(self, self.transl.tr('Message'), msg,
                     QtWidgets.QMessageBox.Yes,
                     QtWidgets.QMessageBox.No)
-
             if reply == QtWidgets.QMessageBox.No:
                 self.tabs_spacing.setCurrentIndex(self.spacing_index)
                 return
-        self.reinit_spacing()
+        try:
+            self.reinit_spacing()
+        except:
+            # Rollback tab switch in case of exception
+            if index == self.var_spacing_id:
+                self.tabs_spacing.setCurrentIndex(self.spacing_index)
+            raise
+
         self.draw()
         self.status_message(self.transl.tr('Changed to spacing algorithm %s')\
                             % str(self.tabs_spacing.tabText(index)))
@@ -1141,8 +1149,17 @@ class Driver(QtWidgets.QMainWindow):
         val = qt_utils.set_router_value(self.le_board_width, self.boards[0], 'width',
                                         'set_width_from_string')
         if val is not None:
+            # Check if board with is applicable for a tab
+            if self.spacing_index == self.var_spacing_id and \
+                    spacing.Variable_Spaced.is_board_width_ok(self.bit, self.boards) == False:
+                self.boards[0].width = self.boards[1].width
+                self.le_board_width.setText(self.units.increments_to_string(self.boards[0].width))
+                self.status_message(self.transl.tr('Board width is not changed'))
+                raise spacing.Spacing_Exception(self.transl.tr(spacing.Variable_Spaced.msg))
+
             for b in self.boards[1:]:
                 b.width = self.boards[0].width
+
             self.reinit_spacing()
             self.draw()
             self.status_message(self.transl.tr('Changed board width to ') + val)
@@ -2008,6 +2025,9 @@ def run():
     Sets up and runs the application
     '''
     getcontext().prec = 4 + 4  # working in f8.4
+    getcontext().Emin = -99999999  # working in f8.4
+    getcontext().Emax = 99999999  # working in f8.4
+
 #    QtGui.QApplication.setStyle('plastique')
 #    QtGui.QApplication.setStyle('windows')
 #    QtGui.QApplication.setStyle('windowsxp')

@@ -661,6 +661,7 @@ def adjoining_cuts(cuts, bit, board):
 
     Returns an array of Cut objects
     '''
+    q_prec =Decimal('0.0001')
     nc = len(cuts)
     offset = bit.width_f-bit.midline
     adjCuts = []
@@ -671,7 +672,7 @@ def adjoining_cuts(cuts, bit, board):
         left = 0
         right = cuts[0].xmin + offset - board.dheight
         if right - left >= board.dheight:
-            adjCuts.append(Cut(left, round(right, 4)))
+            adjCuts.append(Cut(left,right.quantize(q_prec)))
 
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
