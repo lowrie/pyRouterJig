@@ -166,6 +166,7 @@ class Units(object):
     increments_per_inch: Number of increments per inch.
     '''
     mm_per_inch = 25.4
+    quant = Decimal('0.01')
 
     def __init__(self, english_separator, metric=False, num_increments=None, transl=None):
         self.english_separator = english_separator
@@ -180,8 +181,10 @@ class Units(object):
             self.num_increments = num_increments
         if metric:
             self.increments_per_inch = self.mm_per_inch * self.num_increments
+            Units.quant = Decimal('0.01')
         else:  # english units
             self.increments_per_inch = self.num_increments
+            Units.quant = Decimal('0.001')
 
     def increments_to_inches(self, increments):
         '''Converts increments to inches.'''
@@ -202,7 +205,7 @@ class Units(object):
         metric conversion requires fixed point rounding
         '''
         if self.metric:
-            r = '%g' % (Decimal(increments) / Decimal(self.num_increments))
+            r = '%g' % (Decimal(increments) / Decimal(self.num_increments)).quantize(Units.quant)
         else:
             allow_denoms = [1, 2, 4, 8, 16, 32, 64]
             if isinstance(increments, float):

@@ -357,8 +357,8 @@ class Variable_Spaced(Base_Spacing):
         left = xMid - neck
         right = xMid + neck
         self.labels = [units.transl.tr(self.keys[0] + ':')]
-        self.description = units.transl.tr('Variable Spaced ( {}: {})\nML:{}  SYM:{}  SP[0]:{} PD: {}')\
-                               .format(units.transl.tr(self.keys[0]), n, self.bit.midline, xMid, increments[0], self.bit.depth_0)
+        self.description = units.transl.tr('Variable Spaced ( {}: {})')\
+                               .format(units.transl.tr(self.keys[0]), n)
 
         self.cuts = [router.Cut(left - overhang, right + overhang)]
 
