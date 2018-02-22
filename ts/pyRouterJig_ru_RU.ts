@@ -19,7 +19,7 @@
     <message>
         <location filename="../qt_driver.py" line="1495"/>
         <source>Width</source>
-        <translation>Ширина</translation>
+        <translation>Паз</translation>
     </message>
  
     <message>
@@ -1680,10 +1680,8 @@ Board width: </source>
     </message>
     <message>
         <location filename="../spacing.py" line="340"/>
-        <source>Variable Spaced ( {}: {})
-ML:{}  SYM:{}  SP[0]:{} PD: {}</source>
-        <translation>Переменные шипы ( {}: {})
-ML:{}  SYM:{}  SP[0]:{} PD: {}</translation>
+        <source>Variable Spaced ( {}: {})</source>
+        <translation>Переменные шипы ( {}: {})</translation>
     </message>
 </context>
 </TS>
