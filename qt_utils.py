@@ -24,6 +24,7 @@ Contains utilities for Qt functionality
 from __future__ import print_function
 
 import os, glob
+import operator
 import router
 
 from PyQt5 import QtCore, QtWidgets
@@ -165,3 +166,27 @@ def create_wood_dict(wood_images, transl):
                 transl.tr('Solid Fill'): QtCore.Qt.SolidPattern,
                 transl.tr('No Fill'): None}
     return (woods, patterns)
+
+def create_lang_dict():
+    '''
+    Creates a dictionary {lang_name : locale_id} by parsing the
+    directory ./ts.  The language name is formed by taking the prefix of the
+    language file. The default language en_US added by default
+    '''
+    lang_path = '.\\ts\\'
+    langs = {}
+    langs['English'] = 'en_US'  # set default language
+    if os.path.isdir(lang_path):
+        globber = os.path.join(lang_path, 'pyRouterJig_*.qm')
+        files = glob.glob(globber)
+        for f in files:
+            name = os.path.basename(f)
+            i = name.rfind('.')
+            if i > 0:
+                name = name[12:i]
+                locale = QtCore.QLocale(name)
+                name = locale.name()
+                if name != 'C':
+                    langs[locale.languageToString(locale.language())] = name
+    langs = sorted(langs.items(),key=operator.itemgetter(0))
+    return (langs)

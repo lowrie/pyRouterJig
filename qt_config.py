@@ -177,6 +177,22 @@ class Config_Window(QtWidgets.QDialog):
         mesg.setWordWrap(True)
         vbox.addWidget(mesg)
 
+        # Language block
+        self.cb_lang_label = QtWidgets.QLabel(self.transl.tr('Language:'))
+        self.cb_lang = QtWidgets.QComboBox(self)
+        langs = qt_utils.create_lang_dict()
+        for k in langs:
+            self.cb_lang.addItem(k[0], k[1])
+        i = self.cb_lang.findData(self.new_config['language'])
+        # in case the language not found set the default one
+        if i <= 0:
+            i = self.cb_lang.findData('en_US')
+        self.cb_lang.setCurrentIndex(i)
+        self.cb_lang.activated.connect(self._on_lang)
+        grid = form_line(self.cb_lang_label, self.cb_lang)
+        vbox.addLayout(grid)
+
+        # Units block
         self.cb_units_label = QtWidgets.QLabel(self.transl.tr('Unit System:'))
         self.cb_units = QtWidgets.QComboBox(self)
         self.cb_units.addItem(self.transl.tr('Metric'))
@@ -191,9 +207,14 @@ class Config_Window(QtWidgets.QDialog):
         self.le_num_incr.editingFinished.connect(self._on_num_incr)
         tt =self.transl.tr( 'The number of increments per unit length.')
         grid = form_line(self.le_num_incr_label, self.le_num_incr, tt)
+
+        # set same size for both combos
+        size = self.cb_lang.size().width()
+        self.cb_units.setFixedWidth(size)
+        self.cb_lang.setFixedWidth(size)
+
         vbox.addLayout(grid)
         vbox.addStretch(1)
-
         w.setLayout(vbox)
         return w
 
@@ -701,6 +722,13 @@ class Config_Window(QtWidgets.QDialog):
             else:
                 self.le_num_incr.setText('32')
             self.le_num_incr_label.setText(self.units_label(metric))
+
+    @QtCore.pyqtSlot(int)
+    def _on_lang(self, index):
+        if self.config.debug:
+            print('qt_config:_on_lang', index, str(self.cb_lang.itemData(index)))
+        self.new_config['language'] = str(self.cb_lang.itemData(index))
+        self.update_state('language', 2)
 
     @QtCore.pyqtSlot()
     def _on_num_incr(self):
