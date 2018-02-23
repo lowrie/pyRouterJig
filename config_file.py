@@ -58,7 +58,7 @@ version = '{version}'
 metric = {metric}
 
 # Application Language
-language = 'en_US'
+language = r'{language}'
 
 # The number of increments per unit length.
 # All dimensions and router passes are restricted to
