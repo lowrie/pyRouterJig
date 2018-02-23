@@ -33,6 +33,7 @@ import utils
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 
+
 def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill_color=None):
     '''
     Puts text at coord with alignment flags.  Returns a QRect of the bounding box
@@ -83,6 +84,7 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill_color=No
     painter.setTransform(transform)
     return rect
 
+
 class Qt_Fig(QtWidgets.QWidget):
     '''
     Interface to the qt_driver, using Qt to draw the boards and template.
@@ -99,12 +101,12 @@ class Qt_Fig(QtWidgets.QWidget):
         self.geom = None
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
-        self.font_size = {'title':4,
-                          'fingers':3,
-                          'template':3,
-                          'boards':4,
-                          'template_labels':3,
-                          'watermark':4}
+        self.font_size = {'title': 4,
+                          'fingers': 3,
+                          'template': 3,
+                          'boards': 4,
+                          'template_labels': 3,
+                          'watermark': 4}
         self.transform = None
         self.base_transform = None
         self.mouse_pos = None
@@ -114,6 +116,7 @@ class Qt_Fig(QtWidgets.QWidget):
 
         # Initialize keyboard modifiers
         self.shift_key = False
+        self.transl = boards[0].units.transl
 
     def minimumSizeHint(self):
         '''
@@ -359,12 +362,11 @@ class Qt_Fig(QtWidgets.QWidget):
         painter.translate(x, y)
         self.transform = painter.transform()
 
-
         # draw the objects
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
-        #self.draw_finger_sizes(painter)
+        # self.draw_finger_sizes(painter)
         if self.config.show_finger_widths:
             self.draw_finger_sizes(painter)
 
@@ -387,8 +389,8 @@ class Qt_Fig(QtWidgets.QWidget):
         Returns the pass label if a pass matches xMid, None otherwise
         '''
         board_T = self.geom.board_T
-        shift = (0, 0) # for adjustments of text
-        passMid = None # location of board-center pass (return value)
+        shift = (0, 0)  # for adjustments of text
+        passMid = None  # location of board-center pass (return value)
         font_type = 'template'
         char_size = self.font_size[font_type]
         self.set_font_size(painter, font_type)
@@ -482,7 +484,7 @@ class Qt_Fig(QtWidgets.QWidget):
         pen.setColor(self.colors['template_margin_foreground'])
         pen.setWidthF(0)
 
-        bg_pen=QtGui.QPen(QtCore.Qt.SolidLine)
+        bg_pen = QtGui.QPen(QtCore.Qt.SolidLine)
         bg_pen.setColor(QtGui.QColor('White'))
         bg_pen.setWidthF(0)
 
@@ -497,8 +499,8 @@ class Qt_Fig(QtWidgets.QWidget):
                 painter.drawLine(x, y1, x, y2)
                 paint_text(painter, label, (x, (y1 + y2) // 2), flags, (0, 0), -90)
                 painter.setPen(bg_pen)
-                painter.drawLine(QtCore.QPointF(x-0.5, y1+0.5),QtCore.QPointF( x-0.5, y2-0.5) )
-                painter.drawLine(QtCore.QPointF(x+0.5, y1+0.5),QtCore.QPointF(x+0.5, y2-0.5) )
+                painter.drawLine(QtCore.QPointF(x-0.5, y1+0.5), QtCore.QPointF(x-0.5, y2-0.5))
+                painter.drawLine(QtCore.QPointF(x+0.5, y1+0.5), QtCore.QPointF(x+0.5, y2-0.5))
 
     def draw_template_rectangle(self, painter, r, b):
         '''
@@ -601,7 +603,7 @@ class Qt_Fig(QtWidgets.QWidget):
             y1 = boards[3].yB() - sepOver2
             y2 = boards[3].yB() + frac_depth
             painter.setPen(penA)
-            pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(), \
+            pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(),
                                   rect_TDD.yB(), flagsL, xMid) 
             if pm is not None:
                 centerline_TDD.append(pm)
@@ -665,7 +667,7 @@ class Qt_Fig(QtWidgets.QWidget):
         # ... draw the caul template and do its passes.  Draw events may be
         # triggered before we have the ability to recreate the geom object,
         # so we have to ensure the caul_top object actually exists.
-        datetime = time.strftime('\n%d %b %Y %H:%M', time.localtime())
+        datetime = time.strftime('\n%d %b %y %H:%M', time.localtime())
         if self.config.show_caul and self.geom.caul_top is not None:
             rect_caul = self.geom.rect_caul
             board_caul = self.geom.board_caul
@@ -677,14 +679,14 @@ class Qt_Fig(QtWidgets.QWidget):
             pm = self.draw_passes(painter, 'A', top, rect_caul.yMid(), rect_caul.yT(), flagsR, xMid)
             if pm is not None:
                 centerline_caul.append(pm)
-            pm = self.draw_passes(painter, self.labels[i], bottom, rect_caul.yMid(),\
+            pm = self.draw_passes(painter, self.labels[i], bottom, rect_caul.yMid(),
                                   rect_caul.yB(), flagsL, xMid)
             if pm is not None:
                 centerline_caul.append(pm)
             self.set_font_size(painter, 'template_labels')
-            label = 'Cauls'
+            label = self.transl.tr('Cauls')
             if len(centerline_caul) > 0:
-                label += '\nCenter: ' + centerline_caul[0]
+                label += self.transl.tr('\nCenter: ') + centerline_caul[0]
             else:
                 pen = QtGui.QPen(QtCore.Qt.DashLine)
                 pen.setColor(self.colors['center_color'])
@@ -701,7 +703,7 @@ class Qt_Fig(QtWidgets.QWidget):
         pen.setWidthF(0)
         self.set_font_size(painter, 'template_labels')
         if len(centerline) > 0:
-            label_bottom += '\nCenter: ' + centerline[0]
+            label_bottom += self.transl.tr('\nCenter: ') + centerline[0]
         else:
             painter.setPen(pen)
             painter.drawLine(xMid, rect_T.yB(), xMid, rect_T.yT())
@@ -710,7 +712,7 @@ class Qt_Fig(QtWidgets.QWidget):
         paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsRC, (-5, 0))
         if label_top is not None:
             if len(centerline_TDD) > 0:
-                label_top += '\nCenter: ' + centerline_TDD[0]
+                label_top += self.transl.tr('\nCenter: ') + centerline_TDD[0]
             else:
                 painter.setPen(pen)
                 painter.drawLine(xMid, rect_TDD.yB(), xMid, rect_TDD.yT())
@@ -755,8 +757,8 @@ class Qt_Fig(QtWidgets.QWidget):
                     color = self.colors['board_foreground']
                 brush = QtGui.QBrush(color, icon)
             (inverted, invertable) = self.transform.inverted()
-            #setMatrix is not offered anymore
-            #brush.setMatrix(inverted.toAffine())
+            # setMatrix is not offered anymore
+            # brush.setMatrix(inverted.toAffine())
             brush.setTransform(inverted)
             painter.setBrush(brush)
         painter.drawPolygon(poly)
@@ -789,7 +791,7 @@ class Qt_Fig(QtWidgets.QWidget):
             paint_text(painter, 'A', p, flags, (-3, 0))
             painter.drawLine(x1, y, x2, y)
 
-            i = 0 # index in self.labels
+            i = 0  # index in self.labels
 
             if self.geom.boards[3].active:
                 y = self.geom.boards[3].yT()
@@ -856,7 +858,6 @@ class Qt_Fig(QtWidgets.QWidget):
         # get the perimeter of the cursor
         cursor_poly = self.cut_polygon(self.geom.boards[0].bottom_cuts[f])
 
-
         # initialize limits
         xminG = self.geom.boards[0].width
         xmaxG = 0
@@ -895,8 +896,8 @@ class Qt_Fig(QtWidgets.QWidget):
         pen.setColor(QtCore.Qt.green)
         painter.setPen(pen)
         half = Decimal(0.5)
-        painter.drawLine(QtCore.QPointF(xminG - half, yB), QtCore.QPointF(xminG - half, yT) )
-        painter.drawLine(QtCore.QPointF(xmaxG + half, yB), QtCore.QPointF(xmaxG + half, yT) )
+        painter.drawLine(QtCore.QPointF(xminG - half, yB), QtCore.QPointF(xminG - half, yT))
+        painter.drawLine(QtCore.QPointF(xmaxG + half, yB), QtCore.QPointF(xmaxG + half, yT))
         painter.restore()
 
         # draw the perimeter of the cursor cut at the end to get it always visible
@@ -906,11 +907,11 @@ class Qt_Fig(QtWidgets.QWidget):
         painter.drawPolyline(cursor_poly)
         painter.restore()
 
-
     def draw_title(self, painter):
         '''
         Draws the title
         '''
+
         self.set_font_size(painter, 'title')
         painter.setPen(self.colors['canvas_foreground'])
         title = router.create_title(self.geom.boards, self.geom.bit, self.geom.spacing)
@@ -944,7 +945,7 @@ class Qt_Fig(QtWidgets.QWidget):
         for c in bcuts:
             x = self.geom.boards[1].xL() + (c.xmin + c.xmax) // 2
             y = self.geom.boards[1].yT()
-            label = units.increments_to_string( round(c.xmax - c.xmin, 3) )
+            label = units.increments_to_string(round(c.xmax - c.xmin, 3))
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill_color=fcolor)
         # ... do the A cuts
@@ -953,7 +954,7 @@ class Qt_Fig(QtWidgets.QWidget):
         for c in acuts:
             x = self.geom.boards[0].xL() + (c.xmin + c.xmax) // 2
             y = self.geom.boards[0].yB()
-            label = units.increments_to_string( round(c.xmax - c.xmin, 3) )
+            label = units.increments_to_string(round(c.xmax - c.xmin, 3))
             p = (x, y)
             paint_text(painter, label, p, flags, shift, fill_color=fcolor)
 
@@ -1074,7 +1075,7 @@ class Qt_Fig(QtWidgets.QWidget):
             print('mouse moved here: {} {}'.format(pos.x(), pos.y()))
         diffx = (pos.x() - self.mouse_pos.x())
         diffy = (pos.y() - self.mouse_pos.y())
-        if abs(diffx) + abs(diffy) > 1: # avoid teeny-tiny moves
+        if abs(diffx) + abs(diffy) > 1:  # avoid teeny-tiny moves
             self.translate[0] += diffx / self.scaling
             self.translate[1] += diffy / self.scaling
             self.mouse_pos = pos
