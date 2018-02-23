@@ -232,7 +232,7 @@ class Driver_Test(unittest.TestCase):
         self.d.le_bit_width.clear()
         QTest.keyClicks(self.d.le_bit_width, '3/8')
         self.d._on_bit_width()
-        self.assertEqual(str(self.d.le_bit_width.text()), '9.525')
+        self.assertEqual(str(self.d.le_bit_width.text()), '9.52')
         self.d.le_bit_depth.clear()
         QTest.keyClicks(self.d.le_bit_depth, '12.42')
         self.d._on_bit_depth()
