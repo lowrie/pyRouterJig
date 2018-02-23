@@ -23,8 +23,11 @@ This module contains utilities for creating and reading the
 user configuration file.
 '''
 
-import os, imp
+import os
 import utils
+from importlib.util import spec_from_loader, module_from_spec
+from importlib.machinery import SourceFileLoader
+
 
 _CONFIG_INIT = r'''
 ######################################################################
@@ -368,7 +371,14 @@ class Configuration(object):
         if not os.path.exists(self.filename):
             return 1
         else:
-            self.config = imp.load_source('', self.filename)
+            module_dir, module_file = os.path.split(self.filename)
+            module_name, module_ext = os.path.splitext(module_file)
+
+            # Here we call loader directly inorder to avoid extension analyses (tricky!)
+            spec = spec_from_loader(module_name, SourceFileLoader(module_name, self.filename))
+            self.config = module_from_spec(spec)
+            spec.loader.exec_module(self.config)
+
             try:
                 t = int(self.config.default_wood)
                 self.config.default_wood = t
