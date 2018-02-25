@@ -549,10 +549,37 @@ class Driver(QtWidgets.QMainWindow):
 
         # ...combox box for fingers
         p = params['Fingers']
-        self.cb_vsfingers_label = QtWidgets.QLabel(labels[0])
+        self.cb_vsfingers_label = QtWidgets.QLabel(labels[0]) # labels[0]
         self.cb_vsfingers = qt_utils.PreviewComboBox(self.main_frame)
         self.cb_vsfingers.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.update_cb_vsfingers(p.vMin, p.vMax, p.v)
+
+        p = params['Spacing']
+        self.vs_slider0_label = QtWidgets.QLabel(labels[1], self.main_frame) # labels[1]
+        self.vs_slider0 = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.main_frame)
+        self.vs_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.vs_slider0.setMinimum(p.vMin)
+        self.vs_slider0.setMaximum(p.vMax)
+        self.vs_slider0.setValue(p.v)
+        self.vs_slider0.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.vs_slider0.setSingleStep(1);
+        utils.set_slider_tick_interval(self.vs_slider0)
+        self.vs_slider0.valueChanged.connect(self._on_vs_slider0)
+        self.vs_slider0.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+
+        # line out lables (haveno idea why
+        width = (self.vs_slider0_label.width())
+        self.cb_vsfingers_label.setFixedWidth(width // 2)
+        height = (self.vs_slider0_label.height())
+        self.vs_slider0_label.setFixedHeight((height * 10) // 8)
+        self.cb_vsfingers_label.setFixedHeight((height * 8) // 10)
+        # self.vs_slider0.setFixedHeight(self.cb_vsfingers.height())
+
+        # ...check box for centering
+        p = params['Inverted']
+        self.cb_vs_inverted = QtWidgets.QCheckBox(labels[2], self.main_frame) # labels[2]
+        self.cb_vs_inverted.setChecked(p.v)
+        self.cb_vs_inverted.stateChanged.connect(self._cb_vs_inverted)
 
         # Edit spacing widgets
 
@@ -707,10 +734,20 @@ class Driver(QtWidgets.QMainWindow):
         # Create the layout of the Variable spacing controls.  Given only one
         # item, this is overkill, but the coding allows us to add additional
         # controls later.
+        # hbox_vs = QtWidgets.QVBoxLayout()
         hbox_vs = QtWidgets.QHBoxLayout()
-        hbox_vs.addWidget(self.cb_vsfingers_label)
-        hbox_vs.addWidget(self.cb_vsfingers)
-        hbox_vs.addStretch(1)
+
+        vbox_vs_cb = QtWidgets.QVBoxLayout()
+        vbox_vs_cb.addWidget(self.cb_vsfingers_label)
+        vbox_vs_cb.addWidget(self.cb_vsfingers)
+        hbox_vs.addLayout(vbox_vs_cb)
+
+        vbox_vs_slider0 = QtWidgets.QVBoxLayout()
+        vbox_vs_slider0.addWidget(self.vs_slider0_label)
+        vbox_vs_slider0.addWidget(self.vs_slider0)
+        hbox_vs.addLayout(vbox_vs_slider0)
+
+        hbox_vs.addWidget(self.cb_vs_inverted)
 
         # Create the layout of the edit spacing controls
         hbox_edit = QtWidgets.QHBoxLayout()
@@ -756,12 +793,15 @@ class Driver(QtWidgets.QMainWindow):
         self.tabs_spacing = QtWidgets.QTabWidget()
         tab_es = QtWidgets.QWidget()
         tab_es.setLayout(hbox_es)
+
         self.tabs_spacing.addTab(tab_es, self.transl.tr('Equal'))
         tab_vs = QtWidgets.QWidget()
         tab_vs.setLayout(hbox_vs)
+
         self.tabs_spacing.addTab(tab_vs, self.transl.tr('Variable'))
         tab_edit = QtWidgets.QWidget()
         tab_edit.setLayout(hbox_edit)
+
         self.tabs_spacing.addTab(tab_edit, self.transl.tr('Editor'))
         self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
         tip = self.transl.tr('These tabs specify the layout algorithm for the cuts.')
@@ -1209,6 +1249,40 @@ class Driver(QtWidgets.QMainWindow):
         self.status_message(self.transl.tr('Changed slider %s') % str(self.es_slider1_label.text()))
         self.file_saved = False
 
+    @QtCore.pyqtSlot(int)
+    def _on_vs_slider0(self, value):
+        '''Handles changes to the variable spaced slider D'''
+        if self.config.debug:
+            print('_on_vs_slider0', value)
+        self.var_spacing.params['Spacing'].v = value
+        self.var_spacing.set_cuts()
+        self.vs_slider0_label.setText(self.var_spacing.labels[1])
+        self.draw()
+        self.status_message(self.transl.tr('Changed slider %s') % str(self.vs_slider0_label.text()))
+        self.file_saved = False
+
+    @QtCore.pyqtSlot()
+    def _cb_vs_inverted(self):
+        '''Handles changes inverse variable fingers'''
+        if self.config.debug:
+            print('_cb_vs_inverted')
+        self.var_spacing.params['Inverted'].v = self.cb_vs_inverted.isChecked()
+        self.var_spacing.calc_var_params()
+
+        # ...combox box for fingers
+        p = self.var_spacing.params['Spacing']
+        self.vs_slider0.setMinimum(p.vMin)
+        self.vs_slider0.setMaximum(p.vMax)
+        self.vs_slider0.setValue(p.v)
+
+        self.var_spacing.set_cuts()
+        self.draw()
+        if self.var_spacing.params['Inverted'].v:
+            self.status_message(self.transl.tr('Checked Inverted.'))
+        else:
+            self.status_message(self.transl.tr('Unchecked Inverted.'))
+        self.file_saved = False
+
     @QtCore.pyqtSlot()
     def _on_cb_es_centered(self):
         '''Handles changes to centered checkbox'''
@@ -1229,7 +1303,15 @@ class Driver(QtWidgets.QMainWindow):
         if self.config.debug:
             print('_on_cb_vsfingers', index)
         self.var_spacing.params['Fingers'].v = int(self.cb_vsfingers.itemText(index))
+        self.var_spacing.calc_var_params()
+
+        # ...combox box for fingers
+        p = self.var_spacing.params['Spacing']
+        self.vs_slider0.setMinimum(p.vMin)
+        self.vs_slider0.setMaximum(p.vMax)
+        self.vs_slider0.setValue(p.v)
         self.var_spacing.set_cuts()
+
         self.cb_vsfingers_label.setText(self.var_spacing.labels[0])
         self.draw()
         self.status_message(self.transl.tr('%s ') % str(self.cb_vsfingers_label.text()) + \

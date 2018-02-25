@@ -253,7 +253,7 @@ class Variable_Spaced(Base_Spacing):
 
     Fingers: Roughly the number of full fingers on either the A or B board.
     '''
-    keys = ['Fingers']
+    keys = ['Fingers','Spacing','Inverted']
     msg = \
         'Unable to compute a variable-spaced'\
         ' joint for the board and bit parameters'\
@@ -276,13 +276,50 @@ class Variable_Spaced(Base_Spacing):
         self.mMin = 3
         self.mMax = int((self.boards[0].width // (self.bit.midline + self.dhtot)) // 2 + 1)
         units = self.bit.units
-
+        self.min_interior = 0
         if self.mMax < self.mMin:
             # we try to survive here.., Normally it's better to call is_board_width_ok prior create the object
             raise Spacing_Exception(units.transl.tr(Variable_Spaced.msg))
 
         self.mDefault = (self.mMin + self.mMax) // 2
-        self.params = {'Fingers': Spacing_Param(self.mMin, self.mMax, self.mDefault)}
+        self.params = {Variable_Spaced.keys[0]: Spacing_Param(self.mMin, self.mMax, self.mDefault),
+                       Variable_Spaced.keys[1]: Spacing_Param(0, 7, 4),
+                       Variable_Spaced.keys[2]: Spacing_Param(0, 0, False)}
+        self.calc_var_params()
+
+    def calc_var_params(self):
+        '''
+        Calculate paramiters forVariable cuts
+        Call of this function must forboard width, bit, number of fingers, inverse
+        :return:
+        '''
+        min_interior = self.bit.midline + self.dhtot * 2
+        S = math.floor( Decimal(self.boards[0].width) / 2)    # half board width
+        n = int(self.params['Fingers'].v)  # number of cuts
+        d = 0  # d is the ideal decrease in finger width for each finger away from center finger
+        an = 0
+        over = 0
+
+        # Iterate to get perfect d value
+        if self.params['Inverted'].v == False :
+            while an <=0  or ((an + over) > 4 and (an - d) >= min_interior) :
+                d += -1
+                a1 = utils.math_round(((2 * S) - (n - 1) * n * d) / Decimal(2 * n - 1))
+                an = a1 + Decimal(n - 1) * d
+                over = (S + a1 // 2) - ((a1 + an) * n) // 2
+        else:
+            a1 = min_interior
+            while  a1 >= min_interior:
+                d += 1
+                a1 = utils.math_round(((2 * S) - (n - 1) * n * d) / Decimal(2 * n - 1))
+                an = a1 + Decimal(n - 2) * d
+                over =  S - ((a1 + an) * n) // 2
+            d -= 1
+
+        d = abs(d)
+        self.params['Spacing'].vMax = d
+        if self.params['Spacing'].v >= d:
+            self.params['Spacing'].v = d
 
     def set_cuts(self):
         '''
@@ -298,35 +335,26 @@ class Variable_Spaced(Base_Spacing):
         a1 = ( (2 * S) - (n - 1) * n * d ) / (2 * n - 1)
         the next task is to find the best possible d (I love big numbers)
         '''
+        S = math.floor( Decimal(self.boards[0].width) / 2)    # half board width
+        n = int(self.params['Fingers'].v)  # number of cuts
+        d = int(self.params['Spacing'].v)  # d is the ideal decrease in finger width for each finger away from center finger
+        overhang = self.bit.overhang  # offset from midline to the end of cut
+
         units = self.bit.units
+        min_interior = self.bit.midline + self.dhtot * 2
         min_finger_width = Decimal(self.bit.units.abstract_to_increments(self.config.min_finger_width) + self.dhtot)
         min_interior = self.bit.midline + self.dhtot * 2
-        S = math.floor(self.boards[0].width / 2)   # half board width
         shift = Decimal((self.bit.midline) % 2) / 2   # offset to keep cut senter
 
-        n = int(self.params['Fingers'].v)  # number of cuts
-        d = -16
-        d = - S // 4 - self.bit.midline  # d is the ideal decrease in finger width for each finger away from center finger
-        overhang = self.bit.overhang  # offset from midline to the end of cut
-        a1 = 0  # center cut
-        an = 0 # last cut
-
         # Iterate to get perfect d value
-        # it is also possible to reverse d sometime to get cutc wider to the board corner
-        # the corner cut can't be too thin
-        # the minimum of pre-last cut should be not less than bit midline and extra bords width
-        while (an < min_interior or (an + d) <= min_finger_width) and d <= 0:
-            d += 1
-            a1 = utils.math_round(((2 * S) - (n - 1) * n * d) / Decimal(2 * n - 1))
-            an = a1 + Decimal(n - 2) * d
-
-        if d > 0:
-            d = 0
-            a1 = min_interior
-            delta = 0
-        else:
-            SP = (a1 + d + an) * (n - 1) + a1
-            delta = self.boards[0].width - SP
+        if self.params['Inverted'].v == False :
+            d= -d
+        a1 = utils.math_round(((2 * S) - (n - 1) * n * d) / Decimal(2 * n - 1))
+        a1 = max(a1, min_interior)
+        an = a1 + Decimal(n - 1) * d
+        an = round(an,0)
+        SP = (a1 + d + an) * (n - 1) + a1
+        delta = self.boards[0].width - SP
 
         # compute fingers on one side of the center and the center and store them
         # in increments.  Keep a running total of sizes.
@@ -337,12 +365,12 @@ class Variable_Spaced(Base_Spacing):
                 increments[i] = min_interior
 
         # wide last cut
-        if delta >= 2:
+        if abs(delta) >= 2:
             increments[-1] += delta // 2
             delta -= (delta // 2) * 2
 
         # wide center cut in case the delta is a 1 increment
-        if delta == 1:
+        if abs(delta) == 1:
             increments[0] += delta
 
         if increments[-1] > increments[-2]:
@@ -356,7 +384,7 @@ class Variable_Spaced(Base_Spacing):
         neck = Decimal(increments[0]) / 2
         left = xMid - neck
         right = xMid + neck
-        self.labels = [units.transl.tr(self.keys[0] + ':')]
+        self.labels = [units.transl.tr(self.keys[0]), units.transl.tr(self.keys[1]) +': '+ str(d), self.keys[2]]
         self.description = units.transl.tr('Variable Spaced ( {}: {})')\
                                .format(units.transl.tr(self.keys[0]), n)
 

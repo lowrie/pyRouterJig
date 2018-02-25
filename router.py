@@ -580,17 +580,17 @@ class Cut(object):
         Checks whether the attributes of the cut are valid.
         '''
         if self.xmin >= self.xmax:
-            raise Router_Exception(self.transl.tr('cut xmin = %d, xmax = %d: '
+            raise Router_Exception(bit.transl.tr('cut xmin = %d, xmax = %d: '
                                    'Must have xmax > xmin!') % (self.xmin, self.xmax))
         if self.xmin < 0:
-            raise Router_Exception(self.transl.tr('cut xmin = %d, xmax = %d: '
+            raise Router_Exception(bit.transl.tr('cut xmin = %d, xmax = %d: '
                                    'Must have xmin >=0!') % (self.xmin, self.xmax))
         if self.xmax > board.width:
-            raise Router_Exception(self.transl.tr('cut xmin = %d, xmax = %d:'
+            raise Router_Exception(bit.transl.tr('cut xmin = %d, xmax = %d:'
                                    ' Must have xmax < board width (%d)!')
                                    % (self.xmin, self.xmax, board.width))
         if (bit.width_f - (self.xmax - self.xmin)) > self.precision and self.xmin > 0 and self.xmax < board.width:
-            raise Router_Exception(self.transl.tr('cut xmin = %f, xmax = %f ): '
+            raise Router_Exception(bit.transl.tr('cut xmin = %f, xmax = %f ): '
                                    'Bit width (%f) delta too large for this cut!')
                                    % (self.xmin, self.xmax, bit.width_f))
 
