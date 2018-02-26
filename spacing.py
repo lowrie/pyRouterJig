@@ -302,19 +302,23 @@ class Variable_Spaced(Base_Spacing):
 
         # Iterate to get perfect d value
         if self.params['Inverted'].v == False :
-            while an <=0  or ((an + over) > 4 and (an - d) >= min_interior) :
+            while True:
                 d += -1
                 a1 = utils.math_round(((2 * S) - (n - 1) * n * d) / Decimal(2 * n - 1))
                 an = a1 + Decimal(n - 1) * d
-                over = (S + a1 // 2) - ((a1 + an) * n) // 2
+                over = self.boards[0].width - ((a1 + d + an) * (n - 1) + a1)
+                if (an - d) < min_interior or an < self.config.min_finger_width:
+                    d += 1
+                    break
         else:
-            a1 = min_interior
-            while  a1 >= min_interior:
+            while  True:
                 d += 1
                 a1 = utils.math_round(((2 * S) - (n - 1) * n * d) / Decimal(2 * n - 1))
-                an = a1 + Decimal(n - 2) * d
-                over =  S - ((a1 + an) * n) // 2
-            d -= 1
+                an = a1 + Decimal(n - 1) * d
+                over =  self.boards[0].width - ((a1 + d + an) * (n - 1) + a1)
+                if a1 < min_interior:
+                    d -= 1
+                    break
 
         d = abs(d)
         self.params['Spacing'].vMax = d
@@ -349,8 +353,8 @@ class Variable_Spaced(Base_Spacing):
         # Iterate to get perfect d value
         if self.params['Inverted'].v == False :
             d= -d
-        a1 = utils.math_round(((2 * S) - (n - 1) * n * d) / Decimal(2 * n - 1))
-        a1 = max(a1, min_interior)
+        a1 = math.floor(((2 * S) - (n - 1) * n * d) / Decimal(2 * n - 1))
+        a1 = Decimal(max(a1, min_interior))
         an = a1 + Decimal(n - 1) * d
         an = round(an,0)
         SP = (a1 + d + an) * (n - 1) + a1
@@ -365,12 +369,12 @@ class Variable_Spaced(Base_Spacing):
                 increments[i] = min_interior
 
         # wide last cut
-        if abs(delta) >= 2:
+        if delta >= 2:
             increments[-1] += delta // 2
             delta -= (delta // 2) * 2
 
         # wide center cut in case the delta is a 1 increment
-        if abs(delta) == 1:
+        if delta == 1:
             increments[0] += delta
 
         if increments[-1] > increments[-2]:
