@@ -277,6 +277,7 @@ class Variable_Spaced(Base_Spacing):
         self.mMax = int((self.boards[0].width // (self.bit.midline + self.dhtot)) // 2 + 1)
         units = self.bit.units
         self.min_interior = 0
+        self.min_finger_width = Decimal(self.bit.units.abstract_to_increments(self.config.min_finger_width))
         if self.mMax < self.mMin:
             # we try to survive here.., Normally it's better to call is_board_width_ok prior create the object
             raise Spacing_Exception(units.transl.tr(Variable_Spaced.msg))
@@ -307,7 +308,7 @@ class Variable_Spaced(Base_Spacing):
                 a1 = utils.math_round(((2 * S) - (n - 1) * n * d) / Decimal(2 * n - 1))
                 an = a1 + Decimal(n - 1) * d
                 over = self.boards[0].width - ((a1 + d + an) * (n - 1) + a1)
-                if (an - d) < min_interior or an < self.config.min_finger_width:
+                if (an - d) < min_interior or an < self.min_finger_width:
                     d += 1
                     break
         else:
@@ -346,7 +347,7 @@ class Variable_Spaced(Base_Spacing):
 
         units = self.bit.units
         min_interior = self.bit.midline + self.dhtot * 2
-        min_finger_width = Decimal(self.bit.units.abstract_to_increments(self.config.min_finger_width) + self.dhtot)
+        min_finger_width = Decimal(self.min_finger_width + self.dhtot)
         min_interior = self.bit.midline + self.dhtot * 2
         shift = Decimal((self.bit.midline) % 2) / 2   # offset to keep cut senter
 
