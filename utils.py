@@ -23,8 +23,11 @@ This module contains base utilities for pyRouterJig
 '''
 from __future__ import division
 from __future__ import print_function
-from decimal import *
-import math, os, glob, platform
+from decimal import Decimal
+import math
+import os
+import glob
+import platform
 
 
 VERSION = '0.9.4'
@@ -45,7 +48,7 @@ def math_round(no):
 
 
 def isMac():
-    return (platform.system() == 'Darwin')
+    return platform.system() == 'Darwin'
 
 
 class My_Fraction(object):
@@ -81,7 +84,7 @@ class My_Fraction(object):
         self.denominator = int(self.denominator)
         dwhole = self.numerator // self.denominator
         self.whole += dwhole
-        self.numerator -= dwhole * self.denominator 
+        self.numerator -= dwhole * self.denominator
         gcd = math.gcd(self.numerator, self.denominator)  # Python3 requres math.gcd
         self.numerator /= gcd
         self.denominator /= gcd
@@ -145,10 +148,10 @@ class My_Fraction(object):
         else:
             # found a decimal point
             whole = s[:dotloc].strip()
-            if len(whole) > 0:
+            if whole:
                 self.whole = int(whole)
             rest = s[dotloc+1:].strip()
-            if len(rest) > 0:
+            if rest:
                 self.numerator = int(rest)
                 self.denominator = int(math.pow(10, len(rest)))
                 self.reduce()
@@ -233,16 +236,13 @@ class Units(object):
         if self.metric:
             if verbose:
                 return form.format(self.transl.tr('millimeters'))
-            else:
-                return form.format(self.transl.tr('mm'))
+            return form.format(self.transl.tr('mm'))
         else:
             if verbose:
                 return form.format(self.transl.tr('inches'))
-            else:
-                if withParens:
-                    return form.format(self.transl.tr('in.'))
-                else:
-                    return '"'
+            if withParens:
+                return form.format(self.transl.tr('in.'))
+            return '"'
 
     def length_to_increments(self, v, as_integer=True):
         '''
@@ -251,8 +251,7 @@ class Units(object):
         i = v * self.num_increments
         if as_integer:
             return my_round(i)
-        else:
-            return i
+        return i
 
     def string_to_float(self, s):
         '''
@@ -273,8 +272,7 @@ class Units(object):
         '''
         if isinstance(a, str):
             return self.string_to_float(a)
-        else:
-            return float(a)
+        return float(a)
 
     def string_to_increments(self, s, as_integer=True):
         '''
@@ -292,8 +290,7 @@ class Units(object):
         '''
         if isinstance(a, str):
             return self.string_to_increments(a, as_integer)
-        else:
-            return self.length_to_increments(float(a), as_integer)
+        return self.length_to_increments(float(a), as_integer)
 
 
 class Margins(object):
