@@ -33,7 +33,7 @@ unsafe-load-any-extension=no
 # run arbitrary code
 #extension-pkg-whitelist=
 # RBL:
-extension-pkg-whitelist=PyQt4
+extension-pkg-whitelist=PyQt5
 
 
 [MESSAGES CONTROL]

@@ -1,6 +1,6 @@
 ###########################################################################
 #
-# Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
+# Copyright 2015-2018 Robert B. Lowrie (http://github.com/lowrie)
 #
 # This file is part of pyRouterJig.
 #
@@ -850,7 +850,7 @@ def create_title(boards, bit, spacing):
         title += units.transl.tr('%.1f\xB0 dovetail') % bit.angle
     else:
         title += units.transl.tr('straight')
-    title += units.transl.tr(', \xD8 ')
+    title += units.transl.tr(', width: ')
     title += units.increments_to_string(bit.width, True)
     title += units.transl.tr(', depth: ')
     title += units.increments_to_string(bit.depth, True)

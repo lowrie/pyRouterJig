@@ -1,6 +1,6 @@
 ###########################################################################
 #
-# Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
+# Copyright 2015-2018 Robert B. Lowrie (http://github.com/lowrie)
 #
 # This file is part of pyRouterJig.
 #
@@ -36,7 +36,7 @@ class Doc(object):
         self._short_desc = self.transl.tr('<i>pyRouterJig</i> is a joint layout tool for woodworking.')
 
         self._license = self.transl.tr('<p>\
-            Copyright 2015, 2016 Robert B. Lowrie (pyrouterjig@lowrielodge.org)\
+            Copyright 2015-2018 Robert B. Lowrie (pyrouterjig@lowrielodge.org)\
             <p>\
             <i>pyRouterJig</i> is free software: you can redistribute it and/or modify it under\
             the terms of the GNU General Public License as published by the Free Software\
