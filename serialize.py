@@ -23,22 +23,19 @@ Contains serialization capability
 '''
 from __future__ import print_function
 from future.utils import lrange
-try:
-    from StringIO import StringIO, BytesIO
-except ImportError:
-    from io import StringIO, BytesIO
+from io import StringIO, BytesIO
 import binascii
 import pickle
 import router
 import utils
 import spacing
 
+
 def serialize(bit, boards, sp, config):
     '''
     Serializes the arguments. Returns the serialized string, which can
     later be used to reconstruct the arguments using unserialize()
     '''
-    #out = StringIO()
     out = BytesIO()
 
     p = pickle.Pickler(out)
@@ -75,16 +72,15 @@ def serialize(bit, boards, sp, config):
     if config.debug:
         print('size of pickle', len(s))
     ret = binascii.b2a_qp(s).decode('utf-8')
-    #binascii.b2a_base64(s).decode("utf-8", "strict")
     return ret
 
-def unserialize(s, config, newFormat=False):
+
+def unserialize(s, config, newformat=False, transl=None):
     '''
     Unserializes the string s, and returns the tuple (bit, boards, spacing)
     '''
-    inp = '';
     # new format uue encoding support
-    if newFormat:
+    if newformat:
         s = binascii.a2b_qp(s)
     else:
         s = s.encode()
@@ -98,7 +94,7 @@ def unserialize(s, config, newFormat=False):
     # form the units
     metric = u.load()
     num_increments = u.load()
-    units = utils.Units(config.english_separator, metric, num_increments)
+    units = utils.Units(config.english_separator, metric, num_increments, transl)
     # form the bit
     width = u.load()
     depth = u.load()
@@ -108,7 +104,7 @@ def unserialize(s, config, newFormat=False):
     nb = u.load()
     boards = []
     for i in lrange(nb):
-        boards.append(router.Board(bit, 10)) # dummy width argument, for now
+        boards.append(router.Board(bit, 10))  # dummy width argument, for now
     for b in boards:
         b.width = u.load()
         b.height = u.load()

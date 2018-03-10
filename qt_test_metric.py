@@ -28,15 +28,15 @@ import sys
 import unittest
 from qt_driver import Driver
 import utils
-from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5.QtTest import QTest
 
 app = QtWidgets.QApplication(sys.argv)
 
+
 class Case(object):
-    def __init__(self, angle, width, depth, spacing, board_width=7):
+    def __init__(self, angle, width, depth, spacing, board_width=200):
         self.width = width
         self.depth = depth
         self.angle = angle
@@ -45,18 +45,19 @@ class Case(object):
 
 # These cases are the dovetails in the Incra Master Guide.  The spacing argument is what the
 # Guide recommends.
-cases = [Case(7  , '3/4' , '3/4' , 1.3125),
-         Case(7  , '3/4' , '1/2' , 1.375),
-         Case(7  , '5/8' , '3/4' , 1.0625),
-         Case(7  , '5/8' , '1/2' , 1.125),
-         Case(14 , '1/2' , '3/8' , .8125),
-         Case(14 , '1/2' , '1/4' , .875),
-         Case(10 , '1/2' , '1/2' , .8125),
-         Case(9  , '3/8' , '1/4' , .6875),
-         Case(9  , '5/16', '3/16', .5625),
-         Case(7.5, '1/4' , '1/4' , .4375)]
+cases = [
+        Case(10, '5/16', 5.32,  14),
+        Case( 7, '5/8', 15.27,  28),
+        Case(14, '1/2',  6.82,  22),
+        Case(14, '1/2', 10.83,  20),
+        Case( 7, '3/4', 16.7,  34),
+        Case(10, '5/16', 6,    14),
+        Case( 7, '5/8', 15,    28),
+        Case(14, '1/2',  7,    22),
+        Case(14, '1/2', 11,    20)]
 
 do_all_screenshots = False
+
 
 class Driver_Test(unittest.TestCase):
     '''
@@ -64,25 +65,30 @@ class Driver_Test(unittest.TestCase):
     '''
     def setUp(self):
         self.d = Driver()
-        # the application must be not be in metric mode for these tests
-        self.assertFalse(self.d.config.metric == True)
+        # the application must be switched to metric scales
+        self.assertFalse(self.d.config.metric != True)
         self.d.show()
         self.d.raise_()
         self.debug = self.d.config.debug
         QTest.qWaitForWindowExposed(self.d)
         if not utils.isMac():
             self.d.working_dir = 'Z:\Windows\pyRouterJig\images'
+
     def test_options(self):
         self.assertFalse(self.debug)
+
+
     def test_defaults(self):
-        self.assertEqual(str(self.d.le_board_width.text()), '7 1/2')
-        self.assertEqual(str(self.d.le_bit_width.text()), '1/2')
-        self.assertEqual(str(self.d.le_bit_depth.text()), '3/4')
+        self.assertEqual(str(self.d.le_board_width.text()), '200')
+        self.assertEqual(str(self.d.le_bit_width.text()), '12')
+        self.assertEqual(str(self.d.le_bit_depth.text()), '12')
         self.assertEqual(str(self.d.le_bit_angle.text()), '0')
+
     def screenshot(self, do_screenshot=True):
         QTest.qWaitForWindowExposed(self.d)
         QTest.qWait(100)
         self.d._on_save(do_screenshot)
+
     def test_screenshots(self):
         # default
         print('************ default')
@@ -148,9 +154,9 @@ class Driver_Test(unittest.TestCase):
         # centered checkbox
         print('************ centered checkbox')
         self.d.le_board_width.clear()
-        QTest.keyClicks(self.d.le_board_width, '7')
+        QTest.keyClicks(self.d.le_board_width, '171')
         self.d._on_board_width()
-        self.assertEqual(str(self.d.le_board_width.text()), '7')
+        self.assertEqual(str(self.d.le_board_width.text()), '171')
         # mouseClick does work here:
 #        QTest.mouseClick(self.d.cb_es_centered, QtCore.Qt.LeftButton)
 #        self.d._on_cb_es_centered()
@@ -158,9 +164,9 @@ class Driver_Test(unittest.TestCase):
         self.assertFalse(self.d.cb_es_centered.isChecked())
         self.screenshot()
         self.d.le_board_width.clear()
-        QTest.keyClicks(self.d.le_board_width, '7 1/2')
+        QTest.keyClicks(self.d.le_board_width, '150')
         self.d._on_board_width()
-        self.assertEqual(str(self.d.le_board_width.text()), '7 1/2')
+        self.assertEqual(str(self.d.le_board_width.text()), '150')
         # ... but not here
 #        QTest.mouseClick(self.d.cb_es_centered, QtCore.Qt.LeftButton)
 #        self.d._on_cb_es_centered()
@@ -201,6 +207,7 @@ class Driver_Test(unittest.TestCase):
         # save option
         print('************ save')
         self.screenshot(False)
+
     def test_dovetails_fit(self):
         self.d._on_fullscreen()
         for w in [0, 1]:
@@ -215,32 +222,33 @@ class Driver_Test(unittest.TestCase):
         self.d.fit_action.setChecked(True)
         self.d._on_fit()
         self.d.le_bit_angle.clear()
-        QTest.keyClicks(self.d.le_bit_angle, '9')
+        QTest.keyClicks(self.d.le_bit_angle, '7')
         self.d._on_bit_angle()
-        self.assertEqual(str(self.d.le_bit_angle.text()), '9')
+        self.assertEqual(str(self.d.le_bit_angle.text()), '7')
         self.d.le_board_width.clear()
-        QTest.keyClicks(self.d.le_board_width, '4 1/4')
+        QTest.keyClicks(self.d.le_board_width, '151')
         self.d._on_board_width()
-        self.assertEqual(str(self.d.le_board_width.text()), '4 1/4')
+        self.assertEqual(str(self.d.le_board_width.text()), '151')
         self.d.le_bit_width.clear()
         QTest.keyClicks(self.d.le_bit_width, '3/8')
         self.d._on_bit_width()
-        self.assertEqual(str(self.d.le_bit_width.text()), '3/8')
+        self.assertEqual(str(self.d.le_bit_width.text()), '9.52')
         self.d.le_bit_depth.clear()
-        QTest.keyClicks(self.d.le_bit_depth, '1/4')
+        QTest.keyClicks(self.d.le_bit_depth, '12.42')
         self.d._on_bit_depth()
-        self.assertEqual(str(self.d.le_bit_depth.text()), '1/4')
+        self.assertEqual(str(self.d.le_bit_depth.text()), '12.42')
         self.screenshot()
         self.d.le_bit_depth.clear()
-        QTest.keyClicks(self.d.le_bit_depth, '3/16')
+        QTest.keyClicks(self.d.le_bit_depth, '4.28')
         self.d._on_bit_depth()
-        self.assertEqual(str(self.d.le_bit_depth.text()), '3/16')
+        self.assertEqual(str(self.d.le_bit_depth.text()), '4.28')
         self.screenshot()
         self.d.le_bit_depth.clear()
-        QTest.keyClicks(self.d.le_bit_depth, '0.197')
+        QTest.keyClicks(self.d.le_bit_depth, '5')
         self.d._on_bit_depth()
-        self.assertEqual(str(self.d.le_bit_depth.text()), '0.197')
+        self.assertEqual(str(self.d.le_bit_depth.text()), '5')
         self.screenshot()
+
     def test_incra_dovetail_cases(self):
         # Run the Incra guide test cases
         self.d.pass_id_action.setChecked(False)
@@ -254,21 +262,20 @@ class Driver_Test(unittest.TestCase):
                       self.d.le_board_width]
             for cl in clears:
                 cl.clear()
-            QTest.keyClicks(self.d.le_bit_width, '{}'.format(c.width))
-            self.d._on_bit_width()
             QTest.keyClicks(self.d.le_bit_depth, '{}'.format(c.depth))
             self.d._on_bit_depth()
             QTest.keyClicks(self.d.le_bit_angle, '{}'.format(c.angle))
             self.d._on_bit_angle()
+            QTest.keyClicks(self.d.le_bit_width, '{}'.format(c.width))
+            self.d._on_bit_width()
             QTest.keyClicks(self.d.le_board_width, '{}'.format(c.board_width))
             self.d._on_board_width()
-            cuts = self.d.boards[0].bottom_cuts
-            bcuts = self.d.boards[1].top_cuts
-            spacing = (cuts[2].passes[0] - cuts[1].passes[0]) / 32.
+            spacing = self.d.bit.midline * 2
             print('incra', c.angle, spacing, c.spacing, spacing - c.spacing)
             self.assertTrue(abs(spacing - c.spacing) < 1.0e-5)
             if do_all_screenshots:
                 self.screenshot()
+
     def test_variable_spaced(self):
         self.d.pass_id_action.setChecked(False)
         self.d._on_pass_id()
@@ -283,12 +290,12 @@ class Driver_Test(unittest.TestCase):
                       self.d.le_board_width]
             for cl in clears:
                 cl.clear()
-            QTest.keyClicks(self.d.le_bit_width, '{}'.format(c.width))
-            self.d._on_bit_width()
             QTest.keyClicks(self.d.le_bit_depth, '{}'.format(c.depth))
             self.d._on_bit_depth()
             QTest.keyClicks(self.d.le_bit_angle, '{}'.format(c.angle))
             self.d._on_bit_angle()
+            QTest.keyClicks(self.d.le_bit_width, '{}'.format(c.width))
+            self.d._on_bit_width()
             QTest.keyClicks(self.d.le_board_width, '{}'.format(c.board_width))
             self.d._on_board_width()
             n = self.d.cb_vsfingers.count()
@@ -296,11 +303,11 @@ class Driver_Test(unittest.TestCase):
                 self.d.cb_vsfingers.setCurrentIndex(i)
                 self.d._on_cb_vsfingers(i)
                 cuts = self.d.boards[0].bottom_cuts
-                bcuts = self.d.boards[1].top_cuts
-                spacing = (cuts[2].passes[0] - cuts[1].passes[0]) / 32.
+                spacing = (cuts[2].passes[0] - cuts[1].passes[0])
                 print(spacing)
                 if do_all_screenshots:
                     self.screenshot()
+
 
 if __name__ == '__main__':
     unittest.main()

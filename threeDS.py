@@ -24,18 +24,17 @@ Contains functionality for writing Autodesk 3DS files.
 from __future__ import division
 from __future__ import print_function
 from future.utils import lrange
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO
 
 import struct, copy
 import router
+
 
 class BinaryIO(StringIO):
     def writepack(self, fmt, *values):
         '''Writes data with little-endian, packed with struct'''
         self.write(struct.pack('<' + fmt, *values))
+
 
 class Object_Geometry(object):
     '''Geometry information for a single 3DS object'''
@@ -43,10 +42,13 @@ class Object_Geometry(object):
         self.name = name
         self.vertices = vertices
         self.triangles = triangles
+
     def num_vertices(self):
         return len(self.vertices)
+
     def num_triangles(self):
         return len(self.triangles)
+
 
 def write_3ds(filename, objects):
     '''
@@ -57,74 +59,74 @@ def write_3ds(filename, objects):
 
         #------ Primary chunk
 
-        'MAIN3DS':0x4D4D,
+        'MAIN3DS': 0x4D4D,
 
         #------ Main Chunks
 
-        'EDIT3DS':0x3D3D,
-        'KEYF3DS':0xB000,
+        'EDIT3DS': 0x3D3D,
+        'KEYF3DS': 0xB000,
 
         #------ sub defines of EDIT3DS
 
-        'EDIT_MATERIAL':0xAFFF,
-        'EDIT_CONFIG1':0x0100,
-        'EDIT_CONFIG2':0x3E3D,
-        'EDIT_VIEW_P1':0x7012,
-        'EDIT_VIEW_P2':0x7011,
-        'EDIT_VIEW_P3':0x7020,
-        'EDIT_VIEW1':0x7001,
-        'EDIT_BACKGR':0x1200,
-        'EDIT_AMBIENT':0x2100,
-        'EDIT_OBJECT':0x4000,
+        'EDIT_MATERIAL': 0xAFFF,
+        'EDIT_CONFIG1': 0x0100,
+        'EDIT_CONFIG2': 0x3E3D,
+        'EDIT_VIEW_P1': 0x7012,
+        'EDIT_VIEW_P2': 0x7011,
+        'EDIT_VIEW_P3': 0x7020,
+        'EDIT_VIEW1': 0x7001,
+        'EDIT_BACKGR': 0x1200,
+        'EDIT_AMBIENT': 0x2100,
+        'EDIT_OBJECT': 0x4000,
 
         #------ sub defines of EDIT_OBJECT
-        'OBJ_TRIMESH':0x4100,
-        'OBJ_LIGHT':0x4600,
-        'OBJ_CAMERA':0x4700,
+        'OBJ_TRIMESH': 0x4100,
+        'OBJ_LIGHT': 0x4600,
+        'OBJ_CAMERA': 0x4700,
 
-        'OBJ_UNKNWN01':0x4010,
-        'OBJ_UNKNWN02':0x4012, #>---- Could be shadow
+        'OBJ_UNKNWN01': 0x4010,
+        'OBJ_UNKNWN02': 0x4012,  #>---- Could be shadow
 
         #------ sub defines of OBJ_CAMERA
-        'CAM_UNKNWN01':0x4710, 
-        'CAM_UNKNWN02':0x4720,
+        'CAM_UNKNWN01': 0x4710,
+        'CAM_UNKNWN02': 0x4720,
 
         #------ sub defines of OBJ_LIGHT
-        'LIT_OFF':0x4620,
-        'LIT_SPOT':0x4610,
-        'LIT_UNKNWN01':0x465A,
+        'LIT_OFF': 0x4620,
+        'LIT_SPOT': 0x4610,
+        'LIT_UNKNWN01': 0x465A,
 
         #------ sub defines of OBJ_TRIMESH
-        'TRI_VERTEXL':0x4110,
-        'TRI_FACEL2':0x4111,
-        'TRI_FACEL1':0x4120,
-        'TRI_SMOOTH':0x4150,
-        'TRI_LOCAL':0x4160,
-        'TRI_VISIBLE':0x4165,
+        'TRI_VERTEXL': 0x4110,
+        'TRI_FACEL2': 0x4111,
+        'TRI_FACEL1': 0x4120,
+        'TRI_SMOOTH': 0x4150,
+        'TRI_LOCAL': 0x4160,
+        'TRI_VISIBLE': 0x4165,
 
         #------ sub defs of KEYF3DS
 
-        'KEYF_FRAMES':0xB008,
-        'KEYF_OBJDES':0xB002,
+        'KEYF_FRAMES': 0xB008,
+        'KEYF_OBJDES': 0xB002,
 
         #------  these define the different color chunk types
-        'COL_RGB':0x0010,
-        'COL_TRU':0x0011,
-        'COL_UNK':0x0013,
+        'COL_RGB': 0x0010,
+        'COL_TRU': 0x0011,
+        'COL_UNK': 0x0013,
 
         #------ defines for viewport chunks
 
-        'TOP':0x0001,
-        'BOTTOM':0x0002,
-        'LEFT':0x0003,
-        'RIGHT':0x0004,
-        'FRONT':0x0005,
-        'BACK':0x0006,
-        'USER':0x0007,
-        'CAMERA':0x0008, # 0xFFFF is the actual code read from file
-        'LIGHT':0x0009,
-        'DISABLED':0x0010,
-        'BOGUS':0x0011
+        'TOP': 0x0001,
+        'BOTTOM': 0x0002,
+        'LEFT': 0x0003,
+        'RIGHT': 0x0004,
+        'FRONT': 0x0005,
+        'BACK': 0x0006,
+        'USER': 0x0007,
+        'CAMERA': 0x0008,  # 0xFFFF is the actual code read from file
+        'LIGHT': 0x0009,
+        'DISABLED': 0x0010,
+        'BOGUS': 0x0011
     }
 
     n = len(objects)
@@ -167,6 +169,7 @@ def write_3ds(filename, objects):
     fd.write(s)
     fd.close()
 
+
 def extrude(v2d, tri2d, order, z1, z2, units):
     if units.metric:
         scale = 1.0
@@ -179,7 +182,7 @@ def extrude(v2d, tri2d, order, z1, z2, units):
     i2 = nv2d
     for v in v2d:
         v1 = [v[0] * scale, v[1] * scale, z1 * scale]
-        v2 = [v[0] * scale, v[1]* scale, z2 * scale]
+        v2 = [v[0] * scale, v[1] * scale, z2 * scale]
         v3d[i] = [v1[order[0]], v1[order[1]], v1[order[2]]]
         v3d[i2] = [v2[order[0]], v2[order[1]], v2[order[2]]]
         i += 1
@@ -202,6 +205,7 @@ def extrude(v2d, tri2d, order, z1, z2, units):
         tri3d.append([i, ip, iep])
         tri3d.append([i, iep, ie])
     return (v3d, tri3d)
+
 
 def joint_to_3ds(filename, boards, bit, spacing):
     bc = copy.deepcopy(boards)

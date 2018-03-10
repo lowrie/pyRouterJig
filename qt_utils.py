@@ -22,14 +22,12 @@
 Contains utilities for Qt functionality
 '''
 from __future__ import print_function
-from future.utils import lrange
 
 import os, glob
-
-import utils
+import operator
 import router
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 def set_router_value(line_edit, obj, attr, setter, is_float=False, bit=None):
     # With editingFinished, we also need to check whether the
@@ -67,6 +65,7 @@ def set_router_value(line_edit, obj, attr, setter, is_float=False, bit=None):
         line_edit.setText(text)
         return None
 
+
 class PreviewComboBox(QtWidgets.QComboBox):
     '''
     This comboxbox emits "activated" when hidePopup is called.  This allows
@@ -81,8 +80,9 @@ class PreviewComboBox(QtWidgets.QComboBox):
 
     def hidePopup(self):
         QtWidgets.QComboBox.hidePopup(self)
-        #print('hidePopup')
+        # print('hidePopup')
         self.activated.emit(self.currentIndex())
+
 
 class ShadowTextLineEdit(QtWidgets.QLineEdit):
     '''
@@ -114,12 +114,14 @@ class ShadowTextLineEdit(QtWidgets.QLineEdit):
         else:
             self.has_real_text = True
 
+
 def set_line_style(line):
     '''Sets the style for create_vline() and create_hline()'''
     line.setFrameShadow(QtWidgets.QFrame.Raised)
     line.setLineWidth(1)
     line.setMidLineWidth(1)
     line.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+
 
 def create_vline():
     '''Creates a vertical line'''
@@ -128,6 +130,7 @@ def create_vline():
     set_line_style(vline)
     return vline
 
+
 def create_hline():
     '''Creates a horizontal line'''
     hline = QtWidgets.QFrame()
@@ -135,7 +138,8 @@ def create_hline():
     set_line_style(hline)
     return hline
 
-def create_wood_dict(wood_images):
+
+def create_wood_dict(wood_images, transl):
     '''
     Creates a dictionary {wood_name : wood_image_filename} by parsing the
     directory wood_images.  The wood_name is formed by taking the prefix of the
@@ -150,15 +154,39 @@ def create_wood_dict(wood_images):
             name = os.path.basename(f)
             i = name.rfind('.')
             if i > 0:
-                name = name[0:i]
+                name = transl.tr(name[0:i])
             path = os.path.abspath(f)
             woods[name] = path
     # Set the available patterns
-    patterns = {'DiagCrossPattern':QtCore.Qt.DiagCrossPattern,\
-                'BDiagPattern':QtCore.Qt.BDiagPattern,\
-                'FDiagPattern':QtCore.Qt.FDiagPattern,\
-                'Dense1Pattern':QtCore.Qt.Dense1Pattern,\
-                'Dense5Pattern':QtCore.Qt.Dense5Pattern,\
-                'Solid Fill':QtCore.Qt.SolidPattern,\
-                'No Fill':None}
+    patterns = {transl.tr('DiagCrossPattern'): QtCore.Qt.DiagCrossPattern,
+                transl.tr('BDiagPattern'): QtCore.Qt.BDiagPattern,
+                transl.tr('FDiagPattern'): QtCore.Qt.FDiagPattern,
+                transl.tr('Dense1Pattern'): QtCore.Qt.Dense1Pattern,
+                transl.tr('Dense5Pattern'): QtCore.Qt.Dense5Pattern,
+                transl.tr('Solid Fill'): QtCore.Qt.SolidPattern,
+                transl.tr('No Fill'): None}
     return (woods, patterns)
+
+def create_lang_dict():
+    '''
+    Creates a dictionary {lang_name : locale_id} by parsing the
+    directory ./ts.  The language name is formed by taking the prefix of the
+    language file. The default language en_US added by default
+    '''
+    lang_path = '.\\ts\\'
+    langs = {}
+    langs['English'] = 'en_US'  # set default language
+    if os.path.isdir(lang_path):
+        globber = os.path.join(lang_path, 'pyRouterJig_*.qm')
+        files = glob.glob(globber)
+        for f in files:
+            name = os.path.basename(f)
+            i = name.rfind('.')
+            if i > 0:
+                name = name[12:i]
+                locale = QtCore.QLocale(name)
+                name = locale.name()
+                if name != 'C':
+                    langs[locale.languageToString(locale.language())] = name
+    langs = sorted(langs.items(),key=operator.itemgetter(0))
+    return (langs)
