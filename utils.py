@@ -405,7 +405,7 @@ def print_table(filename, boards, title):
     line = ''
     pass_lbl = transl.tr('Pass')
     location_lbl = transl.tr('Location')
-    for k in label_cuts:
+    for _ in label_cuts:
         s = pass_lbl
         line += form % (s, location_lbl)
     lenh = len(line)

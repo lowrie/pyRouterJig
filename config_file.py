@@ -24,9 +24,11 @@ user configuration file.
 '''
 
 import os
-import utils
+
 from importlib.util import spec_from_loader, module_from_spec
 from importlib.machinery import SourceFileLoader
+
+import utils
 
 
 _CONFIG_INIT = r'''
@@ -216,7 +218,7 @@ debug = {debug}
 
 # common default values.  The canvas, board, and template colors from
 # http://paletton.com/#uid=50F0u0kllllaFw0g0qFqFg0-obq
-common_vals = {'version': 'NONE',
+COMMON_VALS = {'version': 'NONE',
                'english_separator': ' ',
                'language': 'en_US',
                'show_finger_widths': False,
@@ -234,18 +236,18 @@ common_vals = {'version': 'NONE',
                'debug': False,
                'print_color': True,
                'canvas_background': (255, 237, 184, 255),
-               'canvas_foreground': (91,  68,  0, 255),
+               'canvas_foreground': (91, 68, 0, 255),
                'watermark_color': (0, 0, 0, 75),
                'template_margin_background': (212, 203, 106, 255),
-               'template_margin_foreground': (91,  83,   0, 255),
+               'template_margin_foreground': (91, 83, 0, 255),
                'board_background': (212, 167, 106, 255),
-               'board_foreground': (91,  52,   0, 255),
+               'board_foreground': (91, 52, 0, 255),
                'pass_color': (0, 0, 0, 255),
                'pass_alt_color': (255, 0, 0, 255),
                'center_color': (0, 200, 0, 255)}
 
 # default values for english units
-english_vals = {'metric': False,
+ENGLISH_VALS = {'metric': False,
                 'num_increments': 32,
                 'board_width': '7 1/2',
                 'bit_width': '1/2',
@@ -262,7 +264,7 @@ english_vals = {'metric': False,
                 'separation': '1/4'}
 
 # default values for metric units
-metric_vals = {'metric': True,
+METRIC_VALS = {'metric': True,
                'num_increments': 1,
                'board_width': 200,
                'bit_width': 12,
@@ -281,7 +283,7 @@ metric_vals = {'metric': True,
 
 # values that are migrated to new versions of the config file.  Don't include metric, because it's
 # always migrated.
-migrate = ['english_separator',  # common_vals
+MIGRATE = ['english_separator',  # COMMON_VALS
            'language',
            'show_finger_widths',
            'show_router_passes',
@@ -299,7 +301,7 @@ migrate = ['english_separator',  # common_vals
            'separation',
            'background_color',
            'board_fill_colors',
-           'num_increments',  # metric_vals or english_vals
+           'num_increments',  # METRIC_VALS or ENGLISH_VALS
            'board_width',
            'bit_width',
            'bit_depth',
@@ -312,7 +314,7 @@ migrate = ['english_separator',  # common_vals
            'bottom_margin']
 
 # Values that have either metric or English dimensions
-dim_vals = ['separation',
+DIM_VALS = ['separation',
             'board_width',
             'bit_angle',
             'bit_width',
@@ -337,12 +339,12 @@ def version_number(version):
 def set_default_dimensions(d):
     '''Sets the default dimensional quantites in the config dictionary d'''
     if d['metric']:
-        common_vals.update(metric_vals)
+        COMMON_VALS.update(METRIC_VALS)
     else:
-        common_vals.update(english_vals)
-    d['num_increments'] = common_vals['num_increments']
-    for v in dim_vals:
-        d[v] = common_vals[v]
+        COMMON_VALS.update(ENGLISH_VALS)
+    d['num_increments'] = COMMON_VALS['num_increments']
+    for v in DIM_VALS:
+        d[v] = COMMON_VALS[v]
 
 
 class Configuration(object):
@@ -370,26 +372,24 @@ class Configuration(object):
         '''
         if not os.path.exists(self.filename):
             return 1
-        else:
-            module_dir, module_file = os.path.split(self.filename)
-            module_name, module_ext = os.path.splitext(module_file)
+        dummy_module_dir, module_file = os.path.split(self.filename)
+        module_name, dummy_module_ext = os.path.splitext(module_file)
 
-            # Here we call loader directly inorder to avoid extension analyses (tricky!)
-            spec = spec_from_loader(module_name, SourceFileLoader(module_name, self.filename))
-            self.config = module_from_spec(spec)
-            spec.loader.exec_module(self.config)
+        # Here we call loader directly inorder to avoid extension analyses (tricky!)
+        spec = spec_from_loader(module_name, SourceFileLoader(module_name, self.filename))
+        self.config = module_from_spec(spec)
+        spec.loader.exec_module(self.config)
 
-            try:
-                t = int(self.config.default_wood)
-                self.config.default_wood = t
-            except ValueError:
-                pass
+        try:
+            t = int(self.config.default_wood)
+            self.config.default_wood = t
+        except ValueError:
+            pass
 
-            vnum = version_number(self.config.version)
-            if vnum < self.create_version_number:
-                return 2
-            else:
-                return 0
+        vnum = version_number(self.config.version)
+        if vnum < self.create_version_number:
+            return 2
+        return 0
 
     def create_config(self, metric):
         '''
@@ -397,12 +397,12 @@ class Configuration(object):
           0: All values default
           1: Values were migrated from old config file
         '''
-        common_vals['wood_images'] = os.path.join(os.path.expanduser('~'), 'wood_images')
-        common_vals['version'] = str(utils.VERSION)
+        COMMON_VALS['wood_images'] = os.path.join(os.path.expanduser('~'), 'wood_images')
+        COMMON_VALS['version'] = str(utils.VERSION)
         if metric:
-            common_vals.update(metric_vals)
+            COMMON_VALS.update(METRIC_VALS)
         else:
-            common_vals.update(english_vals)
+            COMMON_VALS.update(ENGLISH_VALS)
         r = 0
         if self.config is not None:
             # Then config file was outdated
@@ -410,10 +410,10 @@ class Configuration(object):
             if vnum >= self.migrate_version_number:
                 # Then we can migrate the old settings
                 r = 1
-                for m in migrate:
+                for m in MIGRATE:
                     if m in self.config.__dict__.keys():
-                        common_vals[m] = self.config.__dict__[m]
-        self.write_config(common_vals)
+                        COMMON_VALS[m] = self.config.__dict__[m]
+        self.write_config(COMMON_VALS)
         return r
 
     def write_config(self, vals):
@@ -421,7 +421,7 @@ class Configuration(object):
         Writes the configuration file using the dictionary vals.
         '''
         w = vals.copy()
-        for i in dim_vals:
+        for i in DIM_VALS:
             if isinstance(w[i], str):
                 w[i] = "'{}'".format(w[i])
         content = _CONFIG_INIT.format(**w)

@@ -22,10 +22,11 @@
 Contains serialization capability
 '''
 from __future__ import print_function
-from future.utils import lrange
-from io import StringIO, BytesIO
 import binascii
 import pickle
+from io import BytesIO
+
+from future.utils import lrange
 import router
 import utils
 import spacing
@@ -103,7 +104,7 @@ def unserialize(s, config, newformat=False, transl=None):
     # form the boards
     nb = u.load()
     boards = []
-    for i in lrange(nb):
+    for _ in lrange(nb):
         boards.append(router.Board(bit, 10))  # dummy width argument, for now
     for b in boards:
         b.width = u.load()
