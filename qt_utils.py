@@ -21,7 +21,6 @@
 '''
 Contains utilities for Qt functionality
 '''
-from __future__ import print_function
 
 import os, glob
 import operator

@@ -21,13 +21,9 @@
 '''
 Contains the Qt functionality for drawing the template and boards.
 '''
-from __future__ import print_function
-from __future__ import division
-from decimal import Decimal
-from future.utils import lrange
 
+from decimal import Decimal as D
 import time
-
 import router
 import utils
 
@@ -155,7 +151,7 @@ class Qt_Fig(QtWidgets.QWidget):
         # Set the figure dimensions
         fig_width = template.length + self.margins.left + self.margins.right
         fig_height = template.height + self.margins.bottom + self.margins.top
-        for i in lrange(4):
+        for i in range(4):
             if boards[i].active:
                 fig_height += boards[i].height + self.margins.sep
 
@@ -398,11 +394,11 @@ class Qt_Fig(QtWidgets.QWidget):
         # through each cut and each pass for each cut, right-to-left.
         xp = []
         for c in cuts[::-1]:
-            for p in lrange(len(c.passes) - 1, -1, -1):
+            for p in range(len(c.passes) - 1, -1, -1):
                 xp.append(c.passes[p])
         # Loop through the passes and do the labels
         np = len(xp)
-        for i in lrange(np):
+        for i in range(np):
             # Determine vertical alignment, by checking the separation from adjacent passes.
             # If too close to an adjacent pass, then shift the alignment in the opposite
             # direction.
@@ -583,6 +579,19 @@ class Qt_Fig(QtWidgets.QWidget):
             painter.setPen(pen_canvas)
             self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2,
                              flagsL, xMid, False)
+
+        # bit and board information lables
+        label_size = '\nL:{}'.format(self.geom.bit.units.increments_to_string(self.geom.boards[0].width, True))
+        label_height = ' h:{}'.format(self.geom.bit.units.increments_to_string(self.geom.bit.depth, False))
+        label_bit = ''
+
+        if self.geom.bit.angle > 0:
+            label_bit += 'V:{}\xb0 '.format(self.geom.bit.angle)
+            if abs(self.geom.bit.gap) > utils.Units.quant:
+                label_height += '/{}'.format(self.geom.bit.units.increments_to_string(self.geom.bit.depth_0, True))
+
+        label_bit += '\xd8{}'.format(self.geom.bit.units.increments_to_string(self.geom.bit.width, True))
+
         label_bottom = 'A,B'
         label_top = None
         i = 0
@@ -667,7 +676,7 @@ class Qt_Fig(QtWidgets.QWidget):
         # ... draw the caul template and do its passes.  Draw events may be
         # triggered before we have the ability to recreate the geom object,
         # so we have to ensure the caul_top object actually exists.
-        datetime = time.strftime('\n%d %b %y %H:%M', time.localtime())
+        datetime = time.strftime('\n%d %b %y\n%H:%M', time.localtime())
         if self.config.show_caul and self.geom.caul_top is not None:
             rect_caul = self.geom.rect_caul
             board_caul = self.geom.board_caul
@@ -702,14 +711,21 @@ class Qt_Fig(QtWidgets.QWidget):
         pen.setColor(self.colors['center_color'])
         pen.setWidthF(0)
         self.set_font_size(painter, 'template_labels')
+        label_center = ''
         if len(centerline) > 0:
-            label_bottom += self.transl.tr('\nCenter: ') + centerline[0]
+            label_center = self.transl.tr('\nCenter: ') + centerline[0]
         else:
             painter.setPen(pen)
             painter.drawLine(xMid, rect_T.yB(), xMid, rect_T.yT())
+
         painter.setPen(self.colors['template_margin_foreground'])
-        paint_text(painter, label_bottom + datetime, (rect_T.xL(), rect_T.yMid()), flagsLC, (5, 0))
-        paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsRC, (-5, 0))
+
+        label_left  = label_height + '\n'+ label_bit + label_center + label_size
+        label_right = label_center + datetime
+
+        paint_text(painter, label_bottom + label_left, (rect_T.xL(), rect_T.yMid()), flagsLC, (5, 0))
+        paint_text(painter, label_bottom + label_right, (rect_T.xR(), rect_T.yMid()), flagsRC, (-5, 0))
+
         if label_top is not None:
             if len(centerline_TDD) > 0:
                 label_top += self.transl.tr('\nCenter: ') + centerline_TDD[0]
@@ -717,8 +733,8 @@ class Qt_Fig(QtWidgets.QWidget):
                 painter.setPen(pen)
                 painter.drawLine(xMid, rect_TDD.yB(), xMid, rect_TDD.yT())
             painter.setPen(self.colors['template_margin_foreground'])
-            paint_text(painter, label_top + datetime, (rect_TDD.xL(), rect_TDD.yMid()), flagsLC, (5, 0))
-            paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsRC, (-5, 0))
+            paint_text(painter, label_top + label_left, (rect_TDD.xL(), rect_TDD.yMid()), flagsLC, (5, 0))
+            paint_text(painter, label_top + label_right, (rect_TDD.xR(), rect_TDD.yMid()), flagsRC, (-5, 0))
 
         self.draw_alignment(painter)
 
@@ -732,7 +748,7 @@ class Qt_Fig(QtWidgets.QWidget):
         (x, y) = board.perimeter(bit)
         n = len(x)
         poly = QtGui.QPolygonF()
-        for i in lrange(n):
+        for i in range(n):
             poly.append(QtCore.QPointF(x[i], y[i]))
         # paint it
         painter.save()
@@ -770,7 +786,7 @@ class Qt_Fig(QtWidgets.QWidget):
         '''
 
         # Draw all of the boards
-        for i in lrange(4):
+        for i in range(4):
             self.draw_one_board(painter, self.geom.boards[i], self.geom.bit,
                                 self.colors['board_background'])
 
@@ -895,7 +911,7 @@ class Qt_Fig(QtWidgets.QWidget):
         yT = self.geom.boards[0].yT()
         pen.setColor(QtCore.Qt.green)
         painter.setPen(pen)
-        half = Decimal(0.5)
+        half = D('0.5')
         painter.drawLine(QtCore.QPointF(xminG - half, yB), QtCore.QPointF(xminG - half, yT))
         painter.drawLine(QtCore.QPointF(xmaxG + half, yB), QtCore.QPointF(xmaxG + half, yT))
         painter.restore()

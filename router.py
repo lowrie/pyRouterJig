@@ -21,12 +21,10 @@
 '''
 Contains the router, board, template and their geometry properties.
 '''
-from __future__ import division
-from __future__ import print_function
-from future.utils import lrange
 
+from decimal import Decimal as D
+from decimal import ROUND_HALF_DOWN
 import math
-from decimal import *
 import utils
 
 from spacing import dump_cuts
@@ -104,13 +102,13 @@ class Router_Bit(object):
         self.width = width
         self.depth = depth
         self.angle = angle
-        self.bit_gentle = Decimal(bit_gentle)
+        self.bit_gentle = D(bit_gentle)
 
-        self.midline = Decimal('0')
-        self.depth_0 = Decimal('0')
-        self.width_f = Decimal(repr(width))
+        self.midline = D('0')
+        self.depth_0 = D('0')
+        self.width_f = D(repr(width))
         self.overhang = (self.width_f - self.midline) / 2
-        self.gap = Decimal('0')
+        self.gap = D('0')
 
         self.reinit()
 
@@ -127,7 +125,7 @@ class Router_Bit(object):
         except:
             raise Router_Exception(msg)
 
-        self.bit_gentle = Decimal(s)
+        self.bit_gentle = D(s)
         self.reinit()
 
     def set_width_from_string(self, s):
@@ -206,17 +204,17 @@ class Router_Bit(object):
         Reinitializes internal attributes that are dependent on width
         and angle.
         '''
-        self.midline = Decimal(repr(self.width))
-        self.depth_0 = Decimal(repr(self.depth))
-        self.width_f = Decimal(repr(self.width))
-        self.gap = Decimal('0')
+        self.midline = D(repr(self.width))
+        self.depth_0 = D(repr(self.depth))
+        self.width_f = D(repr(self.width))
+        self.gap = D('0')
 
         if self.angle > 0:
-            tan = Decimal(math.tan(self.angle * math.pi / 180))
-            offset = Decimal(self.depth) * tan
+            tan = D(math.tan(self.angle * math.pi / 180))
+            offset = D(self.depth) * tan
             self.midline = self.width_f - offset
             midline = self.midline.to_integral_value(rounding=ROUND_HALF_DOWN)
-            self.gap = Decimal(self.midline) - midline
+            self.gap = D(self.midline) - midline
             self.midline = midline
             self.depth_0 = (self.width_f - self.midline) / tan
 
@@ -377,29 +375,29 @@ class Board(My_Rectangle):
         overhang = 2 * bit.overhang
 
         if cuts[0].xmin > 0:
-            x = [Decimal(self.xL())]
-            y = [Decimal(y_nocut)]
+            x = [D(self.xL())]
+            y = [D(y_nocut)]
         # loop through the cuts and add them to the perimeter
         for c in cuts:
             if c.xmin > 0:
                 # on the surface, start of cut
                 x.append(c.xmin + x[0] + overhang - halfgap)
-                y.append(Decimal(y_nocut))
+                y.append(D(y_nocut))
             # at the cut depth, start of cut
             x.append(c.xmin + self.xL() - halfgap)
-            y.append(Decimal(y_cut))
+            y.append(D(y_cut))
             # at the cut depth, end of cut
             x.append(c.xmax + self.xL() + halfgap)
-            y.append(Decimal(y_cut))
+            y.append(D(y_cut))
             if c.xmax < self.width:
                 # at the surface, end of cut
                 x.append(c.xmax + self.xL() - overhang + halfgap)
-                y.append(Decimal(y_nocut))
+                y.append(D(y_nocut))
         # add the last point on the top and bottom, at the right edge,
         # accounting for whether the last cut includes this edge or not.
         if cuts[-1].xmax < self.width:
             x.append(self.xL() + self.width)
-            y.append(Decimal(y_nocut))
+            y.append(D(y_nocut))
         return (x, y)
 
     def do_all_cuts(self, bit):
@@ -487,7 +485,7 @@ class Board(My_Rectangle):
             ic = 0
             ibot = 2
             itop = ntotal - 2
-            for i in lrange(nintervals):
+            for i in range(nintervals):
                 v[ibot] = [xc[ibot], yc[ibot]]
                 if ibot < len(xc) - 1:
                     v[ibot + 1] = [xc[ibot + 1], yc[ibot + 1]]
@@ -531,7 +529,7 @@ class Board(My_Rectangle):
             ic = 0
             ibot = ntotal - 2
             itop = 2
-            for i in lrange(nintervals):
+            for i in range(nintervals):
                 v[itop] = [xc[itop], yc[itop]]
                 if itop < len(xc) - 1:
                     v[itop + 1] = [xc[itop + 1], yc[itop + 1]]
@@ -569,11 +567,11 @@ class Cut(object):
              on the cut
     '''
     def __init__(self, xmin, xmax):
-        self.xmin = Decimal(xmin)
-        self.xmax = Decimal(xmax)
+        self.xmin = D(xmin)
+        self.xmax = D(xmax)
         self.passes = []
         # Presission value is about 1/64 inch (the exact 1/64 = 0.0156 so we fine for bouth mesument systems)
-        self.precision = Decimal('0.01')
+        self.precision = D('0.01')
 
     def validate(self, bit, board):
         '''
@@ -661,7 +659,7 @@ def adjoining_cuts(cuts, bit, board):
 
     Returns an array of Cut objects
     '''
-    q_prec =Decimal('0.0001')
+    q_prec =D('0.0001')
     nc = len(cuts)
     offset = bit.width_f-bit.midline
     adjCuts = []
@@ -676,7 +674,7 @@ def adjoining_cuts(cuts, bit, board):
 
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
-    for i in lrange(1, nc):
+    for i in range(1, nc):
         left = cuts[i-1].xmax - offset + board.dheight
         right = cuts[i].xmin + offset - board.dheight
         adjCuts.append(Cut(max(0, left), min(board.width, right)))
@@ -686,7 +684,7 @@ def adjoining_cuts(cuts, bit, board):
     if cuts[-1].xmax < board.width:
         left = cuts[-1].xmax - offset + board.dheight
 
-        right = Decimal(board.width)
+        right = D(board.width)
 
         if right - left >= board.dheight:
             adjCuts.append(Cut(max(0, left), min(board.width, right)))
@@ -856,13 +854,13 @@ def create_title(boards, bit, spacing):
     title += units.increments_to_string(bit.depth, True)
 
     if units.metric:
-        quant = Decimal('0.05') # metric measurment limit
+        quant = D('0.05') # metric measurment limit
         gap = bit.gap.quantize(units.quant)
     else:
-        quant = Decimal(1/64).quantize(units.quant) # english scale measurmentlimit 1/64 more than enough
-        gap = Decimal(units.increments_to_inches(bit.gap)).quantize(units.quant)
+        quant = D(1/64).quantize(units.quant) # english scale measurmentlimit 1/64 more than enough
+        gap = D(units.increments_to_inches(bit.gap)).quantize(units.quant)
 
-    if bit.angle > 0 and\
+    if bit.angle > 0 and \
             ( abs(gap) > quant or gap > spacing.config.warn_gap or gap < (-1 * spacing.config.warn_overlap) ):
         title += units.transl.tr('\x7c%s') % gap
         title += units.transl.tr(' (%s)') % units.increments_to_string(bit.depth_0, True)

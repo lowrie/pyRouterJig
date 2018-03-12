@@ -21,11 +21,9 @@
 '''
 This module contains the Qt interface to setting config file parameters.
 '''
-from __future__ import print_function
 
 import os, sys
 from PyQt5 import QtCore, QtGui, QtWidgets
-from decimal import Decimal
 import config_file
 import qt_utils
 import router

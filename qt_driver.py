@@ -21,15 +21,14 @@
 '''
 Contains the main driver, using pySide or pyQt.
 '''
-from __future__ import print_function
-from future.utils import lrange
+
 from builtins import str
-from decimal import *
+from decimal import getcontext
 from PIL import Image
 from PIL import PngImagePlugin
 from io import BytesIO
 
-import os, sys, traceback, webbrowser, copy, shutil, math
+import os, sys, traceback, webbrowser, copy, shutil
 
 import qt_fig
 import qt_config
@@ -77,7 +76,7 @@ class Driver(QtWidgets.QMainWindow):
         self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle, bit_gentle)
         self.boards = []
         board_width = self.units.abstract_to_increments(self.config.board_width)
-        for i in lrange(4):
+        for i in range(4):
             self.boards.append(router.Board(self.bit, width=board_width))
         self.boards[2].set_active(False)
         self.boards[3].set_active(False)
@@ -469,7 +468,7 @@ class Driver(QtWidgets.QMainWindow):
         # Double and double-double board thicknesses
         self.le_boardm_label = []
         self.le_boardm = []
-        for i in lrange(2):
+        for i in range(2):
             self.le_boardm_label.append(QtWidgets.QLabel(self.transl.tr('Thickness{}').format(us)))
             self.le_boardm.append(QtWidgets.QLineEdit(self.main_frame))
             self.le_boardm[i].setFixedWidth(lineEditWidth)
@@ -850,7 +849,7 @@ class Driver(QtWidgets.QMainWindow):
         Updates the combobox for Variable spacing Fingers.
         '''
         self.cb_vsfingers.clear()
-        for i in lrange(vMin, vMax + 1, 1):
+        for i in range(vMin, vMax + 1, 1):
             self.cb_vsfingers.addItem(str(i))
         i = self.cb_vsfingers.findText(str(value))
         self.cb_vsfingers.setCurrentIndex(i)
@@ -1484,7 +1483,7 @@ class Driver(QtWidgets.QMainWindow):
         # exist, set to a wood we know exists.  This can happen if the wood
         # image files don't exist across users.
         # self.boards[i].wood is newstr type use str(self.boards[i].wood) is for old files compatibility
-        for i in lrange(4):
+        for i in range(4):
             if self.boards[i].wood is None:
                 self.boards[i].set_wood('NONE')
             elif str(self.boards[i].wood) not in self.woods.keys():

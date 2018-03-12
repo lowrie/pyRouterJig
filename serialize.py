@@ -21,9 +21,8 @@
 '''
 Contains serialization capability
 '''
-from __future__ import print_function
-from future.utils import lrange
-from io import StringIO, BytesIO
+
+from io import BytesIO
 import binascii
 import pickle
 import router
@@ -103,7 +102,7 @@ def unserialize(s, config, newformat=False, transl=None):
     # form the boards
     nb = u.load()
     boards = []
-    for i in lrange(nb):
+    for i in range(nb):
         boards.append(router.Board(bit, 10))  # dummy width argument, for now
     for b in boards:
         b.width = u.load()
@@ -127,5 +126,7 @@ def unserialize(s, config, newformat=False, transl=None):
         sp.params = u.load()
         if config.debug:
             print('unserialized ', sp_type, str(sp.params))
+        if not newformat:
+            sp.upgrade()
         sp.set_cuts()
     return (bit, boards, sp, sp_type)
