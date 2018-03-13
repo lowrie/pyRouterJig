@@ -25,6 +25,7 @@ Contains the main driver, using pySide or pyQt.
 from builtins import str
 from decimal import getcontext
 from PIL import Image
+from PIL import ImageCms
 from PIL import PngImagePlugin
 from io import BytesIO
 
@@ -1400,13 +1401,28 @@ class Driver(QtWidgets.QMainWindow):
         buffer.close()
         pilimg = Image.open(pio)
 
+        # convert image to unifyed profile
+        # however we know that the image taken from monitor so need to convert monitor to sRGB
+        # feel free to use other profile if any
+        monitor_profile = ImageCms.get_display_profile()
+        if monitor_profile != None:
+            monitor_profile = ImageCms.createProfile('sRGB') # rare happen case - non profiled monitor!!!!
+
+        srgb = ImageCms.createProfile('sRGB')
+
+        # here we convert image to the profile. and got the profile into info
+        # The point is that the info will lost on save so we have to assign the proper one profile when safe the image
+        pilimg = ImageCms.profileToProfile(pilimg, monitor_profile, srgb)
+
+        # uncomment the line below to set color profiling off
         info = PngImagePlugin.PngInfo()
+
         info.add_text('pyRouterJig', s)
         info.add_text('pyRouterJig_v', utils.VERSION)
 
         r = True
         try:
-            pilimg.save(filename, 'png', pnginfo=info)
+            pilimg.save(filename, 'png', pnginfo=info )
         except OSError:
             r = False
 
@@ -1487,7 +1503,11 @@ class Driver(QtWidgets.QMainWindow):
             if self.boards[i].wood is None:
                 self.boards[i].set_wood('NONE')
             elif str(self.boards[i].wood) not in self.woods.keys():
-                self.boards[i].set_wood('DiagCrossPattern')
+                local_wood = self.transl.tr(str(self.boards[i].wood))
+                if local_wood in self.woods.keys():
+                    self.boards[i].set_wood(local_wood)
+                else :
+                    self.boards[i].set_wood(self.transl.tr('DiagCrossPattern'))
 
             # backwards compatibility fix
             self.boards[i].wood = str(self.boards[i].wood)
