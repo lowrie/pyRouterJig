@@ -1,6 +1,6 @@
 ###########################################################################
 #
-# Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
+# Copyright 2015-2018 Robert B. Lowrie (http://github.com/lowrie)
 #
 # This file is part of pyRouterJig.
 #
@@ -22,19 +22,16 @@
 Contains utilities for Qt functionality
 '''
 
-import os, glob
+import os
+import glob
 import operator
+from PyQt5 import QtCore, QtWidgets
 import router
 
-from PyQt5 import QtCore, QtWidgets
-
 def set_router_value(line_edit, obj, attr, setter, is_float=False, bit=None):
-    # With editingFinished, we also need to check whether the
-    # value actually changed. This is because editingFinished gets
-    # triggered every time focus changes, which can occur many
-    # times when an exception is thrown, or user tries to quit
-    # in the middle of an exception, etc.  This logic also avoids
-    # unnecessary redraws.
+    '''
+    Sets the value contained in the line_edit object.
+    '''
     if not line_edit.isModified():
         return None
     line_edit.setModified(False)
@@ -91,6 +88,7 @@ class ShadowTextLineEdit(QtWidgets.QLineEdit):
     def __init__(self, parent, shadow_text):
         QtWidgets.QLineEdit.__init__(self, parent)
         self.shadow_text = shadow_text
+        self.has_real_text = False
         self.initialize_shadow()
 
     def initialize_shadow(self):
@@ -108,7 +106,7 @@ class ShadowTextLineEdit(QtWidgets.QLineEdit):
     def focusOutEvent(self, event):
         QtWidgets.QLineEdit.focusOutEvent(self, event)
         # If there's no text, set it back to the shadow
-        if len(str(self.text())) == 0:
+        if str(self.text()) == '':
             self.initialize_shadow()
         else:
             self.has_real_text = True
@@ -187,5 +185,5 @@ def create_lang_dict():
                 name = locale.name()
                 if name != 'C':
                     langs[locale.languageToString(locale.language())] = name
-    langs = sorted(langs.items(),key=operator.itemgetter(0))
-    return (langs)
+    langs = sorted(langs.items(), key=operator.itemgetter(0))
+    return langs

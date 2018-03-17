@@ -1,6 +1,6 @@
 ###########################################################################
 #
-# Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
+# Copyright 2015-2018 Robert B. Lowrie (http://github.com/lowrie)
 #
 # This file is part of pyRouterJig.
 #
@@ -33,10 +33,11 @@ class Doc(object):
         self.sunits = units.units_string(verbose=True)
         self.transl = units.transl
 
-        self._short_desc = self.transl.tr('<i>pyRouterJig</i> is a joint layout tool for woodworking.')
+        self._short_desc = self.transl.tr(
+            '<i>pyRouterJig</i> is a joint layout tool for woodworking.')
 
         self._license = self.transl.tr('<p>\
-            Copyright 2015, 2016 Robert B. Lowrie (pyrouterjig@lowrielodge.org)\
+            Copyright 2015-2018 Robert B. Lowrie (pyrouterjig@lowrielodge.org)\
             <p>\
             <i>pyRouterJig</i> is free software: you can redistribute it and/or modify it under\
             the terms of the GNU General Public License as published by the Free Software\
@@ -56,31 +57,37 @@ class Doc(object):
             <p>\
             <h3>USE AT YOUR OWN RISK!</h3>')
 
-        self._board_width = self.transl.tr('<b>Board Width</b> is the board width (in%s) of \
-            the joint.')
+        self._board_width = self.transl.tr('<b>Board Width</b> is the board width (in%s) of'
+                                           ' the joint.')
 
-        self._bit_width = self.transl.tr('<b>Bit Width</b> is the maximum cutting width (in%s) of \
-            the router bit.')
+        self._bit_width = self.transl.tr('<b>Bit Width</b> is the maximum cutting width (in%s) of'
+                                         ' the router bit.')
 
-        self._bit_depth = self.transl.tr('<b>Bit Depth</b> is the cutting depth (in%s) of the \
-            router bit.')
+        self._bit_depth = self.transl.tr('<b>Bit Depth</b> is the cutting depth (in%s) of the'
+                                         ' router bit.')
 
-        self._bit_angle = self.transl.tr('<b>Bit Angle</b> is the angle (in degrees) of the router \
-            bit for dovetail bits.  Set to zero for straight bits.')
+        self._bit_angle = self.transl.tr('<b>Bit Angle</b> is the angle (in degrees) of the router'
+                                         ' bit for dovetail bits.  Set to zero for straight bits.')
 
-        self._top_board = self.transl.tr('<b>Top Board</b> is the wood image to use for the top board.')
+        self._top_board = self.transl.tr(
+            '<b>Top Board</b> is the wood image to use for the top board.')
 
-        self._bottom_board = self.transl.tr('<b>Bottom Board</b> is the wood image to use for the bottom board.')
+        self._bottom_board = self.transl.tr(
+            '<b>Bottom Board</b> is the wood image to use for the bottom board.')
 
-        self._double_board = self.transl.tr('<b>Double Board</b> is the wood image to use for the double board. \
-            If NONE, there is no double board.')
+        self._double_board = self.transl.tr(
+            '<b>Double Board</b> is the wood image to use for the double board.'
+            ' If NONE, there is no double board.')
 
-        self._dd_board = self.transl.tr('<b>Double-Double Board</b> is the wood image to use for the double-double board. \
-            If NONE, there is no double-double board.')
+        self._dd_board = self.transl.tr(
+            '<b>Double-Double Board</b> is the wood image to use for the double-double board.'
+            ' If NONE, there is no double-double board.')
 
-        self._double_thickness = self.transl.tr('<b>Thickness</b> is the thickness (in%s) of the double board.')
+        self._double_thickness = self.transl.tr(
+            '<b>Thickness</b> is the thickness (in%s) of the double board.')
 
-        self._dd_thickness = self.transl.tr('<b>Thickness</b> is the thickness (in%s) of the double-double board.')
+        self._dd_thickness = self.transl.tr(
+            '<b>Thickness</b> is the thickness (in%s) of the double-double board.')
 
         self._es_slider0 = self.transl.tr('<b>%s</b> slider allows you to specify additional \
             spacing between the fingers')

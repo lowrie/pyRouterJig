@@ -1,6 +1,6 @@
 ###########################################################################
 #
-# Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
+# Copyright 2015-2018 Robert B. Lowrie (http://github.com/lowrie)
 #
 # This file is part of pyRouterJig.
 #
@@ -26,8 +26,6 @@ from decimal import Decimal as D
 from decimal import ROUND_HALF_DOWN
 import math
 import utils
-
-from spacing import dump_cuts
 
 
 class Router_Exception(Exception):
@@ -305,10 +303,10 @@ class Board(My_Rectangle):
         '''
         if self.units.metric:
             val = '42' # recomend to use the answer for all questions
-            max = 1000 # set limit to with 1 meter
+            maxw = 1000 # set limit to with 1 meter
         else:
             val = '7 1/2'
-            max = 32 * 48 # set 4 feet limitation to with
+            maxw = 32 * 48 # set 4 feet limitation to with
 
         msg = self.transl.tr('Unable to set Board Width to: {}<p>'\
               'Set to a postive value less then 4 feet (1 meter) , such as: {}').format(s, val)
@@ -316,7 +314,7 @@ class Board(My_Rectangle):
             width = self.units.string_to_increments(s)
         except:
             raise Router_Exception(msg)
-        if width <= 0 or width > max:
+        if width <= 0 or width > maxw:
             raise Router_Exception(msg)
         self.width = width
 
@@ -402,7 +400,7 @@ class Board(My_Rectangle):
 
     def do_all_cuts(self, bit):
         '''
-        Returns (xtop, ytop, xbottom, ybottom), which are the coordinates of the top and 
+        Returns (xtop, ytop, xbottom, ybottom), which are the coordinates of the top and
         bottom cuts, ordered left to right.  If the edge has no cuts, just the endpoints
         of the board are returned.
         '''
@@ -485,7 +483,7 @@ class Board(My_Rectangle):
             ic = 0
             ibot = 2
             itop = ntotal - 2
-            for i in range(nintervals):
+            for _ in range(nintervals):
                 v[ibot] = [xc[ibot], yc[ibot]]
                 if ibot < len(xc) - 1:
                     v[ibot + 1] = [xc[ibot + 1], yc[ibot + 1]]
@@ -529,7 +527,7 @@ class Board(My_Rectangle):
             ic = 0
             ibot = ntotal - 2
             itop = 2
-            for i in range(nintervals):
+            for _ in range(nintervals):
                 v[itop] = [xc[itop], yc[itop]]
                 if itop < len(xc) - 1:
                     v[itop + 1] = [xc[itop + 1], yc[itop + 1]]
@@ -579,17 +577,17 @@ class Cut(object):
         '''
         if self.xmin >= self.xmax:
             raise Router_Exception(bit.transl.tr('cut xmin = %f, xmax = %f: '
-                                   'Must have xmax > xmin!') % (self.xmin, self.xmax))
+                                                 'Must have xmax > xmin!') % (self.xmin, self.xmax))
         if self.xmin < 0:
             raise Router_Exception(bit.transl.tr('cut xmin = %f, xmax = %f: '
-                                   'Must have xmin >=0!') % (self.xmin, self.xmax))
+                                                 'Must have xmin >=0!') % (self.xmin, self.xmax))
         if self.xmax > board.width:
             raise Router_Exception(bit.transl.tr('cut xmin = %f, xmax = %f:'
-                                   ' Must have xmax < board width (%d)!')
+                                                 ' Must have xmax < board width (%d)!')
                                    % (self.xmin, self.xmax, board.width))
         if (bit.width_f - (self.xmax - self.xmin)) > self.precision and self.xmin > 0 and self.xmax < board.width:
             raise Router_Exception(bit.transl.tr('cut xmin = %f, xmax = %f ): '
-                                   'Bit width (%f) delta too large for this cut!')
+                                                 'Bit width (%f) delta too large for this cut!')
                                    % (self.xmin, self.xmax, bit.width_f))
 
     def make_router_passes(self, bit, board):
@@ -644,8 +642,8 @@ class Cut(object):
         for p in self.passes:
             if (self.xmin > 0 and (self.xmin - (p - halfwidth)) > self.precision) or \
                (self.xmax < board.width and ((p + halfwidth) - self.xmax) > self.precision):
-                raise Router_Exception(self.transl.tr('cut xmin = %f, xmax = %f, pass = %f: '
-                                       'Bit width (%f) too large for this cut!')
+                raise Router_Exception(bit.units.transl.tr('cut xmin = %f, xmax = %f, pass = %f: '
+                                                           'Bit width (%f) too large for this cut!')
                                        % (self.xmin, self.xmax, p, bit.width_f))
 
 
@@ -659,6 +657,7 @@ def adjoining_cuts(cuts, bit, board):
 
     Returns an array of Cut objects
     '''
+
     q_prec =D('0.0001')
     nc = len(cuts)
     offset = bit.width_f-bit.midline
@@ -670,7 +669,7 @@ def adjoining_cuts(cuts, bit, board):
         left = 0
         right = cuts[0].xmin + offset - board.dheight
         if right - left >= board.dheight:
-            adjCuts.append(Cut(left,right.quantize(q_prec)))
+            adjCuts.append(Cut(left, right.quantize(q_prec)))
 
     # loop through the input cuts and form an adjoining cut, formed
     # by looking where the previous cut ended and the current cut starts
@@ -804,7 +803,7 @@ class Joint_Geometry(object):
             self.rect_caul = My_Rectangle(margins.left, y,
                                           template.length, template.height)
             self.board_caul = My_Rectangle(self.rect_caul.xL() + template.margin, y,
-                                          boards[0].width, template.height)
+                                           boards[0].width, template.height)
             self.caul_top = caul_cuts(self.boards[0].bottom_cuts, bit, boards[0], caul_trim)
             self.caul_bottom = caul_cuts(self.boards[1].top_cuts, bit, boards[1], caul_trim)
         else:
@@ -848,7 +847,7 @@ def create_title(boards, bit, spacing):
         title += units.transl.tr('%.1f\xB0 dovetail') % bit.angle
     else:
         title += units.transl.tr('straight')
-    title += units.transl.tr(', \xD8 ')
+    title += units.transl.tr(', width: ')
     title += units.increments_to_string(bit.width, True)
     title += units.transl.tr(', depth: ')
     title += units.increments_to_string(bit.depth, True)
@@ -860,8 +859,10 @@ def create_title(boards, bit, spacing):
         quant = D(1/64).quantize(units.quant) # english scale measurmentlimit 1/64 more than enough
         gap = D(units.increments_to_inches(bit.gap)).quantize(units.quant)
 
-    if bit.angle > 0 and \
-            ( abs(gap) > quant or gap > spacing.config.warn_gap or gap < (-1 * spacing.config.warn_overlap) ):
+    if bit.angle > 0 and\
+            (abs(gap) > quant or\
+             gap > spacing.config.warn_gap or\
+             gap < (-1 * spacing.config.warn_overlap)):
         title += units.transl.tr('\x7c%s') % gap
         title += units.transl.tr(' (%s)') % units.increments_to_string(bit.depth_0, True)
     return title

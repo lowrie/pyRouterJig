@@ -1,6 +1,6 @@
 ###########################################################################
 #
-# Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
+# Copyright 2015-2018 Robert B. Lowrie (http://github.com/lowrie)
 #
 # This file is part of pyRouterJig.
 #
@@ -22,9 +22,9 @@
 Contains serialization capability
 '''
 
-from io import BytesIO
 import binascii
 import pickle
+from io import BytesIO
 import router
 import utils
 import spacing
@@ -102,7 +102,7 @@ def unserialize(s, config, newformat=False, transl=None):
     # form the boards
     nb = u.load()
     boards = []
-    for i in range(nb):
+    for _ in range(nb):
         boards.append(router.Board(bit, 10))  # dummy width argument, for now
     for b in boards:
         b.width = u.load()

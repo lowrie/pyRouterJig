@@ -1,6 +1,6 @@
 ###########################################################################
 #
-# Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
+# Copyright 2015-2018 Robert B. Lowrie (http://github.com/lowrie)
 #
 # This file is part of pyRouterJig.
 #
@@ -24,10 +24,9 @@ Contains the Qt functionality for drawing the template and boards.
 
 from decimal import Decimal as D
 import time
+from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 import router
 import utils
-
-from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 
 
 def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill_color=None):
@@ -74,7 +73,7 @@ def paint_text(painter, text, coord, flags, shift=(0, 0), angle=0, fill_color=No
     painter.drawText(rect, flags, text)
     # Find the text rectangle in our original coordinate system
     rect1 = painter.transform().mapRect(rect)
-    (inverted, invertable) = transform.inverted()
+    (inverted, dummy_invertable) = transform.inverted()
     rect = inverted.mapRect(rect1)
     # Restore the original transform
     painter.setTransform(transform)
@@ -91,8 +90,13 @@ class Qt_Fig(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self)
         self.canvas = self
         self.config = config
+        self.colors = {}
+        self.woods = {}
+        self.description = ''
         self.fig_width = -1
         self.fig_height = -1
+        self.window_width = -1
+        self.window_height = -1
         self.set_fig_dimensions(template, boards)
         self.geom = None
         self.labels = ['B', 'C', 'D', 'E', 'F']
@@ -285,7 +289,7 @@ class Qt_Fig(QtWidgets.QWidget):
         self.paint_all(painter, dpi)
         painter.end()
 
-    def paintEvent(self, event):
+    def paintEvent(self, dummy_event):
         '''
         Handles the paint event, which draws to the screen
         '''
@@ -348,7 +352,7 @@ class Qt_Fig(QtWidgets.QWidget):
         painter.scale(scale, -scale)
 
         # Save the inverse of the un-zoomed transform
-        (self.base_transform, invertable) = painter.transform().inverted()
+        (self.base_transform, dummy_invertable) = painter.transform().inverted()
 
         # Apply the zoom, zooming on the current figure center
         painter.scale(self.scaling, self.scaling)
@@ -435,7 +439,7 @@ class Qt_Fig(QtWidgets.QWidget):
                     passMid = label
                     this_is_midpoint = True
             if not is_template and self.config.show_router_pass_locations:
-                if len(label) > 0:
+                if label:
                     label += ': '
                 loc = self.geom.bit.units.increments_to_string(board_T.xR() - xpShift)
                 label += loc
@@ -559,7 +563,8 @@ class Qt_Fig(QtWidgets.QWidget):
 
         flagsL = QtCore.Qt.AlignLeft
         flagsR = QtCore.Qt.AlignRight
-        show_passes = self.config.show_router_pass_identifiers | self.config.show_router_pass_locations
+        show_passes = self.config.show_router_pass_identifiers |\
+                      self.config.show_router_pass_locations
 
         frac_depth = 0.95 * self.geom.bit.depth
         sepOver2 = 0.5 * self.geom.margins.sep
@@ -612,8 +617,8 @@ class Qt_Fig(QtWidgets.QWidget):
             y1 = boards[3].yB() - sepOver2
             y2 = boards[3].yB() + frac_depth
             painter.setPen(penA)
-            pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts, rect_TDD.yMid(),
-                                  rect_TDD.yB(), flagsL, xMid) 
+            pm = self.draw_passes(painter, self.labels[i + 1], boards[3].bottom_cuts,
+                                  rect_TDD.yMid(), rect_TDD.yB(), flagsL, xMid)
             if pm is not None:
                 centerline_TDD.append(pm)
             if show_passes:
@@ -694,7 +699,7 @@ class Qt_Fig(QtWidgets.QWidget):
                 centerline_caul.append(pm)
             self.set_font_size(painter, 'template_labels')
             label = self.transl.tr('Cauls')
-            if len(centerline_caul) > 0:
+            if centerline_caul:
                 label += self.transl.tr('\nCenter: ') + centerline_caul[0]
             else:
                 pen = QtGui.QPen(QtCore.Qt.DashLine)
@@ -703,7 +708,8 @@ class Qt_Fig(QtWidgets.QWidget):
                 painter.setPen(pen)
                 painter.drawLine(xMid, rect_caul.yB(), xMid, rect_caul.yT())
             painter.setPen(self.colors['template_margin_foreground'])
-            paint_text(painter, label + datetime, (rect_caul.xL(), rect_caul.yMid()), flagsLC, (5, 0))
+            paint_text(painter, label + datetime, (rect_caul.xL(), rect_caul.yMid()),
+                       flagsLC, (5, 0))
             paint_text(painter, label, (rect_caul.xR(), rect_caul.yMid()), flagsRC, (-5, 0))
 
         # Label the templates
@@ -712,8 +718,9 @@ class Qt_Fig(QtWidgets.QWidget):
         pen.setWidthF(0)
         self.set_font_size(painter, 'template_labels')
         label_center = ''
-        if len(centerline) > 0:
-            label_center = self.transl.tr('\nCenter: ') + centerline[0]
+        if centerline:
+            label_bottom += self.transl.tr('\nCenter: ') + centerline[0]
+
         else:
             painter.setPen(pen)
             painter.drawLine(xMid, rect_T.yB(), xMid, rect_T.yT())
@@ -727,14 +734,16 @@ class Qt_Fig(QtWidgets.QWidget):
         paint_text(painter, label_bottom + label_right, (rect_T.xR(), rect_T.yMid()), flagsRC, (-5, 0))
 
         if label_top is not None:
-            if len(centerline_TDD) > 0:
+            if centerline_TDD:
                 label_top += self.transl.tr('\nCenter: ') + centerline_TDD[0]
             else:
                 painter.setPen(pen)
                 painter.drawLine(xMid, rect_TDD.yB(), xMid, rect_TDD.yT())
             painter.setPen(self.colors['template_margin_foreground'])
-            paint_text(painter, label_top + label_left, (rect_TDD.xL(), rect_TDD.yMid()), flagsLC, (5, 0))
-            paint_text(painter, label_top + label_right, (rect_TDD.xR(), rect_TDD.yMid()), flagsRC, (-5, 0))
+            paint_text(painter, label_top + label_left, (rect_TDD.xL(), rect_TDD.yMid()),
+                       flagsLC, (5, 0))
+            paint_text(painter, label_top + label_right, (rect_TDD.xR(), rect_TDD.yMid()),
+                       flagsRC, (-5, 0))
 
         self.draw_alignment(painter)
 
@@ -772,7 +781,7 @@ class Qt_Fig(QtWidgets.QWidget):
                     painter.drawPolygon(poly)
                     color = self.colors['board_foreground']
                 brush = QtGui.QBrush(color, icon)
-            (inverted, invertable) = self.transform.inverted()
+            (inverted, dummy_invertable) = self.transform.inverted()
             # setMatrix is not offered anymore
             # brush.setMatrix(inverted.toAffine())
             brush.setTransform(inverted)
