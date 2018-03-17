@@ -21,7 +21,6 @@
 '''
 This module contains the Qt interface to setting config file parameters.
 '''
-from __future__ import print_function
 
 import os
 import sys

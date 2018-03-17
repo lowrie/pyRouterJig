@@ -21,7 +21,6 @@
 '''
 Contains the main driver, using pySide or pyQt.
 '''
-from __future__ import print_function
 
 import os
 import sys
@@ -29,16 +28,13 @@ import traceback
 import webbrowser
 import copy
 import shutil
-
 from io import BytesIO
 from decimal import getcontext
-
-from future.utils import lrange
+from builtins import str
 from PIL import Image
+from PIL import ImageCms
 from PIL import PngImagePlugin
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 import qt_fig
 import qt_config
 import qt_utils
@@ -83,7 +79,8 @@ class Driver(QtWidgets.QMainWindow):
         self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle, bit_gentle)
         self.boards = []
         board_width = self.units.abstract_to_increments(self.config.board_width)
-        for _ in lrange(4):
+
+        for _ in range(4):
             self.boards.append(router.Board(self.bit, width=board_width))
         self.boards[2].set_active(False)
         self.boards[3].set_active(False)
@@ -490,7 +487,7 @@ class Driver(QtWidgets.QMainWindow):
         # Double and double-double board thicknesses
         self.le_boardm_label = []
         self.le_boardm = []
-        for i in lrange(2):
+        for i in range(2):
             self.le_boardm_label.append(QtWidgets.QLabel(self.transl.tr('Thickness{}').format(us)))
             self.le_boardm.append(QtWidgets.QLineEdit(self.main_frame))
             self.le_boardm[i].setFixedWidth(lineEditWidth)
@@ -872,7 +869,7 @@ class Driver(QtWidgets.QMainWindow):
         Updates the combobox for Variable spacing Fingers.
         '''
         self.cb_vsfingers.clear()
-        for i in lrange(vMin, vMax + 1, 1):
+        for i in range(vMin, vMax + 1, 1):
             self.cb_vsfingers.addItem(str(i))
         i = self.cb_vsfingers.findText(str(value))
         self.cb_vsfingers.setCurrentIndex(i)
@@ -1427,13 +1424,28 @@ class Driver(QtWidgets.QMainWindow):
         buffer.close()
         pilimg = Image.open(pio)
 
+        # convert image to unifyed profile
+        # however we know that the image taken from monitor so need to convert monitor to sRGB
+        # feel free to use other profile if any
+        monitor_profile = ImageCms.get_display_profile()
+        if monitor_profile != None:
+            monitor_profile = ImageCms.createProfile('sRGB') # rare happen case - non profiled monitor!!!!
+
+        srgb = ImageCms.createProfile('sRGB')
+
+        # here we convert image to the profile. and got the profile into info
+        # The point is that the info will lost on save so we have to assign the proper one profile when safe the image
+        pilimg = ImageCms.profileToProfile(pilimg, monitor_profile, srgb)
+
+        # uncomment the line below to set color profiling off
         info = PngImagePlugin.PngInfo()
+
         info.add_text('pyRouterJig', s)
         info.add_text('pyRouterJig_v', utils.VERSION)
 
         r = True
         try:
-            pilimg.save(filename, 'png', pnginfo=info)
+            pilimg.save(filename, 'png', pnginfo=info )
         except OSError:
             r = False
 
@@ -1516,11 +1528,15 @@ class Driver(QtWidgets.QMainWindow):
         # image files don't exist across users.
         # self.boards[i].wood is newstr type use str(self.boards[i].wood) is for
         # old files compatibility
-        for i in lrange(4):
+        for i in range(4):
             if self.boards[i].wood is None:
                 self.boards[i].set_wood('NONE')
             elif str(self.boards[i].wood) not in self.woods.keys():
-                self.boards[i].set_wood('DiagCrossPattern')
+                local_wood = self.transl.tr(str(self.boards[i].wood))
+                if local_wood in self.woods.keys():
+                    self.boards[i].set_wood(local_wood)
+                else :
+                    self.boards[i].set_wood(self.transl.tr('DiagCrossPattern'))
 
             # backwards compatibility fix
             self.boards[i].wood = str(self.boards[i].wood)
