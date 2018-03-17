@@ -1,6 +1,6 @@
 ###########################################################################
 #
-# Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
+# Copyright 2015-2018 Robert B. Lowrie (http://github.com/lowrie)
 #
 # This file is part of pyRouterJig.
 #
@@ -64,6 +64,8 @@ class Driver_Test(unittest.TestCase):
     '''
     def setUp(self):
         self.d = Driver()
+        # the application must be not be in metric mode for these tests
+        self.assertFalse(self.d.config.metric == True)
         self.d.show()
         self.d.raise_()
         self.debug = self.d.config.debug

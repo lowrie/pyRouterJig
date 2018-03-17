@@ -1,6 +1,6 @@
 ###########################################################################
 #
-# Copyright 2015-2016 Robert B. Lowrie (http://github.com/lowrie)
+# Copyright 2015-2018 Robert B. Lowrie (http://github.com/lowrie)
 #
 # This file is part of pyRouterJig.
 #
@@ -22,14 +22,22 @@
 Contains the main driver, using pySide or pyQt.
 '''
 from __future__ import print_function
+
+import os
+import sys
+import traceback
+import webbrowser
+import copy
+import shutil
+
+from io import BytesIO
+from decimal import getcontext
+
 from future.utils import lrange
-from builtins import str
-from decimal import *
 from PIL import Image
 from PIL import PngImagePlugin
-from io import BytesIO
 
-import os, sys, traceback, webbrowser, copy, shutil, math
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import qt_fig
 import qt_config
@@ -42,14 +50,12 @@ import doc
 import serialize
 import threeDS
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Driver(QtWidgets.QMainWindow):
     '''
     Qt driver for pyRouterJig
     '''
-    def __init__(self, parent=None , app= None):
+    def __init__(self, parent=None, app=None):
 
         QtWidgets.QMainWindow.__init__(self, parent)
         sys.excepthook = self.exception_hook
@@ -77,7 +83,7 @@ class Driver(QtWidgets.QMainWindow):
         self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle, bit_gentle)
         self.boards = []
         board_width = self.units.abstract_to_increments(self.config.board_width)
-        for i in lrange(4):
+        for _ in lrange(4):
             self.boards.append(router.Board(self.bit, width=board_width))
         self.boards[2].set_active(False)
         self.boards[3].set_active(False)
@@ -94,6 +100,7 @@ class Driver(QtWidgets.QMainWindow):
         self.spacing = self.equal_spacing  # the default
         self.spacing_index = None  # to be set in layout_widgets()
         self.description = None
+        self.woods = {}
 
         # Create the main frame and menus
         self.create_status_bar()
@@ -129,7 +136,7 @@ class Driver(QtWidgets.QMainWindow):
         # ... show the status message from reading the configuration file
         self.status_message(msg)
 
-    def load_config(self, app = None):
+    def load_config(self, app=None):
         '''
         Sets the config attribute, by either
            1) Reading an existing config file
@@ -139,7 +146,7 @@ class Driver(QtWidgets.QMainWindow):
         c = config_file.Configuration()
         r = c.read_config()
 
-        locale = QtCore.QLocale();
+        locale = QtCore.QLocale()
         if r != 1 and getattr(c.config, "language", None) != None:
             locale = QtCore.QLocale(c.config.language)
 
@@ -157,7 +164,8 @@ class Driver(QtWidgets.QMainWindow):
                 box = QtWidgets.QMessageBox(self)
                 box.setTextFormat(QtCore.Qt.RichText)
                 box.setIcon(QtWidgets.QMessageBox.NoIcon)
-                box.setText(self.transl.tr('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>'))
+                box.setText(self.transl.tr(
+                    '<font size=5 color=red>Welcome to <i>pyRouterJig</i> !</font>'))
                 question = self.transl.tr('<font size=5>Please select a unit system below.'\
                            ' The configuration file<p><tt>{}</tt><p>'\
                            ' will be created to store this setting,'\
@@ -165,8 +173,10 @@ class Driver(QtWidgets.QMainWindow):
                            ' may be changed later by selecting <b>Preferences</b> under'\
                            ' the <b>{}</b> menu.</font>').format(c.filename, tools)
                 box.setInformativeText(question)
-                buttonMetric = box.addButton(self.transl.tr('Metric (millimeters)'), QtWidgets.QMessageBox.AcceptRole)
-                buttonEnglish = box.addButton(self.transl.tr('English (inches)'), QtWidgets.QMessageBox.AcceptRole)
+                buttonMetric = box.addButton(self.transl.tr('Metric (millimeters)'),
+                                             QtWidgets.QMessageBox.AcceptRole)
+                buttonEnglish = box.addButton(self.transl.tr('English (inches)'),
+                                              QtWidgets.QMessageBox.AcceptRole)
                 box.setDefaultButton(buttonEnglish)
                 box.raise_()
                 box.exec_()
@@ -183,7 +193,8 @@ class Driver(QtWidgets.QMainWindow):
                 box = QtWidgets.QMessageBox(self)
                 box.setTextFormat(QtCore.Qt.RichText)
                 box.setIcon(QtWidgets.QMessageBox.Warning)
-                box.setText(self.transl.tr('<font size=5 color=red>Welcome to <i>pyRouterJig</i> !'))
+                box.setText(self.transl.tr(
+                    '<font size=5 color=red>Welcome to <i>pyRouterJig</i> !'))
                 warning = self.transl.tr('<font size=5>A new configuration file<p><tt>{}</tt><p>'\
                           'has been created. The old version was saved'\
                           ' to<p><tt>{}</tt><p> ').format(c.filename, backup)
@@ -196,7 +207,7 @@ class Driver(QtWidgets.QMainWindow):
                                ' under the <b>{}</b> menu.').format(metric, tools)
                 else:
                     warning += self.transl.tr('The old configuration values were migrated'\
-                                                     ' and any new values were set to their default.')
+                                              ' and any new values were set to their default.')
                 box.setInformativeText(warning)
                 box.raise_()
                 box.exec_()
@@ -212,7 +223,8 @@ class Driver(QtWidgets.QMainWindow):
     def center(self):
         '''Centers the app in the screen'''
         frameGm = self.frameGeometry()
-        screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
+        screen = QtWidgets.QApplication.desktop().screenNumber(
+            QtWidgets.QApplication.desktop().cursor().pos())
         centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
@@ -293,7 +305,8 @@ class Driver(QtWidgets.QMainWindow):
         view_menu.addAction(self.caul_action)
         self.caul_action.setChecked(self.config.show_caul)
 
-        self.finger_size_action = QtWidgets.QAction(self.transl.tr('Finger Widths'), self, checkable=True)
+        self.finger_size_action = QtWidgets.QAction(self.transl.tr('Finger Widths'),
+                                                    self, checkable=True)
         self.finger_size_action.setStatusTip(self.transl.tr('Toggle viewing finger sizes'))
         self.finger_size_action.triggered.connect(self._on_finger_sizes)
         view_menu.addAction(self.finger_size_action)
@@ -321,16 +334,19 @@ class Driver(QtWidgets.QMainWindow):
         pass_menu.addAction(self.pass_id_action)
         self.pass_id_action.setChecked(self.config.show_router_pass_identifiers)
 
-        self.pass_location_action = QtWidgets.QAction(self.transl.tr('Locations'), self, checkable=True)
-        self.pass_location_action.setStatusTip(self.transl.tr('Toggle viewing router pass locations'))
+        self.pass_location_action = QtWidgets.QAction(self.transl.tr('Locations'),
+                                                      self, checkable=True)
+        self.pass_location_action.setStatusTip(self.transl.tr(
+            'Toggle viewing router pass locations'))
         self.pass_location_action.triggered.connect(self._on_pass_location)
         pass_menu.addAction(self.pass_location_action)
         self.pass_location_action.setChecked(self.config.show_router_pass_locations)
 
         # The Mac automatically adds full screen to the View menu, but do so for other platforms
-        #if not utils.isMac():
+        # if not utils.isMac():
         view_menu.addSeparator()
-        fullscreen_action = QtWidgets.QAction(self.transl.tr('Full Screen Mode'), self, checkable=True)
+        fullscreen_action = QtWidgets.QAction(self.transl.tr('Full Screen Mode'),
+                                              self, checkable=True)
         fullscreen_action.setShortcut('Ctrl+F')
         fullscreen_action.setStatusTip(self.transl.tr('Toggle full-screen mode'))
         fullscreen_action.triggered.connect(self._on_fullscreen)
@@ -342,7 +358,8 @@ class Driver(QtWidgets.QMainWindow):
 
         screenshot_action = QtWidgets.QAction(self.transl.tr('Screenshot...'), self)
         screenshot_action.setShortcut('Ctrl+W')
-        screenshot_action.setStatusTip(self.transl.tr('Saves an image of the pyRouterJig window to a file'))
+        screenshot_action.setStatusTip(self.transl.tr(
+            'Saves an image of the pyRouterJig window to a file'))
         screenshot_action.triggered.connect(self._on_screenshot)
         tools_menu.addAction(screenshot_action)
 
@@ -400,6 +417,9 @@ class Driver(QtWidgets.QMainWindow):
         return cb
 
     def populate_wood_combo_box(self, cb, woods, patterns, defwood, has_none):
+        '''
+        Fills the wood combo box
+        '''
         cb.blockSignals(True)
         cb.clear()
         if has_none:
@@ -409,15 +429,15 @@ class Driver(QtWidgets.QMainWindow):
 
         #combo boxes now store values as well as keys
         for k in skeys:
-            cb.addItem(k,woods.get(k))
+            cb.addItem(k, woods.get(k))
         # Next add patterns
-        if len(skeys) > 0:
+        if skeys:
             cb.insertSeparator(len(skeys))
         skeys = sorted(patterns.keys())
         for k in skeys:
-            cb.addItem(k,patterns.get(k))
+            cb.addItem(k, patterns.get(k))
         # Set the index to the default wood
-        i = max(0,cb.findData(defwood))
+        i = max(0, cb.findData(defwood))
         cb.setCurrentIndex(i)
         cb.blockSignals(False)
 
@@ -434,7 +454,8 @@ class Driver(QtWidgets.QMainWindow):
         self.fig = qt_fig.Qt_Fig(self.template, self.boards, self.config)
         self.fig.canvas.setParent(self.main_frame)
         self.fig.canvas.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.fig.canvas.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.fig.canvas.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                      QtWidgets.QSizePolicy.Expanding)
         self.fig.canvas.setFocus()
 
         # Board width line edit
@@ -549,10 +570,37 @@ class Driver(QtWidgets.QMainWindow):
 
         # ...combox box for fingers
         p = params['Fingers']
-        self.cb_vsfingers_label = QtWidgets.QLabel(labels[0])
+        self.cb_vsfingers_label = QtWidgets.QLabel(labels[0]) # labels[0]
         self.cb_vsfingers = qt_utils.PreviewComboBox(self.main_frame)
         self.cb_vsfingers.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.update_cb_vsfingers(p.vMin, p.vMax, p.v)
+
+        p = params['Spacing']
+        self.vs_slider0_label = QtWidgets.QLabel(labels[1], self.main_frame) # labels[1]
+        self.vs_slider0 = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.main_frame)
+        self.vs_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.vs_slider0.setMinimum(p.vMin)
+        self.vs_slider0.setMaximum(p.vMax)
+        self.vs_slider0.setValue(p.v)
+        self.vs_slider0.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.vs_slider0.setSingleStep(1)
+        utils.set_slider_tick_interval(self.vs_slider0)
+        self.vs_slider0.valueChanged.connect(self._on_vs_slider0)
+        self.vs_slider0.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+
+        # line out lables (haveno idea why
+        width = (self.vs_slider0_label.width())
+        self.cb_vsfingers_label.setFixedWidth(width // 2)
+        height = (self.vs_slider0_label.height())
+        self.vs_slider0_label.setFixedHeight((height * 10) // 8)
+        self.cb_vsfingers_label.setFixedHeight((height * 8) // 10)
+        # self.vs_slider0.setFixedHeight(self.cb_vsfingers.height())
+
+        # ...check box for centering
+        p = params['Inverted']
+        self.cb_vs_inverted = QtWidgets.QCheckBox(labels[2], self.main_frame) # labels[2]
+        self.cb_vs_inverted.setChecked(p.v)
+        self.cb_vs_inverted.stateChanged.connect(self._cb_vs_inverted)
 
         # Edit spacing widgets
 
@@ -601,7 +649,8 @@ class Driver(QtWidgets.QMainWindow):
 
         edit_btn_toggle = QtWidgets.QPushButton(self.transl.tr('Toggle'), self.main_frame)
         edit_btn_toggle.clicked.connect(self._on_edit_toggle)
-        edit_btn_toggle.setToolTip(self.transl.tr('Toggles the cut at cursor between active and deactive'))
+        edit_btn_toggle.setToolTip(self.transl.tr(
+            'Toggles the cut at cursor between active and deactive'))
         edit_btn_cursorL = QtWidgets.QToolButton(self.main_frame)
         edit_btn_cursorL.setArrowType(QtCore.Qt.LeftArrow)
         edit_btn_cursorL.clicked.connect(self._on_edit_cursorL)
@@ -618,8 +667,8 @@ class Driver(QtWidgets.QMainWindow):
         edit_btn_deactivate_all.setToolTip(self.transl.tr('Set no cuts to be active'))
 
         # Add the description line edit
-        self.le_description = qt_utils.ShadowTextLineEdit(self.main_frame,
-                                        self.transl.tr('Enter description here for template watermark'))
+        self.le_description = qt_utils.ShadowTextLineEdit(
+            self.main_frame, self.transl.tr('Enter description here for template watermark'))
         self.le_description.editingFinished.connect(self._on_description)
         self.le_description.setAlignment(QtCore.Qt.AlignHCenter)
 
@@ -707,10 +756,20 @@ class Driver(QtWidgets.QMainWindow):
         # Create the layout of the Variable spacing controls.  Given only one
         # item, this is overkill, but the coding allows us to add additional
         # controls later.
+        # hbox_vs = QtWidgets.QVBoxLayout()
         hbox_vs = QtWidgets.QHBoxLayout()
-        hbox_vs.addWidget(self.cb_vsfingers_label)
-        hbox_vs.addWidget(self.cb_vsfingers)
-        hbox_vs.addStretch(1)
+
+        vbox_vs_cb = QtWidgets.QVBoxLayout()
+        vbox_vs_cb.addWidget(self.cb_vsfingers_label)
+        vbox_vs_cb.addWidget(self.cb_vsfingers)
+        hbox_vs.addLayout(vbox_vs_cb)
+
+        vbox_vs_slider0 = QtWidgets.QVBoxLayout()
+        vbox_vs_slider0.addWidget(self.vs_slider0_label)
+        vbox_vs_slider0.addWidget(self.vs_slider0)
+        hbox_vs.addLayout(vbox_vs_slider0)
+
+        hbox_vs.addWidget(self.cb_vs_inverted)
 
         # Create the layout of the edit spacing controls
         hbox_edit = QtWidgets.QHBoxLayout()
@@ -756,12 +815,15 @@ class Driver(QtWidgets.QMainWindow):
         self.tabs_spacing = QtWidgets.QTabWidget()
         tab_es = QtWidgets.QWidget()
         tab_es.setLayout(hbox_es)
+
         self.tabs_spacing.addTab(tab_es, self.transl.tr('Equal'))
         tab_vs = QtWidgets.QWidget()
         tab_vs.setLayout(hbox_vs)
+
         self.tabs_spacing.addTab(tab_vs, self.transl.tr('Variable'))
         tab_edit = QtWidgets.QWidget()
         tab_edit.setLayout(hbox_edit)
+
         self.tabs_spacing.addTab(tab_edit, self.transl.tr('Editor'))
         self.tabs_spacing.currentChanged.connect(self._on_tabs_spacing)
         tip = self.transl.tr('These tabs specify the layout algorithm for the cuts.')
@@ -826,10 +888,12 @@ class Driver(QtWidgets.QMainWindow):
 
         disable_double = disable
         if not self.boards[2].active:
-            disable_double = self.transl.tr('  <b>Cannot change unless "Double Board" is not NONE.</b>')
+            disable_double = self.transl.tr(
+                '  <b>Cannot change unless "Double Board" is not NONE.</b>')
         disable_dd = disable
         if not self.boards[3].active:
-            disable_dd = self.transl.tr('  <b>Cannot change unless "Double-Double Board" is not NONE.</b>')
+            disable_dd = self.transl.tr(
+                '  <b>Cannot change unless "Double-Double Board" is not NONE.</b>')
 
         self.le_board_width_label.setToolTip(self.doc.board_width() + disable)
         self.le_board_width.setToolTip(self.doc.board_width() + disable)
@@ -1081,8 +1145,8 @@ class Driver(QtWidgets.QMainWindow):
                   ' any changes made in the Editor.'\
                   '\n\nAre you sure you want to do this?')
             reply = QtWidgets.QMessageBox.question(self, self.transl.tr('Message'), msg,
-                    QtWidgets.QMessageBox.Yes,
-                    QtWidgets.QMessageBox.No)
+                                                   QtWidgets.QMessageBox.Yes,
+                                                   QtWidgets.QMessageBox.No)
             if reply == QtWidgets.QMessageBox.No:
                 self.tabs_spacing.setCurrentIndex(self.spacing_index)
                 return
@@ -1153,11 +1217,12 @@ class Driver(QtWidgets.QMainWindow):
             err = False
             msg = ''
             if self.spacing_index == self.var_spacing_id and \
-                    spacing.Variable_Spaced.is_board_width_ok(self.bit, self.boards) == False:
+                    not spacing.Variable_Spaced.is_board_width_ok(self.bit, self.boards):
                 err = True
                 msg = self.transl.tr(spacing.Variable_Spaced.msg)
             if self.spacing_index == self.equal_spacing_id and \
-                    spacing.Equally_Spaced.is_board_width_ok(self.bit, self.boards, self.config) == False:
+                    not spacing.Equally_Spaced.is_board_width_ok(self.bit, self.boards,
+                                                                 self.config):
                 err = True
                 msg = self.transl.tr(spacing.Equally_Spaced.msg)
             if err:
@@ -1182,7 +1247,8 @@ class Driver(QtWidgets.QMainWindow):
         if self.le_description.isModified():
             self.description = str(self.le_description.text())
             self.draw()
-            self.status_message(self.transl.tr('Changed description to "{}"').format(self.description))
+            self.status_message(self.transl.tr(
+                'Changed description to "{}"').format(self.description))
             self.file_saved = False
 
     @QtCore.pyqtSlot(int)
@@ -1209,6 +1275,40 @@ class Driver(QtWidgets.QMainWindow):
         self.status_message(self.transl.tr('Changed slider %s') % str(self.es_slider1_label.text()))
         self.file_saved = False
 
+    @QtCore.pyqtSlot(int)
+    def _on_vs_slider0(self, value):
+        '''Handles changes to the variable spaced slider D'''
+        if self.config.debug:
+            print('_on_vs_slider0', value)
+        self.var_spacing.params['Spacing'].v = value
+        self.var_spacing.set_cuts()
+        self.vs_slider0_label.setText(self.var_spacing.labels[1])
+        self.draw()
+        self.status_message(self.transl.tr('Changed slider %s') % str(self.vs_slider0_label.text()))
+        self.file_saved = False
+
+    @QtCore.pyqtSlot()
+    def _cb_vs_inverted(self):
+        '''Handles changes inverse variable fingers'''
+        if self.config.debug:
+            print('_cb_vs_inverted')
+        self.var_spacing.params['Inverted'].v = self.cb_vs_inverted.isChecked()
+        self.var_spacing.calc_var_params()
+
+        # ...combox box for fingers
+        p = self.var_spacing.params['Spacing']
+        self.vs_slider0.setMinimum(p.vMin)
+        self.vs_slider0.setMaximum(p.vMax)
+        self.vs_slider0.setValue(p.v)
+
+        self.var_spacing.set_cuts()
+        self.draw()
+        if self.var_spacing.params['Inverted'].v:
+            self.status_message(self.transl.tr('Checked Inverted.'))
+        else:
+            self.status_message(self.transl.tr('Unchecked Inverted.'))
+        self.file_saved = False
+
     @QtCore.pyqtSlot()
     def _on_cb_es_centered(self):
         '''Handles changes to centered checkbox'''
@@ -1229,7 +1329,15 @@ class Driver(QtWidgets.QMainWindow):
         if self.config.debug:
             print('_on_cb_vsfingers', index)
         self.var_spacing.params['Fingers'].v = int(self.cb_vsfingers.itemText(index))
+        self.var_spacing.calc_var_params()
+
+        # ...combox box for fingers
+        p = self.var_spacing.params['Spacing']
+        self.vs_slider0.setMinimum(p.vMin)
+        self.vs_slider0.setMaximum(p.vMax)
+        self.vs_slider0.setValue(p.v)
         self.var_spacing.set_cuts()
+
         self.cb_vsfingers_label.setText(self.var_spacing.labels[0])
         self.draw()
         self.status_message(self.transl.tr('%s ') % str(self.cb_vsfingers_label.text()) + \
@@ -1354,18 +1462,19 @@ class Driver(QtWidgets.QMainWindow):
                   ' Opening a new file will overwrite the current joint.'\
                   '\n\nAre you sure you want to do this?')
             reply = QtWidgets.QMessageBox.question(self, self.transl.tr('Message'), msg,
-                    QtWidgets.QMessageBox.Yes,
-                    QtWidgets.QMessageBox.No)
+                                                   QtWidgets.QMessageBox.Yes,
+                                                   QtWidgets.QMessageBox.No)
 
             if reply == QtWidgets.QMessageBox.No:
                 return
 
         # Get the file name
-        filename, _filter = QtWidgets.QFileDialog.getOpenFileName(self, self.transl.tr('Open file'),
-                            self.working_dir,
-                            'Portable Network Graphics (*.png)')
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, self.transl.tr('Open file'),
+            self.working_dir,
+            'Portable Network Graphics (*.png)')
         # filename = str(filename).strip()
-        if len(filename) == 0:
+        if not filename:
             self.status_message(self.transl.tr('File open aborted'), warning=True)
             return
 
@@ -1373,7 +1482,7 @@ class Driver(QtWidgets.QMainWindow):
         image = Image.open(filename)
         s = image.info['pyRouterJig']
 
-        if len(s) == 0:
+        if not s:
             msg = self.transl.tr('File %s does not contain pyRouterJig data.  The PNG file'\
                   ' must have been saved using pyRouterJig.') % filename
             QtWidgets.QMessageBox.warning(self, self.transl.tr('Error'), msg)
@@ -1381,11 +1490,15 @@ class Driver(QtWidgets.QMainWindow):
 
         # backwards compatibility
         (bit, boards, sp, sp_type) = \
-            serialize.unserialize(s, self.config, ('pyRouterJig_v' in image.info.keys()), self.transl)
+            serialize.unserialize(s, self.config, ('pyRouterJig_v' in image.info.keys()),
+                                  self.transl)
 
         if self.bit.units.metric != bit.units.metric:
-            scales_name = ('English', 'Metric')[bool(bit.units.metric)]
-            msg = self.transl.tr('Unable to use the file {}. \nJoin designed for another scale system.\n'
+            scales_name = 'English'
+            if bit.units.metric:
+                scales_name = 'Metric'
+            msg = self.transl.tr('Unable to use the file {}.'
+                                 '\nJoin designed for another scale system.\n'
                                  'Switch pyRouterJig into {} system first').\
                                 format(filename, scales_name)
             QtWidgets.QMessageBox.warning(self, self.transl.tr('Error'), msg)
@@ -1401,7 +1514,8 @@ class Driver(QtWidgets.QMainWindow):
         # ... set the wood selection for each board.  If the wood does not
         # exist, set to a wood we know exists.  This can happen if the wood
         # image files don't exist across users.
-        # self.boards[i].wood is newstr type use str(self.boards[i].wood) is for old files compatibility
+        # self.boards[i].wood is newstr type use str(self.boards[i].wood) is for
+        # old files compatibility
         for i in lrange(4):
             if self.boards[i].wood is None:
                 self.boards[i].set_wood('NONE')
@@ -1476,7 +1590,7 @@ class Driver(QtWidgets.QMainWindow):
         # Get the file name
         defname = os.path.join(self.working_dir, fname)
         dialog = QtWidgets.QFileDialog(self, self.transl.tr('Export joint'), defname,
-                'Autodesk 3DS file (*.3ds)')
+                                       'Autodesk 3DS file (*.3ds)')
         dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
         filename = None
@@ -1593,10 +1707,11 @@ class Driver(QtWidgets.QMainWindow):
             # QtGui.qApp.quit()
             QtWidgets.qApp.quit()
         else:
-            msg = self.transl.tr('Figure was changed but not saved.  Are you sure you want to quit?')
+            msg = self.transl.tr('Figure was changed but not saved.'
+                                 ' Are you sure you want to quit?')
             reply = QtWidgets.QMessageBox.question(self, 'Message', msg,
-                    QtWidgets.QMessageBox.Yes,
-                    QtWidgets.QMessageBox.No)
+                                                   QtWidgets.QMessageBox.Yes,
+                                                   QtWidgets.QMessageBox.No)
 
             if reply == QtWidgets.QMessageBox.Yes:
                 QtWidgets.qApp.quit()
@@ -1700,7 +1815,8 @@ class Driver(QtWidgets.QMainWindow):
             self.reinit_spacing()
             self.draw()
             labels = ['Double', 'Double-Double']
-            self.status_message(self.transl.tr('Changed {} Board thickness to {}').format(labels[i], val))
+            self.status_message(self.transl.tr(
+                'Changed {} Board thickness to {}').format(labels[i], val))
             self.file_saved = False
 
     @QtCore.pyqtSlot()
@@ -2003,7 +2119,7 @@ class Driver(QtWidgets.QMainWindow):
             msg = self.transl.tr('You pressed an unrecognized key: ')
             warning = True
             s = event.text()
-            if len(s) > 0:
+            if s:
                 msg += s
             else:
                 msg += '%x' % event.key()
@@ -2047,7 +2163,7 @@ def run():
 
     app = QtWidgets.QApplication(sys.argv)
 
-    driver = Driver(app = app)
+    driver = Driver(app=app)
     driver.show()
     driver.center()
     driver.raise_()
