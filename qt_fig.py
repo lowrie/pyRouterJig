@@ -586,8 +586,8 @@ class Qt_Fig(QtWidgets.QWidget):
                              flagsL, xMid, False)
 
         # bit and board information lables
-        label_size = '\nL:{}'.format(self.geom.bit.units.increments_to_string(self.geom.boards[0].width, True))
-        label_height = ' h:{}'.format(self.geom.bit.units.increments_to_string(self.geom.bit.depth, False))
+        label_size = 'L:{}'.format(self.geom.bit.units.increments_to_string(self.geom.boards[0].width, True))
+        label_height = 'h:{}'.format(self.geom.bit.units.increments_to_string(self.geom.bit.depth, False))
         label_bit = ''
 
         if self.geom.bit.angle > 0:
@@ -717,7 +717,7 @@ class Qt_Fig(QtWidgets.QWidget):
         pen.setColor(self.colors['center_color'])
         pen.setWidthF(0)
         self.set_font_size(painter, 'template_labels')
-        label_center = ''
+        label_center = ' '
         if centerline:
             label_bottom += self.transl.tr('\nCenter: ') + centerline[0]
 
@@ -727,7 +727,7 @@ class Qt_Fig(QtWidgets.QWidget):
 
         painter.setPen(self.colors['template_margin_foreground'])
 
-        label_left  = label_height + '\n'+ label_bit + label_center + label_size
+        label_left  = '\n'+ label_bit + '\n' + label_height + label_center + label_size
         label_right = label_center + datetime
 
         paint_text(painter, label_bottom + label_left, (rect_T.xL(), rect_T.yMid()), flagsLC, (5, 0))
