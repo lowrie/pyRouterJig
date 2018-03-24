@@ -146,6 +146,10 @@ max_image_width = {max_image_width}
 # print_scale_factor = 9.5 / (9.5 - 1.0 / 32.0)
 print_scale_factor = {print_scale_factor}
 
+# Template line width. 
+# Default value 0.3
+line_width = {line_width}
+
 # The folder which contains wood grain image files.  Prefix the string with the character-r to prevent
 # python from interpreting the character-\ (used in Windows file paths) as an escape.
 wood_images = r'{wood_images}'
@@ -230,6 +234,7 @@ COMMON_VALS = {'version': 'NONE',
                'bit_angle': 0,
                'min_image_width': 1440,
                'max_image_width': 'min_image_width',
+               'line_width': 0.3,
                'print_scale_factor': 1.0,
                'wood_images': 'NONE',
                'default_wood': '1',
