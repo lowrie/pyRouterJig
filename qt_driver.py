@@ -23,6 +23,7 @@ Contains the main driver, using pySide or pyQt.
 '''
 
 import os
+import platform
 import sys
 import traceback
 import webbrowser
@@ -32,7 +33,8 @@ from io import BytesIO
 from decimal import getcontext
 from builtins import str
 from PIL import Image
-from PIL import ImageCms
+if platform.system() != 'Darwin':
+    from PIL import ImageCms
 from PIL import PngImagePlugin
 from PyQt5 import QtCore, QtGui, QtWidgets
 import qt_fig
@@ -1427,15 +1429,16 @@ class Driver(QtWidgets.QMainWindow):
         # convert image to unifyed profile
         # however we know that the image taken from monitor so need to convert monitor to sRGB
         # feel free to use other profile if any
-        monitor_profile = ImageCms.get_display_profile()
-        if monitor_profile != None:
-            monitor_profile = ImageCms.createProfile('sRGB') # rare happen case - non profiled monitor!!!!
+        if platform.system() != 'Darwin':
+            monitor_profile = ImageCms.get_display_profile()
+            if monitor_profile != None:
+                monitor_profile = ImageCms.createProfile('sRGB') # rare happen case - non profiled monitor!!!!
 
-        srgb = ImageCms.createProfile('sRGB')
+            srgb = ImageCms.createProfile('sRGB')
 
-        # here we convert image to the profile. and got the profile into info
-        # The point is that the info will lost on save so we have to assign the proper one profile when safe the image
-        pilimg = ImageCms.profileToProfile(pilimg, monitor_profile, srgb)
+            # here we convert image to the profile. and got the profile into info
+            # The point is that the info will lost on save so we have to assign the proper one profile when safe the image
+            pilimg = ImageCms.profileToProfile(pilimg, monitor_profile, srgb)
 
         # uncomment the line below to set color profiling off
         info = PngImagePlugin.PngInfo()
