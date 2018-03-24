@@ -331,6 +331,7 @@ class Qt_Fig(QtWidgets.QWidget):
         window_width = rw.width()
         window_height = rw.height()
         units = self.geom.bit.units
+        scaling = self.scaling
 
         if dpi is None:
             # transform the painter to maintain the figure aspect ratio in the current
@@ -349,14 +350,15 @@ class Qt_Fig(QtWidgets.QWidget):
             # Scale so that the image is the correct size on the page
             painter.translate(0, window_height)
             scale = float(dpi) / units.increments_per_inch
+            scaling = 1.0
         painter.scale(scale, -scale)
 
         # Save the inverse of the un-zoomed transform
         (self.base_transform, dummy_invertable) = painter.transform().inverted()
 
         # Apply the zoom, zooming on the current figure center
-        painter.scale(self.scaling, self.scaling)
-        factor = 0.5 - 0.5 / self.scaling
+        painter.scale(scaling, scaling)
+        factor = 0.5 - 0.5 / scaling
         x = self.translate[0] - self.fig_width * factor
         y = self.translate[1] - self.fig_height * factor
         painter.translate(x, y)
@@ -366,10 +368,9 @@ class Qt_Fig(QtWidgets.QWidget):
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
-        # self.draw_finger_sizes(painter)
+        self.draw_finger_sizes(painter)
         if self.config.show_finger_widths:
             self.draw_finger_sizes(painter)
-
         return (window_width, window_height)
 
     def draw_passes(self, painter, blabel, cuts, y1, y2, flags, xMid,
@@ -482,7 +483,7 @@ class Qt_Fig(QtWidgets.QWidget):
 
         pen = QtGui.QPen(QtCore.Qt.SolidLine)
         pen.setColor(self.colors['template_margin_foreground'])
-        pen.setWidthF(0)
+        pen.setWidthF(self.config.line_width) #0
 
         bg_pen = QtGui.QPen(QtCore.Qt.SolidLine)
         bg_pen.setColor(QtGui.QColor('White'))
@@ -545,10 +546,10 @@ class Qt_Fig(QtWidgets.QWidget):
         pen_canvas.setWidthF(0)
         penA = QtGui.QPen(QtCore.Qt.SolidLine)
         penA.setColor(self.colors['pass_color'])
-        penA.setWidthF(0)
+        penA.setWidthF(self.config.line_width) # 0
         penB = QtGui.QPen(QtCore.Qt.DashLine)
         penB.setColor(self.colors['pass_alt_color'])
-        penB.setWidthF(0)
+        penB.setWidthF(self.config.line_width) # 0
 
         painter.setPen(pen_canvas)
         self.draw_template_rectangle(painter, rect_T, board_T)
