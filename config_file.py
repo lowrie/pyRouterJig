@@ -147,7 +147,6 @@ max_image_width = {max_image_width}
 print_scale_factor = {print_scale_factor}
 
 # Template line width. 
-# Default value 0.3
 line_width = {line_width}
 
 # The folder which contains wood grain image files.  Prefix the string with the character-r to prevent
