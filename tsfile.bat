@@ -1,0 +1,1 @@
+C:\Users\Valdas\AppData\Local\Programs\Python\Python37\Scripts\pylupdate5.exe 

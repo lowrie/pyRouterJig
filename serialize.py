@@ -21,18 +21,16 @@
 '''
 Contains serialization capability
 '''
-from __future__ import print_function
+
 import binascii
 import pickle
 from io import BytesIO
-
-from future.utils import lrange
 import router
 import utils
 import spacing
 
 
-def serialize(bit, boards, sp, config):
+def serialize(bit, boards, sp, config, description):
     '''
     Serializes the arguments. Returns the serialized string, which can
     later be used to reconstruct the arguments using unserialize()
@@ -60,7 +58,7 @@ def serialize(bit, boards, sp, config):
         p.dump(b.active)
         p.dump(b.dheight)
     # Save the spacing
-    sp_type = sp.description[0:4]
+    sp_type = sp.__class__.__name__[0:4]
     if config.debug:
         print('serialize', sp_type)
     p.dump(sp_type)
@@ -68,6 +66,7 @@ def serialize(bit, boards, sp, config):
         p.dump(sp.cuts)
     else:
         p.dump(sp.params)
+    p.dump(description)
     s = out.getvalue()
     out.close()
     if config.debug:
@@ -89,6 +88,8 @@ def unserialize(s, config, newformat=False, transl=None):
     inp = BytesIO(s)
 
     u = pickle.Unpickler(inp)
+
+    description = None
     version = u.load()
     if config.debug:
         print('unserialized version:', version)
@@ -104,7 +105,7 @@ def unserialize(s, config, newformat=False, transl=None):
     # form the boards
     nb = u.load()
     boards = []
-    for _ in lrange(nb):
+    for _ in range(nb):
         boards.append(router.Board(bit, 10))  # dummy width argument, for now
     for b in boards:
         b.width = u.load()
@@ -126,7 +127,13 @@ def unserialize(s, config, newformat=False, transl=None):
         else:
             sp = spacing.Variable_Spaced(bit, boards, config)
         sp.params = u.load()
+        if newformat:   #compatibility please for all new params
+            description = u.load()
+        else:
+            sp.upgrade()
+
         if config.debug:
             print('unserialized ', sp_type, str(sp.params))
+
         sp.set_cuts()
-    return (bit, boards, sp, sp_type)
+    return (bit, boards, sp, sp_type, description)

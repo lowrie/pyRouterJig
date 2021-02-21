@@ -57,17 +57,13 @@ class Doc(object):
             <p>\
             <h3>USE AT YOUR OWN RISK!</h3>')
 
-        self._board_width = self.transl.tr('<b>Board Width</b> is the board width (in%s) of'
-                                           ' the joint.')
+        self._board_width = self.transl.tr('<b>Board Width</b> is the board width (in%s) of the joint.')
 
-        self._bit_width = self.transl.tr('<b>Bit Width</b> is the maximum cutting width (in%s) of'
-                                         ' the router bit.')
+        self._bit_width = self.transl.tr('<b>Bit Width</b> is the maximum cutting width (in%s) of the router bit.')
 
-        self._bit_depth = self.transl.tr('<b>Bit Depth</b> is the cutting depth (in%s) of the'
-                                         ' router bit.')
+        self._bit_depth = self.transl.tr('<b>Bit Depth</b> is the cutting depth (in%s) of the router bit.')
 
-        self._bit_angle = self.transl.tr('<b>Bit Angle</b> is the angle (in degrees) of the router'
-                                         ' bit for dovetail bits.  Set to zero for straight bits.')
+        self._bit_angle = self.transl.tr('<b>Bit Angle</b> is the angle (in degrees) of the router bit for dovetail bits. Set to zero for straight bits.')
 
         self._top_board = self.transl.tr(
             '<b>Top Board</b> is the wood image to use for the top board.')
@@ -80,8 +76,7 @@ class Doc(object):
             ' If NONE, there is no double board.')
 
         self._dd_board = self.transl.tr(
-            '<b>Double-Double Board</b> is the wood image to use for the double-double board.'
-            ' If NONE, there is no double-double board.')
+            '<b>Double-Double Board</b> is the wood image to use for the double-double board. If NONE, there is no double-double board.')
 
         self._double_thickness = self.transl.tr(
             '<b>Thickness</b> is the thickness (in%s) of the double board.')
@@ -89,21 +84,17 @@ class Doc(object):
         self._dd_thickness = self.transl.tr(
             '<b>Thickness</b> is the thickness (in%s) of the double-double board.')
 
-        self._es_slider0 = self.transl.tr('<b>%s</b> slider allows you to specify additional \
-            spacing between the fingers')
+        self._es_slider0 = self.transl.tr('<b>%s</b> slider allows you to specify additional spacing between the fingers')
 
-        self._es_slider1 = self.transl.tr('<b>%s</b> slider allows you to specify additional \
-            width added to the fingers.')
+        self._es_slider1 = self.transl.tr('<b>%s</b> slider allows you to specify additional width added to the fingers.')
 
-        self._es_centered = self.transl.tr('Check <b>%s</b> to force a finger to be centered on \
-            the board.')
+        self._es_centered = self.transl.tr('Check <b>%s</b> to force a finger to be centered on the board.')
 
-        self._cb_vsfingers = self.transl.tr('<b>%s</b> specifies the approximate number of \
-            fingers. At its minimum value, the width of the center finger is \
-            maximized. At its maximum value, the width of the center finger is \
-            minimized, and the result is the roughly the same as equally-spaced \
-            using zero "Spacing", zero "Width", and the "Centered" option \
-            checked.')
+        self._cb_vsfingers = self.transl.tr('<b>%s</b> specifies the approximate number of<br>\
+fingers. At its minimum value, the width of the center finger is<br>\
+maximized. At its maximum value, the width of the center finger is<br>\
+minimized, and the result is the roughly the same as equally-spaced<br>\
+using zero "Spacing", zero "Width", and the "Centered" option checked.')
 
     def short_desc(self):
         return self._short_desc

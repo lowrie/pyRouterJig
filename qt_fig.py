@@ -21,15 +21,10 @@
 '''
 Contains the Qt functionality for drawing the template and boards.
 '''
-from __future__ import print_function
-from __future__ import division
 
+from decimal import Decimal as D
 import time
-from decimal import Decimal
-
-from future.utils import lrange
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
-
 import router
 import utils
 
@@ -104,11 +99,13 @@ class Qt_Fig(QtWidgets.QWidget):
         self.window_height = -1
         self.set_fig_dimensions(template, boards)
         self.geom = None
+        self.dpi = 300
         self.labels = ['B', 'C', 'D', 'E', 'F']
         # font sizes are in 1/32" of an inch
         self.font_size = {'title': 4,
                           'fingers': 3,
                           'template': 3,
+                          'wm_mark': 3.5,
                           'boards': 4,
                           'template_labels': 3,
                           'watermark': 4}
@@ -160,7 +157,7 @@ class Qt_Fig(QtWidgets.QWidget):
         # Set the figure dimensions
         fig_width = template.length + self.margins.left + self.margins.right
         fig_height = template.height + self.margins.bottom + self.margins.top
-        for i in lrange(4):
+        for i in range(4):
             if boards[i].active:
                 fig_height += boards[i].height + self.margins.sep
 
@@ -261,16 +258,22 @@ class Qt_Fig(QtWidgets.QWidget):
                                           self.config)
         self.set_colors(True)
 
-        s = self.size()
-        window_ar = float(s.width()) / s.height()
-        fig_ar = float(self.fig_width) / self.fig_height
-        if window_ar < fig_ar:
-            w = s.width()
+        if self.config.min_image_width == 0:
+            self.dpi = self.config.max_image_width
+            sNew = QtCore.QSize(bit.units.increments_to_inches(self.fig_width) * self.config.max_image_width,
+                                bit.units.increments_to_inches(self.fig_height) * self.config.max_image_width)
         else:
-            w = int(s.height() * fig_ar)
-        w = max(self.config.min_image_width, min(self.config.max_image_width, w))
-        h = utils.my_round(w / fig_ar)
-        sNew = QtCore.QSize(w, h)
+            s = self.size()
+            window_ar = float(s.width()) / s.height()
+            fig_ar = float(self.fig_width) / self.fig_height
+            if window_ar < fig_ar:
+                w = s.width()
+            else:
+                w = int(s.height() * fig_ar)
+            w = max(self.config.min_image_width, min(self.config.max_image_width, w))
+            h = utils.my_round(w / fig_ar)
+            sNew = QtCore.QSize(w, h)
+            self.dpi = w / bit.units.increments_to_inches(self.fig_width)
 
         im = QtGui.QImage(sNew, QtGui.QImage.Format_RGB32)
         painter = QtGui.QPainter()
@@ -336,6 +339,7 @@ class Qt_Fig(QtWidgets.QWidget):
         window_width = rw.width()
         window_height = rw.height()
         units = self.geom.bit.units
+        scaling = self.scaling
 
         if dpi is None:
             # transform the painter to maintain the figure aspect ratio in the current
@@ -354,14 +358,15 @@ class Qt_Fig(QtWidgets.QWidget):
             # Scale so that the image is the correct size on the page
             painter.translate(0, window_height)
             scale = float(dpi) / units.increments_per_inch
+            scaling = 1.0
         painter.scale(scale, -scale)
 
         # Save the inverse of the un-zoomed transform
         (self.base_transform, dummy_invertable) = painter.transform().inverted()
 
         # Apply the zoom, zooming on the current figure center
-        painter.scale(self.scaling, self.scaling)
-        factor = 0.5 - 0.5 / self.scaling
+        painter.scale(scaling, scaling)
+        factor = 0.5 - 0.5 / scaling
         x = self.translate[0] - self.fig_width * factor
         y = self.translate[1] - self.fig_height * factor
         painter.translate(x, y)
@@ -371,10 +376,9 @@ class Qt_Fig(QtWidgets.QWidget):
         self.draw_boards(painter)
         self.draw_template(painter)
         self.draw_title(painter)
-        # self.draw_finger_sizes(painter)
+        #self.draw_finger_sizes(painter)
         if self.config.show_finger_widths:
             self.draw_finger_sizes(painter)
-
         return (window_width, window_height)
 
     def draw_passes(self, painter, blabel, cuts, y1, y2, flags, xMid,
@@ -403,11 +407,11 @@ class Qt_Fig(QtWidgets.QWidget):
         # through each cut and each pass for each cut, right-to-left.
         xp = []
         for c in cuts[::-1]:
-            for p in lrange(len(c.passes) - 1, -1, -1):
+            for p in range(len(c.passes) - 1, -1, -1):
                 xp.append(c.passes[p])
         # Loop through the passes and do the labels
         np = len(xp)
-        for i in lrange(np):
+        for i in range(np):
             # Determine vertical alignment, by checking the separation from adjacent passes.
             # If too close to an adjacent pass, then shift the alignment in the opposite
             # direction.
@@ -483,29 +487,43 @@ class Qt_Fig(QtWidgets.QWidget):
         board_caul = self.geom.board_caul
 
         # draw the alignment lines on both templates
-        x = board_T.xR() + self.geom.bit.width // 2
+        x = board_T.xR() # + self.geom.bit.width // 2
 
         pen = QtGui.QPen(QtCore.Qt.SolidLine)
         pen.setColor(self.colors['template_margin_foreground'])
-        pen.setWidthF(0)
+        pen.setWidthF(self.config.line_width) #0
 
         bg_pen = QtGui.QPen(QtCore.Qt.SolidLine)
         bg_pen.setColor(QtGui.QColor('White'))
         bg_pen.setWidthF(0)
 
+        self.set_font_size(painter, 'wm_mark')
+        mrk_font = painter.font()
+        mrk_font.setBold(True)
+        x1 = painter.fontMetrics().height()
+
         self.set_font_size(painter, 'template')
-        label = 'ALIGN'
-        flags = QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter
+        lbl_font = painter.font()
+        label = self.transl.tr(u'\u2b9c ALIGN');
+        #flags = QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter
+        flags = QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft
         for b in [board_T, board_TDD, board_caul]:
             if b is not None:
                 y1 = b.yB()
                 y2 = b.yT()
                 painter.setPen(pen)
                 painter.drawLine(x, y1, x, y2)
-                paint_text(painter, label, (x, (y1 + y2) // 2), flags, (0, 0), -90)
+                #paint_text(painter, label, (x, (y1 + y2) // 2), flags, (0, 0), -90)
+                if self.description is not None:
+                    painter.setFont(mrk_font)
+                    paint_text(painter, self.description, (x, (y1 + y2) // 2), flags, (x1, 0), -90)
+                    painter.setFont(lbl_font)
                 painter.setPen(bg_pen)
                 painter.drawLine(QtCore.QPointF(x-0.5, y1+0.5), QtCore.QPointF(x-0.5, y2-0.5))
                 painter.drawLine(QtCore.QPointF(x+0.5, y1+0.5), QtCore.QPointF(x+0.5, y2-0.5))
+                painter.setPen(pen)
+                paint_text(painter, label, ( ( x ), ( y2 - 1 )) , flags, (0, 0), 0)
+
 
     def draw_template_rectangle(self, painter, r, b):
         '''
@@ -550,10 +568,10 @@ class Qt_Fig(QtWidgets.QWidget):
         pen_canvas.setWidthF(0)
         penA = QtGui.QPen(QtCore.Qt.SolidLine)
         penA.setColor(self.colors['pass_color'])
-        penA.setWidthF(0)
+        penA.setWidthF(self.config.line_width) # 0
         penB = QtGui.QPen(QtCore.Qt.DashLine)
         penB.setColor(self.colors['pass_alt_color'])
-        penB.setWidthF(0)
+        penB.setWidthF(self.config.line_width) # 0
 
         painter.setPen(pen_canvas)
         self.draw_template_rectangle(painter, rect_T, board_T)
@@ -589,6 +607,19 @@ class Qt_Fig(QtWidgets.QWidget):
             painter.setPen(pen_canvas)
             self.draw_passes(painter, 'A', boards[0].bottom_cuts, y1, y2,
                              flagsL, xMid, False)
+
+        # bit and board information lables
+        label_size = 'L:{}'.format(self.geom.bit.units.increments_to_string(self.geom.boards[0].width, True))
+        label_height = 'h:{}'.format(self.geom.bit.units.increments_to_string(self.geom.bit.depth, False))
+        label_bit = ''
+
+        if self.geom.bit.angle > 0:
+            label_bit += 'V:{}\xb0 '.format(self.geom.bit.angle)
+            if abs(self.geom.bit.gap) > utils.Units.quant:
+                label_height += '/{}'.format(self.geom.bit.units.increments_to_string(self.geom.bit.depth_0, True))
+
+        label_bit += '\xd8{}'.format(self.geom.bit.units.increments_to_string(self.geom.bit.width, True))
+
         label_bottom = 'A,B'
         label_top = None
         i = 0
@@ -673,7 +704,7 @@ class Qt_Fig(QtWidgets.QWidget):
         # ... draw the caul template and do its passes.  Draw events may be
         # triggered before we have the ability to recreate the geom object,
         # so we have to ensure the caul_top object actually exists.
-        datetime = time.strftime('\n%d %b %y %H:%M', time.localtime())
+        datetime = time.strftime('\n%d %b %y\n%H:%M', time.localtime())
         if self.config.show_caul and self.geom.caul_top is not None:
             rect_caul = self.geom.rect_caul
             board_caul = self.geom.board_caul
@@ -709,14 +740,22 @@ class Qt_Fig(QtWidgets.QWidget):
         pen.setColor(self.colors['center_color'])
         pen.setWidthF(0)
         self.set_font_size(painter, 'template_labels')
+        label_center = ' '
         if centerline:
             label_bottom += self.transl.tr('\nCenter: ') + centerline[0]
+
         else:
             painter.setPen(pen)
             painter.drawLine(xMid, rect_T.yB(), xMid, rect_T.yT())
+
         painter.setPen(self.colors['template_margin_foreground'])
-        paint_text(painter, label_bottom + datetime, (rect_T.xL(), rect_T.yMid()), flagsLC, (5, 0))
-        paint_text(painter, label_bottom, (rect_T.xR(), rect_T.yMid()), flagsRC, (-5, 0))
+
+        label_left  = '\n'+ label_bit + '\n' + label_height + label_center + label_size
+        label_right = label_center + datetime
+
+        paint_text(painter, label_bottom + label_left, (rect_T.xL(), rect_T.yMid()), flagsLC, (5, 0))
+        paint_text(painter, label_bottom + label_right, (rect_T.xR(), rect_T.yMid()), flagsRC, (-5, 0))
+
         if label_top is not None:
             if centerline_TDD:
                 label_top += self.transl.tr('\nCenter: ') + centerline_TDD[0]
@@ -724,9 +763,10 @@ class Qt_Fig(QtWidgets.QWidget):
                 painter.setPen(pen)
                 painter.drawLine(xMid, rect_TDD.yB(), xMid, rect_TDD.yT())
             painter.setPen(self.colors['template_margin_foreground'])
-            paint_text(painter, label_top + datetime, (rect_TDD.xL(), rect_TDD.yMid()),
+            paint_text(painter, label_top + label_left, (rect_TDD.xL(), rect_TDD.yMid()),
                        flagsLC, (5, 0))
-            paint_text(painter, label_top, (rect_TDD.xR(), rect_TDD.yMid()), flagsRC, (-5, 0))
+            paint_text(painter, label_top + label_right, (rect_TDD.xR(), rect_TDD.yMid()),
+                       flagsRC, (-5, 0))
 
         self.draw_alignment(painter)
 
@@ -740,7 +780,7 @@ class Qt_Fig(QtWidgets.QWidget):
         (x, y) = board.perimeter(bit)
         n = len(x)
         poly = QtGui.QPolygonF()
-        for i in lrange(n):
+        for i in range(n):
             poly.append(QtCore.QPointF(x[i], y[i]))
         # paint it
         painter.save()
@@ -778,7 +818,7 @@ class Qt_Fig(QtWidgets.QWidget):
         '''
 
         # Draw all of the boards
-        for i in lrange(4):
+        for i in range(4):
             self.draw_one_board(painter, self.geom.boards[i], self.geom.bit,
                                 self.colors['board_background'])
 
@@ -903,7 +943,7 @@ class Qt_Fig(QtWidgets.QWidget):
         yT = self.geom.boards[0].yT()
         pen.setColor(QtCore.Qt.green)
         painter.setPen(pen)
-        half = Decimal(0.5)
+        half = D('0.5')
         painter.drawLine(QtCore.QPointF(xminG - half, yB), QtCore.QPointF(xminG - half, yT))
         painter.drawLine(QtCore.QPointF(xmaxG + half, yB), QtCore.QPointF(xmaxG + half, yT))
         painter.restore()
@@ -926,6 +966,14 @@ class Qt_Fig(QtWidgets.QWidget):
         flags = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         p = (self.geom.board_T.xMid(), self.margins.bottom)
         paint_text(painter, title, p, flags, (0, 5))
+
+        self.set_font_size(painter, 'template')
+        title = '{}x{}'.format(
+            self.geom.bit.units.increments_to_string(self.fig_width),
+            self.geom.bit.units.increments_to_string(self.fig_height, True)
+        )
+        paint_text(painter, title, (self.margins.left, self.fig_height),
+                   QtCore.Qt.AlignBaseline | QtCore.Qt.AlignLeft)
 
     def draw_finger_sizes(self, painter):
         '''

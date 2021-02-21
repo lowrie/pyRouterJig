@@ -21,7 +21,6 @@
 '''
 This module contains the Qt interface to setting config file parameters.
 '''
-from __future__ import print_function
 
 import os
 import sys
@@ -143,6 +142,8 @@ class Config_Window(QtWidgets.QDialog):
         self.line_edit_width = 80
         self.units = units
         self.transl = units.transl
+
+        self.setWindowTitle(self.transl.tr('Settings'))
 
         # Form these objects so that we can do error checking on their changes
         bit_width = self.units.abstract_to_increments(self.config.bit_width)
@@ -520,11 +521,19 @@ class Config_Window(QtWidgets.QDialog):
         grid = form_line(self.le_printsf_label, self.le_printsf, tt)
         vbox.addLayout(grid)
 
+        self.le_linewidth_label = QtWidgets.QLabel(self.transl.tr('Line width:'))
+        self.le_linewidth = QtWidgets.QLineEdit(w)
+        self.le_linewidth.setFixedWidth(self.line_edit_width)
+        self.le_linewidth.editingFinished.connect(self._on_line_width)
+        tt = self.transl.tr('Line cut width.')
+        grid = form_line(self.le_linewidth_label, self.le_linewidth, tt)
+        vbox.addLayout(grid)
+
         self.le_min_image_label = QtWidgets.QLabel(self.transl.tr('Min Image Width (pixels):'))
         self.le_min_image = QtWidgets.QLineEdit(w)
         self.le_min_image.setFixedWidth(self.line_edit_width)
         self.le_min_image.editingFinished.connect(self._on_min_image)
-        tt = self.transl.tr('On save image, minimum width of image.')
+        tt = self.transl.tr('On save image, minimum width of image or 0 for resolution.')
         grid = form_line(self.le_min_image_label, self.le_min_image, tt)
         vbox.addLayout(grid)
 
@@ -532,7 +541,7 @@ class Config_Window(QtWidgets.QDialog):
         self.le_max_image = QtWidgets.QLineEdit(w)
         self.le_max_image.setFixedWidth(self.line_edit_width)
         self.le_max_image.editingFinished.connect(self._on_max_image)
-        tt = self.transl.tr('On save image, maximum width of image.')
+        tt = self.transl.tr('On save image, maximum width of image or resolution.')
         grid = form_line(self.le_max_image_label, self.le_max_image, tt)
         vbox.addLayout(grid)
 
@@ -635,6 +644,7 @@ class Config_Window(QtWidgets.QDialog):
         self.cb_rploc.setChecked(self.config.show_router_pass_locations)
         self.cb_print_color.setChecked(self.config.print_color)
         self.le_printsf.setText(str(self.config.print_scale_factor))
+        self.le_linewidth.setText(str(self.config.line_width))
         self.le_min_image.setText(str(self.config.min_image_width))
         self.le_max_image.setText(str(self.config.max_image_width))
         self.le_board_width.setText(str(self.config.board_width))
@@ -961,6 +971,35 @@ class Config_Window(QtWidgets.QDialog):
                 self.le_printsf.setText(str(self.new_config['print_scale_factor']))
 
     @QtCore.pyqtSlot()
+    def _on_line_width(self):
+        '''
+        Handles change in print scale factor
+        '''
+        if self.config.debug:
+            print('qt_config:_on_line_width')
+
+        if self.le_linewidth.isModified():
+            if self.config.debug:
+                print('  _on_line_width modified')
+            self.le_printsf.setModified(False)
+            s = str(self.le_linewidth.text())
+            ok = True
+            try:
+                new_value = float(s)
+                if new_value < 0 or new_value > 2:
+                    ok = False
+            except:
+                ok = False
+            if ok:
+                self.new_config['line_width'] = float(s)
+                self.update_state('line_width')
+            else:
+                msg = self.transl.tr('Unable to set Line Width to: {}<p>'\
+                      'Set to a positive number.').format(s)
+                QtWidgets.QMessageBox.warning(self, self.transl.tr('Error'), msg)
+                self.le_printsf.setText(str(self.new_config['line_width']))
+
+    @QtCore.pyqtSlot()
     def _on_min_image(self):
         '''
         Handles change in min image width
@@ -973,13 +1012,20 @@ class Config_Window(QtWidgets.QDialog):
             ok = True
             try:
                 new_value = int(s)
-                if new_value <= 0:
+                if new_value < 0:
                     ok = False
             except:
                 ok = False
             if ok:
                 self.new_config['min_image_width'] = int(s)
                 self.update_state('min_image_width')
+
+                if int(s) > 0:
+                    self.le_min_image_label = QtWidgets.QLabel(self.transl.tr('Min Image Width (pixels):'))
+                    self.le_max_image_label.setText(self.transl.tr('Max Image Width (pixels):'))
+                else:
+                    self.le_min_image_label = QtWidgets.QLabel(self.transl.tr('DPI mode (0):'))
+                    self.le_max_image_label.setText(self.transl.tr('Image resolution (ppi):'))
             else:
                 msg = self.transl.tr('Unable to set Min Image Width to: {}<p>'\
                       'Set to a positive integer.').format(s)

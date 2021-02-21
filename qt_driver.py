@@ -21,24 +21,22 @@
 '''
 Contains the main driver, using pySide or pyQt.
 '''
-from __future__ import print_function
 
 import os
+import platform
 import sys
 import traceback
 import webbrowser
 import copy
 import shutil
-
 from io import BytesIO
 from decimal import getcontext
-
-from future.utils import lrange
+from builtins import str
 from PIL import Image
+if platform.system() != 'Darwin':
+    from PIL import ImageCms
 from PIL import PngImagePlugin
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 import qt_fig
 import qt_config
 import qt_utils
@@ -83,7 +81,8 @@ class Driver(QtWidgets.QMainWindow):
         self.bit = router.Router_Bit(self.units, bit_width, bit_depth, bit_angle, bit_gentle)
         self.boards = []
         board_width = self.units.abstract_to_increments(self.config.board_width)
-        for _ in lrange(4):
+
+        for _ in range(4):
             self.boards.append(router.Board(self.bit, width=board_width))
         self.boards[2].set_active(False)
         self.boards[3].set_active(False)
@@ -132,6 +131,8 @@ class Driver(QtWidgets.QMainWindow):
         # menus, such as show_caul, the config window keeps track whether any such
         # changes have occurred, in order to enable its Save button.
         self.config_window = qt_config.Config_Window(self.config, self.units, self)
+        (self.working_dir, fname) = os.path.split(os.path.splitext(self.config.last_path)[0])
+        self.prefix = fname.rstrip('0123456789')
 
         # ... show the status message from reading the configuration file
         self.status_message(msg)
@@ -218,6 +219,7 @@ class Driver(QtWidgets.QMainWindow):
             # The config file exists and is current
             msg = self.transl.tr('Read configuration file %s') % c.filename
 
+        self.setWindowTitle('pyRouterJig ' + c.config.version)
         return (c.config, msg)
 
     def center(self):
@@ -490,7 +492,7 @@ class Driver(QtWidgets.QMainWindow):
         # Double and double-double board thicknesses
         self.le_boardm_label = []
         self.le_boardm = []
-        for i in lrange(2):
+        for i in range(2):
             self.le_boardm_label.append(QtWidgets.QLabel(self.transl.tr('Thickness{}').format(us)))
             self.le_boardm.append(QtWidgets.QLineEdit(self.main_frame))
             self.le_boardm[i].setFixedWidth(lineEditWidth)
@@ -576,8 +578,9 @@ class Driver(QtWidgets.QMainWindow):
         self.update_cb_vsfingers(p.vMin, p.vMax, p.v)
 
         p = params['Spacing']
-        self.vs_slider0_label = QtWidgets.QLabel(labels[1], self.main_frame) # labels[1]
+        self.vs_slider0_label = QtWidgets.QLabel(self.transl.tr('Spacing...'), self.main_frame) # labels[1]
         self.vs_slider0 = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.main_frame)
+        self.vs_slider0.setToolTip(self.transl.tr('Set fingers disstance'))
         self.vs_slider0.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.vs_slider0.setMinimum(p.vMin)
         self.vs_slider0.setMaximum(p.vMax)
@@ -598,7 +601,8 @@ class Driver(QtWidgets.QMainWindow):
 
         # ...check box for centering
         p = params['Inverted']
-        self.cb_vs_inverted = QtWidgets.QCheckBox(labels[2], self.main_frame) # labels[2]
+        self.cb_vs_inverted = QtWidgets.QCheckBox(self.transl.tr('Inverted'), self.main_frame) # labels[2]
+        self.cb_vs_inverted.setToolTip(self.transl.tr('Inverce pattern'))
         self.cb_vs_inverted.setChecked(p.v)
         self.cb_vs_inverted.stateChanged.connect(self._cb_vs_inverted)
 
@@ -872,7 +876,7 @@ class Driver(QtWidgets.QMainWindow):
         Updates the combobox for Variable spacing Fingers.
         '''
         self.cb_vsfingers.clear()
-        for i in lrange(vMin, vMax + 1, 1):
+        for i in range(vMin, vMax + 1, 1):
             self.cb_vsfingers.addItem(str(i))
         i = self.cb_vsfingers.findText(str(value))
         self.cb_vsfingers.setCurrentIndex(i)
@@ -1122,7 +1126,7 @@ class Driver(QtWidgets.QMainWindow):
             self.update_cb_vsfingers(p.vMin, p.vMax, p.v)
             self.cb_vsfingers.blockSignals(False)
             self.var_spacing.set_cuts()
-            self.cb_vsfingers_label.setText(self.transl.tr(self.var_spacing.labels[0]))
+            self.cb_vsfingers_label.setText(self.transl.tr("Fingers")) #self.transl.tr(self.var_spacing.labels[0])
             self.spacing = self.var_spacing
         elif self.spacing_index == self.edit_spacing_id:
             # Edit spacing parameters.  Currently, this has no parameters, and
@@ -1133,6 +1137,25 @@ class Driver(QtWidgets.QMainWindow):
             raise ValueError(self.transl.tr('Bad value for spacing_index %d') % self.spacing_index)
 
         self.update_tooltips()
+
+    def update_config_path(self, filename):
+        '''
+        Update config file with the last saved or opened file name
+        passed in params.
+        '''
+        self.config.last_path = str(filename)
+        (working_dir, fname) = os.path.split(os.path.splitext(self.config.last_path)[0])
+        prefix = fname.rstrip('0123456789')
+
+        if working_dir != self.working_dir or prefix != self.prefix:
+            self.working_dir = working_dir
+            self.prefix = prefix
+            # Save the last path and file name
+            c = config_file.Configuration()
+            c.write_config(self.config.__dict__.copy())
+            self.file_saved = True
+
+        self.setWindowTitle(filename + ' \u2014 pyRouterJig')
 
     @QtCore.pyqtSlot(int)
     def _on_tabs_spacing(self, index):
@@ -1363,7 +1386,7 @@ class Driver(QtWidgets.QMainWindow):
             print('_on_save')
 
         # Form the default filename prefix
-        prefix = 'pyrouterjig'
+        prefix = self.prefix # was 'pyrouterjig'
         suffix = 'png'
         if self.screenshot_index is None:
             self.screenshot_index = utils.get_file_index(self.working_dir, prefix, suffix)
@@ -1391,27 +1414,31 @@ class Driver(QtWidgets.QMainWindow):
             filename = None
             if dialog.exec_():
                 filenames = dialog.selectedFiles()
-                d = str(dialog.directory().path())
-                # force recomputation of index, next time around, if path changed
-                if d != self.working_dir:
-                    self.screenshot_index = None
-                self.working_dir = d
-                filename = str(filenames[0]).strip()
+
+                # Save updated config if path or base name changed
+                self.update_config_path(filenames[0])
+                filename = self.config.last_path.strip()
+
             if filename is None:
                 self.status_message(self.transl.tr('File not saved'), warning=True)
                 return
 
+        dpiX = 300
+        dpiY = 300
         # Save the file with metadata
-
         if do_screenshot:
             p_screen = QtWidgets.QApplication.primaryScreen()
+            dpiX = p_screen.logicalDotsPerInchX()
+            dpiY = p_screen.logicalDotsPerInchY()
             image = p_screen.grabWindow(self.winId())
         else:
             image = self.fig.image(self.template, self.boards, self.bit, self.spacing,
                                    self.woods, self.description)
+            dpiY = self.fig.dpi
+            dpiX = self.fig.dpi
 
         s = serialize.serialize(self.bit, self.boards, self.spacing,
-                                self.config)
+                                self.config, self.description)
 
         # we use UUEC encoding so need more attributes in the image file
         # QT5 does not work propertly with PNG text; use PIL as workaround
@@ -1427,13 +1454,29 @@ class Driver(QtWidgets.QMainWindow):
         buffer.close()
         pilimg = Image.open(pio)
 
+        # convert image to unifyed profile
+        # however we know that the image taken from monitor so need to convert monitor to sRGB
+        # feel free to use other profile if any
+        if platform.system() != 'Darwin':
+            monitor_profile = ImageCms.get_display_profile()
+            if monitor_profile != None:
+                monitor_profile = ImageCms.createProfile('sRGB') # rare happen case - non profiled monitor!!!!
+
+            srgb = ImageCms.createProfile('sRGB')
+
+            # here we convert image to the profile. and got the profile into info
+            # The point is that the info will lost on save so we have to assign the proper one profile when safe the image
+            pilimg = ImageCms.profileToProfile(pilimg, monitor_profile, srgb)
+
+        # uncomment the line below to set color profiling off
         info = PngImagePlugin.PngInfo()
+
         info.add_text('pyRouterJig', s)
         info.add_text('pyRouterJig_v', utils.VERSION)
 
         r = True
         try:
-            pilimg.save(filename, 'png', pnginfo=info)
+            pilimg.save(filename, 'png', pnginfo=info, dpi=(dpiX, dpiY) )
         except OSError:
             r = False
 
@@ -1441,7 +1484,6 @@ class Driver(QtWidgets.QMainWindow):
             self.status_message(self.transl.tr('Saved to file %s') % filename)
             if self.screenshot_index is not None:
                 self.screenshot_index += 1
-            self.file_saved = True
         else:
             self.status_message(self.transl.tr('Unable to save to file %s') % filename,
                                 warning=True)
@@ -1489,7 +1531,7 @@ class Driver(QtWidgets.QMainWindow):
             return
 
         # backwards compatibility
-        (bit, boards, sp, sp_type) = \
+        (bit, boards, sp, sp_type, description) = \
             serialize.unserialize(s, self.config, ('pyRouterJig_v' in image.info.keys()),
                                   self.transl)
 
@@ -1510,17 +1552,22 @@ class Driver(QtWidgets.QMainWindow):
         self.units = self.bit.units
         self.doc = doc.Doc(self.units)
         self.template = router.Incra_Template(self.units, self.boards)
+        self.description = description
 
         # ... set the wood selection for each board.  If the wood does not
         # exist, set to a wood we know exists.  This can happen if the wood
         # image files don't exist across users.
         # self.boards[i].wood is newstr type use str(self.boards[i].wood) is for
         # old files compatibility
-        for i in lrange(4):
+        for i in range(4):
             if self.boards[i].wood is None:
                 self.boards[i].set_wood('NONE')
             elif str(self.boards[i].wood) not in self.woods.keys():
-                self.boards[i].set_wood('DiagCrossPattern')
+                local_wood = self.transl.tr(str(self.boards[i].wood))
+                if local_wood in self.woods.keys():
+                    self.boards[i].set_wood(local_wood)
+                else :
+                    self.boards[i].set_wood(self.transl.tr('DiagCrossPattern'))
 
             # backwards compatibility fix
             self.boards[i].wood = str(self.boards[i].wood)
@@ -1560,9 +1607,13 @@ class Driver(QtWidgets.QMainWindow):
         self.le_bit_width.setText(self.units.increments_to_string(self.bit.width))
         self.le_bit_depth.setText(self.units.increments_to_string(self.bit.depth))
         self.le_bit_angle.setText(str(self.bit.angle))
+        self.le_description.setText(self.description)
         self.set_spacing_widgets()
 
         self.draw()
+
+        # Mark "no changes", save path, and set window title
+        self.update_config_path(filename)
 
     def threeDS_enabler(self):
         '''
@@ -1722,7 +1773,8 @@ class Driver(QtWidgets.QMainWindow):
         if self.config.debug:
             print('_on_doclink')
 
-        webbrowser.open('http://lowrie.github.io/pyRouterJig/documentation.html')
+        # webbrowser.open('http://lowrie.github.io/pyRouterJig/documentation.html')
+        webbrowser.open('http://lowrie.github.io/pyRouterJig/overview/')
 
     def _on_wood(self, iwood, index=None, reinit=False):
         '''Handles all changes in wood'''
